@@ -51,7 +51,7 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk "artifacts/vedic-mitra-${GITHUB_REF_NAME}.apk"
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Vedic Mitra ${{ github.ref_name }}
           draft: false
