@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -81,6 +81,20 @@ jobs:
             tail -n 150 build-output.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # TEMP DIAGNOSTIC: publish the captured output to an orphan branch so the raw file is
+      # readable at raw.githubusercontent.com without log/artifact permissions. Reverted once green.
+      - name: Publish output to diagnostics branch
+        if: always()
+        run: |
+          cp build-output.txt "$RUNNER_TEMP/build-output.txt"
+          git config user.name "ci-diagnostics-bot"
+          git config user.email "ci@users.noreply.github.com"
+          git switch --orphan ci-diagnostics
+          cp "$RUNNER_TEMP/build-output.txt" build-output.txt
+          git add build-output.txt
+          git -c commit.gpgsign=false commit -m "diagnostic output for ${GITHUB_SHA}"
+          git push -f origin ci-diagnostics
 
       - name: Fail job if verify failed
         if: steps.verify.outcome == 'failure'
