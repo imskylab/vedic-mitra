@@ -18,19 +18,23 @@ package io.github.vedicmitra.core.common.result
  * @param T the type of a successful value.
  */
 sealed interface AppResult<out T> {
-
     /** A successful outcome carrying [data]. */
-    data class Success<out T>(val data: T) : AppResult<T>
+    data class Success<out T>(
+        val data: T,
+    ) : AppResult<T>
 
     /** A failed outcome carrying the [cause] of the failure. */
-    data class Failure(val cause: Throwable) : AppResult<Nothing>
+    data class Failure(
+        val cause: Throwable,
+    ) : AppResult<Nothing>
 }
 
 /** Returns the contained value on success, or `null` on failure. */
 fun <T> AppResult<T>.getOrNull(): T? = (this as? AppResult.Success)?.data
 
 /** Maps the success value with [transform], propagating failures unchanged. */
-inline fun <T, R> AppResult<T>.map(transform: (T) -> R): AppResult<R> = when (this) {
-    is AppResult.Success -> AppResult.Success(transform(data))
-    is AppResult.Failure -> this
-}
+inline fun <T, R> AppResult<T>.map(transform: (T) -> R): AppResult<R> =
+    when (this) {
+        is AppResult.Success -> AppResult.Success(transform(data))
+        is AppResult.Failure -> this
+    }

@@ -16,15 +16,16 @@ import org.gradle.kotlin.dsl.dependencies
  * Apply via `id("vedicmitra.android.hilt")`.
  */
 class AndroidHiltConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("com.google.devtools.ksp")
-            apply("com.google.dagger.hilt.android")
-        }
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("com.google.devtools.ksp")
+                apply("com.google.dagger.hilt.android")
+            }
 
-        dependencies {
-            add("implementation", libs.findLibrary("hilt-android").get())
-            add("ksp", libs.findLibrary("hilt-compiler").get())
+            dependencies {
+                add("implementation", libs.findLibrary("hilt-android").get())
+                add("ksp", libs.findLibrary("hilt-compiler").get())
+            }
         }
-    }
 }

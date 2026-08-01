@@ -17,7 +17,6 @@ import kotlinx.datetime.Instant
  * alarms, WorkManager for deferrable work) is added in the scheduler implementation phase.
  */
 interface TaskScheduler {
-
     /**
      * Requests that the task identified by [request] fires at [ScheduledTask.triggerAt].
      * Rescheduling with the same [ScheduledTask.id] replaces the previous request.

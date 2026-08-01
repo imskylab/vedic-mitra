@@ -19,22 +19,23 @@ import org.gradle.kotlin.dsl.dependencies
  * Apply via `id("vedicmitra.android.library")`.
  */
 class AndroidLibraryConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("com.android.library")
-            apply("org.jetbrains.kotlin.android")
-        }
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("com.android.library")
+                apply("org.jetbrains.kotlin.android")
+            }
 
-        extensions.configure<LibraryExtension> {
-            configureKotlinAndroid(this)
-            // Library modules only need compileSdk + minSdk (set in configureKotlinAndroid).
-            // targetSdk is an application concern and is deprecated on library defaultConfig.
-        }
+            extensions.configure<LibraryExtension> {
+                configureKotlinAndroid(this)
+                // Library modules only need compileSdk + minSdk (set in configureKotlinAndroid).
+                // targetSdk is an application concern and is deprecated on library defaultConfig.
+            }
 
-        configureDetekt()
+            configureDetekt()
 
-        dependencies {
-            add("testImplementation", libs.findBundle("unit-test").get())
+            dependencies {
+                add("testImplementation", libs.findBundle("unit-test").get())
+            }
         }
-    }
 }

@@ -17,19 +17,21 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = VedicColors.Indigo80,
-    secondary = VedicColors.Saffron80,
-    tertiary = VedicColors.Teal80,
-    error = VedicColors.Error80,
-)
+private val DarkColorScheme =
+    darkColorScheme(
+        primary = indigo80,
+        secondary = saffron80,
+        tertiary = teal80,
+        error = error80,
+    )
 
-private val LightColorScheme = lightColorScheme(
-    primary = VedicColors.Indigo40,
-    secondary = VedicColors.Saffron40,
-    tertiary = VedicColors.Teal40,
-    error = VedicColors.Error40,
-)
+private val LightColorScheme =
+    lightColorScheme(
+        primary = indigo40,
+        secondary = saffron40,
+        tertiary = teal40,
+        error = error40,
+    )
 
 /**
  * Root Material 3 theme for Vedic Mitra. Every screen must be wrapped in this so colours,
@@ -47,15 +49,16 @@ fun VedicMitraTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val colorScheme =
+        when {
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                val context = LocalContext.current
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+            darkTheme -> DarkColorScheme
+            else -> LightColorScheme
+        }
 
     MaterialTheme(
         colorScheme = colorScheme,

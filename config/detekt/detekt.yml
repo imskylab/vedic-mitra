@@ -60,12 +60,11 @@ style:
         value: 'FIXME:'
 
 formatting:
-  # ktlint-backed rules, provided by the detekt-formatting plugin.
-  active: true
-  android: true
-  autoCorrect: true
-  MaximumLineLength:
-    maxLineLength: 120
+  # Formatting is owned by Spotless + ktlint (see the root build script), which run the ktlint
+  # ruleset directly. Enabling ktlint here too would double-report and can conflict (Spotless uses
+  # standard style; detekt-formatting defaults differ), so the ruleset is disabled to keep a single
+  # source of truth for formatting.
+  active: false
 
 comments:
   active: true

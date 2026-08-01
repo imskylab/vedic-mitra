@@ -20,13 +20,14 @@ import javax.inject.Inject
  * the constructor once the corresponding features are implemented.
  */
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel
+    @Inject
+    constructor() : ViewModel() {
+        private val _uiState = MutableStateFlow(HomeUiState())
 
-    private val _uiState = MutableStateFlow(HomeUiState())
-
-    /** Observable UI state consumed by [HomeScreen]. */
-    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-}
+        /** Observable UI state consumed by [HomeScreen]. */
+        val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    }
 
 /**
  * Immutable UI state for the home screen. Fields are added as the screen gains real content.

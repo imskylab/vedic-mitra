@@ -20,7 +20,6 @@ import kotlinx.datetime.Instant
  * [AstronomySnapshot], arrive in the astronomy implementation phase.
  */
 interface AstronomyEngine {
-
     /**
      * Computes an astronomy snapshot for the given [instant] observed from [location].
      *

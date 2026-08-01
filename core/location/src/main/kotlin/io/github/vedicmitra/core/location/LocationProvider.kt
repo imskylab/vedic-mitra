@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.Flow
  * implementation phase.
  */
 interface LocationProvider {
-
     /** Returns the last known [GeoCoordinates], or a failure if none is available. */
     suspend fun currentLocation(): AppResult<GeoCoordinates>
 

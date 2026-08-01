@@ -17,9 +17,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * Applies the Kotlin + Android compile options shared by application and library modules:
  * SDK levels, the JDK 21 toolchain, and common Kotlin compiler flags.
  */
-internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
-) {
+internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension<*, *, *, *, *, *>) {
     commonExtension.apply {
         compileSdk = ProjectConfig.COMPILE_SDK
 

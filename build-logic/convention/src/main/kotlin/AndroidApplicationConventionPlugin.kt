@@ -19,28 +19,29 @@ import org.gradle.kotlin.dsl.dependencies
  * Apply via `id("vedicmitra.android.application")`.
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("com.android.application")
-            apply("org.jetbrains.kotlin.android")
-        }
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("com.android.application")
+                apply("org.jetbrains.kotlin.android")
+            }
 
-        extensions.configure<ApplicationExtension> {
-            configureKotlinAndroid(this)
+            extensions.configure<ApplicationExtension> {
+                configureKotlinAndroid(this)
 
-            defaultConfig {
-                applicationId = ProjectConfig.NAMESPACE_PREFIX
-                targetSdk = ProjectConfig.TARGET_SDK
-                versionCode = 1
-                versionName = "0.1.0"
-                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                defaultConfig {
+                    applicationId = ProjectConfig.NAMESPACE_PREFIX
+                    targetSdk = ProjectConfig.TARGET_SDK
+                    versionCode = 1
+                    versionName = "0.1.0"
+                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                }
+            }
+
+            configureDetekt()
+
+            dependencies {
+                add("testImplementation", libs.findBundle("unit-test").get())
             }
         }
-
-        configureDetekt()
-
-        dependencies {
-            add("testImplementation", libs.findBundle("unit-test").get())
-        }
-    }
 }

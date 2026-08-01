@@ -19,13 +19,14 @@ import javax.inject.Inject
  * writes are added when settings are implemented.
  */
 @HiltViewModel
-class SettingsViewModel @Inject constructor() : ViewModel() {
+class SettingsViewModel
+    @Inject
+    constructor() : ViewModel() {
+        private val _uiState = MutableStateFlow(SettingsUiState())
 
-    private val _uiState = MutableStateFlow(SettingsUiState())
-
-    /** Observable UI state consumed by [SettingsScreen]. */
-    val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
-}
+        /** Observable UI state consumed by [SettingsScreen]. */
+        val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+    }
 
 /**
  * Immutable UI state for the settings screen.

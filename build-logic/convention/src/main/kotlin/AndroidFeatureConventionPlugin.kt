@@ -19,28 +19,32 @@ import org.gradle.kotlin.dsl.dependencies
  * own extra dependencies.
  */
 class AndroidFeatureConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("vedicmitra.android.library")
-            apply("vedicmitra.android.compose")
-            apply("vedicmitra.android.hilt")
-        }
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("vedicmitra.android.library")
+                apply("vedicmitra.android.compose")
+                apply("vedicmitra.android.hilt")
+            }
 
-        dependencies {
-            // Shared core modules every feature depends on.
-            addProject("implementation", ":core:common")
-            addProject("implementation", ":core:ui")
-            addProject("implementation", ":core:designsystem")
+            dependencies {
+                // Shared core modules every feature depends on.
+                addProject("implementation", ":core:common")
+                addProject("implementation", ":core:ui")
+                addProject("implementation", ":core:designsystem")
 
-            add("implementation", libs.findBundle("lifecycle").get())
-            add("implementation", libs.findLibrary("androidx-navigation-compose").get())
-            add("implementation", libs.findLibrary("hilt-navigation-compose").get())
-            add("implementation", libs.findBundle("coroutines").get())
+                add("implementation", libs.findBundle("lifecycle").get())
+                add("implementation", libs.findLibrary("androidx-navigation-compose").get())
+                add("implementation", libs.findLibrary("hilt-navigation-compose").get())
+                add("implementation", libs.findBundle("coroutines").get())
+            }
         }
-    }
 
     /** Small helper so feature scripts read cleanly when wiring project dependencies. */
-    private fun DependencyHandler.addProject(configuration: String, path: String) {
+    private fun DependencyHandler.addProject(
+        configuration: String,
+        path: String,
+    ) {
         add(configuration, project(mapOf("path" to path)))
     }
 }

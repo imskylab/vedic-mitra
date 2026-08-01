@@ -19,18 +19,19 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
  * Apply via `id("vedicmitra.kotlin.library")`.
  */
 class KotlinLibraryConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("org.jetbrains.kotlin.jvm")
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("org.jetbrains.kotlin.jvm")
 
-        extensions.configure<KotlinJvmProjectExtension> {
-            jvmToolchain(ProjectConfig.JVM_TARGET.toInt())
+            extensions.configure<KotlinJvmProjectExtension> {
+                jvmToolchain(ProjectConfig.JVM_TARGET.toInt())
+            }
+
+            configureKotlinCompiler()
+            configureDetekt()
+
+            dependencies {
+                add("testImplementation", libs.findBundle("unit-test").get())
+            }
         }
-
-        configureKotlinCompiler()
-        configureDetekt()
-
-        dependencies {
-            add("testImplementation", libs.findBundle("unit-test").get())
-        }
-    }
 }

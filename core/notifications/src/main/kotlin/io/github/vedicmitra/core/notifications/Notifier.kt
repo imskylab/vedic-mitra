@@ -17,7 +17,6 @@ import io.github.vedicmitra.core.common.result.AppResult
  * the notifications implementation phase.
  */
 interface Notifier {
-
     /** Posts (or updates) the notification described by [notification]. */
     suspend fun show(notification: AppNotification): AppResult<Unit>
 

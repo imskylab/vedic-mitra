@@ -15,7 +15,6 @@ import org.junit.Test
  * Truth are wired correctly across the project; more meaningful tests accompany real logic.
  */
 class AppResultTest {
-
     @Test
     fun `map transforms success value`() {
         val result: AppResult<Int> = AppResult.Success(2)

@@ -15,8 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 
 /**
@@ -42,7 +42,7 @@ private fun AlarmContent(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "Alarm")
+        Text(text = if (uiState.alarms.isEmpty()) "No alarms" else "Alarms: ${uiState.alarms.size}")
     }
 }
 

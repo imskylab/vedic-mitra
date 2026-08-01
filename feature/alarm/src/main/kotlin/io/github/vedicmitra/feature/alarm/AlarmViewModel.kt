@@ -19,13 +19,14 @@ import javax.inject.Inject
  * management are implemented in the alarm implementation phase, injected via the constructor.
  */
 @HiltViewModel
-class AlarmViewModel @Inject constructor() : ViewModel() {
+class AlarmViewModel
+    @Inject
+    constructor() : ViewModel() {
+        private val _uiState = MutableStateFlow(AlarmUiState())
 
-    private val _uiState = MutableStateFlow(AlarmUiState())
-
-    /** Observable UI state consumed by [AlarmScreen]. */
-    val uiState: StateFlow<AlarmUiState> = _uiState.asStateFlow()
-}
+        /** Observable UI state consumed by [AlarmScreen]. */
+        val uiState: StateFlow<AlarmUiState> = _uiState.asStateFlow()
+    }
 
 /**
  * Immutable UI state for the alarm screen. Fields grow as the screen gains real content.
