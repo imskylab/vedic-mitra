@@ -12,6 +12,8 @@ indent_size = 4
 max_line_length = 120
 
 [*.{kt,kts}]
+# Pin ktlint's code style (1.x defaults to ktlint_official; some tools still default to intellij_idea).
+ktlint_code_style = ktlint_official
 ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true
 # @Composable functions are PascalCase by convention; stop ktlint flagging them.

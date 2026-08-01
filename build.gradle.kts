@@ -29,6 +29,9 @@ spotless {
         ktlint(libs.versions.ktlint.get())
             .editorConfigOverride(
                 mapOf(
+                    // Pin the code style so Spotless matches standalone ktlint; ktlint 1.x defaults to
+                    // "ktlint_official" but Spotless still defaults to "intellij_idea".
+                    "ktlint_code_style" to "ktlint_official",
                     // Compose @Composable functions are PascalCase by convention; ktlint would flag them.
                     "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
                 ),
@@ -39,6 +42,7 @@ spotless {
         target("**/*.gradle.kts")
         targetExclude("**/build/**/*.gradle.kts")
         ktlint(libs.versions.ktlint.get())
+            .editorConfigOverride(mapOf("ktlint_code_style" to "ktlint_official"))
     }
     format("misc") {
         target("**/*.md", "**/*.yml", "**/*.yaml", "**/.gitignore")
