@@ -9,7 +9,6 @@ import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.platform
 
 /**
  * Convention plugin that enables Jetpack Compose for a module. Applies the Kotlin Compose compiler
