@@ -1,0 +1,28 @@
+# Normalize line endings across platforms. Text files are stored as LF in the repo and checked out
+# as LF everywhere, so builds are byte-identical on Windows, macOS, Linux, and CI.
+* text=auto eol=lf
+
+# Scripts that MUST stay LF — CRLF breaks them on Linux/CI ("bad interpreter").
+*.sh    text eol=lf
+gradlew text eol=lf
+
+# Windows-only scripts must be CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: never touch line endings or diff as text.
+*.jar      binary
+*.png      binary
+*.jpg      binary
+*.webp     binary
+*.keystore binary
+*.jks      binary
+
+# The Gradle wrapper jar is binary.
+gradle/wrapper/gradle-wrapper.jar binary
+
+# Language hints for GitHub's diff/linguist.
+*.kt   text
+*.kts  text
+*.toml text
+*.pro  text

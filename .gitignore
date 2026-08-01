@@ -1,0 +1,43 @@
+# --- Gradle ------------------------------------------------------------------
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+!src/**/build/
+
+# --- Android -----------------------------------------------------------------
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+/local.properties
+.cxx/
+release/
+captures/
+output.json
+
+# --- IntelliJ IDEA / Android Studio ------------------------------------------
+*.iml
+.idea/
+!.idea/icon.png
+
+# --- Kotlin ------------------------------------------------------------------
+.kotlin/
+
+# --- Keystore / signing (never commit secrets) -------------------------------
+*.jks
+*.keystore
+keystore.properties
+
+# --- OS ----------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# --- Logs / misc -------------------------------------------------------------
+*.log
+*.hprof
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json

@@ -1,0 +1,10 @@
+{
+  // Extensions recommended for working on Vedic Mitra. VS Code will prompt to install these.
+  "recommendations": [
+    "fwcd.kotlin",
+    "vscjava.vscode-gradle",
+    "redhat.vscode-yaml",
+    "github.vscode-github-actions",
+    "editorconfig.editorconfig"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  // Editor defaults aligned with .editorconfig / ktlint.
+  "editor.rulers": [120],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.eol": "\n",
+
+  // Hide build noise from the file explorer and search.
+  "files.exclude": {
+    "**/.gradle": true,
+    "**/build": true,
+    "**/.idea": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/.gradle": true
+  },
+
+  // Gradle Kotlin DSL scripts.
+  "[gradle-kotlin-dsl]": {
+    "editor.tabSize": 4
+  },
+
+  // Markdown / YAML formatting.
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
+  }
+}

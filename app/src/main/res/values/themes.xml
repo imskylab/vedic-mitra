@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Base platform theme used by the manifest. Actual UI colours/typography are supplied by the
+      Compose Material 3 theme (see :core:designsystem); this XML theme only needs to provide a
+      sane, action-bar-free window for the single Activity to draw edge-to-edge Compose content.
+    -->
+    <style name="Theme.VedicMitra" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

@@ -1,0 +1,54 @@
+{
+  // Build/verify tasks runnable from VS Code (Terminal > Run Task, or Ctrl+Shift+B for the default).
+  // These invoke the Gradle wrapper, so no Android Studio and no local Gradle install are needed.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Assemble debug APK",
+      "detail": "./gradlew assembleDebug — outputs app/build/outputs/apk/debug/app-debug.apk",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["assembleDebug"],
+      "windows": { "command": ".\\gradlew.bat" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Unit tests",
+      "detail": "./gradlew testDebugUnitTest",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["testDebugUnitTest"],
+      "windows": { "command": ".\\gradlew.bat" },
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Format (spotlessApply)",
+      "detail": "Auto-format all Kotlin/Gradle sources",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["spotlessApply"],
+      "windows": { "command": ".\\gradlew.bat" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Quality gate (spotlessCheck + detekt + tests)",
+      "detail": "Mirrors CI: formatting, static analysis, unit tests",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["spotlessCheck", "detekt", "testDebugUnitTest"],
+      "windows": { "command": ".\\gradlew.bat" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean",
+      "detail": "./gradlew clean",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": ["clean"],
+      "windows": { "command": ".\\gradlew.bat" },
+      "problemMatcher": []
+    }
+  ]
+}

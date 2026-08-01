@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Library module manifest. The namespace is declared in build.gradle.kts; this file exists so
+     future manifest entries (queries, permissions) have a home. -->
+<manifest />

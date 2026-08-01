@@ -1,0 +1,82 @@
+# Vedic Mitra — Detekt configuration
+#
+# Extends Detekt's default ruleset (buildUponDefaultConfig = true in the root build script).
+# Only overrides that matter for a Compose + Clean Architecture Kotlin codebase are listed here;
+# everything else uses Detekt's sensible defaults.
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  active: true
+  LongMethod:
+    threshold: 80
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 10
+    # Hilt/ViewModel constructors and @Composable functions legitimately take many parameters.
+    ignoreAnnotated: ['Composable', 'Inject']
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    ignoreAnnotatedFunctions: ['Composable']
+  CyclomaticComplexMethod:
+    threshold: 15
+
+naming:
+  active: true
+  FunctionNaming:
+    # @Composable functions are PascalCase by Compose convention.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Za-z0-9]*'
+  FunctionParameterNaming:
+    ignoreAnnotated: ['Composable']
+
+style:
+  active: true
+  MagicNumber:
+    ignoreNumbers: ['-1', '0', '1', '2']
+    ignoreAnnotated: ['Composable', 'Preview']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  MaxLineLength:
+    maxLineLength: 120
+  ReturnCount:
+    max: 4
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Track work in an issue rather than leaving a bare TODO.'
+        value: 'TODO:'
+      - reason: 'Resolve or file an issue rather than leaving FIXME.'
+        value: 'FIXME:'
+
+formatting:
+  # ktlint-backed rules, provided by the detekt-formatting plugin.
+  active: true
+  android: true
+  autoCorrect: true
+  MaximumLineLength:
+    maxLineLength: 120
+
+comments:
+  active: true
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
+coroutines:
+  active: true
+  GlobalCoroutineUsage:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true

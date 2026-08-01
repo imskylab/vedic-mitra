@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Library module manifest. Namespace is declared in build.gradle.kts.
+     ACCESS_*_LOCATION permissions are added here when the provider is implemented. -->
+<manifest />

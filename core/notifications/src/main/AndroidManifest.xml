@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Library module manifest. Namespace is declared in build.gradle.kts.
+     POST_NOTIFICATIONS permission is added here when the notifier is implemented. -->
+<manifest />

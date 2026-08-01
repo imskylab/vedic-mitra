@@ -1,0 +1,65 @@
+name: Release
+
+# Builds an installable APK when a version tag is pushed and attaches it to a GitHub Release.
+# Tag the commit you want to ship, e.g.:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Needed to create the release and upload assets.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 platform-tools'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # Phase 1 has no production signing config, so we ship the debug-signed APK — it installs on a
+      # device for testing. Replace with `assembleRelease` + a signing step once release signing
+      # (keystore secrets + signingConfigs) is added.
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Rename APK with version
+        run: |
+          mkdir -p artifacts
+          cp app/build/outputs/apk/debug/app-debug.apk "artifacts/vedic-mitra-${GITHUB_REF_NAME}.apk"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Vedic Mitra ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: artifacts/*.apk
+          body: |
+            Automated build for ${{ github.ref_name }}.
+
+            > ⚠️ This APK is **debug-signed** (Phase 1 has no production signing yet) and is intended
+            > for testing. Production, Play-signed builds arrive in a later phase.

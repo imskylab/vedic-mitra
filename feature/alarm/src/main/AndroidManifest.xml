@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Feature module manifest. Namespace is declared in build.gradle.kts.
+     BroadcastReceiver/Service declarations for alarm delivery are added when implemented. -->
+<manifest />

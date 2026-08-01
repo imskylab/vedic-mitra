@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Library module manifest. Namespace is declared in build.gradle.kts.
+     Exact-alarm permissions are added here when the scheduler is implemented. -->
+<manifest />

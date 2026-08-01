@@ -1,0 +1,31 @@
+# Vedic Mitra — shared editor + ktlint configuration.
+# Docs: https://editorconfig.org  •  https://pinterest.github.io/ktlint/
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+[*.{kt,kts}]
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+# @Composable functions are PascalCase by convention; stop ktlint flagging them.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# Keep imports explicit — no wildcards.
+ij_kotlin_name_count_to_use_star_import = 2147483647
+ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
+ktlint_standard_no-wildcard-imports = enabled
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
