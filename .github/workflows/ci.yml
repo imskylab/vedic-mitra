@@ -49,7 +49,25 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Spotless (formatting check)
+        id: spotless
         run: ./gradlew spotlessCheck --stacktrace
+
+      # TEMP DIAGNOSTIC: when Spotless fails, apply it and capture the exact diff as an artifact
+      # (workflow logs require admin to download; artifacts do not). Remove once formatting is green.
+      - name: Diagnose Spotless (on failure)
+        if: failure() && steps.spotless.conclusion == 'failure'
+        run: |
+          ./gradlew spotlessApply --stacktrace || true
+          git --no-pager diff > spotless-changes.diff || true
+          git --no-pager diff --stat || true
+
+      - name: Upload Spotless diff (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotless-changes
+          path: spotless-changes.diff
+          if-no-files-found: ignore
 
       - name: Detekt (static analysis)
         run: ./gradlew detekt --stacktrace
