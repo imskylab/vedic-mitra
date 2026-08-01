@@ -48,17 +48,43 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Spotless (formatting check)
-        run: ./gradlew spotlessCheck --stacktrace
+      # TEMP DIAGNOSTIC: run each gate, capture output, and publish the tail to the job summary
+      # (rendered in the run page HTML, readable without admin/log access). Reverted once green.
+      - name: Verify (spotless, detekt, tests, assemble)
+        id: verify
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          run_step () {
+            echo "::group::$1"
+            echo "===== $1 =====" >> build-output.txt
+            ./gradlew $2 --stacktrace >> build-output.txt 2>&1
+            local rc=$?
+            echo "exit=$rc for $1" >> build-output.txt
+            echo "::endgroup::"
+            return $rc
+          }
+          rc=0
+          run_step "spotlessCheck" "spotlessCheck" || { echo "FAILED_STEP=spotlessCheck" >> build-output.txt; rc=1; }
+          if [ $rc -eq 0 ]; then run_step "detekt" "detekt" || { echo "FAILED_STEP=detekt" >> build-output.txt; rc=1; }; fi
+          if [ $rc -eq 0 ]; then run_step "testDebugUnitTest" "testDebugUnitTest" || { echo "FAILED_STEP=testDebugUnitTest" >> build-output.txt; rc=1; }; fi
+          if [ $rc -eq 0 ]; then run_step "assembleDebug" "assembleDebug" || { echo "FAILED_STEP=assembleDebug" >> build-output.txt; rc=1; }; fi
+          exit $rc
 
-      - name: Detekt (static analysis)
-        run: ./gradlew detekt --stacktrace
+      - name: Publish output to job summary
+        if: always()
+        run: |
+          {
+            echo "## Gradle verify output (tail)"
+            grep -E "^FAILED_STEP=" build-output.txt || echo "FAILED_STEP=none"
+            echo '```'
+            tail -n 150 build-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace
-
-      - name: Assemble debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Fail job if verify failed
+        if: steps.verify.outcome == 'failure'
+        run: exit 1
 
       - name: Upload debug APK
         if: success()
