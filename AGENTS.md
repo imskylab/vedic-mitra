@@ -85,7 +85,7 @@ feature/<name>/src/main/kotlin/io/github/vedicmitra/feature/<name>/
 
 ## 4. Coding conventions (Kotlin)
 
-- Target **Kotlin 2.1 / JDK 21**; max line length **120**; 4-space indent; **no wildcard imports**.
+- Target **Kotlin 2.3 / JDK 21**; max line length **120**; 4-space indent; **no wildcard imports**.
 - Prefer **immutability**: `val`, `data class`, read-only collections, `StateFlow` over mutable
   observable state exposed publicly.
 - Model fallible operations with **`AppResult`** (`:core:common`) instead of throwing across layers.

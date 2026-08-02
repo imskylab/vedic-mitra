@@ -1,4 +1,21 @@
-# Migration: AGP 9 / Gradle 9 / Kotlin 2.2
+# Migration: AGP 9 / Gradle 9 / Kotlin 2.3
+
+## Status — executed (toolchain done; androidx deferred)
+
+The toolchain lift is **complete and CI-green**: Gradle 9.6.1, AGP 9.3.1, Kotlin 2.3.10 + KSP 2.3.10
+(via AGP's **built-in Kotlin** — the standalone `kotlin-android` plugin is removed), Hilt 2.60.1,
+compileSdk 36. Key changes that were required:
+
+- AGP 9's `CommonExtension` is non-generic and no longer exposes `defaultConfig`/`compileOptions` —
+  SDK config moved onto the concrete `ApplicationExtension`/`LibraryExtension`.
+- The standalone Kotlin/Hilt Gradle plugins used the removed `BaseExtension`; adopting AGP built-in
+  Kotlin + Hilt 2.60.1 fixed this.
+- `kotlinx.datetime.Instant` → stdlib `kotlin.time.Instant`.
+
+**Deferred:** the latest androidx/Compose line (core 1.19, lifecycle 2.11, hilt-navigation 1.4,
+Compose BOM 2026.06) requires compiling against **compileSdk 37**, which currently exists only as a
+preview (`android-CANARY`) — not a stable platform. Those bumps stay held until API 37 ships stable
+(or opt into the preview via `compileSdkPreview`). The Dependabot `androidx.*` hold remains in place.
 
 ## Why
 

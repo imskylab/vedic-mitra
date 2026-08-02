@@ -7,8 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
-- Nothing yet.
+### Changed
+- **Toolchain lifted to AGP 9 / Gradle 9 / Kotlin 2.3.** Gradle 9.6.1, AGP 9.3.1, Kotlin 2.3.10 +
+  KSP 2.3.10 (now using AGP's built-in Kotlin — the standalone `kotlin-android` plugin was removed),
+  and Hilt 2.60.1. Migrated the astronomy/scheduler ports from `kotlinx.datetime.Instant` to the
+  stdlib `kotlin.time.Instant`.
+
+### Notes
+- Held the latest androidx/Compose line: it requires compiling against **compileSdk 37**, which is
+  currently only a preview (`android-CANARY`). The project stays on stable compileSdk 36 and adopts
+  those libraries once API 37 ships as a stable platform. See
+  [docs/migration/agp-9-migration.md](docs/migration/agp-9-migration.md).
 
 ## [0.1.0] - 2026-08-01
 
