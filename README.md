@@ -4,7 +4,8 @@
 > reminders — built with Kotlin, Jetpack Compose, and Clean Architecture.
 
 [![CI](https://github.com/vedicmitra/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/vedicmitra/vedic-mitra/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![Commercial license](https://img.shields.io/badge/Commercial-available-brightgreen.svg)](LICENSING.md)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
@@ -175,4 +176,13 @@ See [AUTHORS.md](AUTHORS.md) for the full list, and [CONTRIBUTING.md](CONTRIBUTI
 
 ## License
 
-Released under the [MIT License](LICENSE) © 2026 Jayvardhan Potabatti.
+Vedic Mitra is **dual-licensed** — see **[LICENSING.md](LICENSING.md)**:
+
+- **[GNU AGPL-3.0-or-later](LICENSE)** for open-source use (note: the AGPL requires
+  network/SaaS deployments to offer their source to users).
+- A **commercial license** for proprietary/closed-source use, without the AGPL's
+  copyleft obligations.
+
+Third-party components are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
+© 2026 Jayvardhan Potabatti.
