@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -81,6 +82,7 @@ fun AlarmScreen(
     AlarmContent(
         uiState = uiState,
         onToggleReminder = viewModel::setReminder,
+        onSelectLeadTime = viewModel::setLeadTime,
         onRequestExactAlarm = context::openExactAlarmSettings,
         modifier = modifier,
     )
@@ -90,6 +92,7 @@ fun AlarmScreen(
 private fun AlarmContent(
     uiState: AlarmUiState,
     onToggleReminder: (ReminderItem, Boolean) -> Unit,
+    onSelectLeadTime: (Int) -> Unit,
     onRequestExactAlarm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -106,6 +109,12 @@ private fun AlarmContent(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                item {
+                    LeadTimeSelector(
+                        selectedMinutes = uiState.leadTimeMinutes,
+                        onSelect = onSelectLeadTime,
+                    )
+                }
                 if (!uiState.canScheduleExactAlarms) {
                     item { ExactAlarmBanner(onRequestExactAlarm = onRequestExactAlarm) }
                 }
@@ -164,6 +173,25 @@ private fun ReminderRow(
 }
 
 @Composable
+private fun LeadTimeSelector(
+    selectedMinutes: Int,
+    onSelect: (Int) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(text = "Remind me before the window", style = MaterialTheme.typography.bodyMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LEAD_TIME_OPTIONS.forEach { minutes ->
+                FilterChip(
+                    selected = minutes == selectedMinutes,
+                    onClick = { onSelect(minutes) },
+                    label = { Text(leadTimeLabel(minutes)) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun ExactAlarmBanner(onRequestExactAlarm: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -189,6 +217,10 @@ private fun CenteredBox(
         contentAlignment = Alignment.Center,
     ) { content() }
 }
+
+private val LEAD_TIME_OPTIONS = listOf(0, 5, 10, 15, 30)
+
+private fun leadTimeLabel(minutes: Int): String = if (minutes == 0) "At start" else "$minutes min"
 
 private val MuhurtaQuality.label: String
     get() =
@@ -258,10 +290,12 @@ private fun AlarmContentPreview() {
             uiState =
                 AlarmUiState.Ready(
                     reminders = reminders,
+                    leadTimeMinutes = 10,
                     canScheduleExactAlarms = false,
                     usingDefaultLocation = true,
                 ),
             onToggleReminder = { _, _ -> },
+            onSelectLeadTime = {},
             onRequestExactAlarm = {},
         )
     }

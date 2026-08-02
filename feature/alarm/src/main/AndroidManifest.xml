@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Feature module manifest. Namespace is declared in build.gradle.kts.
-     BroadcastReceiver/Service declarations for alarm delivery are added when implemented. -->
-<manifest />
+     RECEIVE_BOOT_COMPLETED lets the app re-arm reminders after a reboot (which clears alarms); the
+     BootReceiver listens for the boot broadcast. It is exported because the sender is the system,
+     and BOOT_COMPLETED is a protected broadcast only the system can send. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application>
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>
