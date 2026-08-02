@@ -27,8 +27,8 @@ updates:
           - "com.google.truth*"
           - "io.gitlab.arturbosch.detekt*"
     ignore:
-      # AGP + the Gradle wrapper major upgrades are coordinated, breaking changes (AGP 9 needs
-      # Gradle 9 and API migration); do them deliberately, not via an automated PR.
+      # Major upgrades of the build toolchain are coordinated, breaking changes (as the AGP 8 -> 9
+      # lift was); do them deliberately on a branch. Minor/patch within the current major flow.
       - dependency-name: "com.android.*"
         update-types: ["version-update:semver-major"]
       - dependency-name: "com.android.tools.build:gradle"
@@ -36,23 +36,21 @@ updates:
       # The Gradle wrapper: allow minor/patch, never a major (8.x -> 9.x) auto-bump.
       - dependency-name: "gradle"
         update-types: ["version-update:semver-major"]
-      # Kotlin major/minor bumps require matching KSP + Compose compiler + BOM; handle manually.
+      # Kotlin + KSP: allow minor and patch (Dependabot groups them so they move together, and CI
+      # verifies the result); hold only the next major, a coordinated language upgrade.
       - dependency-name: "org.jetbrains.kotlin:*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+        update-types: ["version-update:semver-major"]
       - dependency-name: "com.google.devtools.ksp*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      # The current androidx/Compose and Dagger-Hilt releases require AGP 9.0+, which is incompatible
-      # with this project's AGP 8.9.1 baseline. Hold their minor/major bumps until the AGP 9
-      # migration; patch updates (AGP-8 compatible) are still allowed.
+        update-types: ["version-update:semver-major"]
+      # androidx/Compose: the current line requires compiling against compileSdk 37, which is only a
+      # preview (android-CANARY). Hold minor/major until API 37 ships as a stable platform.
+      # (Dagger-Hilt is no longer held — the AGP 9 migration unblocked it.)
       - dependency-name: "androidx.*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "com.google.dagger*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       # Major bumps of the formatting engine change output; upgrade deliberately, not automatically.
       - dependency-name: "com.diffplug.spotless"
         update-types: ["version-update:semver-major"]
-      # kotlinx-datetime 0.7+ is a breaking API change (Instant) used by the astronomy/scheduler
-      # ports; migrate deliberately.
+      # kotlinx-datetime 0.7+ is tied to the newer androidx/API-37 line; bump alongside that upgrade.
       - dependency-name: "org.jetbrains.kotlinx:kotlinx-datetime"
         update-types: ["version-update:semver-major"]
 
