@@ -10,15 +10,39 @@ updates:
     labels:
       - dependencies
     groups:
-      androidx:
-        patterns:
-          - "androidx.*"
+      # Kotlin + KSP + the Compose compiler must move together and in lockstep with the Compose
+      # BOM, so group them into a single PR rather than several uncoordinated ones.
       kotlin:
         patterns:
           - "org.jetbrains.kotlin*"
           - "com.google.devtools.ksp*"
+      androidx:
+        patterns:
+          - "androidx.*"
+      # Roll routine test/quality tooling bumps into one PR.
+      dev-tools:
+        patterns:
+          - "io.mockk*"
+          - "app.cash.turbine*"
+          - "com.google.truth*"
+          - "io.gitlab.arturbosch.detekt*"
+    ignore:
+      # AGP + the Gradle wrapper major upgrades are coordinated, breaking changes (AGP 9 needs
+      # Gradle 9 and API migration); do them deliberately, not via an automated PR.
+      - dependency-name: "com.android.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.android.tools.build:gradle"
+        update-types: ["version-update:semver-major"]
+      # The Gradle wrapper: allow minor/patch, never a major (8.x -> 9.x) auto-bump.
+      - dependency-name: "gradle"
+        update-types: ["version-update:semver-major"]
+      # Kotlin major/minor bumps require matching KSP + Compose compiler + BOM; handle manually.
+      - dependency-name: "org.jetbrains.kotlin:*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "com.google.devtools.ksp*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
-  # Keep GitHub Actions pinned versions current.
+  # Keep GitHub Actions pinned versions current (grouped into one PR).
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -27,3 +51,7 @@ updates:
     labels:
       - dependencies
       - ci
+    groups:
+      github-actions:
+        patterns:
+          - "*"
