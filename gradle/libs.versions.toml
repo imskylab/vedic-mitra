@@ -20,32 +20,36 @@ agp = "9.3.1"
 kotlin = "2.3.10"
 ksp = "2.3.10"
 
-# --- AndroidX / Jetpack (require AGP 9.1+) -----------------------------------
-androidxCore = "1.19.0"
-androidxActivity = "1.13.0"
-androidxLifecycle = "2.11.0"
+# --- AndroidX / Jetpack ------------------------------------------------------
+# Held at the last versions that compile against stable compileSdk 36. The newer line
+# (core 1.19 / lifecycle 2.11 / hilt-nav 1.4) requires compileSdk 37, which is only available as a
+# preview (android-CANARY) — adopt once API 37 ships as a stable platform.
+androidxCore = "1.15.0"
+androidxActivity = "1.9.3"
+androidxLifecycle = "2.8.7"
 androidxNavigation = "2.8.5"
 androidxDatastore = "1.1.1"
 
 # --- Compose -----------------------------------------------------------------
 # The BOM aligns all Compose artifact versions; keep individual Compose libs unversioned.
-composeBom = "2026.06.01"
+composeBom = "2024.12.01"
 
 # --- Dependency Injection ----------------------------------------------------
+# Hilt 2.60.1 is the AGP-9-compatible line (2.54's plugin used the removed BaseExtension).
 hilt = "2.60.1"
-hiltNavigationCompose = "1.4.0"
+hiltNavigationCompose = "1.2.0"
 
 # --- Asynchronous ------------------------------------------------------------
 coroutines = "1.9.0"
 
 # --- Serialization -----------------------------------------------------------
-kotlinxSerialization = "1.11.0"
-kotlinxDatetime = "0.8.0"
+kotlinxSerialization = "1.7.3"
+kotlinxDatetime = "0.6.1"
 
 # --- Testing -----------------------------------------------------------------
 junit = "4.13.2"
-androidxTestExt = "1.3.0"
-androidxTestEspresso = "3.7.0"
+androidxTestExt = "1.2.1"
+androidxTestEspresso = "3.6.1"
 mockk = "1.14.11"
 turbine = "1.2.1"
 truth = "1.4.5"

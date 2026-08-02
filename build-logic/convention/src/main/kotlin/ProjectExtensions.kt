@@ -18,8 +18,8 @@ import org.gradle.kotlin.dsl.getByType
 internal object ProjectConfig {
     const val NAMESPACE_PREFIX = "io.github.vedicmitra"
     const val MIN_SDK = 26
-    const val COMPILE_SDK = 37
-    const val TARGET_SDK = 37
+    const val COMPILE_SDK = 36
+    const val TARGET_SDK = 36
     const val JVM_TARGET = "21"
 }
 
