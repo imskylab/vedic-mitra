@@ -17,8 +17,11 @@ import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.location.LocationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -32,7 +35,7 @@ import kotlin.time.Instant
 class HomeViewModelTest {
     @Before
     fun setUp() {
-        // Unconfined main runs viewModelScope work eagerly, so init-time loading completes inline.
+        // Unconfined main runs viewModelScope work eagerly, so load() completes inline.
         Dispatchers.setMain(UnconfinedTestDispatcher())
     }
 
@@ -42,36 +45,72 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `loads panchanga into the success state`() =
+    fun `uses the device location when available`() =
         runTest {
-            val viewModel = HomeViewModel(FakeAstronomyEngine(AppResult.Success(SAMPLE)))
+            val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
+            val deviceLocation = GeoCoordinates(latitude = 12.9716, longitude = 77.5946) // Bengaluru
+            val viewModel = HomeViewModel(engine, FakeLocationProvider(AppResult.Success(deviceLocation)))
+
+            viewModel.load()
 
             val state = viewModel.uiState.value
             assertThat(state.isLoading).isFalse()
             assertThat(state.snapshot).isEqualTo(SAMPLE)
-            assertThat(state.errorMessage).isNull()
+            assertThat(state.usingDefaultLocation).isFalse()
+            assertThat(engine.lastLocation).isEqualTo(deviceLocation)
         }
 
     @Test
-    fun `surfaces failures as an error message`() =
+    fun `falls back to the default location when unavailable`() =
         runTest {
-            val failure = AppResult.Failure(IllegalStateException("boom"))
-            val viewModel = HomeViewModel(FakeAstronomyEngine(failure))
+            val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
+            val failure = AppResult.Failure(SecurityException("no permission"))
+            val viewModel = HomeViewModel(engine, FakeLocationProvider(failure))
+
+            viewModel.load()
 
             val state = viewModel.uiState.value
-            assertThat(state.isLoading).isFalse()
+            assertThat(state.usingDefaultLocation).isTrue()
+            assertThat(state.snapshot).isEqualTo(SAMPLE)
+            // The fallback location was passed to the engine (not the caller-provided device location).
+            assertThat(engine.lastLocation).isNotNull()
+        }
+
+    @Test
+    fun `surfaces engine failures as an error message`() =
+        runTest {
+            val engine = RecordingAstronomyEngine(AppResult.Failure(IllegalStateException("boom")))
+            val location = GeoCoordinates(latitude = 0.0, longitude = 0.0)
+            val viewModel = HomeViewModel(engine, FakeLocationProvider(AppResult.Success(location)))
+
+            viewModel.load()
+
+            val state = viewModel.uiState.value
             assertThat(state.snapshot).isNull()
             assertThat(state.errorMessage).isEqualTo("boom")
         }
 }
 
-private class FakeAstronomyEngine(
+private class RecordingAstronomyEngine(
     private val result: AppResult<AstronomySnapshot>,
 ) : AstronomyEngine {
+    var lastLocation: GeoCoordinates? = null
+
     override suspend fun snapshotAt(
         instant: Instant,
         location: GeoCoordinates,
-    ) = result
+    ): AppResult<AstronomySnapshot> {
+        lastLocation = location
+        return result
+    }
+}
+
+private class FakeLocationProvider(
+    private val result: AppResult<GeoCoordinates>,
+) : LocationProvider {
+    override suspend fun currentLocation(): AppResult<GeoCoordinates> = result
+
+    override fun locationUpdates(): Flow<GeoCoordinates> = emptyFlow()
 }
 
 private val SAMPLE =
