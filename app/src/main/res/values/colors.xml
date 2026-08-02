@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Launcher adaptive-icon background. Deep indigo evokes the night sky / Vedic astronomy theme. -->
-    <color name="ic_launcher_background">#1A237E</color>
+    <!-- Launcher adaptive-icon background. White matches the emblem's surround so it sits seamlessly. -->
+    <color name="ic_launcher_background">#FFFFFF</color>
 </resources>
