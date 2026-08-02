@@ -46,7 +46,7 @@ androidxTestExt = "1.2.1"
 androidxTestEspresso = "3.6.1"
 mockk = "1.14.11"
 turbine = "1.2.0"
-truth = "1.4.4"
+truth = "1.4.5"
 
 # --- Static analysis / formatting -------------------------------------------
 detekt = "1.23.8"
