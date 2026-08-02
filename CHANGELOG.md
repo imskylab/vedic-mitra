@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Changed
+- **License changed from MIT to a dual license** — GNU AGPL-3.0-or-later for open-source use, plus a
+  commercial license for proprietary use. See [LICENSING.md](LICENSING.md) and
+  [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 - **Toolchain lifted to AGP 9 / Gradle 9 / Kotlin 2.3.** Gradle 9.6.1, AGP 9.3.1, Kotlin 2.3.10 +
   KSP 2.3.10 (now using AGP's built-in Kotlin — the standalone `kotlin-android` plugin was removed),
   and Hilt 2.60.1. Migrated the astronomy/scheduler ports from `kotlinx.datetime.Instant` to the

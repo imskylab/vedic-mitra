@@ -6,6 +6,21 @@ see [AGENTS.md](AGENTS.md).
 
 By participating, you agree to our [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## Contributor licensing
+
+Vedic Mitra is **dual-licensed** — GNU AGPL-3.0-or-later plus a commercial license
+(see [LICENSING.md](LICENSING.md)). **By submitting a contribution (a pull request,
+patch, or similar), you agree that:**
+
+1. your contribution is licensed under the **AGPL-3.0-or-later**, and
+2. you grant the project maintainer a perpetual, irrevocable, worldwide,
+   royalty-free right to also license and distribute your contribution under the
+   project's **commercial license**.
+
+This keeps the project open source while letting commercial licensing fund its
+development. If you cannot agree to these terms, please do not submit a
+contribution.
+
 ## Getting set up
 
 1. Install **JDK 21** and the **Android SDK** (platform API 36).
