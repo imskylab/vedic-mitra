@@ -14,5 +14,4 @@ android {
 dependencies {
     api(projects.core.common)
     implementation(libs.bundles.coroutines)
-    implementation(libs.kotlinx.datetime)
 }

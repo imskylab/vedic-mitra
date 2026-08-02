@@ -18,5 +18,4 @@ android {
 dependencies {
     implementation(projects.core.scheduler)
     implementation(projects.core.notifications)
-    implementation(libs.kotlinx.datetime)
 }
