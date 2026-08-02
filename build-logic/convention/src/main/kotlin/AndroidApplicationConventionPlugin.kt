@@ -27,16 +27,17 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<ApplicationExtension> {
-                configureKotlinAndroid(this)
-
+                compileSdk = ProjectConfig.COMPILE_SDK
                 defaultConfig {
                     applicationId = ProjectConfig.NAMESPACE_PREFIX
+                    minSdk = ProjectConfig.MIN_SDK
                     targetSdk = ProjectConfig.TARGET_SDK
                     versionCode = 1
                     versionName = "0.1.0"
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
             }
+            configureKotlinAndroid()
 
             configureDetekt()
 

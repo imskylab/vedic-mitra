@@ -5,8 +5,6 @@
  * for full license text.
  */
 
-import com.android.build.api.dsl.CommonExtension
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -14,23 +12,12 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /**
- * Applies the Kotlin + Android compile options shared by application and library modules:
- * SDK levels, the JDK 21 toolchain, and common Kotlin compiler flags.
+ * Applies the shared Kotlin/JDK toolchain for Android modules. SDK levels are set per-extension in
+ * the application/library convention plugins (AGP 9's non-generic `CommonExtension` no longer
+ * exposes `defaultConfig`/`compileOptions`, and the JDK 21 toolchain already drives the Java target,
+ * so a separate `compileOptions` block is unnecessary).
  */
-internal fun Project.configureKotlinAndroid(commonExtension: CommonExtension) {
-    commonExtension.apply {
-        compileSdk = ProjectConfig.COMPILE_SDK
-
-        defaultConfig {
-            minSdk = ProjectConfig.MIN_SDK
-        }
-
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_21
-            targetCompatibility = JavaVersion.VERSION_21
-        }
-    }
-
+internal fun Project.configureKotlinAndroid() {
     // Pin the Kotlin/Java toolchain to JDK 21. Combined with the Foojay resolver in settings, Gradle
     // downloads a matching JDK if one isn't installed, so builds are reproducible across machines.
     extensions.configure<KotlinAndroidProjectExtension> {

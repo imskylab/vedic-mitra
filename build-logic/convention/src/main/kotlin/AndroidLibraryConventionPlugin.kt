@@ -27,10 +27,13 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<LibraryExtension> {
-                configureKotlinAndroid(this)
-                // Library modules only need compileSdk + minSdk (set in configureKotlinAndroid).
+                compileSdk = ProjectConfig.COMPILE_SDK
+                defaultConfig {
+                    minSdk = ProjectConfig.MIN_SDK
+                }
                 // targetSdk is an application concern and is deprecated on library defaultConfig.
             }
+            configureKotlinAndroid()
 
             configureDetekt()
 
