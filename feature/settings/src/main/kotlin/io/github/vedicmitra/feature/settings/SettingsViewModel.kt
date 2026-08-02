@@ -8,31 +8,52 @@
 package io.github.vedicmitra.feature.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import io.github.vedicmitra.core.datastore.DarkThemeConfig
+import io.github.vedicmitra.core.datastore.ThemeSettings
+import io.github.vedicmitra.core.datastore.UserPreferencesRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Presentation logic for the settings screen (MVVM). Phase 1 skeleton only — preference reads and
- * writes are added when settings are implemented.
- */
+/** Presentation logic for the settings screen: exposes the theme settings and updates them. */
 @HiltViewModel
 class SettingsViewModel
     @Inject
-    constructor() : ViewModel() {
-        private val _uiState = MutableStateFlow(SettingsUiState())
+    constructor(
+        private val userPreferencesRepository: UserPreferencesRepository,
+    ) : ViewModel() {
+        val uiState: StateFlow<SettingsUiState> =
+            userPreferencesRepository.themeSettings
+                .map { SettingsUiState.Loaded(it) }
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
+                    initialValue = SettingsUiState.Loading,
+                )
 
-        /** Observable UI state consumed by [SettingsScreen]. */
-        val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+        fun setDarkThemeConfig(config: DarkThemeConfig) {
+            viewModelScope.launch { userPreferencesRepository.setDarkThemeConfig(config) }
+        }
+
+        fun setDynamicColor(enabled: Boolean) {
+            viewModelScope.launch { userPreferencesRepository.setDynamicColor(enabled) }
+        }
+
+        private companion object {
+            const val STOP_TIMEOUT_MILLIS = 5_000L
+        }
     }
 
-/**
- * Immutable UI state for the settings screen.
- *
- * @property useDynamicColor whether Material You dynamic colour is enabled.
- */
-data class SettingsUiState(
-    val useDynamicColor: Boolean = true,
-)
+/** UI state for the settings screen. */
+sealed interface SettingsUiState {
+    data object Loading : SettingsUiState
+
+    data class Loaded(
+        val settings: ThemeSettings,
+    ) : SettingsUiState
+}

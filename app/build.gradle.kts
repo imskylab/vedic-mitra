@@ -17,6 +17,7 @@ android {
 dependencies {
     // Core modules.
     implementation(projects.core.common)
+    implementation(projects.core.datastore)
     implementation(projects.core.ui)
     implementation(projects.core.designsystem)
 
