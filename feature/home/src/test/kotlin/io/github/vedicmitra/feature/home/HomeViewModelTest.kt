@@ -10,11 +10,13 @@ package io.github.vedicmitra.feature.home
 import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
+import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.location.LocationProvider
@@ -120,5 +122,7 @@ private val SAMPLE =
         sunTimes = SunTimes(sunrise = null, sunset = null),
         tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
         nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
+        yoga = Yoga(number = 18, name = "Variyana"),
+        karana = Karana(number = 10, name = "Balava"),
         vara = Vara.SOMAVARA,
     )

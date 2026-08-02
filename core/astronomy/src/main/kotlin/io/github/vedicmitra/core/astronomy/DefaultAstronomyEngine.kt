@@ -39,8 +39,11 @@ class DefaultAstronomyEngine
 
                 val sunLongitude = Ephemeris.sunApparentLongitude(t)
                 val moonLongitude = Ephemeris.moonLongitude(t)
+                val ayanamsa = Ephemeris.lahiriAyanamsa(t)
                 val elongation = Ephemeris.norm360(moonLongitude - sunLongitude)
-                val moonSidereal = Ephemeris.norm360(moonLongitude - Ephemeris.lahiriAyanamsa(t))
+                val sunSidereal = Ephemeris.norm360(sunLongitude - ayanamsa)
+                val moonSidereal = Ephemeris.norm360(moonLongitude - ayanamsa)
+                val yogaSum = Ephemeris.norm360(sunSidereal + moonSidereal)
                 val sunTimes = SolarDay.sunTimes(epochMillis, location.latitude, location.longitude)
 
                 AppResult.Success(
@@ -50,6 +53,8 @@ class DefaultAstronomyEngine
                         sunTimes = sunTimes,
                         tithi = tithiOf(elongation),
                         nakshatra = nakshatraOf(moonSidereal),
+                        yoga = yogaOf(yogaSum),
+                        karana = karanaOf(elongation),
                         vara = varaOf(instant, epochMillis, location.longitude, sunTimes.sunrise),
                     ),
                 )
