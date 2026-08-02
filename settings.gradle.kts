@@ -23,7 +23,7 @@ pluginManagement {
 // locally, so the build works regardless of the developer's default JDK. Must appear immediately
 // after pluginManagement and before any other statement.
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {
