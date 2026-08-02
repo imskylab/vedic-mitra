@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Library module manifest. Namespace is declared in build.gradle.kts.
-     POST_NOTIFICATIONS permission is added here when the notifier is implemented. -->
-<manifest />
+     POST_NOTIFICATIONS (API 33+) is merged into the app; the app is responsible for requesting it
+     at runtime before posting. On API 32 and below the permission is implicitly granted. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+</manifest>
