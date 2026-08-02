@@ -30,7 +30,7 @@ androidxDatastore = "1.1.1"
 composeBom = "2024.12.01"
 
 # --- Dependency Injection ----------------------------------------------------
-hilt = "2.54"
+hilt = "2.60.1"
 hiltNavigationCompose = "1.2.0"
 
 # --- Asynchronous ------------------------------------------------------------
