@@ -23,10 +23,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.6.0
         with:
           distribution: temurin
           java-version: '21'
@@ -34,12 +34,12 @@ jobs:
       # Guarantees the Android SDK, platform 36, build-tools, and accepted licenses are present,
       # independent of what the runner image happens to ship with.
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: 'platforms;android-36 build-tools;36.0.0 platform-tools'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           # Only write to the dependency cache from the default branch.
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Upload debug APK
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
@@ -70,7 +70,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-reports
           path: '**/build/reports/tests/**'
