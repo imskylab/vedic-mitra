@@ -51,10 +51,14 @@ kotlinxSerialization = "1.7.3"
 # --- Testing -----------------------------------------------------------------
 junit = "4.13.2"
 androidxTestExt = "1.2.1"
+androidxTestCore = "1.6.1"
 androidxTestEspresso = "3.6.1"
 mockk = "1.14.11"
 turbine = "1.2.1"
 truth = "1.4.5"
+# Robolectric runs Android-framework unit tests on the JVM (no device/emulator), so framework-heavy
+# code (notifications, alarms) gets real happy-path coverage rather than mockk-only stubs.
+robolectric = "4.14.1"
 
 # --- Static analysis / formatting -------------------------------------------
 detekt = "1.23.8"
@@ -101,6 +105,8 @@ kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "ko
 
 # --- Testing -----------------------------------------------------------------
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExt" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxTestEspresso" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
