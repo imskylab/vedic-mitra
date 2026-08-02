@@ -1,11 +1,11 @@
-// :core:astronomy — astronomy / panchanga port (contracts only).
+// :core:astronomy — astronomy / panchanga engine.
 //
-// Defines the abstraction other layers depend on to obtain astronomical data (sunrise, tithi,
-// nakshatra, etc.). Phase 1 provides ONLY the interface and value types — no ephemeris or
-// calculation code. The implementation is added in a dedicated later phase.
+// Defines the AstronomyEngine port and its default implementation: a low-precision Meeus-based
+// solar/lunar ephemeris that derives sun times, tithi, nakshatra, and vara (Phase 2 slice).
 
 plugins {
     alias(libs.plugins.vedicmitra.android.library)
+    alias(libs.plugins.vedicmitra.android.hilt)
 }
 
 android {
@@ -15,5 +15,4 @@ android {
 dependencies {
     api(projects.core.common)
     implementation(libs.bundles.coroutines)
-    implementation(libs.kotlinx.datetime)
 }

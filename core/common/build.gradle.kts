@@ -6,6 +6,7 @@
 
 plugins {
     alias(libs.plugins.vedicmitra.android.library)
+    alias(libs.plugins.vedicmitra.android.hilt)
 }
 
 android {
