@@ -14,7 +14,7 @@
 
 # --- Build tooling -----------------------------------------------------------
 # AGP 8.9.x aligns with compileSdk 36 (Android 16) and requires Gradle 8.11+ (we use 8.14).
-agp = "8.9.1"
+agp = "8.13.2"
 kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
 
