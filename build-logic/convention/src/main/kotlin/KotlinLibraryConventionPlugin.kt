@@ -27,7 +27,6 @@ class KotlinLibraryConventionPlugin : Plugin<Project> {
                 jvmToolchain(ProjectConfig.JVM_TARGET.toInt())
             }
 
-            configureKotlinCompiler()
             configureDetekt()
 
             dependencies {

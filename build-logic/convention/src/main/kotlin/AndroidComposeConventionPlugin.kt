@@ -25,7 +25,7 @@ class AndroidComposeConventionPlugin : Plugin<Project> {
             // The android extension is registered under the name "android" for both application and
             // library modules; both implement CommonExtension, so this cast is safe and avoids relying
             // on getByType resolving a supertype.
-            val extension = extensions.getByName("android") as CommonExtension<*, *, *, *, *, *>
+            val extension = extensions.getByName("android") as CommonExtension
             extension.buildFeatures.compose = true
 
             dependencies {

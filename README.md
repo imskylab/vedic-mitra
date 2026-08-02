@@ -5,7 +5,7 @@
 
 [![CI](https://github.com/vedicmitra/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/vedicmitra/vedic-mitra/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1.0-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
 > **Status: Phase 1 — Foundation.** This repository currently contains the architectural
@@ -88,12 +88,12 @@ Build configuration is not copy-pasted between modules — it lives in **convent
 
 | Area | Choice |
 | --- | --- |
-| Language | Kotlin 2.1.0 (JDK 21 toolchain) |
+| Language | Kotlin 2.3.10 (JDK 21) |
 | UI | Jetpack Compose, Material 3 |
 | Architecture | Clean Architecture, MVVM, Repository pattern |
 | DI | Hilt (+ KSP) |
 | Async | Kotlin Coroutines / Flow |
-| Build | Gradle 8.14 (Kotlin DSL), Version Catalog, convention plugins |
+| Build | AGP 9.3.1 on Gradle 9.6.1 (Kotlin DSL), Version Catalog, convention plugins |
 | Quality | Detekt, Spotless, Ktlint |
 | Testing | JUnit4, Truth, MockK, Turbine, Coroutines-test |
 | CI | GitHub Actions |
