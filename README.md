@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="art/logo/vedic-mitra-logo.png" alt="Vedic Mitra logo" width="220" />
+</p>
+
 # Vedic Mitra
 
 > A modern Android companion for Vedic timekeeping — panchanga, muhurta, and astronomy-aware
