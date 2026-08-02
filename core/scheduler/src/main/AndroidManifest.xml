@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Library module manifest. Namespace is declared in build.gradle.kts.
-     Exact-alarm permissions are added here when the scheduler is implemented. -->
-<manifest />
+     SCHEDULE_EXACT_ALARM (API 31+) lets the app request exact alarms; it is user-grantable in
+     system settings and the scheduler falls back to inexact delivery when it is not held. The
+     receiver that fires when an alarm elapses is registered (and kept private) here. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <application>
+        <receiver
+            android:name=".ReminderReceiver"
+            android:exported="false" />
+    </application>
+
+</manifest>
