@@ -30,6 +30,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.SunTimes
@@ -115,6 +117,12 @@ private fun Panchanga(snapshot: AstronomySnapshot) {
     PanchangaRow(label = "Karana", value = snapshot.karana.name)
     PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
     PanchangaRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
+    snapshot.muhurtas.forEach { muhurta ->
+        PanchangaRow(
+            label = muhurta.name,
+            value = "${formatTime(muhurta.start)}–${formatTime(muhurta.end)}",
+        )
+    }
 }
 
 @Composable
@@ -165,6 +173,21 @@ private fun HomeContentPreview() {
             yoga = Yoga(number = 18, name = "Variyana"),
             karana = Karana(number = 10, name = "Balava"),
             vara = Vara.SOMAVARA,
+            muhurtas =
+                listOf(
+                    Muhurta(
+                        name = "Abhijit Muhurta",
+                        start = Instant.fromEpochMilliseconds(1_705_300_140_000L),
+                        end = Instant.fromEpochMilliseconds(1_705_302_960_000L),
+                        quality = MuhurtaQuality.AUSPICIOUS,
+                    ),
+                    Muhurta(
+                        name = "Rahu Kalam",
+                        start = Instant.fromEpochMilliseconds(1_705_287_540_000L),
+                        end = Instant.fromEpochMilliseconds(1_705_292_265_000L),
+                        quality = MuhurtaQuality.INAUSPICIOUS,
+                    ),
+                ),
         )
     VedicMitraTheme {
         HomeContent(uiState = HomeUiState(isLoading = false, snapshot = sample))

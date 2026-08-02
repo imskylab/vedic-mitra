@@ -125,4 +125,5 @@ private val SAMPLE =
         yoga = Yoga(number = 18, name = "Variyana"),
         karana = Karana(number = 10, name = "Balava"),
         vara = Vara.SOMAVARA,
+        muhurtas = emptyList(),
     )
