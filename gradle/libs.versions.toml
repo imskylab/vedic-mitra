@@ -43,7 +43,7 @@ hiltNavigationCompose = "1.2.0"
 coroutines = "1.9.0"
 
 # --- Location ----------------------------------------------------------------
-playServicesLocation = "21.3.0"
+playServicesLocation = "21.4.0"
 
 # --- Serialization -----------------------------------------------------------
 kotlinxSerialization = "1.7.3"
