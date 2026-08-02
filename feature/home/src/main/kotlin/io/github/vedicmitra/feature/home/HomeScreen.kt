@@ -7,22 +7,36 @@
 
 package io.github.vedicmitra.feature.home
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.Nakshatra
+import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.SunTimes
+import io.github.vedicmitra.core.astronomy.Tithi
+import io.github.vedicmitra.core.astronomy.Vara
+import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import kotlin.time.Instant
 
 /**
- * Home screen entry point. Collects [HomeViewModel] state and renders the (placeholder) content.
- * The stateful composable resolves its ViewModel via Hilt; the stateless [HomeContent] takes state
- * as parameters so it is trivially previewable and testable.
+ * Home screen entry point. Collects [HomeViewModel] state and renders today's panchanga. The
+ * stateless [HomeContent] takes state as a parameter so it is trivially previewable.
  */
 @Composable
 fun HomeScreen(
@@ -33,24 +47,86 @@ fun HomeScreen(
     HomeContent(uiState = uiState, modifier = modifier)
 }
 
-/** Stateless home content. Real UI is built in a later phase. */
 @Composable
 private fun HomeContent(
     uiState: HomeUiState,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+    Column(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Text(text = if (uiState.isLoading) "Loading…" else "Home")
+        when {
+            uiState.isLoading -> CircularProgressIndicator()
+            uiState.errorMessage != null ->
+                Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge)
+
+            uiState.snapshot != null -> Panchanga(snapshot = uiState.snapshot)
+        }
     }
+}
+
+@Composable
+private fun Panchanga(snapshot: AstronomySnapshot) {
+    Text(text = snapshot.vara.displayName, style = MaterialTheme.typography.headlineMedium)
+    PanchangaRow(label = "Tithi", value = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}")
+    PanchangaRow(label = "Nakshatra", value = snapshot.nakshatra.name)
+    PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
+    PanchangaRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
+}
+
+@Composable
+private fun PanchangaRow(
+    label: String,
+    value: String,
+) {
+    Text(
+        text = "$label: $value",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(top = 8.dp),
+    )
+}
+
+private val Paksha.title: String
+    get() =
+        when (this) {
+            Paksha.SHUKLA -> "Shukla"
+            Paksha.KRISHNA -> "Krishna"
+        }
+
+private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+/** Formats an instant as local wall-clock time in the device's zone, or an em dash if absent. */
+private fun formatTime(instant: Instant?): String {
+    if (instant == null) return "—"
+    val local =
+        java.time.Instant
+            .ofEpochMilli(instant.toEpochMilliseconds())
+            .atZone(ZoneId.systemDefault())
+    return local.format(timeFormatter)
 }
 
 @Preview
 @Composable
 private fun HomeContentPreview() {
+    val sample =
+        AstronomySnapshot(
+            instant = Instant.fromEpochMilliseconds(1_705_320_000_000L),
+            location = GeoCoordinates(latitude = 28.6139, longitude = 77.2090),
+            sunTimes =
+                SunTimes(
+                    sunrise = Instant.fromEpochMilliseconds(1_705_282_440_000L),
+                    sunset = Instant.fromEpochMilliseconds(1_705_320_180_000L),
+                ),
+            tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
+            nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
+            vara = Vara.SOMAVARA,
+        )
     VedicMitraTheme {
-        HomeContent(uiState = HomeUiState())
+        HomeContent(uiState = HomeUiState(isLoading = false, snapshot = sample))
     }
 }
