@@ -1,11 +1,9 @@
-// :feature:alarm — alarm feature.
+// :feature:alarm — muhurta reminders.
 //
-// Owns the alarm screen UI and presentation. Schedules alarms and posts notifications through the
-// core scheduler/notifications ports. The `vedicmitra.android.feature` convention plugin supplies
-// Compose, Hilt, lifecycle/navigation, and the shared core modules.
-//
-// IMPORTANT: alarm behaviour itself is NOT implemented in Phase 1 — only the screen skeleton and
-// its dependency wiring.
+// Owns the reminders screen: lists the day's muhurta windows and lets the user schedule a
+// notification for when one begins. Schedules through the core scheduler and reads the day's
+// muhurtas from the astronomy engine at the device location. The `vedicmitra.android.feature`
+// convention plugin supplies Compose, Hilt, lifecycle/navigation, and the shared core modules.
 
 plugins {
     alias(libs.plugins.vedicmitra.android.feature)
@@ -16,6 +14,9 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.astronomy)
+    implementation(projects.core.location)
+    implementation(projects.core.datastore)
     implementation(projects.core.scheduler)
     implementation(projects.core.notifications)
 }

@@ -20,18 +20,23 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.github.vedicmitra.core.datastore.DefaultReminderRepository
 import io.github.vedicmitra.core.datastore.DefaultUserPreferencesRepository
+import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.datastore.UserPreferencesRepository
 import javax.inject.Singleton
 
 private val Context.userPreferencesDataStore by preferencesDataStore(name = "user_preferences")
 
-/** Binds the preferences repository and provides the underlying [DataStore]. */
+/** Binds the preferences repositories and provides the underlying [DataStore]. */
 @Module
 @InstallIn(SingletonComponent::class)
 internal abstract class DataStoreModule {
     @Binds
     abstract fun bindUserPreferencesRepository(impl: DefaultUserPreferencesRepository): UserPreferencesRepository
+
+    @Binds
+    abstract fun bindReminderRepository(impl: DefaultReminderRepository): ReminderRepository
 
     companion object {
         @Provides
