@@ -35,11 +35,21 @@ interface AstronomyEngine {
 /**
  * Immutable result of an astronomy computation for a single instant and location.
  *
- * Phase-1 skeleton: it carries only the query inputs so the contract is exercisable end to end.
- * Concrete astronomical fields (sunrise/sunset, tithi, nakshatra, yoga, karana, ...) are added when
- * the engine is implemented.
+ * Phase 2 provides the daily essentials: sun times plus the tithi, nakshatra, and vara. The
+ * remaining panchanga limbs (yoga, karana) and muhurta windows are added in later increments.
+ *
+ * @property instant the instant the snapshot was computed for.
+ * @property location the observer's coordinates.
+ * @property sunTimes sunrise/sunset for the location and local date.
+ * @property tithi the current lunar day.
+ * @property nakshatra the Moon's current lunar mansion.
+ * @property vara the weekday (sunrise-to-sunrise).
  */
 data class AstronomySnapshot(
     val instant: Instant,
     val location: GeoCoordinates,
+    val sunTimes: SunTimes,
+    val tithi: Tithi,
+    val nakshatra: Nakshatra,
+    val vara: Vara,
 )
