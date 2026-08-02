@@ -43,6 +43,8 @@ interface AstronomyEngine {
  * @property sunTimes sunrise/sunset for the location and local date.
  * @property tithi the current lunar day.
  * @property nakshatra the Moon's current lunar mansion.
+ * @property yoga the current Sun–Moon yoga.
+ * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
  */
 data class AstronomySnapshot(
@@ -51,5 +53,7 @@ data class AstronomySnapshot(
     val sunTimes: SunTimes,
     val tithi: Tithi,
     val nakshatra: Nakshatra,
+    val yoga: Yoga,
+    val karana: Karana,
     val vara: Vara,
 )

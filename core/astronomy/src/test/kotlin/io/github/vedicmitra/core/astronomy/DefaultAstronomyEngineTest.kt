@@ -31,9 +31,10 @@ class DefaultAstronomyEngineTest {
     }
 
     @Test
-    fun `computes tithi and nakshatra for a known instant`() =
+    fun `computes the panchanga for a known instant`() =
         runTest {
-            // 2024-01-15 12:00 UTC — validated reference: Shukla Panchami (tithi 5), nakshatra 25.
+            // 2024-01-15 12:00 UTC — validated reference: Shukla Panchami (tithi 5), nakshatra 25,
+            // yoga 18 (Variyana), karana Balava.
             val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)
 
             val snap = snapshot(result)
@@ -41,6 +42,9 @@ class DefaultAstronomyEngineTest {
             assertThat(snap.tithi.paksha).isEqualTo(Paksha.SHUKLA)
             assertThat(snap.tithi.name).isEqualTo("Panchami")
             assertThat(snap.nakshatra.number).isEqualTo(25)
+            assertThat(snap.yoga.number).isEqualTo(18)
+            assertThat(snap.yoga.name).isEqualTo("Variyana")
+            assertThat(snap.karana.name).isEqualTo("Balava")
         }
 
     @Test

@@ -38,6 +38,30 @@ data class Nakshatra(
 )
 
 /**
+ * A yoga — one of the 27 divisions of the combined sidereal longitudes of the Sun and Moon, each
+ * spanning 13°20'.
+ *
+ * @property number the yoga number, 1..27.
+ * @property name the traditional Sanskrit name.
+ */
+data class Yoga(
+    val number: Int,
+    val name: String,
+)
+
+/**
+ * A karana — half a tithi (6° of the Moon's elongation). A lunar month has 60 karana positions
+ * drawn from 11 karanas: seven "movable" ones that repeat, plus four "fixed" ones.
+ *
+ * @property number the karana's position in the lunar month, 1..60.
+ * @property name the traditional Sanskrit name.
+ */
+data class Karana(
+    val number: Int,
+    val name: String,
+)
+
+/**
  * A vara — the weekday, which in Vedic reckoning runs from sunrise to sunrise. Ordinal 0 = Sunday.
  */
 enum class Vara(

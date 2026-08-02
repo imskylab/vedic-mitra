@@ -62,6 +62,41 @@ private val NAKSHATRA_NAMES =
         "Revati",
     )
 
+private val YOGA_NAMES =
+    listOf(
+        "Vishkambha",
+        "Priti",
+        "Ayushman",
+        "Saubhagya",
+        "Shobhana",
+        "Atiganda",
+        "Sukarman",
+        "Dhriti",
+        "Shula",
+        "Ganda",
+        "Vriddhi",
+        "Dhruva",
+        "Vyaghata",
+        "Harshana",
+        "Vajra",
+        "Siddhi",
+        "Vyatipata",
+        "Variyana",
+        "Parigha",
+        "Shiva",
+        "Siddha",
+        "Sadhya",
+        "Shubha",
+        "Shukla",
+        "Brahma",
+        "Indra",
+        "Vaidhriti",
+    )
+
+// The seven movable (chara) karanas, which repeat eight times through the lunar month.
+private val KARANA_MOVABLE =
+    listOf("Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti")
+
 /** Derives the [Tithi] from the Moon's elongation from the Sun (degrees, 0..360). */
 internal fun tithiOf(elongationDeg: Double): Tithi {
     val number = (elongationDeg / 12.0).toInt() + 1
@@ -81,6 +116,31 @@ internal fun nakshatraOf(moonSiderealDeg: Double): Nakshatra {
     val span = 360.0 / 27.0
     val number = (moonSiderealDeg / span).toInt() + 1
     return Nakshatra(number = number, name = NAKSHATRA_NAMES[number - 1])
+}
+
+/** Derives the [Yoga] from the combined sidereal longitudes of the Sun and Moon (degrees, 0..360). */
+internal fun yogaOf(yogaSumDeg: Double): Yoga {
+    val span = 360.0 / 27.0
+    val number = (yogaSumDeg / span).toInt() + 1
+    return Yoga(number = number, name = YOGA_NAMES[number - 1])
+}
+
+/**
+ * Derives the [Karana] from the Moon's elongation from the Sun (degrees, 0..360). The 60 half-tithi
+ * positions map to Kimstughna (first), the seven movable karanas repeating, then the three fixed
+ * karanas Shakuni, Chatushpada, and Naga.
+ */
+internal fun karanaOf(elongationDeg: Double): Karana {
+    val index = (elongationDeg / 6.0).toInt() // 0..59
+    val name =
+        when {
+            index == 0 -> "Kimstughna"
+            index <= 56 -> KARANA_MOVABLE[(index - 1) % 7]
+            index == 57 -> "Shakuni"
+            index == 58 -> "Chatushpada"
+            else -> "Naga"
+        }
+    return Karana(number = index + 1, name = name)
 }
 
 /**

@@ -29,11 +29,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
+import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.ZoneId
@@ -109,6 +111,8 @@ private fun Panchanga(snapshot: AstronomySnapshot) {
     Text(text = snapshot.vara.displayName, style = MaterialTheme.typography.headlineMedium)
     PanchangaRow(label = "Tithi", value = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}")
     PanchangaRow(label = "Nakshatra", value = snapshot.nakshatra.name)
+    PanchangaRow(label = "Yoga", value = snapshot.yoga.name)
+    PanchangaRow(label = "Karana", value = snapshot.karana.name)
     PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
     PanchangaRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
 }
@@ -158,6 +162,8 @@ private fun HomeContentPreview() {
                 ),
             tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
             nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
+            yoga = Yoga(number = 18, name = "Variyana"),
+            karana = Karana(number = 10, name = "Balava"),
             vara = Vara.SOMAVARA,
         )
     VedicMitraTheme {
