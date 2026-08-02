@@ -50,7 +50,7 @@ truth = "1.4.5"
 
 # --- Static analysis / formatting -------------------------------------------
 detekt = "1.23.8"
-spotless = "7.0.2"
+spotless = "8.9.0"
 ktlint = "1.5.0"
 
 [libraries]
