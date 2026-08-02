@@ -44,12 +44,12 @@ kotlinxDatetime = "0.6.1"
 junit = "4.13.2"
 androidxTestExt = "1.2.1"
 androidxTestEspresso = "3.6.1"
-mockk = "1.13.13"
-turbine = "1.2.0"
-truth = "1.4.4"
+mockk = "1.14.11"
+turbine = "1.2.1"
+truth = "1.4.5"
 
 # --- Static analysis / formatting -------------------------------------------
-detekt = "1.23.7"
+detekt = "1.23.8"
 spotless = "7.0.2"
 ktlint = "1.5.0"
 
