@@ -15,8 +15,8 @@
 # --- Build tooling -----------------------------------------------------------
 # AGP 8.9.x aligns with compileSdk 36 (Android 16) and requires Gradle 8.11+ (we use 8.14).
 agp = "8.9.1"
-kotlin = "2.1.0"
-ksp = "2.1.0-1.0.29"
+kotlin = "2.1.21"
+ksp = "2.1.21-2.0.2"
 
 # --- AndroidX / Jetpack ------------------------------------------------------
 androidxCore = "1.15.0"
@@ -34,11 +34,11 @@ hilt = "2.54"
 hiltNavigationCompose = "1.2.0"
 
 # --- Asynchronous ------------------------------------------------------------
-coroutines = "1.9.0"
+coroutines = "1.11.0"
 
 # --- Serialization -----------------------------------------------------------
-kotlinxSerialization = "1.7.3"
-kotlinxDatetime = "0.6.1"
+kotlinxSerialization = "1.11.0"
+kotlinxDatetime = "0.8.0"
 
 # --- Testing -----------------------------------------------------------------
 junit = "4.13.2"
