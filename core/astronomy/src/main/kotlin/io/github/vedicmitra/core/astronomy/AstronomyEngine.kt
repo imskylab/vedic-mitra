@@ -46,6 +46,7 @@ interface AstronomyEngine {
  * @property yoga the current Sun–Moon yoga.
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
+ * @property muhurtas the day's auspicious/inauspicious time windows.
  */
 data class AstronomySnapshot(
     val instant: Instant,
@@ -56,4 +57,5 @@ data class AstronomySnapshot(
     val yoga: Yoga,
     val karana: Karana,
     val vara: Vara,
+    val muhurtas: List<Muhurta>,
 )

@@ -45,6 +45,7 @@ class DefaultAstronomyEngine
                 val moonSidereal = Ephemeris.norm360(moonLongitude - ayanamsa)
                 val yogaSum = Ephemeris.norm360(sunSidereal + moonSidereal)
                 val sunTimes = SolarDay.sunTimes(epochMillis, location.latitude, location.longitude)
+                val vara = varaOf(instant, epochMillis, location.longitude, sunTimes.sunrise)
 
                 AppResult.Success(
                     AstronomySnapshot(
@@ -55,7 +56,8 @@ class DefaultAstronomyEngine
                         nakshatra = nakshatraOf(moonSidereal),
                         yoga = yogaOf(yogaSum),
                         karana = karanaOf(elongation),
-                        vara = varaOf(instant, epochMillis, location.longitude, sunTimes.sunrise),
+                        vara = vara,
+                        muhurtas = muhurtasOf(sunTimes, vara.ordinal),
                     ),
                 )
             }

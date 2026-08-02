@@ -48,6 +48,31 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
+    fun `computes the day's muhurta windows`() =
+        runTest {
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)
+            val snap = snapshot(result)
+
+            assertThat(snap.muhurtas.map { it.name }).containsExactly(
+                "Brahma Muhurta",
+                "Abhijit Muhurta",
+                "Rahu Kalam",
+                "Yamaganda",
+                "Gulika Kalam",
+            )
+            assertThat(snap.muhurtas.first { it.name == "Abhijit Muhurta" }.quality)
+                .isEqualTo(MuhurtaQuality.AUSPICIOUS)
+
+            val rahu = snap.muhurtas.first { it.name == "Rahu Kalam" }
+            assertThat(rahu.quality).isEqualTo(MuhurtaQuality.INAUSPICIOUS)
+            // Rahu Kalam falls within the daytime.
+            val sunrise = snap.sunTimes.sunrise!!.toEpochMilliseconds()
+            val sunset = snap.sunTimes.sunset!!.toEpochMilliseconds()
+            assertThat(rahu.start.toEpochMilliseconds()).isAtLeast(sunrise)
+            assertThat(rahu.end.toEpochMilliseconds()).isAtMost(sunset)
+        }
+
+    @Test
     fun `sunrise for New Delhi matches reference within a few minutes`() =
         runTest {
             // 2024-01-01: reference sunrise 2024-01-01 01:44 UTC (07:14 IST).
