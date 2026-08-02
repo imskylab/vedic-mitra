@@ -1,11 +1,11 @@
-// :core:location — location port (contracts only).
+// :core:location — device location.
 //
-// Abstraction over obtaining the device's location, needed by astronomy (observer position) and
-// settings. Phase 1 defines only the interface; the concrete fused-location implementation is added
-// later.
+// Implements the LocationProvider port with Google Play Services fused location. Callers are
+// responsible for holding the runtime location permission before requesting a location.
 
 plugins {
     alias(libs.plugins.vedicmitra.android.library)
+    alias(libs.plugins.vedicmitra.android.hilt)
 }
 
 android {
@@ -15,4 +15,6 @@ android {
 dependencies {
     api(projects.core.common)
     implementation(libs.bundles.coroutines)
+    implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

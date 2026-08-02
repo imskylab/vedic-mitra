@@ -42,6 +42,9 @@ hiltNavigationCompose = "1.2.0"
 # --- Asynchronous ------------------------------------------------------------
 coroutines = "1.9.0"
 
+# --- Location ----------------------------------------------------------------
+playServicesLocation = "21.3.0"
+
 # --- Serialization -----------------------------------------------------------
 kotlinxSerialization = "1.7.3"
 kotlinxDatetime = "0.6.1"
@@ -93,6 +96,10 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 # --- Serialization / time ----------------------------------------------------
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+
+# --- Location ----------------------------------------------------------------
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
 # --- Testing -----------------------------------------------------------------
 junit = { group = "junit", name = "junit", version.ref = "junit" }
