@@ -13,10 +13,10 @@
 [versions]
 
 # --- Build tooling -----------------------------------------------------------
-# AGP 8.9.x aligns with compileSdk 36 (Android 16) and requires Gradle 8.11+ (we use 8.14).
-agp = "8.13.2"
-kotlin = "2.1.0"
-ksp = "2.1.0-1.0.29"
+# AGP 9.x requires Gradle 9.x and JDK 17+; unlocks the modern androidx/Compose/Hilt line.
+agp = "9.3.1"
+kotlin = "2.1.21"
+ksp = "2.1.21-2.0.2"
 
 # --- AndroidX / Jetpack ------------------------------------------------------
 androidxCore = "1.15.0"
