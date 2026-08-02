@@ -43,9 +43,14 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     sourceCompatibility = JavaVersion.VERSION_21
                     targetCompatibility = JavaVersion.VERSION_21
                 }
-                testOptions {
-                    // Robolectric needs the merged manifest/resources on the unit-test classpath.
-                    unitTests.isIncludeAndroidResources = true
+                // Robolectric needs the merged manifest/resources on the unit-test classpath, but
+                // only enable it for modules that actually have a test source set. Enabling it for a
+                // module with no tests generates a phantom test source, tripping Gradle's
+                // failOnNoDiscoveredTests guard; those modules should stay NO-SOURCE (skipped).
+                if (target.file("src/test").exists()) {
+                    testOptions {
+                        unitTests.isIncludeAndroidResources = true
+                    }
                 }
             }
 
