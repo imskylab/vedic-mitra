@@ -20,32 +20,32 @@ agp = "9.3.1"
 kotlin = "2.3.10"
 ksp = "2.3.10"
 
-# --- AndroidX / Jetpack ------------------------------------------------------
-androidxCore = "1.15.0"
-androidxActivity = "1.9.3"
-androidxLifecycle = "2.8.7"
+# --- AndroidX / Jetpack (require AGP 9.1+) -----------------------------------
+androidxCore = "1.19.0"
+androidxActivity = "1.13.0"
+androidxLifecycle = "2.11.0"
 androidxNavigation = "2.8.5"
 androidxDatastore = "1.1.1"
 
 # --- Compose -----------------------------------------------------------------
 # The BOM aligns all Compose artifact versions; keep individual Compose libs unversioned.
-composeBom = "2024.12.01"
+composeBom = "2026.06.01"
 
 # --- Dependency Injection ----------------------------------------------------
-hilt = "2.54"
-hiltNavigationCompose = "1.2.0"
+hilt = "2.60.1"
+hiltNavigationCompose = "1.4.0"
 
 # --- Asynchronous ------------------------------------------------------------
 coroutines = "1.9.0"
 
 # --- Serialization -----------------------------------------------------------
-kotlinxSerialization = "1.7.3"
-kotlinxDatetime = "0.6.1"
+kotlinxSerialization = "1.11.0"
+kotlinxDatetime = "0.8.0"
 
 # --- Testing -----------------------------------------------------------------
 junit = "4.13.2"
-androidxTestExt = "1.2.1"
-androidxTestEspresso = "3.6.1"
+androidxTestExt = "1.3.0"
+androidxTestEspresso = "3.7.0"
 mockk = "1.14.11"
 turbine = "1.2.1"
 truth = "1.4.5"

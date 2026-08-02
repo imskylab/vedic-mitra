@@ -9,7 +9,7 @@ package io.github.vedicmitra.core.astronomy
 
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Port for astronomical / panchanga calculations.

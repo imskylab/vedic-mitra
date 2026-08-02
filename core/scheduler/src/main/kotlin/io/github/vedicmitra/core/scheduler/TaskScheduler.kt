@@ -8,7 +8,7 @@
 package io.github.vedicmitra.core.scheduler
 
 import io.github.vedicmitra.core.common.result.AppResult
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Port for scheduling work to run at a future instant (the backbone of the alarm feature).
