@@ -1,8 +1,8 @@
 // :feature:settings — app settings feature.
 //
-// Owns the settings screen UI and presentation. Reads/writes user preferences through core ports.
-// The `vedicmitra.android.feature` convention plugin supplies Compose, Hilt, lifecycle/navigation,
-// and the shared core modules. No business logic in Phase 1.
+// Owns the settings screen UI and presentation, reading and writing user preferences through the
+// :core:datastore repository. The `vedicmitra.android.feature` convention plugin supplies Compose,
+// Hilt, lifecycle/navigation, and the shared core modules.
 
 plugins {
     alias(libs.plugins.vedicmitra.android.feature)
@@ -13,7 +13,5 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.location)
-    // Preference persistence is wired here when settings are implemented.
-    implementation(libs.androidx.datastore.preferences)
+    implementation(projects.core.datastore)
 }
