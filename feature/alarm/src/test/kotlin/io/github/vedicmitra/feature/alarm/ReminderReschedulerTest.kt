@@ -27,7 +27,7 @@ class ReminderReschedulerTest {
             val now = 1_000L
             val future = PersistedReminder("future", triggerAtEpochMillis = 5_000L, title = "Abhijit", body = "soon")
             val stale = PersistedReminder("stale", triggerAtEpochMillis = 500L, title = "Rahu", body = "past")
-            val repository = FakeReminderRepository(listOf(future, stale))
+            val repository = StubReminderRepository(listOf(future, stale))
             val scheduler = RecordingTaskScheduler()
             val rescheduler = ReminderRescheduler(repository, scheduler)
 
@@ -46,7 +46,7 @@ class ReminderReschedulerTest {
     fun `does nothing when there are no reminders`() =
         runTest {
             val scheduler = RecordingTaskScheduler()
-            val rescheduler = ReminderRescheduler(FakeReminderRepository(emptyList()), scheduler)
+            val rescheduler = ReminderRescheduler(StubReminderRepository(emptyList()), scheduler)
 
             rescheduler.rescheduleEnabled(nowEpochMillis = 1_000L)
 
@@ -54,7 +54,7 @@ class ReminderReschedulerTest {
         }
 }
 
-private class FakeReminderRepository(
+private class StubReminderRepository(
     initial: List<PersistedReminder>,
 ) : ReminderRepository {
     override val reminders = MutableStateFlow(initial)
