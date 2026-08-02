@@ -18,6 +18,7 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.PersistedReminder
 import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.location.LocationProvider
 import io.github.vedicmitra.core.notifications.AppNotification
@@ -28,15 +29,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
  * Presentation logic for the reminders screen (MVVM). Loads today's muhurta windows for the device
- * location and, combined with the user's enabled-reminder set, exposes a togglable list. Toggling a
- * reminder schedules (or cancels) an exact alarm and persists the choice.
+ * location and, combined with the user's persisted reminders and lead-time preference, exposes a
+ * togglable list. Toggling schedules (or cancels) an exact alarm — lead-time adjusted — and persists
+ * the full reminder so it can be re-armed after a reboot.
  *
  * [load] is driven by the screen once it has resolved the location permission.
  */
@@ -53,16 +57,23 @@ class AlarmViewModel
 
         /** Observable UI state consumed by the reminders screen. */
         val uiState: StateFlow<AlarmUiState> =
-            combine(loadState, reminderRepository.enabledReminderIds) { load, enabledIds ->
+            combine(
+                loadState,
+                reminderRepository.reminders,
+                reminderRepository.leadTimeMinutes,
+            ) { load, reminders, leadMinutes ->
                 when (load) {
                     AlarmLoad.Loading -> AlarmUiState.Loading
                     is AlarmLoad.Error -> AlarmUiState.Error(load.message)
-                    is AlarmLoad.Ready ->
+                    is AlarmLoad.Ready -> {
+                        val enabledIds = reminders.mapTo(mutableSetOf()) { it.id }
                         AlarmUiState.Ready(
                             reminders = load.muhurtas.map { it.toReminderItem(enabledIds, load.now) },
+                            leadTimeMinutes = leadMinutes,
                             canScheduleExactAlarms = load.canScheduleExactAlarms,
                             usingDefaultLocation = load.usingDefaultLocation,
                         )
+                    }
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -74,6 +85,7 @@ class AlarmViewModel
         fun load() {
             viewModelScope.launch {
                 loadState.value = AlarmLoad.Loading
+                reminderRepository.removePast(System.currentTimeMillis())
 
                 val locationResult = locationProvider.currentLocation()
                 val usingDefault = locationResult !is AppResult.Success
@@ -96,8 +108,9 @@ class AlarmViewModel
         }
 
         /**
-         * Enables or disables the reminder for [item]. Enabling schedules an exact alarm to post a
-         * notification when the window begins; disabling cancels it. Past windows are ignored.
+         * Enables or disables the reminder for [item]. Enabling schedules an exact alarm — fired
+         * [ReminderRepository.leadTimeMinutes] before the window (never in the past) — and persists it;
+         * disabling cancels and forgets it. Past windows are ignored.
          */
         fun setReminder(
             item: ReminderItem,
@@ -106,25 +119,42 @@ class AlarmViewModel
             if (enabled && item.isPast) return
             viewModelScope.launch {
                 if (enabled) {
+                    val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                    val leadMinutes = reminderRepository.leadTimeMinutes.first()
+                    val triggerAt = maxOf(item.start - leadMinutes.minutes, now)
+                    val body = item.quality.reminderBody()
+
                     taskScheduler.schedule(
                         ScheduledTask(
                             id = item.id,
-                            triggerAt = item.start,
+                            triggerAt = triggerAt,
                             notification =
                                 AppNotification(
                                     id = item.id.hashCode(),
                                     channel = AppNotificationChannel.MUHURTA_REMINDERS,
                                     title = item.name,
-                                    body = item.quality.reminderBody(),
+                                    body = body,
                                 ),
                         ),
                     )
-                    reminderRepository.setEnabled(item.id, enabled = true)
+                    reminderRepository.upsert(
+                        PersistedReminder(
+                            id = item.id,
+                            triggerAtEpochMillis = triggerAt.toEpochMilliseconds(),
+                            title = item.name,
+                            body = body,
+                        ),
+                    )
                 } else {
                     taskScheduler.cancel(item.id)
-                    reminderRepository.setEnabled(item.id, enabled = false)
+                    reminderRepository.remove(item.id)
                 }
             }
+        }
+
+        /** Sets how many minutes before a window reminders should fire. */
+        fun setLeadTime(minutes: Int) {
+            viewModelScope.launch { reminderRepository.setLeadTimeMinutes(minutes) }
         }
 
         private fun Muhurta.toReminderItem(
@@ -145,8 +175,8 @@ class AlarmViewModel
 
         private fun MuhurtaQuality.reminderBody(): String =
             when (this) {
-                MuhurtaQuality.AUSPICIOUS -> "This auspicious window is beginning now."
-                MuhurtaQuality.INAUSPICIOUS -> "This window to be mindful of is beginning now."
+                MuhurtaQuality.AUSPICIOUS -> "This auspicious window is beginning soon."
+                MuhurtaQuality.INAUSPICIOUS -> "This window to be mindful of is beginning soon."
             }
 
         private companion object {
@@ -171,6 +201,7 @@ sealed interface AlarmUiState {
      * Today's muhurtas, ready to display.
      *
      * @property reminders the day's windows, each with its enabled state.
+     * @property leadTimeMinutes how many minutes before a window reminders fire.
      * @property canScheduleExactAlarms whether exact alarms are permitted; when false the UI should
      *   invite the user to grant the permission.
      * @property usingDefaultLocation whether a default location was used (device location
@@ -178,6 +209,7 @@ sealed interface AlarmUiState {
      */
     data class Ready(
         val reminders: List<ReminderItem>,
+        val leadTimeMinutes: Int,
         val canScheduleExactAlarms: Boolean,
         val usingDefaultLocation: Boolean,
     ) : AlarmUiState
@@ -188,7 +220,7 @@ sealed interface AlarmUiState {
  *
  * @property id stable id used to schedule/cancel and persist the reminder.
  * @property name the window's traditional name.
- * @property start when the window begins (and when the reminder fires).
+ * @property start when the window begins.
  * @property end when the window ends.
  * @property quality whether the window is auspicious or inauspicious.
  * @property isEnabled whether the user has a reminder set for it.
@@ -204,7 +236,7 @@ data class ReminderItem(
     val isPast: Boolean,
 )
 
-/** Internal load result, before it is combined with the enabled-reminder set. */
+/** Internal load result, before it is combined with the persisted reminders and lead time. */
 private sealed interface AlarmLoad {
     data object Loading : AlarmLoad
 

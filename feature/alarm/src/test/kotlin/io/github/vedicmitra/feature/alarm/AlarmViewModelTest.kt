@@ -25,6 +25,7 @@ import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.PersistedReminder
 import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.location.LocationProvider
 import io.github.vedicmitra.core.scheduler.ScheduledTask
@@ -75,10 +76,10 @@ class AlarmViewModelTest {
         }
 
     @Test
-    fun `enabling a reminder schedules an alarm and persists it`() =
+    fun `enabling a reminder schedules a lead-adjusted alarm and persists it`() =
         runTest {
             val scheduler = FakeTaskScheduler()
-            val repository = FakeReminderRepository()
+            val repository = FakeReminderRepository() // default lead time = 10 minutes
             val viewModel = viewModel(scheduler = scheduler, repository = repository)
 
             viewModel.uiState.test {
@@ -90,13 +91,22 @@ class AlarmViewModelTest {
 
                 val updated = awaitItem() as AlarmUiState.Ready
                 assertThat(updated.reminders.first { it.id == future.id }.isEnabled).isTrue()
-                assertThat(scheduler.scheduled.map { it.id }).containsExactly(future.id)
-                assertThat(repository.enabledReminderIds.value).contains(future.id)
+
+                // Fires 10 minutes (600_000 ms) before the window start.
+                val expectedTrigger = future.start.toEpochMilliseconds() - 600_000L
+                val scheduled = scheduler.scheduled.single()
+                assertThat(scheduled.id).isEqualTo(future.id)
+                assertThat(scheduled.triggerAt.toEpochMilliseconds()).isEqualTo(expectedTrigger)
+
+                val persisted = repository.reminders.value.single()
+                assertThat(persisted.id).isEqualTo(future.id)
+                assertThat(persisted.triggerAtEpochMillis).isEqualTo(expectedTrigger)
+                assertThat(persisted.title).isEqualTo(future.name)
             }
         }
 
     @Test
-    fun `disabling a reminder cancels the alarm and clears it`() =
+    fun `disabling a reminder cancels the alarm and forgets it`() =
         runTest {
             val scheduler = FakeTaskScheduler()
             val repository = FakeReminderRepository()
@@ -114,7 +124,7 @@ class AlarmViewModelTest {
                 val cleared = awaitItem() as AlarmUiState.Ready
                 assertThat(cleared.reminders.first { it.id == future.id }.isEnabled).isFalse()
                 assertThat(scheduler.cancelled).containsExactly(future.id)
-                assertThat(repository.enabledReminderIds.value).doesNotContain(future.id)
+                assertThat(repository.reminders.value).isEmpty()
             }
         }
 
@@ -133,6 +143,24 @@ class AlarmViewModelTest {
 
                 assertThat(scheduler.scheduled).isEmpty()
                 expectNoEvents()
+            }
+        }
+
+    @Test
+    fun `setLeadTime updates the exposed preference`() =
+        runTest {
+            val repository = FakeReminderRepository()
+            val viewModel = viewModel(repository = repository)
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                assertThat((awaitItem() as AlarmUiState.Ready).leadTimeMinutes).isEqualTo(10)
+
+                viewModel.setLeadTime(30)
+
+                assertThat((awaitItem() as AlarmUiState.Ready).leadTimeMinutes).isEqualTo(30)
+                assertThat(repository.leadTimeMinutes.value).isEqualTo(30)
             }
         }
 
@@ -183,14 +211,23 @@ private class FakeTaskScheduler : TaskScheduler {
 }
 
 private class FakeReminderRepository : ReminderRepository {
-    override val enabledReminderIds = MutableStateFlow<Set<String>>(emptySet())
+    override val reminders = MutableStateFlow<List<PersistedReminder>>(emptyList())
+    override val leadTimeMinutes = MutableStateFlow(10)
 
-    override suspend fun setEnabled(
-        id: String,
-        enabled: Boolean,
-    ) {
-        enabledReminderIds.value =
-            if (enabled) enabledReminderIds.value + id else enabledReminderIds.value - id
+    override suspend fun upsert(reminder: PersistedReminder) {
+        reminders.value = reminders.value.filterNot { it.id == reminder.id } + reminder
+    }
+
+    override suspend fun remove(id: String) {
+        reminders.value = reminders.value.filterNot { it.id == id }
+    }
+
+    override suspend fun removePast(nowEpochMillis: Long) {
+        reminders.value = reminders.value.filter { it.triggerAtEpochMillis > nowEpochMillis }
+    }
+
+    override suspend fun setLeadTimeMinutes(minutes: Int) {
+        leadTimeMinutes.value = minutes
     }
 }
 

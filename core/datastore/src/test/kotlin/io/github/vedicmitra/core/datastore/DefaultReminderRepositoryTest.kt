@@ -28,26 +28,60 @@ class DefaultReminderRepositoryTest {
     val tmpFolder = TemporaryFolder()
 
     @Test
-    fun `enables and disables reminder ids`() =
+    fun `upsert adds reminders and replaces by id`() =
         runTest {
             val repository = DefaultReminderRepository(newDataStore())
 
-            repository.setEnabled("muhurta:abhijit", enabled = true)
-            repository.setEnabled("muhurta:brahma", enabled = true)
-            repository.setEnabled("muhurta:abhijit", enabled = false)
+            repository.upsert(reminder("muhurta:a", triggerAt = 100L))
+            repository.upsert(reminder("muhurta:b", triggerAt = 200L))
+            repository.upsert(reminder("muhurta:a", triggerAt = 999L)) // replaces the first
 
-            assertThat(repository.enabledReminderIds.first()).containsExactly("muhurta:brahma")
+            val stored = repository.reminders.first()
+            assertThat(stored.map { it.id }).containsExactly("muhurta:a", "muhurta:b")
+            assertThat(stored.first { it.id == "muhurta:a" }.triggerAtEpochMillis).isEqualTo(999L)
         }
 
     @Test
-    fun `disabling an id that was never enabled is a no-op`() =
+    fun `remove drops a reminder by id`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+            repository.upsert(reminder("muhurta:a", triggerAt = 100L))
+            repository.upsert(reminder("muhurta:b", triggerAt = 200L))
+
+            repository.remove("muhurta:a")
+
+            assertThat(repository.reminders.first().map { it.id }).containsExactly("muhurta:b")
+        }
+
+    @Test
+    fun `removePast keeps only reminders after now`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+            repository.upsert(reminder("past", triggerAt = 100L))
+            repository.upsert(reminder("now", triggerAt = 500L))
+            repository.upsert(reminder("future", triggerAt = 900L))
+
+            repository.removePast(nowEpochMillis = 500L)
+
+            assertThat(repository.reminders.first().map { it.id }).containsExactly("future")
+        }
+
+    @Test
+    fun `lead time defaults to 10 minutes and is settable`() =
         runTest {
             val repository = DefaultReminderRepository(newDataStore())
 
-            repository.setEnabled("muhurta:abhijit", enabled = false)
+            assertThat(repository.leadTimeMinutes.first()).isEqualTo(10)
 
-            assertThat(repository.enabledReminderIds.first()).isEmpty()
+            repository.setLeadTimeMinutes(30)
+
+            assertThat(repository.leadTimeMinutes.first()).isEqualTo(30)
         }
+
+    private fun reminder(
+        id: String,
+        triggerAt: Long,
+    ) = PersistedReminder(id = id, triggerAtEpochMillis = triggerAt, title = "T", body = "B")
 
     private fun kotlinx.coroutines.test.TestScope.newDataStore() =
         PreferenceDataStoreFactory.create(
