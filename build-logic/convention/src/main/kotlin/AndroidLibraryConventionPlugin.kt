@@ -39,12 +39,18 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     sourceCompatibility = JavaVersion.VERSION_21
                     targetCompatibility = JavaVersion.VERSION_21
                 }
+                testOptions {
+                    // Robolectric needs the merged manifest/resources on the unit-test classpath.
+                    unitTests.isIncludeAndroidResources = true
+                }
             }
 
             configureDetekt()
 
             dependencies {
                 add("testImplementation", libs.findBundle("unit-test").get())
+                add("testImplementation", libs.findLibrary("robolectric").get())
+                add("testImplementation", libs.findLibrary("androidx-test-core").get())
             }
         }
 }
