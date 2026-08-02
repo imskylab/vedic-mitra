@@ -41,6 +41,13 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "com.google.devtools.ksp*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      # The current androidx/Compose and Dagger-Hilt releases require AGP 9.0+, which is incompatible
+      # with this project's AGP 8.9.1 baseline. Hold their minor/major bumps until the AGP 9
+      # migration; patch updates (AGP-8 compatible) are still allowed.
+      - dependency-name: "androidx.*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "com.google.dagger*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   # Keep GitHub Actions pinned versions current (grouped into one PR).
   - package-ecosystem: github-actions
