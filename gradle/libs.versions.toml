@@ -45,7 +45,7 @@ junit = "4.13.2"
 androidxTestExt = "1.2.1"
 androidxTestEspresso = "3.6.1"
 mockk = "1.14.11"
-turbine = "1.2.0"
+turbine = "1.2.1"
 truth = "1.4.5"
 
 # --- Static analysis / formatting -------------------------------------------
