@@ -50,9 +50,6 @@ updates:
       # Major bumps of the formatting engine change output; upgrade deliberately, not automatically.
       - dependency-name: "com.diffplug.spotless"
         update-types: ["version-update:semver-major"]
-      # kotlinx-datetime 0.7+ is tied to the newer androidx/API-37 line; bump alongside that upgrade.
-      - dependency-name: "org.jetbrains.kotlinx:kotlinx-datetime"
-        update-types: ["version-update:semver-major"]
 
   # Keep GitHub Actions pinned versions current (grouped into one PR).
   - package-ecosystem: github-actions
