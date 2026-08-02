@@ -33,11 +33,13 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.home.HomeScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
 
 private const val HOME_ROUTE = "home"
 private const val SETTINGS_ROUTE = "settings"
+private const val ALARM_ROUTE = "alarm"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -72,8 +74,17 @@ private fun VedicMitraApp() {
         composable(HOME_ROUTE) {
             AppScaffold(
                 title = "Vedic Mitra",
-                action = { TextButton(onClick = { navController.navigate(SETTINGS_ROUTE) }) { Text("Settings") } },
+                action = {
+                    TextButton(onClick = { navController.navigate(ALARM_ROUTE) }) { Text("Reminders") }
+                    TextButton(onClick = { navController.navigate(SETTINGS_ROUTE) }) { Text("Settings") }
+                },
             ) { padding -> HomeScreen(modifier = Modifier.padding(padding)) }
+        }
+        composable(ALARM_ROUTE) {
+            AppScaffold(
+                title = "Reminders",
+                navigation = { TextButton(onClick = { navController.popBackStack() }) { Text("Back") } },
+            ) { padding -> AlarmScreen(modifier = Modifier.padding(padding)) }
         }
         composable(SETTINGS_ROUTE) {
             AppScaffold(
