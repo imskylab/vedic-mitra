@@ -167,6 +167,12 @@ In short:
 4. Use [Conventional Commits](https://www.conventionalcommits.org/).
 5. Open a PR using the template.
 
+## Author
+
+**Jayvardhan Potabatti** — Creator, Owner, Designer & Lead Developer.
+
+See [AUTHORS.md](AUTHORS.md) for the full list, and [CONTRIBUTING.md](CONTRIBUTING.md) to get involved.
+
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [MIT License](LICENSE) © 2026 Jayvardhan Potabatti.
