@@ -13,10 +13,10 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
-> **Status: Phase 1 — Foundation.** This repository currently contains the architectural
-> foundation only: build system, modular skeleton, quality tooling, CI, and documentation.
-> Astronomy, scheduling, and alarm behaviour are intentionally **not** implemented yet — see the
-> [Roadmap](#roadmap).
+> **Status: Phases 1–5 complete.** The app computes today's panchanga (tithi, nakshatra, yoga,
+> karana, vara) and muhurta windows for the device's location, persists theme preferences, and
+> schedules on-device notification reminders for muhurta windows. Next up is **Phase 6 — polish &
+> release** (home widgets, localisation, Play Store pipeline) — see the [Roadmap](#roadmap).
 
 ---
 
@@ -77,13 +77,14 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
 | `:core:common` | Framework-agnostic building blocks: `AppResult`, dispatcher abstractions, value types. |
 | `:core:ui` | Reusable Compose widgets and preview tooling. |
 | `:core:designsystem` | Material 3 theme: colour, typography, shapes, spacing tokens. |
-| `:core:astronomy` | **Port** for panchanga/astronomy calculations (contracts only in Phase 1). |
-| `:core:scheduler` | **Port** for scheduling work at a time (contracts only in Phase 1). |
-| `:core:notifications` | **Port** for posting notifications (contracts only in Phase 1). |
-| `:core:location` | **Port** for device location (contracts only in Phase 1). |
-| `:feature:home` | Home screen (panchanga overview). |
-| `:feature:settings` | Settings screen (preferences, location, theme). |
-| `:feature:alarm` | Alarm screen (astronomy-aware reminders). |
+| `:core:astronomy` | Panchanga/astronomy engine: Meeus ephemeris, Lahiri ayanamsa, muhurta windows. |
+| `:core:scheduler` | `AlarmManager`-backed exact scheduling of reminder notifications. |
+| `:core:notifications` | `NotificationManagerCompat`-backed channels and notification posting. |
+| `:core:location` | Device location via Play Services fused provider. |
+| `:core:datastore` | Persisted preferences (theme, enabled reminders) on Jetpack DataStore. |
+| `:feature:home` | Home screen: today's panchanga for the device location. |
+| `:feature:settings` | Settings screen: theme preferences. |
+| `:feature:alarm` | Reminders screen: schedule notifications for the day's muhurta windows. |
 
 Build configuration is not copy-pasted between modules — it lives in **convention plugins** under
 [`build-logic/`](build-logic), applied by id (e.g. `vedicmitra.android.feature`). See
@@ -105,14 +106,16 @@ Build configuration is not copy-pasted between modules — it lives in **convent
 
 ## Roadmap
 
-- **Phase 1 — Foundation (this repo).** Build system, modules, DI/theme scaffolding, quality
-  tooling, CI, docs. No business logic.
-- **Phase 2 — Astronomy engine.** Implement `:core:astronomy` (ephemeris, panchanga elements).
-- **Phase 3 — Location & settings.** Implement `:core:location`, wire `:feature:settings`.
-- **Phase 4 — Home.** Real panchanga overview UI in `:feature:home`.
-- **Phase 5 — Scheduling & alarms.** Implement `:core:scheduler` + `:core:notifications` and the
-  `:feature:alarm` experience.
-- **Phase 6 — Polish & release.** Widgets, localisation, Play Store release pipeline.
+- ✅ **Phase 1 — Foundation.** Build system, modules, DI/theme scaffolding, quality tooling, CI,
+  docs.
+- ✅ **Phase 2 — Astronomy engine.** `:core:astronomy` (Meeus ephemeris, Lahiri ayanamsa, panchanga
+  elements, muhurta windows).
+- ✅ **Phase 3 — Location & settings.** `:core:location` (fused provider) and `:feature:settings`
+  (theme, on DataStore).
+- ✅ **Phase 4 — Home.** Real panchanga overview for the device location in `:feature:home`.
+- ✅ **Phase 5 — Scheduling & alarms.** `:core:notifications` + `:core:scheduler` (exact alarms) and
+  the `:feature:alarm` reminders experience.
+- ⬜ **Phase 6 — Polish & release.** Home widgets, localisation, Play Store release pipeline.
 
 ## Build Instructions
 
