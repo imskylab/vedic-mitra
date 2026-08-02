@@ -49,7 +49,7 @@ turbine = "1.2.0"
 truth = "1.4.4"
 
 # --- Static analysis / formatting -------------------------------------------
-detekt = "1.23.7"
+detekt = "1.23.8"
 spotless = "7.0.2"
 ktlint = "1.5.0"
 
