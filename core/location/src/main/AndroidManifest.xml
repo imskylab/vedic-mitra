@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Library module manifest. Namespace is declared in build.gradle.kts.
-     ACCESS_*_LOCATION permissions are added here when the provider is implemented. -->
-<manifest />
+<!-- Library module manifest. Location permissions are merged into the app; the app is responsible
+     for requesting them at runtime before calling LocationProvider. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+</manifest>
