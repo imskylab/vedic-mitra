@@ -58,7 +58,7 @@ turbine = "1.2.1"
 truth = "1.4.5"
 # Robolectric runs Android-framework unit tests on the JVM (no device/emulator), so framework-heavy
 # code (notifications, alarms) gets real happy-path coverage rather than mockk-only stubs.
-robolectric = "4.14.1"
+robolectric = "4.16.1"
 
 # --- Static analysis / formatting -------------------------------------------
 detekt = "1.23.8"
