@@ -67,15 +67,44 @@ class DefaultReminderRepositoryTest {
         }
 
     @Test
-    fun `lead time defaults to 10 minutes and is settable`() =
+    fun `offsetMinutesByName has no overrides by default`() =
         runTest {
             val repository = DefaultReminderRepository(newDataStore())
 
-            assertThat(repository.leadTimeMinutes.first()).isEqualTo(10)
+            assertThat(repository.offsetMinutesByName.first()).isEmpty()
+        }
 
-            repository.setLeadTimeMinutes(30)
+    @Test
+    fun `setOffsetMinutes stores and exposes an override`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
 
-            assertThat(repository.leadTimeMinutes.first()).isEqualTo(30)
+            repository.setOffsetMinutes("Brahma Muhurta", 30)
+
+            assertThat(repository.offsetMinutesByName.first()).containsEntry("Brahma Muhurta", 30)
+        }
+
+    @Test
+    fun `setOffsetMinutes replaces an existing override for the same name`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+
+            repository.setOffsetMinutes("Brahma Muhurta", 30)
+            repository.setOffsetMinutes("Brahma Muhurta", 15)
+
+            assertThat(repository.offsetMinutesByName.first()).containsEntry("Brahma Muhurta", 15)
+        }
+
+    @Test
+    fun `setOffsetMinutes keeps overrides for other names independent`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+
+            repository.setOffsetMinutes("Brahma Muhurta", 30)
+            repository.setOffsetMinutes("Rahu Kalam", 5)
+
+            assertThat(repository.offsetMinutesByName.first())
+                .containsExactly("Brahma Muhurta", 30, "Rahu Kalam", 5)
         }
 
     private fun reminder(

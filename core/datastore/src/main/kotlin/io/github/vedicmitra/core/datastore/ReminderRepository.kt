@@ -21,8 +21,12 @@ interface ReminderRepository {
     /** The reminders the user currently has scheduled, emitting on every change. */
     val reminders: Flow<List<PersistedReminder>>
 
-    /** How many minutes before a window the reminder should fire (0 = at the window start). */
-    val leadTimeMinutes: Flow<Int>
+    /**
+     * Per-muhurta-name lead-time overrides — minutes before that window's start a reminder for it
+     * should fire (0 = at the window start). Sparse: a name absent here has not been customized and
+     * callers should fall back to [DEFAULT_OFFSET_MINUTES].
+     */
+    val offsetMinutesByName: Flow<Map<String, Int>>
 
     /** Adds [reminder], replacing any existing reminder with the same [PersistedReminder.id]. */
     suspend fun upsert(reminder: PersistedReminder)
@@ -33,6 +37,14 @@ interface ReminderRepository {
     /** Drops any reminder whose trigger time is at or before [nowEpochMillis] (already fired/stale). */
     suspend fun removePast(nowEpochMillis: Long)
 
-    /** Sets the reminder lead time in minutes. */
-    suspend fun setLeadTimeMinutes(minutes: Int)
+    /** Sets the lead time in minutes for the muhurta named [name] (0 = at the window start). */
+    suspend fun setOffsetMinutes(
+        name: String,
+        minutes: Int,
+    )
+
+    companion object {
+        /** Lead time, in minutes, used for any muhurta without an explicit override. */
+        const val DEFAULT_OFFSET_MINUTES = 10
+    }
 }

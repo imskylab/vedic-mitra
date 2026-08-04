@@ -147,20 +147,87 @@ class AlarmViewModelTest {
         }
 
     @Test
-    fun `setLeadTime updates the exposed preference`() =
+    fun `setOffsetMinutes updates that reminder's offset without touching a disabled reminder's alarm`() =
         runTest {
+            val scheduler = FakeTaskScheduler()
             val repository = FakeReminderRepository()
-            val viewModel = viewModel(repository = repository)
+            val viewModel = viewModel(scheduler = scheduler, repository = repository)
 
             viewModel.uiState.test {
                 awaitItem() // Loading
                 viewModel.load()
-                assertThat((awaitItem() as AlarmUiState.Ready).leadTimeMinutes).isEqualTo(10)
+                awaitItem() // Ready
 
-                viewModel.setLeadTime(30)
+                viewModel.setOffsetMinutes("Rahu Kalam", 30)
 
-                assertThat((awaitItem() as AlarmUiState.Ready).leadTimeMinutes).isEqualTo(30)
-                assertThat(repository.leadTimeMinutes.value).isEqualTo(30)
+                val updated = awaitItem() as AlarmUiState.Ready
+                assertThat(updated.reminders.first { it.name == "Rahu Kalam" }.offsetMinutes).isEqualTo(30)
+                assertThat(updated.reminders.first { it.name == "Abhijit Muhurta" }.offsetMinutes).isEqualTo(10)
+                assertThat(scheduler.scheduled).isEmpty()
+                assertThat(repository.offsetMinutesByName.value).containsEntry("Rahu Kalam", 30)
+            }
+        }
+
+    @Test
+    fun `changing the offset of an enabled reminder retroactively reschedules it`() =
+        runTest {
+            val scheduler = FakeTaskScheduler()
+            val repository = FakeReminderRepository()
+            val viewModel = viewModel(scheduler = scheduler, repository = repository)
+            lateinit var future: ReminderItem
+
+            // Changing the offset touches both the offset store and (because it's enabled) the
+            // reminders store, so it may produce one or two uiState emissions depending on timing;
+            // rather than assert an exact count, drain them and check the resulting side effects —
+            // the scheduler call and the persisted reminder — directly.
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                future = (awaitItem() as AlarmUiState.Ready).reminders.first { !it.isPast }
+                viewModel.setReminder(future, enabled = true)
+                awaitItem() // enabled at the default 10-minute offset
+
+                viewModel.setOffsetMinutes(future.name, 30)
+
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            val expectedTrigger = future.start.toEpochMilliseconds() - 30 * 60_000L
+            val scheduled = scheduler.scheduled.last()
+            assertThat(scheduled.id).isEqualTo(future.id)
+            assertThat(scheduled.triggerAt.toEpochMilliseconds()).isEqualTo(expectedTrigger)
+            assertThat(scheduled.notification.body).contains("30 minutes")
+
+            val persisted = repository.reminders.value.single { it.id == future.id }
+            assertThat(persisted.triggerAtEpochMillis).isEqualTo(expectedTrigger)
+        }
+
+    @Test
+    fun `reminder body reflects the configured offset and quality`() =
+        runTest {
+            val scheduler = FakeTaskScheduler()
+            val viewModel = viewModel(scheduler = scheduler)
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                val ready = awaitItem() as AlarmUiState.Ready
+                val auspicious = ready.reminders.first { it.name == "Abhijit Muhurta" }.copy(offsetMinutes = 0)
+                val inauspicious =
+                    ready.reminders
+                        .first { it.name == "Rahu Kalam" }
+                        .copy(isPast = false, offsetMinutes = 30)
+
+                viewModel.setReminder(auspicious, enabled = true)
+                awaitItem()
+                viewModel.setReminder(inauspicious, enabled = true)
+                awaitItem()
+
+                val bodies = scheduler.scheduled.associate { it.id to it.notification.body }
+                assertThat(bodies.getValue(auspicious.id)).contains("is starting now")
+                assertThat(bodies.getValue(auspicious.id)).contains("auspicious")
+                assertThat(bodies.getValue(inauspicious.id)).contains("starts in 30 minutes")
+                assertThat(bodies.getValue(inauspicious.id)).contains("mindful of")
             }
         }
 
@@ -212,7 +279,7 @@ private class FakeTaskScheduler : TaskScheduler {
 
 private class FakeReminderRepository : ReminderRepository {
     override val reminders = MutableStateFlow<List<PersistedReminder>>(emptyList())
-    override val leadTimeMinutes = MutableStateFlow(10)
+    override val offsetMinutesByName = MutableStateFlow<Map<String, Int>>(emptyMap())
 
     override suspend fun upsert(reminder: PersistedReminder) {
         reminders.value = reminders.value.filterNot { it.id == reminder.id } + reminder
@@ -226,8 +293,11 @@ private class FakeReminderRepository : ReminderRepository {
         reminders.value = reminders.value.filter { it.triggerAtEpochMillis > nowEpochMillis }
     }
 
-    override suspend fun setLeadTimeMinutes(minutes: Int) {
-        leadTimeMinutes.value = minutes
+    override suspend fun setOffsetMinutes(
+        name: String,
+        minutes: Int,
+    ) {
+        offsetMinutesByName.value = offsetMinutesByName.value + (name to minutes)
     }
 }
 

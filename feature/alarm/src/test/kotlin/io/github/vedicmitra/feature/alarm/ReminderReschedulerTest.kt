@@ -54,11 +54,14 @@ class ReminderReschedulerTest {
         }
 }
 
+// Offsets are irrelevant to rescheduling: a re-armed reminder's trigger time and body were already
+// baked in when it was first scheduled, and are replayed verbatim, so this stub never needs to
+// hold a real offset.
 private class StubReminderRepository(
     initial: List<PersistedReminder>,
 ) : ReminderRepository {
     override val reminders = MutableStateFlow(initial)
-    override val leadTimeMinutes = MutableStateFlow(10)
+    override val offsetMinutesByName = MutableStateFlow<Map<String, Int>>(emptyMap())
 
     override suspend fun upsert(reminder: PersistedReminder) {
         reminders.value = reminders.value.filterNot { it.id == reminder.id } + reminder
@@ -72,8 +75,11 @@ private class StubReminderRepository(
         reminders.value = reminders.value.filter { it.triggerAtEpochMillis > nowEpochMillis }
     }
 
-    override suspend fun setLeadTimeMinutes(minutes: Int) {
-        leadTimeMinutes.value = minutes
+    override suspend fun setOffsetMinutes(
+        name: String,
+        minutes: Int,
+    ) {
+        offsetMinutesByName.value = offsetMinutesByName.value + (name to minutes)
     }
 }
 
