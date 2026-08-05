@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.MoonPhase
@@ -39,6 +40,7 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
@@ -120,6 +122,8 @@ private fun Panchanga(snapshot: AstronomySnapshot) {
     PanchangaRow(label = "Nakshatra", value = snapshot.nakshatra.name)
     PanchangaRow(label = "Yoga", value = snapshot.yoga.name)
     PanchangaRow(label = "Karana", value = snapshot.karana.name)
+    PanchangaRow(label = "Ayana", value = snapshot.ayana.displayName)
+    PanchangaRow(label = "Ritu", value = snapshot.ritu.displayName)
     PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
     PanchangaRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
     PanchangaRow(label = "Moon Phase", value = snapshot.moonPhase.displayName)
@@ -191,6 +195,8 @@ private fun HomeContentPreview() {
             yoga = Yoga(number = 18, name = "Variyana"),
             karana = Karana(number = 10, name = "Balava"),
             vara = Vara.SOMAVARA,
+            ayana = Ayana.UTTARAYANA,
+            ritu = Ritu.SHISHIRA,
             moonPhase = MoonPhase.WAXING_GIBBOUS,
             goldenHour =
                 GoldenHour(

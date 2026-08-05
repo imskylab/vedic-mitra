@@ -50,6 +50,11 @@ class DefaultAstronomyEngine
                 val sunTimes = SolarDay.sunTimes(epochMillis, location.latitude, location.longitude)
                 val goldenHour = SolarDay.goldenHour(epochMillis, location.latitude, location.longitude)
                 val vara = varaOf(instant, epochMillis, location.longitude, sunTimes.sunrise)
+                val varjyam =
+                    varjyamOf(epochMillis, moonSidereal) { atEpochMillis ->
+                        val atT = Ephemeris.julianCenturies(atEpochMillis)
+                        Ephemeris.norm360(Ephemeris.moonLongitude(atT) - Ephemeris.lahiriAyanamsa(atT))
+                    }
 
                 AppResult.Success(
                     AstronomySnapshot(
@@ -61,9 +66,11 @@ class DefaultAstronomyEngine
                         yoga = yogaOf(yogaSum),
                         karana = karanaOf(elongation),
                         vara = vara,
+                        ayana = ayanaOf(sunSidereal),
+                        ritu = rituOf(sunSidereal),
                         moonPhase = moonPhaseOf(elongation),
                         goldenHour = goldenHour,
-                        muhurtas = muhurtasOf(sunTimes, vara.ordinal),
+                        muhurtas = muhurtasOf(sunTimes, vara.ordinal) + varjyam,
                     ),
                 )
             }

@@ -8,6 +8,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Dur Muhurta and Varjyam.** `MuhurtaCalculator` now adds Dur Muhurta (one or two of the day's 15
+  equal parts, by a verified per-weekday table cross-checked against drikpanchang.com) and Varjyam
+  (Nakshatra Thyajyam — a 4-ghati inauspicious window positioned within the current nakshatra by a
+  verified 27-nakshatra ghati table, requiring a new backward search — `VarjyamCalculator` — for the
+  exact instant the current nakshatra began, since ghatis are counted from nakshatra-start, not
+  sunrise or midnight). Fixed a related correctness bug this surfaced: Abhijit Muhurta is now
+  correctly suppressed on Wednesdays, when it would otherwise coincide with that day's Dur Muhurta.
+- **Ayana and Ritu.** `:core:astronomy` now derives Ayana (Uttarayana/Dakshinayana) and Ritu (the
+  six Indian seasons) from the Sun's sidereal longitude — the Drik (observed-position) convention.
+  Both, along with the existing tithi/nakshatra/yoga/karana/vara/sunrise/Rahu Kalam/Brahma Muhurta
+  calculations, were cross-checked against [datepanchang.com](https://datepanchang.com) and
+  [drikpanchang.com](https://www.drikpanchang.com) for Mumbai/Delhi, 5 August 2026, and matched
+  within a minute or so throughout.
 - **Moon phase and golden hour.** `:core:astronomy` now derives the Moon's phase (one of the eight
   traditional divisions, from its elongation) and computes the day's golden-hour windows (Sun
   elevation between -4° and +6°, bracketing sunrise and sunset) via the same NOAA solar-position
