@@ -76,6 +76,43 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
+    fun `moon phase is consistent with the tithi`() =
+        runTest {
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)
+
+            // Shukla Panchami (tithi 5, elongation 48-60°) falls in the Waxing Crescent phase (22.5-67.5°).
+            assertThat(snapshot(result).moonPhase).isEqualTo(MoonPhase.WAXING_CRESCENT)
+        }
+
+    @Test
+    fun `golden hour windows bracket sunrise and sunset`() =
+        runTest {
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)
+            val snap = snapshot(result)
+            val golden = snap.goldenHour
+            val sunrise = snap.sunTimes.sunrise!!.toEpochMilliseconds()
+            val sunset = snap.sunTimes.sunset!!.toEpochMilliseconds()
+
+            assertThat(golden.morningStart).isNotNull()
+            assertThat(golden.morningEnd).isNotNull()
+            assertThat(golden.eveningStart).isNotNull()
+            assertThat(golden.eveningEnd).isNotNull()
+
+            val morningStart = golden.morningStart!!.toEpochMilliseconds()
+            val morningEnd = golden.morningEnd!!.toEpochMilliseconds()
+            val eveningStart = golden.eveningStart!!.toEpochMilliseconds()
+            val eveningEnd = golden.eveningEnd!!.toEpochMilliseconds()
+
+            // Morning golden hour brackets sunrise; evening golden hour brackets sunset.
+            assertThat(morningStart).isLessThan(sunrise)
+            assertThat(morningEnd).isGreaterThan(sunrise)
+            assertThat(eveningStart).isLessThan(sunset)
+            assertThat(eveningEnd).isGreaterThan(sunset)
+            assertThat(morningStart).isLessThan(morningEnd)
+            assertThat(eveningStart).isLessThan(eveningEnd)
+        }
+
+    @Test
     fun `sunrise for New Delhi matches reference within a few minutes`() =
         runTest {
             // 2024-01-01: reference sunrise 2024-01-01 01:44 UTC (07:14 IST).

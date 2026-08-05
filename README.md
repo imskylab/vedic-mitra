@@ -16,10 +16,11 @@
 > **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
 > (Foundation) is done**, and **Phase 2 (Daily Timings)** and **Phase 3 (Panchang)** are partially
 > built: the app already computes today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara),
-> Brahma/Abhijit Muhurta and the inauspicious kalams (Rahu, Yamaganda, Gulika), sunrise/sunset for
-> the device's location, persists theme preferences, and schedules reboot-survivable notification
-> reminders for muhurta windows. Everything from Moon phase/rise-set onward, and all of Phases
-> 4–12, is aspirational — see the [Roadmap](#roadmap) for the full picture and current progress.
+> Brahma/Abhijit Muhurta and the inauspicious kalams (Rahu, Yamaganda, Gulika), sunrise/sunset,
+> Moon phase, and golden-hour windows for the device's location, persists theme preferences, and
+> schedules reboot-survivable, per-event-configurable notification reminders for muhurta windows.
+> Moonrise/moonset, Dur Muhurta/Varjyam, and all of Phases 4–12 remain aspirational — see the
+> [Roadmap](#roadmap) for the full picture and current progress.
 
 ---
 
@@ -143,8 +144,8 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Sunset
 - [ ] Moonrise
 - [ ] Moonset
-- [ ] Moon phase
-- [ ] Golden Hour
+- [x] Moon phase
+- [x] Golden Hour
 - [x] Brahma Muhurta
 - [x] Abhijit Muhurta
 - [x] Rahu Kalam
@@ -167,7 +168,7 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Current time
 - [x] Today's Panchang summary
 - [ ] Upcoming events
-- [ ] Current moon phase
+- [x] Current moon phase
 - [ ] Next alarm
 
 ### 🟡 Phase 3 — Panchang
@@ -198,7 +199,7 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Sunset
 - [ ] Moonrise
 - [ ] Moonset
-- [ ] Moon phase
+- [x] Moon phase
 - [ ] Planetary positions
 - [ ] Zodiac transitions
 

@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Moon phase and golden hour.** `:core:astronomy` now derives the Moon's phase (one of the eight
+  traditional divisions, from its elongation) and computes the day's golden-hour windows (Sun
+  elevation between -4° and +6°, bracketing sunrise and sunset) via the same NOAA solar-position
+  equations already used for sunrise/sunset. Both are shown on the home screen.
 - **Muhurta reminders.** Reboot-survivable, exact-alarm notification reminders for the day's
   muhurta windows (Brahma Muhurta, Abhijit Muhurta, Rahu Kalam, Yamaganda, Gulika Kalam), each with
   its own independently configurable lead time (0–30 minutes before the window starts). Changing a
