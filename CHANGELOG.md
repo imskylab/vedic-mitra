@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Moonrise and moonset.** `LunarDay` computes the Moon's topocentric altitude (extending
+  `Ephemeris` with the Moon's ecliptic latitude, distance, equatorial conversion, and Greenwich
+  Mean Sidereal Time — none of which existed before) and finds rise/set crossings via a coarse
+  scan plus bisection, since the Moon moves too fast and irregularly for the Sun's closed-form
+  hour-angle formula. Cross-checked against drikpanchang.com for Delhi across 7 consecutive days;
+  every reference matched within ~5 minutes. Because the lunar day (~24h50m) is longer than the
+  civil day, a civil day can have two moonrises/moonsets or none of one kind roughly once a month —
+  `MoonTimes` follows the same nullable convention as `SunTimes` and reports the first occurrence
+  within the civil day.
 - **Dur Muhurta and Varjyam.** `MuhurtaCalculator` now adds Dur Muhurta (one or two of the day's 15
   equal parts, by a verified per-weekday table cross-checked against drikpanchang.com) and Varjyam
   (Nakshatra Thyajyam — a 4-ghati inauspicious window positioned within the current nakshatra by a

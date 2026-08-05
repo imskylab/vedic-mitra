@@ -118,6 +118,24 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
+    fun `moonrise and moonset match drikpanchang reference for New Delhi`() =
+        runTest {
+            // 2026-08-05 12:00 IST — cross-checked against drikpanchang.com for Delhi: moonrise
+            // 23:04 IST, moonset 11:52 IST. The engine's low-precision ephemeris + bisection search
+            // lands consistently within ~5 minutes of drikpanchang.com across a full week of
+            // real reference data (see project memory) — allow 10 minutes of margin here.
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
+            val snap = snapshot(result)
+
+            assertThat(snap.moonTimes.moonrise).isNotNull()
+            assertThat(snap.moonTimes.moonset).isNotNull()
+            val moonriseDeltaMillis = abs(snap.moonTimes.moonrise!!.toEpochMilliseconds() - 1_785_951_240_000L)
+            val moonsetDeltaMillis = abs(snap.moonTimes.moonset!!.toEpochMilliseconds() - 1_785_910_920_000L)
+            assertThat(moonriseDeltaMillis).isLessThan(600_000L) // within 10 minutes
+            assertThat(moonsetDeltaMillis).isLessThan(600_000L) // within 10 minutes
+        }
+
+    @Test
     fun `moon phase is consistent with the tithi`() =
         runTest {
             val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)

@@ -24,6 +24,9 @@ complexity:
   TooManyFunctions:
     thresholdInFiles: 20
     thresholdInClasses: 20
+    # Matches thresholdInClasses; a cohesive math/utility `object` (e.g. Ephemeris) legitimately
+    # holds many small pure functions without becoming a "God Object".
+    thresholdInObjects: 20
     ignoreAnnotatedFunctions: ['Composable']
   CyclomaticComplexMethod:
     threshold: 15

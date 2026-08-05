@@ -36,6 +36,7 @@ import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.MoonPhase
+import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
@@ -126,6 +127,8 @@ private fun Panchanga(snapshot: AstronomySnapshot) {
     PanchangaRow(label = "Ritu", value = snapshot.ritu.displayName)
     PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
     PanchangaRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
+    PanchangaRow(label = "Moonrise", value = formatTime(snapshot.moonTimes.moonrise))
+    PanchangaRow(label = "Moonset", value = formatTime(snapshot.moonTimes.moonset))
     PanchangaRow(label = "Moon Phase", value = snapshot.moonPhase.displayName)
     if (snapshot.goldenHour.morningStart != null || snapshot.goldenHour.morningEnd != null) {
         PanchangaRow(
@@ -189,6 +192,11 @@ private fun HomeContentPreview() {
                 SunTimes(
                     sunrise = Instant.fromEpochMilliseconds(1_705_282_440_000L),
                     sunset = Instant.fromEpochMilliseconds(1_705_320_180_000L),
+                ),
+            moonTimes =
+                MoonTimes(
+                    moonrise = Instant.fromEpochMilliseconds(1_705_286_640_000L),
+                    moonset = Instant.fromEpochMilliseconds(1_705_331_520_000L),
                 ),
             tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
             nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),

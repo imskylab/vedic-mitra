@@ -41,6 +41,7 @@ interface AstronomyEngine {
  * @property instant the instant the snapshot was computed for.
  * @property location the observer's coordinates.
  * @property sunTimes sunrise/sunset for the location and local date.
+ * @property moonTimes moonrise/moonset for the location and local date.
  * @property tithi the current lunar day.
  * @property nakshatra the Moon's current lunar mansion.
  * @property yoga the current Sun–Moon yoga.
@@ -56,6 +57,7 @@ data class AstronomySnapshot(
     val instant: Instant,
     val location: GeoCoordinates,
     val sunTimes: SunTimes,
+    val moonTimes: MoonTimes,
     val tithi: Tithi,
     val nakshatra: Nakshatra,
     val yoga: Yoga,

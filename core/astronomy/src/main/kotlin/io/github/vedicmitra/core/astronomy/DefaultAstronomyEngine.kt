@@ -48,6 +48,7 @@ class DefaultAstronomyEngine
                 val moonSidereal = Ephemeris.norm360(moonLongitude - ayanamsa)
                 val yogaSum = Ephemeris.norm360(sunSidereal + moonSidereal)
                 val sunTimes = SolarDay.sunTimes(epochMillis, location.latitude, location.longitude)
+                val moonTimes = LunarDay.moonTimes(epochMillis, location.latitude, location.longitude)
                 val goldenHour = SolarDay.goldenHour(epochMillis, location.latitude, location.longitude)
                 val vara = varaOf(instant, epochMillis, location.longitude, sunTimes.sunrise)
                 val varjyam =
@@ -61,6 +62,7 @@ class DefaultAstronomyEngine
                         instant = instant,
                         location = location,
                         sunTimes = sunTimes,
+                        moonTimes = moonTimes,
                         tithi = tithiOf(elongation),
                         nakshatra = nakshatraOf(moonSidereal),
                         yoga = yogaOf(yogaSum),
