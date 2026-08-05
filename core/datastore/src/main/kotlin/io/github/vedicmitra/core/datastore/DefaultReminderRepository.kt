@@ -13,15 +13,14 @@ package io.github.vedicmitra.core.datastore
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
- * [ReminderRepository] backed by a Preferences [DataStore]. Reminders are stored as a set of
- * [ReminderCodec]-encoded strings; the lead time as an int.
+ * [ReminderRepository] backed by a Preferences [DataStore]. Reminders and per-muhurta offset
+ * overrides are each stored as a set of codec-encoded strings.
  */
 class DefaultReminderRepository
     @Inject
@@ -31,8 +30,8 @@ class DefaultReminderRepository
         override val reminders: Flow<List<PersistedReminder>> =
             dataStore.data.map { preferences -> preferences.decodeReminders() }
 
-        override val leadTimeMinutes: Flow<Int> =
-            dataStore.data.map { preferences -> preferences[LEAD_TIME_MINUTES] ?: DEFAULT_LEAD_TIME_MINUTES }
+        override val offsetMinutesByName: Flow<Map<String, Int>> =
+            dataStore.data.map { preferences -> preferences.decodeOffsets().associate { it.name to it.offsetMinutes } }
 
         override suspend fun upsert(reminder: PersistedReminder) {
             dataStore.edit { preferences ->
@@ -54,8 +53,15 @@ class DefaultReminderRepository
             }
         }
 
-        override suspend fun setLeadTimeMinutes(minutes: Int) {
-            dataStore.edit { preferences -> preferences[LEAD_TIME_MINUTES] = minutes }
+        override suspend fun setOffsetMinutes(
+            name: String,
+            minutes: Int,
+        ) {
+            dataStore.edit { preferences ->
+                val kept = preferences.decodeOffsets().filterNot { it.name == name }
+                preferences[MUHURTA_OFFSETS] =
+                    (kept + MuhurtaOffset(name, minutes)).map(MuhurtaOffsetCodec::encode).toSet()
+            }
         }
 
         private fun Preferences.decodeReminders(): List<PersistedReminder> =
@@ -63,9 +69,11 @@ class DefaultReminderRepository
 
         private fun List<PersistedReminder>.encode(): Set<String> = map(ReminderCodec::encode).toSet()
 
+        private fun Preferences.decodeOffsets(): List<MuhurtaOffset> =
+            this[MUHURTA_OFFSETS].orEmpty().mapNotNull(MuhurtaOffsetCodec::decode)
+
         private companion object {
             val REMINDERS = stringSetPreferencesKey("reminders")
-            val LEAD_TIME_MINUTES = intPreferencesKey("reminder_lead_time_minutes")
-            const val DEFAULT_LEAD_TIME_MINUTES = 10
+            val MUHURTA_OFFSETS = stringSetPreferencesKey("muhurta_offset_minutes")
         }
     }

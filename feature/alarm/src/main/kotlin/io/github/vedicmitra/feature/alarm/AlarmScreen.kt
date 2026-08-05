@@ -18,6 +18,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -82,7 +84,7 @@ fun AlarmScreen(
     AlarmContent(
         uiState = uiState,
         onToggleReminder = viewModel::setReminder,
-        onSelectLeadTime = viewModel::setLeadTime,
+        onOffsetChange = viewModel::setOffsetMinutes,
         onRequestExactAlarm = context::openExactAlarmSettings,
         modifier = modifier,
     )
@@ -92,7 +94,7 @@ fun AlarmScreen(
 private fun AlarmContent(
     uiState: AlarmUiState,
     onToggleReminder: (ReminderItem, Boolean) -> Unit,
-    onSelectLeadTime: (Int) -> Unit,
+    onOffsetChange: (String, Int) -> Unit,
     onRequestExactAlarm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -109,12 +111,6 @@ private fun AlarmContent(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                item {
-                    LeadTimeSelector(
-                        selectedMinutes = uiState.leadTimeMinutes,
-                        onSelect = onSelectLeadTime,
-                    )
-                }
                 if (!uiState.canScheduleExactAlarms) {
                     item { ExactAlarmBanner(onRequestExactAlarm = onRequestExactAlarm) }
                 }
@@ -135,7 +131,7 @@ private fun AlarmContent(
                     }
                 }
                 items(items = uiState.reminders, key = { it.id }) { item ->
-                    ReminderRow(item = item, onToggle = onToggleReminder)
+                    ReminderRow(item = item, onToggle = onToggleReminder, onOffsetChange = onOffsetChange)
                 }
             }
     }
@@ -145,45 +141,42 @@ private fun AlarmContent(
 private fun ReminderRow(
     item: ReminderItem,
     onToggle: (ReminderItem, Boolean) -> Unit,
+    onOffsetChange: (String, Int) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = item.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            if (item.isPast) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = item.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = "Already passed",
+                    text = "${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
                 )
+                if (item.isPast) {
+                    Text(
+                        text = "Already passed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
+            Switch(
+                checked = item.isEnabled,
+                enabled = !item.isPast,
+                onCheckedChange = { checked -> onToggle(item, checked) },
+            )
         }
-        Switch(
-            checked = item.isEnabled,
-            enabled = !item.isPast,
-            onCheckedChange = { checked -> onToggle(item, checked) },
-        )
-    }
-}
-
-@Composable
-private fun LeadTimeSelector(
-    selectedMinutes: Int,
-    onSelect: (Int) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = "Remind me before the window", style = MaterialTheme.typography.bodyMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             LEAD_TIME_OPTIONS.forEach { minutes ->
                 FilterChip(
-                    selected = minutes == selectedMinutes,
-                    onClick = { onSelect(minutes) },
+                    selected = minutes == item.offsetMinutes,
+                    enabled = !item.isPast,
+                    onClick = { onOffsetChange(item.name, minutes) },
                     label = { Text(leadTimeLabel(minutes)) },
                 )
             }
@@ -274,6 +267,7 @@ private fun AlarmContentPreview() {
                 quality = MuhurtaQuality.AUSPICIOUS,
                 isEnabled = true,
                 isPast = false,
+                offsetMinutes = 30,
             ),
             ReminderItem(
                 id = "muhurta:rahu",
@@ -283,6 +277,7 @@ private fun AlarmContentPreview() {
                 quality = MuhurtaQuality.INAUSPICIOUS,
                 isEnabled = false,
                 isPast = true,
+                offsetMinutes = 10,
             ),
         )
     VedicMitraTheme {
@@ -290,12 +285,11 @@ private fun AlarmContentPreview() {
             uiState =
                 AlarmUiState.Ready(
                     reminders = reminders,
-                    leadTimeMinutes = 10,
                     canScheduleExactAlarms = false,
                     usingDefaultLocation = true,
                 ),
             onToggleReminder = { _, _ -> },
-            onSelectLeadTime = {},
+            onOffsetChange = { _, _ -> },
             onRequestExactAlarm = {},
         )
     }

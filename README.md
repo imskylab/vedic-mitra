@@ -13,10 +13,13 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
-> **Status: Phases 1–5 complete.** The app computes today's panchanga (tithi, nakshatra, yoga,
-> karana, vara) and muhurta windows for the device's location, persists theme preferences, and
-> schedules on-device notification reminders for muhurta windows. Next up is **Phase 6 — polish &
-> release** (home widgets, localisation, Play Store pipeline) — see the [Roadmap](#roadmap).
+> **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
+> (Foundation) is done**, and **Phase 2 (Daily Timings)** and **Phase 3 (Panchang)** are partially
+> built: the app already computes today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara),
+> Brahma/Abhijit Muhurta and the inauspicious kalams (Rahu, Yamaganda, Gulika), sunrise/sunset for
+> the device's location, persists theme preferences, and schedules reboot-survivable notification
+> reminders for muhurta windows. Everything from Moon phase/rise-set onward, and all of Phases
+> 4–12, is aspirational — see the [Roadmap](#roadmap) for the full picture and current progress.
 
 ---
 
@@ -106,16 +109,328 @@ Build configuration is not copy-pasted between modules — it lives in **convent
 
 ## Roadmap
 
-- ✅ **Phase 1 — Foundation.** Build system, modules, DI/theme scaffolding, quality tooling, CI,
-  docs.
-- ✅ **Phase 2 — Astronomy engine.** `:core:astronomy` (Meeus ephemeris, Lahiri ayanamsa, panchanga
-  elements, muhurta windows).
-- ✅ **Phase 3 — Location & settings.** `:core:location` (fused provider) and `:feature:settings`
-  (theme, on DataStore).
-- ✅ **Phase 4 — Home.** Real panchanga overview for the device location in `:feature:home`.
-- ✅ **Phase 5 — Scheduling & alarms.** `:core:notifications` + `:core:scheduler` (exact alarms) and
-  the `:feature:alarm` reminders experience.
-- ⬜ **Phase 6 — Polish & release.** Home widgets, localisation, Play Store release pipeline.
+A longer-range, 12-phase roadmap that balances a solid MVP with progressively richer features.
+Status marks reflect what's actually implemented today, verified against the code — not aspiration.
+
+### ✅ Phase 1 — Foundation
+
+**Engineering**
+
+- [x] Clean Architecture
+- [x] Modular project structure
+- [x] Jetpack Compose
+- [x] Material 3
+- [x] Hilt
+- [ ] Room
+- [ ] WorkManager
+- [x] Offline-first architecture
+- [x] GitHub Actions CI/CD
+- [x] Unit testing framework
+- [x] Documentation
+- [x] AI development guidelines (AGENTS.md)
+
+> **Note:** the shipped app doesn't use Room or WorkManager. Persistence is on Jetpack DataStore
+> (`:core:datastore`), and scheduling is on `AlarmManager` — exact alarms plus a reboot-survivable
+> `BootReceiver` (`:core:scheduler`, `:feature:alarm`) — not deferred/constrained background work.
+> Revisit this pairing only if a future phase genuinely needs a relational store or WorkManager's
+> constraint-based scheduling.
+
+### 🟡 Phase 2 — Daily Timings (MVP)
+
+**Astronomical Calculations**
+
+- [x] Sunrise
+- [x] Sunset
+- [ ] Moonrise
+- [ ] Moonset
+- [ ] Moon phase
+- [ ] Golden Hour
+- [x] Brahma Muhurta
+- [x] Abhijit Muhurta
+- [x] Rahu Kalam
+- [x] Yamagandam
+- [x] Gulika Kalam
+- [ ] Dur Muhurta
+- [ ] Varjyam
+
+**Smart Alarms**
+
+- [x] Brahma Muhurta alarm (as one of the scheduled muhurta reminders)
+- [ ] Sunrise reminder
+- [ ] Sunset reminder
+- [x] Custom reminder offsets (configurable lead time)
+- [x] Exact alarms
+- [x] Daily automatic rescheduling (reboot-survivable via `BootReceiver`)
+
+**Home Dashboard**
+
+- [x] Current time
+- [x] Today's Panchang summary
+- [ ] Upcoming events
+- [ ] Current moon phase
+- [ ] Next alarm
+
+### 🟡 Phase 3 — Panchang
+
+**Hindu Calendar**
+
+- [ ] Daily Panchang screen with calendar navigation
+- [ ] Monthly calendar
+- [ ] Grid calendar
+- [ ] List calendar
+- [ ] Yearly overview
+
+**Panchang Details**
+
+- [x] Tithi
+- [x] Nakshatra
+- [x] Yoga
+- [x] Karana
+- [x] Paksha
+- [ ] Maas
+- [ ] Ritu
+- [ ] Samvatsara
+- [ ] Ayana
+
+**Celestial Information**
+
+- [x] Sunrise
+- [x] Sunset
+- [ ] Moonrise
+- [ ] Moonset
+- [ ] Moon phase
+- [ ] Planetary positions
+- [ ] Zodiac transitions
+
+### ⬜ Phase 4 — Festivals & Vrats
+
+**Festival Calendar**
+
+- [ ] Major Hindu festivals
+- [ ] Regional festivals
+- [ ] Sankranti
+- [ ] Ekadashi
+- [ ] Purnima
+- [ ] Amavasya
+- [ ] Chaturthi
+- [ ] Pradosham
+- [ ] Shivaratri
+- [ ] Navaratri
+- [ ] Diwali
+- [ ] Holi
+- [ ] Janmashtami
+- [ ] Rama Navami
+- [ ] Guru Purnima
+
+**Vrat Support**
+
+- [ ] Fasting days
+- [ ] Parana timings
+- [ ] Festival descriptions
+- [ ] Ritual guidance
+- [ ] Important observances
+
+**Notifications**
+
+- [ ] Festival reminders
+- [ ] Vrat reminders
+- [ ] Panchang alerts
+- [ ] Upcoming observances
+
+### ⬜ Phase 5 — Personalization
+
+**User Profile**
+
+- [ ] Name
+- [ ] Date of Birth
+- [ ] Time of Birth
+- [ ] Place of Birth
+
+**Saved Information**
+
+- [ ] Personal tithis
+- [ ] Family birthdays
+- [ ] Spiritual milestones
+- [ ] Favorite festivals
+- [ ] Frequently observed vrats
+
+**Custom Tracking**
+
+- [ ] Daily sadhana
+- [ ] Meditation streak
+- [ ] Japa counter
+- [ ] Reading tracker
+- [ ] Temple visits
+
+### ⬜ Phase 6 — Astrology
+
+**Horoscope**
+
+- [ ] Daily Rashifal
+- [ ] Weekly Rashifal
+- [ ] Monthly Rashifal
+- [ ] Yearly Rashifal
+
+**Kundli**
+
+- [ ] Birth chart
+- [ ] Planetary positions
+- [ ] Lagna
+- [ ] Navamsa
+- [ ] Dasha overview
+
+**Match Making**
+
+- [ ] Kundli matching
+- [ ] Compatibility score
+- [ ] Guna Milan
+
+**Reports**
+
+- [ ] Birth report
+- [ ] Planetary transit report
+- [ ] Personalized recommendations
+
+### 🟡 Phase 7 — Location & Astronomy
+
+**Location Support**
+
+- [x] GPS location
+- [ ] City selection
+- [ ] Custom latitude/longitude
+- [ ] Multiple saved locations
+
+**Offline Engine**
+
+- [x] Offline astronomical calculations (on-device Meeus ephemeris, no network)
+- [ ] Automatic timezone detection
+- [ ] DST support
+- [ ] Regional Panchang support
+
+### 🟡 Phase 8 — Reminders & Automation
+
+**Daily Notifications**
+
+- [x] Sunrise *(covered as a muhurta reminder, not a dedicated toggle)*
+- [x] Sunset *(covered as a muhurta reminder, not a dedicated toggle)*
+- [x] Brahma Muhurta
+- [ ] Sandhyavandanam
+- [ ] Festival reminders
+- [ ] Vrat reminders
+- [ ] Meditation reminders
+
+**Smart Scheduling**
+
+- [x] Dynamic daily alarms
+- [ ] Snooze options
+- [ ] Repeat schedules
+- [ ] Wear OS notifications (future)
+
+### 🟡 Phase 9 — UI & User Experience
+
+**Calendar Views**
+
+- [ ] Monthly grid
+- [ ] Agenda view
+- [ ] Timeline view
+- [ ] Festival highlights
+- [ ] Color-coded observances
+
+**Dashboard**
+
+- [x] Clean, modern UI
+- [x] Material You support
+- [x] Dark mode
+- [x] Dynamic colors
+- [ ] Home screen widgets
+
+**Accessibility**
+
+- [ ] Large text mode
+- [ ] High contrast
+- [ ] Screen reader support
+- [ ] Multiple themes
+
+### ⬜ Phase 10 — Languages
+
+**Localization**
+
+- [ ] English
+- [ ] Hindi
+- [ ] Sanskrit
+- [ ] Telugu
+- [ ] Tamil
+- [ ] Kannada
+- [ ] Malayalam
+- [ ] Marathi
+- [ ] Gujarati
+- [ ] Bengali
+- [ ] Odia
+
+Future community contributions can expand this list.
+
+### ⬜ Phase 11 — Knowledge & Devotion
+
+**Learning**
+
+- [ ] Daily shloka
+- [ ] Daily quote
+- [ ] Festival significance
+- [ ] Panchang explanations
+- [ ] Beginner guides
+
+**Devotional Tools**
+
+- [ ] Stotra library
+- [ ] Chant counter
+- [ ] Meditation timer
+- [ ] Audio support
+- [ ] Offline content
+
+### ⬜ Phase 12 — Ecosystem
+
+**Integrations**
+
+- [ ] Wear OS
+- [ ] Android Auto (notifications)
+- [ ] Calendar export (.ics)
+- [ ] Backup & restore
+- [ ] Cloud sync (optional and privacy-focused)
+
+**Open Platform**
+
+- [ ] Plugin architecture
+- [ ] Public calculation library
+- [ ] REST API (future)
+- [ ] Desktop companion (future)
+
+### Long-Term Vision (V2+)
+
+Transform Vedic Mitra into a complete Digital Vedic Companion by combining:
+
+- 🕉 Accurate Panchang
+- 🌞 Offline astronomical calculations
+- 📅 Hindu calendar
+- 🙏 Festival and vrat guidance
+- 🔔 Intelligent reminders
+- 🌙 Celestial information
+- ⭐ Astrology tools
+- 📖 Spiritual learning
+- 👤 Personalized experience
+- 🌍 Multi-language support
+- 🔒 Privacy-first, offline-first design
+- 🌐 Open-source community contributions
+
+### Suggested feature tiers
+
+To keep the project focused as it grows, features are classified into three tiers:
+
+- **Core (Offline):** Panchang, astronomy, reminders, calendar, location, personalization. These
+  should work entirely offline after installation.
+- **Enhanced (Optional Online):** Horoscope, planetary transit reports, and rich content updates.
+  These can use online services but should degrade gracefully if offline.
+- **Community Extensions:** Stotra packs, regional festival data, additional languages, and
+  plugins. This keeps the core app lightweight while allowing the ecosystem to grow.
 
 ## Build Instructions
 

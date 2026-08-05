@@ -7,6 +7,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Muhurta reminders.** Reboot-survivable, exact-alarm notification reminders for the day's
+  muhurta windows (Brahma Muhurta, Abhijit Muhurta, Rahu Kalam, Yamaganda, Gulika Kalam), each with
+  its own independently configurable lead time (0–30 minutes before the window starts). Changing a
+  window's lead time immediately re-schedules its alarm if already enabled, and the notification
+  text reflects how far ahead it fires (e.g. "Brahma Muhurta starts in 30 minutes"). See
+  [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
+
 ### Changed
 - **License changed from MIT to a dual license** — GNU AGPL-3.0-or-later for open-source use, plus a
   commercial license for proprietary use. See [LICENSING.md](LICENSING.md) and
