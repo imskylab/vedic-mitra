@@ -96,3 +96,34 @@ enum class MoonPhase(
     LAST_QUARTER("Last Quarter"),
     WANING_CRESCENT("Waning Crescent"),
 }
+
+/**
+ * Ayana — the Sun's half-year sidereal journey. Uttarayana runs from the Makara (Capricorn)
+ * ingress at sidereal longitude 270° to the Karka (Cancer) ingress at 90°; Dakshinayana is the
+ * other half, 90°..270°. This is the Drik (observed-position) convention; some traditional
+ * almanacs use a separate "Vedic Ayana" that can disagree near the transition — this app follows
+ * Drik, consistent with computing astronomy from position rather than a fixed calendar rule.
+ */
+enum class Ayana(
+    val displayName: String,
+) {
+    UTTARAYANA("Uttarayana"),
+    DAKSHINAYANA("Dakshinayana"),
+}
+
+/**
+ * Ritu — one of the six Indian seasons, each spanning 60° of the Sun's sidereal longitude,
+ * starting at the Meena/Mesha boundary (330°) for Vasanta. This is the Drik (solar-longitude)
+ * convention; some almanacs instead derive Ritu from the lunar month name ("Vedic Ritu"), which can
+ * disagree by up to a season — this app follows Drik for the same reason as [Ayana].
+ */
+enum class Ritu(
+    val displayName: String,
+) {
+    VASANTA("Vasanta"),
+    GRISHMA("Grishma"),
+    VARSHA("Varsha"),
+    SHARAD("Sharad"),
+    HEMANTA("Hemanta"),
+    SHISHIRA("Shishira"),
+}

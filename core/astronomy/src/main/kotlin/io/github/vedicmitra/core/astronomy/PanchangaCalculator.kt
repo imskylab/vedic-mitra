@@ -125,6 +125,24 @@ internal fun moonPhaseOf(elongationDeg: Double): MoonPhase {
     return MoonPhase.entries[index]
 }
 
+/**
+ * Derives the [Ayana] from the Sun's sidereal ecliptic longitude (degrees, 0..360): Dakshinayana
+ * spans 90°..270° (Karka to Makara ingress), Uttarayana the rest.
+ */
+internal fun ayanaOf(sunSiderealDeg: Double): Ayana =
+    if (sunSiderealDeg in 90.0..<270.0) Ayana.DAKSHINAYANA else Ayana.UTTARAYANA
+
+/**
+ * Derives the [Ritu] from the Sun's sidereal ecliptic longitude (degrees, 0..360), dividing the
+ * year into six 60°-wide seasons starting at the Meena/Mesha boundary (330°) for Vasanta.
+ */
+internal fun rituOf(sunSiderealDeg: Double): Ritu {
+    val rituSpan = 60.0
+    val vasantaStart = 330.0
+    val index = (Ephemeris.norm360(sunSiderealDeg - vasantaStart) / rituSpan).toInt() % Ritu.entries.size
+    return Ritu.entries[index]
+}
+
 /** Derives the [Nakshatra] from the Moon's sidereal ecliptic longitude (degrees, 0..360). */
 internal fun nakshatraOf(moonSiderealDeg: Double): Nakshatra {
     val span = 360.0 / 27.0

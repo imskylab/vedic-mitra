@@ -20,19 +20,43 @@ private val RAHU_KALAM_SEGMENT = intArrayOf(8, 2, 7, 5, 6, 4, 3)
 private val YAMAGANDA_SEGMENT = intArrayOf(5, 4, 3, 2, 1, 7, 6)
 private val GULIKA_SEGMENT = intArrayOf(7, 6, 5, 4, 3, 2, 1)
 
+// Which of the day's fifteen equal parts (the same granularity as Abhijit Muhurta) is Dur
+// Muhurta, indexed by weekday (0 = Sunday .. 6 = Saturday), 1-based segment number(s). Every day
+// has exactly one, except Saturday which has two consecutive ones. Cross-checked against
+// drikpanchang.com for Delhi over 2026-08-02..08 (source, not folklore — a commonly repeated claim
+// that every day but Friday has two Dur Muhurtas does not match this real data).
+private val DUR_MUHURTA_SEGMENTS =
+    arrayOf(
+        intArrayOf(14), // Sunday
+        intArrayOf(9), // Monday
+        intArrayOf(4), // Tuesday
+        intArrayOf(8), // Wednesday
+        intArrayOf(6), // Thursday
+        intArrayOf(4), // Friday
+        intArrayOf(1, 2), // Saturday
+    )
+
+// Abhijit Muhurta's segment (8th of 15, from sunrise). On weekdays where Dur Muhurta falls in the
+// same segment (Wednesday, per DUR_MUHURTA_SEGMENTS), Abhijit does not occur that day.
+private const val ABHIJIT_SEGMENT = 8
+
 private const val MILLIS_PER_MINUTE = 60_000L
 private const val BRAHMA_START_BEFORE_SUNRISE_MIN = 96L
 private const val BRAHMA_END_BEFORE_SUNRISE_MIN = 48L
 
 /**
- * Computes the day's muhurta windows from the [sunTimes] and [dayOfWeek]:
+ * Computes the day's sun/weekday-based muhurta windows from the [sunTimes] and [dayOfWeek]:
  *
  * - **Brahma Muhurta** (auspicious) — 96 to 48 minutes before sunrise.
- * - **Abhijit Muhurta** (auspicious) — the 8th of the day's 15 equal parts, around solar noon.
+ * - **Abhijit Muhurta** (auspicious) — the 8th of the day's 15 equal parts, around solar noon;
+ *   absent on days where [DUR_MUHURTA_SEGMENTS] occupies the same segment (Wednesday).
  * - **Rahu Kalam / Yamaganda / Gulika Kalam** (inauspicious) — one of the day's 8 equal parts,
  *   selected by weekday.
+ * - **Dur Muhurta** (inauspicious) — one or two of the day's 15 equal parts, selected by weekday.
  *
- * Returns an empty list when the sun does not both rise and set (polar day/night).
+ * Returns an empty list when the sun does not both rise and set (polar day/night). The Varjyam
+ * window (which depends on the Moon's position, not just the Sun/weekday) is computed separately
+ * by [varjyamOf] and appended by the caller.
  *
  * @param dayOfWeek 0 = Sunday .. 6 = Saturday (matching [Vara.ordinal]).
  */
@@ -65,28 +89,47 @@ internal fun muhurtasOf(
     fun daySegment(
         name: String,
         oneBasedSegment: Int,
+        eighthOrFifteenth: Long,
     ) = window(
         name = name,
         quality = MuhurtaQuality.INAUSPICIOUS,
-        startMs = sunriseMs + (oneBasedSegment - 1) * eighth,
-        endMs = sunriseMs + oneBasedSegment * eighth,
+        startMs = sunriseMs + (oneBasedSegment - 1) * eighthOrFifteenth,
+        endMs = sunriseMs + oneBasedSegment * eighthOrFifteenth,
     )
 
-    return listOf(
-        window(
-            name = "Brahma Muhurta",
-            quality = MuhurtaQuality.AUSPICIOUS,
-            startMs = sunriseMs - BRAHMA_START_BEFORE_SUNRISE_MIN * MILLIS_PER_MINUTE,
-            endMs = sunriseMs - BRAHMA_END_BEFORE_SUNRISE_MIN * MILLIS_PER_MINUTE,
-        ),
-        window(
-            name = "Abhijit Muhurta",
-            quality = MuhurtaQuality.AUSPICIOUS,
-            startMs = sunriseMs + 7 * fifteenth,
-            endMs = sunriseMs + 8 * fifteenth,
-        ),
-        daySegment("Rahu Kalam", RAHU_KALAM_SEGMENT[dayOfWeek]),
-        daySegment("Yamaganda", YAMAGANDA_SEGMENT[dayOfWeek]),
-        daySegment("Gulika Kalam", GULIKA_SEGMENT[dayOfWeek]),
-    )
+    val durMuhurtaSegments = DUR_MUHURTA_SEGMENTS[dayOfWeek]
+    val durMuhurtas =
+        durMuhurtaSegments.mapIndexed { index, segment ->
+            val name = if (durMuhurtaSegments.size == 1) "Dur Muhurta" else "Dur Muhurta ${index + 1}"
+            daySegment(name, segment, fifteenth)
+        }
+    val abhijit =
+        if (ABHIJIT_SEGMENT !in durMuhurtaSegments) {
+            listOf(
+                window(
+                    name = "Abhijit Muhurta",
+                    quality = MuhurtaQuality.AUSPICIOUS,
+                    startMs = sunriseMs + 7 * fifteenth,
+                    endMs = sunriseMs + 8 * fifteenth,
+                ),
+            )
+        } else {
+            emptyList()
+        }
+
+    return buildList {
+        add(
+            window(
+                name = "Brahma Muhurta",
+                quality = MuhurtaQuality.AUSPICIOUS,
+                startMs = sunriseMs - BRAHMA_START_BEFORE_SUNRISE_MIN * MILLIS_PER_MINUTE,
+                endMs = sunriseMs - BRAHMA_END_BEFORE_SUNRISE_MIN * MILLIS_PER_MINUTE,
+            ),
+        )
+        addAll(abhijit)
+        add(daySegment("Rahu Kalam", RAHU_KALAM_SEGMENT[dayOfWeek], eighth))
+        add(daySegment("Yamaganda", YAMAGANDA_SEGMENT[dayOfWeek], eighth))
+        add(daySegment("Gulika Kalam", GULIKA_SEGMENT[dayOfWeek], eighth))
+        addAll(durMuhurtas)
+    }
 }

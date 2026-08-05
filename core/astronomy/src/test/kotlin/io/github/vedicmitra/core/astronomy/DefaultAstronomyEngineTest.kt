@@ -56,12 +56,17 @@ class DefaultAstronomyEngineTest {
             val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)
             val snap = snapshot(result)
 
+            // 2024-01-15 is a Monday: Dur Muhurta falls in a different segment than Abhijit, so
+            // both appear (Wednesday is the only day that suppresses Abhijit — see
+            // `muhurtasOf`'s KDoc).
             assertThat(snap.muhurtas.map { it.name }).containsExactly(
                 "Brahma Muhurta",
                 "Abhijit Muhurta",
                 "Rahu Kalam",
                 "Yamaganda",
                 "Gulika Kalam",
+                "Dur Muhurta",
+                "Varjyam",
             )
             assertThat(snap.muhurtas.first { it.name == "Abhijit Muhurta" }.quality)
                 .isEqualTo(MuhurtaQuality.AUSPICIOUS)
@@ -73,6 +78,43 @@ class DefaultAstronomyEngineTest {
             val sunset = snap.sunTimes.sunset!!.toEpochMilliseconds()
             assertThat(rahu.start.toEpochMilliseconds()).isAtLeast(sunrise)
             assertThat(rahu.end.toEpochMilliseconds()).isAtMost(sunset)
+        }
+
+    @Test
+    fun `abhijit muhurta is suppressed on wednesdays, replaced by dur muhurta in the same segment`() =
+        runTest {
+            // 2026-08-05 is a Wednesday (already used and cross-checked for ayana/ritu above).
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
+            val snap = snapshot(result)
+
+            assertThat(snap.muhurtas.map { it.name }).doesNotContain("Abhijit Muhurta")
+            assertThat(snap.muhurtas.map { it.name }).contains("Dur Muhurta")
+        }
+
+    @Test
+    fun `varjyam is a 4-ghati inauspicious window`() =
+        runTest {
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_705_320_000_000L), delhi)
+            val snap = snapshot(result)
+
+            val varjyam = snap.muhurtas.first { it.name == "Varjyam" }
+            assertThat(varjyam.quality).isEqualTo(MuhurtaQuality.INAUSPICIOUS)
+            // Every nakshatra's Varjyam window is exactly 4 ghatis (96 minutes) — see
+            // VarjyamCalculatorTest for the nakshatra-start-finding math itself.
+            assertThat(varjyam.end.toEpochMilliseconds() - varjyam.start.toEpochMilliseconds())
+                .isEqualTo(96 * 60_000L)
+        }
+
+    @Test
+    fun `ayana and ritu match drikpanchang and datepanchang reference for New Delhi`() =
+        runTest {
+            // 2026-08-05 12:00 IST (06:30 UTC) — cross-checked against datepanchang.com (Mumbai) and
+            // drikpanchang.com (Delhi): both report Dakshinayana and Varsha (monsoon) Ritu.
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
+
+            val snap = snapshot(result)
+            assertThat(snap.ayana).isEqualTo(Ayana.DAKSHINAYANA)
+            assertThat(snap.ritu).isEqualTo(Ritu.VARSHA)
         }
 
     @Test

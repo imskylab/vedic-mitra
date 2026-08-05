@@ -46,6 +46,8 @@ interface AstronomyEngine {
  * @property yoga the current Sun–Moon yoga.
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
+ * @property ayana the Sun's current half-year sidereal journey (Uttarayana/Dakshinayana).
+ * @property ritu the current season, by the Sun's sidereal longitude.
  * @property moonPhase the Moon's current phase.
  * @property goldenHour the day's golden-hour windows.
  * @property muhurtas the day's auspicious/inauspicious time windows.
@@ -59,6 +61,8 @@ data class AstronomySnapshot(
     val yoga: Yoga,
     val karana: Karana,
     val vara: Vara,
+    val ayana: Ayana,
+    val ritu: Ritu,
     val moonPhase: MoonPhase,
     val goldenHour: GoldenHour,
     val muhurtas: List<Muhurta>,

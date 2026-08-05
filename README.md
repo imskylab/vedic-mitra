@@ -15,12 +15,14 @@
 
 > **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
 > (Foundation) is done**, and **Phase 2 (Daily Timings)** and **Phase 3 (Panchang)** are partially
-> built: the app already computes today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara),
-> Brahma/Abhijit Muhurta and the inauspicious kalams (Rahu, Yamaganda, Gulika), sunrise/sunset,
-> Moon phase, and golden-hour windows for the device's location, persists theme preferences, and
-> schedules reboot-survivable, per-event-configurable notification reminders for muhurta windows.
-> Moonrise/moonset, Dur Muhurta/Varjyam, and all of Phases 4–12 remain aspirational — see the
-> [Roadmap](#roadmap) for the full picture and current progress.
+> built: the app already computes today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara,
+> ayana, ritu), Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, and the inauspicious kalams (Rahu,
+> Yamaganda, Gulika), sunrise/sunset, Moon phase, and golden-hour windows for the device's location,
+> persists theme preferences, and schedules reboot-survivable, per-event-configurable notification
+> reminders for muhurta windows. Calculations are cross-checked against
+> [datepanchang.com](https://datepanchang.com) and [drikpanchang.com](https://www.drikpanchang.com)
+> before shipping. Moonrise/moonset, Maas/Samvatsara, and all of Phases 4–12 remain aspirational —
+> see the [Roadmap](#roadmap) for the full picture and current progress.
 
 ---
 
@@ -151,8 +153,8 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Rahu Kalam
 - [x] Yamagandam
 - [x] Gulika Kalam
-- [ ] Dur Muhurta
-- [ ] Varjyam
+- [x] Dur Muhurta
+- [x] Varjyam
 
 **Smart Alarms**
 
@@ -189,9 +191,9 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Karana
 - [x] Paksha
 - [ ] Maas
-- [ ] Ritu
+- [x] Ritu
 - [ ] Samvatsara
-- [ ] Ayana
+- [x] Ayana
 
 **Celestial Information**
 
