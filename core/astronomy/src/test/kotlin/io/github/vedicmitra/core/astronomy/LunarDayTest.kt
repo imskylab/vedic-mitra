@@ -11,6 +11,7 @@
 package io.github.vedicmitra.core.astronomy
 
 import com.google.common.truth.Truth.assertThat
+import io.github.vedicmitra.core.common.model.GeoCoordinates
 import org.junit.Test
 import kotlin.math.abs
 

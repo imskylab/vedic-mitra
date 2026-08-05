@@ -58,7 +58,9 @@ class EphemerisTest {
         // latitude to a little over 5 degrees, regardless of date.
         for (epochMillis in listOf(0L, 1_705_320_000_000L, 1_785_911_400_000L, 1_600_000_000_000L)) {
             val t = Ephemeris.julianCenturies(epochMillis)
-            assertThat(Ephemeris.moonLatitude(t)).isIn(-5.5..5.5)
+            val latitude = Ephemeris.moonLatitude(t)
+            assertThat(latitude).isAtLeast(-5.5)
+            assertThat(latitude).isAtMost(5.5)
         }
     }
 
@@ -67,7 +69,9 @@ class EphemerisTest {
         // The Moon's distance from Earth ranges from perigee (~356,500 km) to apogee (~406,700 km).
         for (epochMillis in listOf(0L, 1_705_320_000_000L, 1_785_911_400_000L, 1_600_000_000_000L)) {
             val t = Ephemeris.julianCenturies(epochMillis)
-            assertThat(Ephemeris.moonDistanceKm(t)).isIn(356_000.0..407_000.0)
+            val distanceKm = Ephemeris.moonDistanceKm(t)
+            assertThat(distanceKm).isAtLeast(356_000.0)
+            assertThat(distanceKm).isAtMost(407_000.0)
         }
     }
 
