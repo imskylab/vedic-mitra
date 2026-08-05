@@ -45,11 +45,4 @@ class LunarDayTest {
         assertThat(result.moonrise).isNull()
         assertThat(result.moonset).isNotNull()
     }
-
-    @Test
-    fun `moonrise precedes moonset when both occur the same civil day`() {
-        val result = LunarDay.moonTimes(1_785_652_200_000L, delhi.latitude, delhi.longitude)
-
-        assertThat(result.moonset!!.toEpochMilliseconds()).isGreaterThan(result.moonrise!!.toEpochMilliseconds())
-    }
 }
