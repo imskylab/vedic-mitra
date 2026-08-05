@@ -51,4 +51,50 @@ class EphemerisTest {
         val t = Ephemeris.julianCenturies(1_704_067_200_000L) // 2024-01-01
         assertThat(Ephemeris.lahiriAyanamsa(t)).isWithin(0.05).of(24.19)
     }
+
+    @Test
+    fun `moon latitude stays within its physical bound`() {
+        // The Moon's orbital inclination to the ecliptic (~5.145 degrees) bounds its ecliptic
+        // latitude to a little over 5 degrees, regardless of date.
+        for (epochMillis in listOf(0L, 1_705_320_000_000L, 1_785_911_400_000L, 1_600_000_000_000L)) {
+            val t = Ephemeris.julianCenturies(epochMillis)
+            val latitude = Ephemeris.moonLatitude(t)
+            assertThat(latitude).isAtLeast(-5.5)
+            assertThat(latitude).isAtMost(5.5)
+        }
+    }
+
+    @Test
+    fun `moon distance stays within its physical bound`() {
+        // The Moon's distance from Earth ranges from perigee (~356,500 km) to apogee (~406,700 km).
+        for (epochMillis in listOf(0L, 1_705_320_000_000L, 1_785_911_400_000L, 1_600_000_000_000L)) {
+            val t = Ephemeris.julianCenturies(epochMillis)
+            val distanceKm = Ephemeris.moonDistanceKm(t)
+            assertThat(distanceKm).isAtLeast(356_000.0)
+            assertThat(distanceKm).isAtMost(407_000.0)
+        }
+    }
+
+    @Test
+    fun `greenwich mean sidereal time is the known constant at J2000_0`() {
+        // JD 2451545.0 = 2000-01-01 12:00 UTC (by this Ephemeris's own Julian Day convention);
+        // Meeus's GMST formula reduces to exactly its constant term there.
+        val j2000EpochMillis = ((2_451_545.0 - 2_440_587.5) * 86_400_000.0).toLong()
+        assertThat(Ephemeris.greenwichMeanSiderealTimeDeg(j2000EpochMillis)).isWithin(1e-6).of(280.46061837)
+    }
+
+    @Test
+    fun `equatorial conversion round-trips a known ecliptic position`() {
+        // The vernal equinox point (ecliptic longitude/latitude 0,0) lies on the celestial equator,
+        // so it converts to right ascension 0 and declination 0 regardless of obliquity.
+        val (rightAscension, declination) =
+            Ephemeris.equatorialFromEcliptic(
+                eclipticLongitudeDeg = 0.0,
+                eclipticLatitudeDeg = 0.0,
+                obliquityDeg = 23.44,
+            )
+
+        assertThat(rightAscension).isWithin(1e-9).of(0.0)
+        assertThat(declination).isWithin(1e-9).of(0.0)
+    }
 }

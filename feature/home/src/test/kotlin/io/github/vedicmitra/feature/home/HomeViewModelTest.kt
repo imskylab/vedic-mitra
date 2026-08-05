@@ -17,6 +17,7 @@ import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.MoonPhase
+import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.Ritu
@@ -127,6 +128,7 @@ private val SAMPLE =
         instant = Instant.fromEpochMilliseconds(0L),
         location = GeoCoordinates(latitude = 0.0, longitude = 0.0),
         sunTimes = SunTimes(sunrise = null, sunset = null),
+        moonTimes = MoonTimes(moonrise = null, moonset = null),
         tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
         nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
         yoga = Yoga(number = 18, name = "Variyana"),
