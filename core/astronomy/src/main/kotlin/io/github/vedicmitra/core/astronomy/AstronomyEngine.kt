@@ -38,9 +38,6 @@ interface AstronomyEngine {
 /**
  * Immutable result of an astronomy computation for a single instant and location.
  *
- * Phase 2 provides the daily essentials: sun times plus the tithi, nakshatra, and vara. The
- * remaining panchanga limbs (yoga, karana) and muhurta windows are added in later increments.
- *
  * @property instant the instant the snapshot was computed for.
  * @property location the observer's coordinates.
  * @property sunTimes sunrise/sunset for the location and local date.
@@ -49,6 +46,8 @@ interface AstronomyEngine {
  * @property yoga the current Sun–Moon yoga.
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
+ * @property moonPhase the Moon's current phase.
+ * @property goldenHour the day's golden-hour windows.
  * @property muhurtas the day's auspicious/inauspicious time windows.
  */
 data class AstronomySnapshot(
@@ -60,5 +59,7 @@ data class AstronomySnapshot(
     val yoga: Yoga,
     val karana: Karana,
     val vara: Vara,
+    val moonPhase: MoonPhase,
+    val goldenHour: GoldenHour,
     val muhurtas: List<Muhurta>,
 )

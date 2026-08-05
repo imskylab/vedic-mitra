@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
@@ -120,6 +122,19 @@ private fun Panchanga(snapshot: AstronomySnapshot) {
     PanchangaRow(label = "Karana", value = snapshot.karana.name)
     PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
     PanchangaRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
+    PanchangaRow(label = "Moon Phase", value = snapshot.moonPhase.displayName)
+    if (snapshot.goldenHour.morningStart != null || snapshot.goldenHour.morningEnd != null) {
+        PanchangaRow(
+            label = "Golden Hour (Morning)",
+            value = "${formatTime(snapshot.goldenHour.morningStart)}–${formatTime(snapshot.goldenHour.morningEnd)}",
+        )
+    }
+    if (snapshot.goldenHour.eveningStart != null || snapshot.goldenHour.eveningEnd != null) {
+        PanchangaRow(
+            label = "Golden Hour (Evening)",
+            value = "${formatTime(snapshot.goldenHour.eveningStart)}–${formatTime(snapshot.goldenHour.eveningEnd)}",
+        )
+    }
     snapshot.muhurtas.forEach { muhurta ->
         PanchangaRow(
             label = muhurta.name,
@@ -176,6 +191,14 @@ private fun HomeContentPreview() {
             yoga = Yoga(number = 18, name = "Variyana"),
             karana = Karana(number = 10, name = "Balava"),
             vara = Vara.SOMAVARA,
+            moonPhase = MoonPhase.WAXING_GIBBOUS,
+            goldenHour =
+                GoldenHour(
+                    morningStart = Instant.fromEpochMilliseconds(1_705_281_000_000L),
+                    morningEnd = Instant.fromEpochMilliseconds(1_705_283_880_000L),
+                    eveningStart = Instant.fromEpochMilliseconds(1_705_318_740_000L),
+                    eveningEnd = Instant.fromEpochMilliseconds(1_705_321_620_000L),
+                ),
             muhurtas =
                 listOf(
                     Muhurta(

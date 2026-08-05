@@ -78,3 +78,21 @@ enum class Vara(
     SHUKRAVARA("Shukravara"),
     SHANIVARA("Shanivara"),
 }
+
+/**
+ * The Moon's phase — one of the eight traditional divisions of its cycle, based on its elongation
+ * from the Sun. Each phase spans 45°, centred on the four named syzygies/quadratures: New Moon at
+ * 0°, First Quarter at 90°, Full Moon at 180°, Last Quarter at 270°.
+ */
+enum class MoonPhase(
+    val displayName: String,
+) {
+    NEW_MOON("New Moon"),
+    WAXING_CRESCENT("Waxing Crescent"),
+    FIRST_QUARTER("First Quarter"),
+    WAXING_GIBBOUS("Waxing Gibbous"),
+    FULL_MOON("Full Moon"),
+    WANING_GIBBOUS("Waning Gibbous"),
+    LAST_QUARTER("Last Quarter"),
+    WANING_CRESCENT("Waning Crescent"),
+}

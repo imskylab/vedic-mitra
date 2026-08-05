@@ -13,7 +13,9 @@ package io.github.vedicmitra.feature.home
 import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.SunTimes
@@ -128,5 +130,7 @@ private val SAMPLE =
         yoga = Yoga(number = 18, name = "Variyana"),
         karana = Karana(number = 10, name = "Balava"),
         vara = Vara.SOMAVARA,
+        moonPhase = MoonPhase.FULL_MOON,
+        goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
         muhurtas = emptyList(),
     )

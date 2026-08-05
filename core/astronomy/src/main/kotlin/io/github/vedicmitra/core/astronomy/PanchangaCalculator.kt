@@ -114,6 +114,17 @@ internal fun tithiOf(elongationDeg: Double): Tithi {
     return Tithi(number = number, paksha = paksha, name = name)
 }
 
+/**
+ * Derives the [MoonPhase] from the Moon's elongation from the Sun (degrees, 0..360), dividing the
+ * cycle into eight 45°-wide phases centred on New Moon (0°), First Quarter (90°), Full Moon (180°),
+ * and Last Quarter (270°).
+ */
+internal fun moonPhaseOf(elongationDeg: Double): MoonPhase {
+    val phaseSpan = 45.0
+    val index = ((elongationDeg + phaseSpan / 2) / phaseSpan).toInt() % MoonPhase.entries.size
+    return MoonPhase.entries[index]
+}
+
 /** Derives the [Nakshatra] from the Moon's sidereal ecliptic longitude (degrees, 0..360). */
 internal fun nakshatraOf(moonSiderealDeg: Double): Nakshatra {
     val span = 360.0 / 27.0
