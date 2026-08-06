@@ -35,7 +35,7 @@ class MainViewModel
                 initialValue =
                     ThemeSettings(
                         darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-                        useDynamicColor = true,
+                        useDynamicColor = false,
                     ),
             )
     }

@@ -29,7 +29,7 @@ class DefaultUserPreferencesRepository
             dataStore.data.map { preferences ->
                 ThemeSettings(
                     darkThemeConfig = preferences[DARK_THEME_CONFIG].toDarkThemeConfig(),
-                    useDynamicColor = preferences[USE_DYNAMIC_COLOR] ?: true,
+                    useDynamicColor = preferences[USE_DYNAMIC_COLOR] ?: false,
                 )
             }
 

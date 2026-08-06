@@ -23,6 +23,7 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.PanchangaDaySummary
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
@@ -255,6 +256,18 @@ private class FakeAstronomyEngine(
         instant: Instant,
         location: GeoCoordinates,
     ): AppResult<AstronomySnapshot> = result
+
+    override suspend fun daySummaryAt(
+        instant: Instant,
+        location: GeoCoordinates,
+    ): AppResult<PanchangaDaySummary> =
+        AppResult.Success(
+            PanchangaDaySummary(
+                tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
+                nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
+                moonPhase = MoonPhase.FULL_MOON,
+            ),
+        )
 }
 
 private class FakeLocationProvider(

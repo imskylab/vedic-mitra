@@ -19,8 +19,10 @@
 > ayana, ritu), Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, and the inauspicious kalams (Rahu,
 > Yamaganda, Gulika), sunrise/sunset, moonrise/moonset, Moon phase, and golden-hour windows for the
 > device's location, persists theme preferences, and schedules reboot-survivable,
-> per-event-configurable notification reminders for muhurta windows. Calculations are cross-checked
-> against [datepanchang.com](https://datepanchang.com) and
+> per-event-configurable notification reminders for muhurta windows. It shows all of this on a
+> home dashboard and a browsable monthly **calendar** (tap any day for its full panchang), wrapped
+> in a golden/maroon brand theme drawn from the app emblem, navigated via a bottom bar. Calculations
+> are cross-checked against [datepanchang.com](https://datepanchang.com) and
 > [drikpanchang.com](https://www.drikpanchang.com) before shipping. Maas/Samvatsara and all of
 > Phases 4–12 remain aspirational — see the [Roadmap](#roadmap) for the full picture and current
 > progress.
@@ -178,9 +180,9 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 **Hindu Calendar**
 
-- [ ] Daily Panchang screen with calendar navigation
-- [ ] Monthly calendar
-- [ ] Grid calendar
+- [x] Daily Panchang screen with calendar navigation
+- [x] Monthly calendar
+- [x] Grid calendar
 - [ ] List calendar
 - [ ] Yearly overview
 
@@ -334,7 +336,7 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 **Calendar Views**
 
-- [ ] Monthly grid
+- [x] Monthly grid
 - [ ] Agenda view
 - [ ] Timeline view
 - [ ] Festival highlights

@@ -8,6 +8,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Hindu calendar screen.** A new `:feature:calendar` module with a monthly panchang grid — each
+  day shows its tithi (Shukla/Krishna + number); tap a day for the full panchanga of that date, and
+  page between months. Backed by a new lightweight `AstronomyEngine.daySummaryAt` so a whole month
+  of days is computed cheaply (no per-cell sunrise/moonrise search). Reached via a new bottom
+  navigation bar (Home · Calendar · Reminders · Settings).
+- **Golden brand theme.** The Material 3 theme was reworked into a golden / maroon / bronze palette
+  (full tonal scheme, light and dark, plus softly-rounded shapes) drawn from the app emblem,
+  replacing the placeholder indigo/saffron/teal. Dynamic (wallpaper) colour now defaults **off** so
+  the brand palette is the out-of-the-box look; users can still opt into dynamic colour in Settings.
+  See [docs/adr/0004-golden-theme-and-calendar.md](docs/adr/0004-golden-theme-and-calendar.md).
 - **Moonrise and moonset.** `LunarDay` computes the Moon's topocentric altitude (extending
   `Ephemeris` with the Moon's ecliptic latitude, distance, equatorial conversion, and Greenwich
   Mean Sidereal Time — none of which existed before) and finds rise/set crossings via a coarse

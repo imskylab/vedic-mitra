@@ -22,34 +22,77 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme =
     darkColorScheme(
-        primary = indigo80,
-        secondary = saffron80,
-        tertiary = teal80,
-        error = error80,
+        primary = goldPrimaryDark,
+        onPrimary = onGoldPrimaryDark,
+        primaryContainer = goldContainerDark,
+        onPrimaryContainer = onGoldContainerDark,
+        secondary = maroonSecondaryDark,
+        onSecondary = onMaroonSecondaryDark,
+        secondaryContainer = maroonContainerDark,
+        onSecondaryContainer = onMaroonContainerDark,
+        tertiary = bronzeTertiaryDark,
+        onTertiary = onBronzeTertiaryDark,
+        tertiaryContainer = bronzeContainerDark,
+        onTertiaryContainer = onBronzeContainerDark,
+        background = backgroundDark,
+        onBackground = onBackgroundDark,
+        surface = backgroundDark,
+        onSurface = onBackgroundDark,
+        surfaceVariant = surfaceVariantDark,
+        onSurfaceVariant = onSurfaceVariantDark,
+        surfaceContainer = surfaceContainerDark,
+        outline = outlineDark,
+        error = errorDark,
+        onError = onErrorDark,
+        errorContainer = errorContainerDark,
+        onErrorContainer = onErrorContainerDark,
     )
 
 private val LightColorScheme =
     lightColorScheme(
-        primary = indigo40,
-        secondary = saffron40,
-        tertiary = teal40,
-        error = error40,
+        primary = goldPrimaryLight,
+        onPrimary = onGoldPrimaryLight,
+        primaryContainer = goldContainerLight,
+        onPrimaryContainer = onGoldContainerLight,
+        secondary = maroonSecondaryLight,
+        onSecondary = onMaroonSecondaryLight,
+        secondaryContainer = maroonContainerLight,
+        onSecondaryContainer = onMaroonContainerLight,
+        tertiary = bronzeTertiaryLight,
+        onTertiary = onBronzeTertiaryLight,
+        tertiaryContainer = bronzeContainerLight,
+        onTertiaryContainer = onBronzeContainerLight,
+        background = backgroundLight,
+        onBackground = onBackgroundLight,
+        surface = backgroundLight,
+        onSurface = onBackgroundLight,
+        surfaceVariant = surfaceVariantLight,
+        onSurfaceVariant = onSurfaceVariantLight,
+        surfaceContainer = surfaceContainerLight,
+        outline = outlineLight,
+        error = errorLight,
+        onError = onErrorLight,
+        errorContainer = errorContainerLight,
+        onErrorContainer = onErrorContainerLight,
     )
 
 /**
  * Root Material 3 theme for Vedic Mitra. Every screen must be wrapped in this so colours,
- * typography, and shapes stay consistent. Supports light/dark and Android 12+ dynamic colour.
+ * typography, and shapes stay consistent. Supports light/dark and, when explicitly enabled,
+ * Android 12+ dynamic colour.
  *
  * This is design-system foundation, not feature logic.
  *
  * @param darkTheme whether to use the dark colour scheme; defaults to the system setting.
- * @param dynamicColor whether to derive colours from the device wallpaper on Android 12+.
+ * @param dynamicColor whether to derive colours from the device wallpaper on Android 12+. Defaults
+ *   to `false` so the brand palette is the out-of-the-box experience; the user can opt in via
+ *   settings.
  * @param content the themed UI.
  */
 @Composable
 fun VedicMitraTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme =
@@ -66,6 +109,7 @@ fun VedicMitraTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = VedicTypography,
+        shapes = VedicShapes,
         content = content,
     )
 }
