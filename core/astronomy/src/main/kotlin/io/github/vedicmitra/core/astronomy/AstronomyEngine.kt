@@ -18,9 +18,9 @@ import kotlin.time.Instant
  * Port for astronomical / panchanga calculations.
  *
  * Consumers (features, use cases) depend on this abstraction so the concrete ephemeris-backed
- * engine can be swapped and tested. **No calculation is implemented in Phase 1** — this file
- * declares only the contract. The concrete [AstronomyEngine] implementation, and the full shape of
- * [AstronomySnapshot], arrive in the astronomy implementation phase.
+ * engine can be swapped and tested. [DefaultAstronomyEngine] provides the concrete,
+ * ephemeris-backed implementation; this file declares the contract and the shape of
+ * [AstronomySnapshot] and [PanchangaDaySummary].
  */
 interface AstronomyEngine {
     /**
@@ -73,6 +73,8 @@ data class PanchangaDaySummary(
  * @property yoga the current Sun–Moon yoga.
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
+ * @property maasa the amanta lunar month.
+ * @property samvatsara the year in the sixty-year Jovian cycle.
  * @property ayana the Sun's current half-year sidereal journey (Uttarayana/Dakshinayana).
  * @property ritu the current season, by the Sun's sidereal longitude.
  * @property moonPhase the Moon's current phase.
@@ -89,6 +91,8 @@ data class AstronomySnapshot(
     val yoga: Yoga,
     val karana: Karana,
     val vara: Vara,
+    val maasa: Maasa,
+    val samvatsara: Samvatsara,
     val ayana: Ayana,
     val ritu: Ritu,
     val moonPhase: MoonPhase,

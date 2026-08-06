@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Maasa and Samvatsara.** `:core:astronomy` now derives the amanta lunar month (Maasa) and the
+  sixty-year-cycle year name (Samvatsara), shown on the home dashboard and each calendar day's
+  detail. The month is named from the Sun's rashi at the new moon that begins it (found by a
+  synodic-seeded bisection over the Moon's elongation), and a lunation with no Sankranti is flagged
+  as an **Adhika** (leap) month — correctly reporting Adhika Jyeshtha in 2026, so early August
+  reads Ashadha rather than Shravana. Samvatsara follows the South-Indian Chandramana convention,
+  advancing at Chaitra Shukla Pratipada (Ugadi) from the elapsed Shaka year. Cross-checked against
+  drikpanchang.com and the published Ugadi 2026 almanac (Parabhava Nama Samvatsara, Shaka 1948).
+  See [docs/adr/0005-maasa-and-samvatsara.md](docs/adr/0005-maasa-and-samvatsara.md).
 - **Hindu calendar screen.** A new `:feature:calendar` module with a monthly panchang grid — each
   day shows its tithi (Shukla/Krishna + number); tap a day for the full panchanga of that date, and
   page between months. Backed by a new lightweight `AstronomyEngine.daySummaryAt` so a whole month

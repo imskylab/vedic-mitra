@@ -16,14 +16,14 @@
 > **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
 > (Foundation) is done**, and **Phase 2 (Daily Timings)** and **Phase 3 (Panchang)** are partially
 > built: the app already computes today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara,
-> ayana, ritu), Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, and the inauspicious kalams (Rahu,
+> ayana, ritu, maasa, samvatsara), Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, and the inauspicious kalams (Rahu,
 > Yamaganda, Gulika), sunrise/sunset, moonrise/moonset, Moon phase, and golden-hour windows for the
 > device's location, persists theme preferences, and schedules reboot-survivable,
 > per-event-configurable notification reminders for muhurta windows. It shows all of this on a
 > home dashboard and a browsable monthly **calendar** (tap any day for its full panchang), wrapped
 > in a golden/maroon brand theme drawn from the app emblem, navigated via a bottom bar. Calculations
 > are cross-checked against [datepanchang.com](https://datepanchang.com) and
-> [drikpanchang.com](https://www.drikpanchang.com) before shipping. Maas/Samvatsara and all of
+> [drikpanchang.com](https://www.drikpanchang.com) before shipping. All of
 > Phases 4–12 remain aspirational — see the [Roadmap](#roadmap) for the full picture and current
 > progress.
 
@@ -193,9 +193,9 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Yoga
 - [x] Karana
 - [x] Paksha
-- [ ] Maas
+- [x] Maas
 - [x] Ritu
-- [ ] Samvatsara
+- [x] Samvatsara
 - [x] Ayana
 
 **Celestial Information**

@@ -127,3 +127,42 @@ enum class Ritu(
     HEMANTA("Hemanta"),
     SHISHIRA("Shishira"),
 }
+
+/**
+ * Maasa — the lunar month, in the **amanta** (new-moon-to-new-moon) scheme this app follows. The
+ * month is named after the solar rashi the Sun occupies at the new moon that begins it: the month
+ * beginning while the Sun is in Meena is Chaitra, in Mesha is Vaishakha, and so on. When a lunation
+ * contains no Sankranti — the Sun enters no new rashi between its bounding new moons — it is an
+ * [adhika] ("extra") month: it carries the same name as the following month, prefixed "Adhika".
+ * The complementary purnimanta (full-moon-ending) scheme, used in North India, labels the dark
+ * fortnight with the next month's name; this app reports amanta throughout.
+ *
+ * @property number the month number, 1..12 (1 = Chaitra).
+ * @property name the traditional Sanskrit name.
+ * @property adhika whether this is an Adhika (leap) month.
+ */
+data class Maasa(
+    val number: Int,
+    val name: String,
+    val adhika: Boolean,
+) {
+    /** The name as shown to the user, e.g. "Ashadha" or, for a leap month, "Adhika Jyeshtha". */
+    val displayName: String
+        get() = if (adhika) "Adhika $name" else name
+}
+
+/**
+ * Samvatsara — the year within the sixty-year Jovian cycle (Prabhava, Vibhava, … Akshaya). This app
+ * uses the South-Indian **Chandramana** convention, in which the samvatsara advances at Chaitra
+ * Shukla Pratipada (Ugadi) and is derived from the elapsed Shaka Samvat year of that lunar new
+ * year: index (0-based) = (shakaYear + 11) mod 60.
+ *
+ * @property number the position in the cycle, 1..60 (1 = Prabhava).
+ * @property name the traditional Sanskrit name.
+ * @property shakaYear the elapsed Shaka Samvat year the current lunar year corresponds to.
+ */
+data class Samvatsara(
+    val number: Int,
+    val name: String,
+    val shakaYear: Int,
+)
