@@ -33,14 +33,19 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
- * Presentation logic for the reminders screen (MVVM). Loads today's muhurta windows for the device
- * location and, combined with the user's persisted reminders and per-muhurta lead-time overrides,
- * exposes a togglable list. Toggling schedules (or cancels) an exact alarm — lead-time adjusted —
- * and persists the full reminder so it can be re-armed after a reboot.
+ * Presentation logic for the reminders screen (MVVM). For each muhurta it resolves the **next
+ * upcoming** occurrence — today's window if it is still ahead, otherwise tomorrow's — so a reminder
+ * can always be set and never shows as "already passed". Combined with the user's persisted
+ * reminders and per-muhurta lead-time overrides, it exposes a togglable list. Toggling on schedules
+ * (or off cancels) an exact alarm — lead-time adjusted — and persists it so it survives a reboot.
+ *
+ * Each [load] also **renews** every already-enabled reminder onto its next upcoming occurrence, so
+ * simply reopening the screen rolls fired reminders forward to the following day.
  *
  * [load] is driven by the screen once it has resolved the location permission.
  */
@@ -68,7 +73,7 @@ class AlarmViewModel
                     is AlarmLoad.Ready -> {
                         val enabledIds = reminders.mapTo(mutableSetOf()) { it.id }
                         AlarmUiState.Ready(
-                            reminders = load.muhurtas.map { it.toReminderItem(enabledIds, load.now, offsets) },
+                            reminders = load.muhurtas.map { it.toReminderItem(enabledIds, offsets) },
                             canScheduleExactAlarms = load.canScheduleExactAlarms,
                             usingDefaultLocation = load.usingDefaultLocation,
                         )
@@ -80,42 +85,96 @@ class AlarmViewModel
                 initialValue = AlarmUiState.Loading,
             )
 
-        /** (Re)loads today's muhurtas, using the device location when available. */
+        /**
+         * (Re)loads the next upcoming occurrence of each muhurta, using the device location when
+         * available, then renews any already-enabled reminders onto those upcoming windows.
+         */
         fun load() {
             viewModelScope.launch {
                 loadState.value = AlarmLoad.Loading
-                reminderRepository.removePast(System.currentTimeMillis())
 
                 val locationResult = locationProvider.currentLocation()
                 val usingDefault = locationResult !is AppResult.Success
                 val location = (locationResult as? AppResult.Success)?.data ?: DEFAULT_LOCATION
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
 
-                loadState.value =
-                    when (val snapshot = astronomyEngine.snapshotAt(now, location)) {
-                        is AppResult.Success ->
-                            AlarmLoad.Ready(
-                                muhurtas = snapshot.data.muhurtas,
-                                now = now,
-                                canScheduleExactAlarms = taskScheduler.canScheduleExactAlarms(),
-                                usingDefaultLocation = usingDefault,
-                            )
+                val today = astronomyEngine.snapshotAt(now, location)
+                val tomorrow = astronomyEngine.snapshotAt(now + 1.days, location)
 
-                        is AppResult.Failure -> AlarmLoad.Error(snapshot.cause.message ?: "Unknown error")
+                loadState.value =
+                    if (today is AppResult.Success && tomorrow is AppResult.Success) {
+                        val upcoming = upcomingMuhurtas(today.data.muhurtas, tomorrow.data.muhurtas, now)
+                        renewEnabledReminders(upcoming)
+                        reminderRepository.removePast(now.toEpochMilliseconds())
+                        AlarmLoad.Ready(
+                            muhurtas = upcoming,
+                            canScheduleExactAlarms = taskScheduler.canScheduleExactAlarms(),
+                            usingDefaultLocation = usingDefault,
+                        )
+                    } else {
+                        val message =
+                            (today as? AppResult.Failure)?.cause?.message
+                                ?: (tomorrow as? AppResult.Failure)?.cause?.message
+                                ?: "Unknown error"
+                        AlarmLoad.Error(message)
                     }
             }
         }
 
         /**
+         * For each of [today]'s muhurtas, keeps it if its window is still ahead of [now], otherwise
+         * substitutes the same-named window from [tomorrow] (flagged [UpcomingMuhurta.isTomorrow]).
+         * The result therefore never contains a window that has already begun.
+         */
+        private fun upcomingMuhurtas(
+            today: List<Muhurta>,
+            tomorrow: List<Muhurta>,
+            now: Instant,
+        ): List<UpcomingMuhurta> =
+            today.map { window ->
+                if (window.start > now) {
+                    UpcomingMuhurta(window, isTomorrow = false)
+                } else {
+                    // Names are stable day to day; fall back to today's window on the rare day a
+                    // name differs (e.g. Saturday's split "Dur Muhurta 1/2").
+                    val next = tomorrow.firstOrNull { it.name == window.name }
+                    if (next !=
+                        null
+                    ) {
+                        UpcomingMuhurta(next, isTomorrow = true)
+                    } else {
+                        UpcomingMuhurta(window, isTomorrow = false)
+                    }
+                }
+            }
+
+        /**
+         * Re-schedules every persisted (i.e. enabled) reminder onto its [upcoming] occurrence, so a
+         * reminder that has already fired rolls forward to the next day the moment the screen loads.
+         */
+        private suspend fun renewEnabledReminders(upcoming: List<UpcomingMuhurta>) {
+            val persisted = reminderRepository.reminders.first()
+            if (persisted.isEmpty()) return
+
+            val offsets = reminderRepository.offsetMinutesByName.first()
+            val byName = upcoming.associateBy { it.muhurta.name }
+            persisted.forEach { reminder ->
+                val name = reminder.id.removePrefix(MUHURTA_ID_PREFIX)
+                val window = byName[name]?.muhurta ?: return@forEach
+                val offset = offsets[name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
+                scheduleAndPersist(reminder.id, window.name, window.start, window.quality, offset)
+            }
+        }
+
+        /**
          * Enables or disables the reminder for [item]. Enabling schedules an exact alarm — fired
-         * [ReminderItem.offsetMinutes] before the window (never in the past) — and persists it;
-         * disabling cancels and forgets it. Past windows are ignored.
+         * [ReminderItem.offsetMinutes] before the (always upcoming) window — and persists it;
+         * disabling cancels and forgets it.
          */
         fun setReminder(
             item: ReminderItem,
             enabled: Boolean,
         ) {
-            if (enabled && item.isPast) return
             viewModelScope.launch {
                 if (enabled) {
                     scheduleAndPersist(item.id, item.name, item.start, item.quality, item.offsetMinutes)
@@ -138,13 +197,17 @@ class AlarmViewModel
             viewModelScope.launch {
                 reminderRepository.setOffsetMinutes(name, minutes)
 
-                val id = "muhurta:$name"
+                val id = "$MUHURTA_ID_PREFIX$name"
                 val isEnabled = reminderRepository.reminders.first().any { it.id == id }
                 if (!isEnabled) return@launch
 
-                val muhurta = (loadState.value as? AlarmLoad.Ready)?.muhurtas?.firstOrNull { it.name == name }
-                if (muhurta != null) {
-                    scheduleAndPersist(id, muhurta.name, muhurta.start, muhurta.quality, minutes)
+                val window =
+                    (loadState.value as? AlarmLoad.Ready)
+                        ?.muhurtas
+                        ?.firstOrNull { it.muhurta.name == name }
+                        ?.muhurta
+                if (window != null) {
+                    scheduleAndPersist(id, window.name, window.start, window.quality, minutes)
                 }
             }
         }
@@ -184,21 +247,20 @@ class AlarmViewModel
             )
         }
 
-        private fun Muhurta.toReminderItem(
+        private fun UpcomingMuhurta.toReminderItem(
             enabledIds: Set<String>,
-            now: Instant,
             offsetsByName: Map<String, Int>,
         ): ReminderItem {
-            val id = "muhurta:$name"
+            val id = "$MUHURTA_ID_PREFIX${muhurta.name}"
             return ReminderItem(
                 id = id,
-                name = name,
-                start = start,
-                end = end,
-                quality = quality,
+                name = muhurta.name,
+                start = muhurta.start,
+                end = muhurta.end,
+                quality = muhurta.quality,
                 isEnabled = id in enabledIds,
-                isPast = start <= now,
-                offsetMinutes = offsetsByName[name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
+                isTomorrow = isTomorrow,
+                offsetMinutes = offsetsByName[muhurta.name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
             )
         }
 
@@ -225,11 +287,18 @@ class AlarmViewModel
 
         private companion object {
             const val STOP_TIMEOUT_MILLIS = 5_000L
+            const val MUHURTA_ID_PREFIX = "muhurta:"
 
             // Used when the device location is unavailable (New Delhi).
             val DEFAULT_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
         }
     }
+
+/** A muhurta window resolved to its next upcoming occurrence, with whether that falls tomorrow. */
+private data class UpcomingMuhurta(
+    val muhurta: Muhurta,
+    val isTomorrow: Boolean,
+)
 
 /** UI state for the reminders screen. */
 sealed interface AlarmUiState {
@@ -242,9 +311,9 @@ sealed interface AlarmUiState {
     ) : AlarmUiState
 
     /**
-     * Today's muhurtas, ready to display.
+     * The next upcoming occurrence of each muhurta, ready to display.
      *
-     * @property reminders the day's windows, each with its enabled state and lead-time offset.
+     * @property reminders the windows, each with its enabled state and lead-time offset.
      * @property canScheduleExactAlarms whether exact alarms are permitted; when false the UI should
      *   invite the user to grant the permission.
      * @property usingDefaultLocation whether a default location was used (device location
@@ -266,7 +335,7 @@ sealed interface AlarmUiState {
  * @property end when the window ends.
  * @property quality whether the window is auspicious or inauspicious.
  * @property isEnabled whether the user has a reminder set for it.
- * @property isPast whether the window has already begun (a reminder can no longer be set).
+ * @property isTomorrow whether this upcoming occurrence falls on the next day (today's has passed).
  * @property offsetMinutes how many minutes before [start] this reminder fires (0 = at start),
  *   resolved from the user's per-muhurta override or [ReminderRepository.DEFAULT_OFFSET_MINUTES].
  */
@@ -277,7 +346,7 @@ data class ReminderItem(
     val end: Instant,
     val quality: MuhurtaQuality,
     val isEnabled: Boolean,
-    val isPast: Boolean,
+    val isTomorrow: Boolean,
     val offsetMinutes: Int,
 )
 
@@ -290,8 +359,7 @@ private sealed interface AlarmLoad {
     ) : AlarmLoad
 
     data class Ready(
-        val muhurtas: List<Muhurta>,
-        val now: Instant,
+        val muhurtas: List<UpcomingMuhurta>,
         val canScheduleExactAlarms: Boolean,
         val usingDefaultLocation: Boolean,
     ) : AlarmLoad

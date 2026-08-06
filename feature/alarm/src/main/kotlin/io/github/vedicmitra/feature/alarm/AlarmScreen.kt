@@ -150,21 +150,14 @@ private fun ReminderRow(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = item.name, style = MaterialTheme.typography.titleMedium)
+                val whenLabel = if (item.isTomorrow) "Tomorrow · " else ""
                 Text(
-                    text = "${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
+                    text = "$whenLabel${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
                     style = MaterialTheme.typography.bodySmall,
                 )
-                if (item.isPast) {
-                    Text(
-                        text = "Already passed",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
             }
             Switch(
                 checked = item.isEnabled,
-                enabled = !item.isPast,
                 onCheckedChange = { checked -> onToggle(item, checked) },
             )
         }
@@ -175,7 +168,6 @@ private fun ReminderRow(
             LEAD_TIME_OPTIONS.forEach { minutes ->
                 FilterChip(
                     selected = minutes == item.offsetMinutes,
-                    enabled = !item.isPast,
                     onClick = { onOffsetChange(item.name, minutes) },
                     label = { Text(leadTimeLabel(minutes)) },
                 )
@@ -266,7 +258,7 @@ private fun AlarmContentPreview() {
                 end = Instant.fromEpochMilliseconds(1_705_302_960_000L),
                 quality = MuhurtaQuality.AUSPICIOUS,
                 isEnabled = true,
-                isPast = false,
+                isTomorrow = false,
                 offsetMinutes = 30,
             ),
             ReminderItem(
@@ -276,7 +268,7 @@ private fun AlarmContentPreview() {
                 end = Instant.fromEpochMilliseconds(1_705_292_265_000L),
                 quality = MuhurtaQuality.INAUSPICIOUS,
                 isEnabled = false,
-                isPast = true,
+                isTomorrow = true,
                 offsetMinutes = 10,
             ),
         )

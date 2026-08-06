@@ -60,6 +60,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and Hilt 2.60.1. Migrated the astronomy/scheduler ports from `kotlinx.datetime.Instant` to the
   stdlib `kotlin.time.Instant`.
 
+### Fixed
+- **Muhurta reminders could not be set once a window had passed.** The reminders screen only ever
+  computed *today's* windows, so by later in the day every row showed "already passed" with a
+  disabled toggle. It now resolves each muhurta's **next upcoming** occurrence — today's if still
+  ahead, otherwise tomorrow's (labelled "Tomorrow") — so a reminder can always be toggled on, and
+  each time the screen opens it renews already-enabled reminders onto their next occurrence.
+
 ### Notes
 - Held the latest androidx/Compose line: it requires compiling against **compileSdk 37**, which is
   currently only a preview (`android-CANARY`). The project stays on stable compileSdk 36 and adopts
