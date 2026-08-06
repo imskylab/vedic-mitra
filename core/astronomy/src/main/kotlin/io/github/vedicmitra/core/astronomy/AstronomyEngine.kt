@@ -33,7 +33,33 @@ interface AstronomyEngine {
         instant: Instant,
         location: GeoCoordinates,
     ): AppResult<AstronomySnapshot>
+
+    /**
+     * Computes a lightweight [PanchangaDaySummary] for the given [instant] and [location] — just
+     * the elements a calendar grid shows per day (tithi, nakshatra, moon phase). Deliberately skips
+     * the expensive sunrise/moonrise/muhurta work in [snapshotAt] so a whole month's worth of days
+     * can be computed cheaply; use [snapshotAt] for a single day's full detail.
+     *
+     * @return [AppResult.Success] with the summary, or [AppResult.Failure] if it cannot be computed.
+     */
+    suspend fun daySummaryAt(
+        instant: Instant,
+        location: GeoCoordinates,
+    ): AppResult<PanchangaDaySummary>
 }
+
+/**
+ * A lightweight, cheap-to-compute panchanga summary for one day, for a month-grid overview.
+ *
+ * @property tithi the day's lunar day.
+ * @property nakshatra the Moon's lunar mansion.
+ * @property moonPhase the Moon's phase.
+ */
+data class PanchangaDaySummary(
+    val tithi: Tithi,
+    val nakshatra: Nakshatra,
+    val moonPhase: MoonPhase,
+)
 
 /**
  * Immutable result of an astronomy computation for a single instant and location.

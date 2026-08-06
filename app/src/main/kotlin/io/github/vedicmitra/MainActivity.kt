@@ -16,30 +16,48 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
+import io.github.vedicmitra.feature.calendar.CalendarScreen
 import io.github.vedicmitra.feature.home.HomeScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
 
-private const val HOME_ROUTE = "home"
-private const val SETTINGS_ROUTE = "settings"
-private const val ALARM_ROUTE = "alarm"
+/** The app's top-level destinations, shown in the bottom navigation bar in this order. */
+private enum class TopDestination(
+    val route: String,
+    val label: String,
+    val icon: ImageVector,
+) {
+    HOME("home", "Home", Icons.Filled.Home),
+    CALENDAR("calendar", "Calendar", Icons.Filled.DateRange),
+    ALARM("alarm", "Reminders", Icons.Filled.Notifications),
+    SETTINGS("settings", "Settings", Icons.Filled.Settings),
+}
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -67,52 +85,47 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun VedicMitraApp() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = HOME_ROUTE) {
-        composable(HOME_ROUTE) {
-            AppScaffold(
-                title = "Vedic Mitra",
-                action = {
-                    TextButton(onClick = { navController.navigate(ALARM_ROUTE) }) { Text("Reminders") }
-                    TextButton(onClick = { navController.navigate(SETTINGS_ROUTE) }) { Text("Settings") }
-                },
-            ) { padding -> HomeScreen(modifier = Modifier.padding(padding)) }
-        }
-        composable(ALARM_ROUTE) {
-            AppScaffold(
-                title = "Reminders",
-                navigation = { TextButton(onClick = { navController.popBackStack() }) { Text("Back") } },
-            ) { padding -> AlarmScreen(modifier = Modifier.padding(padding)) }
-        }
-        composable(SETTINGS_ROUTE) {
-            AppScaffold(
-                title = "Settings",
-                navigation = { TextButton(onClick = { navController.popBackStack() }) { Text("Back") } },
-            ) { padding -> SettingsScreen(modifier = Modifier.padding(padding)) }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val current = TopDestination.entries.firstOrNull { it.route == currentRoute }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(title = { Text(current?.label ?: "Vedic Mitra") })
+        },
+        bottomBar = {
+            NavigationBar {
+                TopDestination.entries.forEach { destination ->
+                    NavigationBarItem(
+                        selected = currentRoute == destination.route,
+                        onClick = {
+                            navController.navigate(destination.route) {
+                                // Single instance per tab; preserve/restore each tab's own state.
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = { Icon(destination.icon, contentDescription = destination.label) },
+                        label = { Text(destination.label) },
+                    )
+                }
+            }
+        },
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = TopDestination.HOME.route,
+            modifier = Modifier.padding(padding),
+        ) {
+            composable(TopDestination.HOME.route) { HomeScreen() }
+            composable(TopDestination.CALENDAR.route) { CalendarScreen() }
+            composable(TopDestination.ALARM.route) { AlarmScreen() }
+            composable(TopDestination.SETTINGS.route) { SettingsScreen() }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AppScaffold(
-    title: String,
-    modifier: Modifier = Modifier,
-    navigation: @Composable () -> Unit = {},
-    action: @Composable () -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = navigation,
-                actions = { action() },
-            )
-        },
-        content = content,
-    )
 }

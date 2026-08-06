@@ -56,5 +56,6 @@ include(":core:location")
 
 // --- Features (feature-first screens) ----------------------------------------
 include(":feature:home")
+include(":feature:calendar")
 include(":feature:settings")
 include(":feature:alarm")

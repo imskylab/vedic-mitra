@@ -77,4 +77,29 @@ class DefaultAstronomyEngine
                 )
             }
         }
+
+        override suspend fun daySummaryAt(
+            instant: Instant,
+            location: GeoCoordinates,
+        ): AppResult<PanchangaDaySummary> {
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            return withContext(dispatchers.default) {
+                val t = Ephemeris.julianCenturies(instant.toEpochMilliseconds())
+                val sunLongitude = Ephemeris.sunApparentLongitude(t)
+                val moonLongitude = Ephemeris.moonLongitude(t)
+                val elongation = Ephemeris.norm360(moonLongitude - sunLongitude)
+                val moonSidereal = Ephemeris.norm360(moonLongitude - Ephemeris.lahiriAyanamsa(t))
+
+                AppResult.Success(
+                    PanchangaDaySummary(
+                        tithi = tithiOf(elongation),
+                        nakshatra = nakshatraOf(moonSidereal),
+                        moonPhase = moonPhaseOf(elongation),
+                    ),
+                )
+            }
+        }
     }

@@ -8,7 +8,7 @@
  * LICENSING.md.
  */
 
-package io.github.vedicmitra.feature.home
+package io.github.vedicmitra.feature.calendar
 
 import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
@@ -43,10 +43,9 @@ import org.junit.Test
 import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomeViewModelTest {
+class CalendarViewModelTest {
     @Before
     fun setUp() {
-        // Unconfined main runs viewModelScope work eagerly, so load() completes inline.
         Dispatchers.setMain(UnconfinedTestDispatcher())
     }
 
@@ -56,64 +55,89 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `uses the device location when available`() =
+    fun `load fills the month grid and selects a day`() =
         runTest {
-            val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
-            val deviceLocation = GeoCoordinates(latitude = 12.9716, longitude = 77.5946) // Bengaluru
-            val viewModel = HomeViewModel(engine, FakeLocationProvider(AppResult.Success(deviceLocation)))
+            val viewModel = viewModel()
 
             viewModel.load()
 
             val state = viewModel.uiState.value
             assertThat(state.isLoading).isFalse()
-            assertThat(state.snapshot).isEqualTo(SAMPLE)
-            assertThat(state.usingDefaultLocation).isFalse()
-            assertThat(engine.lastLocation).isEqualTo(deviceLocation)
+            // One cell per day of the displayed month.
+            assertThat(state.days).hasSize(state.yearMonth.lengthOfMonth())
+            assertThat(state.days.map { it.date.dayOfMonth }).containsExactlyElementsIn(
+                1..state.yearMonth.lengthOfMonth(),
+            )
+            // A day is selected and its full snapshot loaded.
+            assertThat(state.selectedSnapshot).isEqualTo(SAMPLE)
+        }
+
+    @Test
+    fun `showNextMonth advances the displayed month and refills the grid`() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.load()
+            val startMonth = viewModel.uiState.value.yearMonth
+
+            viewModel.showNextMonth()
+
+            val state = viewModel.uiState.value
+            assertThat(state.yearMonth).isEqualTo(startMonth.plusMonths(1))
+            assertThat(state.days).hasSize(state.yearMonth.lengthOfMonth())
+            // A month change selects the first of the newly shown month.
+            assertThat(state.selectedDate).isEqualTo(state.yearMonth.atDay(1))
+        }
+
+    @Test
+    fun `showPreviousMonth moves back a month`() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.load()
+            val startMonth = viewModel.uiState.value.yearMonth
+
+            viewModel.showPreviousMonth()
+
+            assertThat(viewModel.uiState.value.yearMonth).isEqualTo(startMonth.minusMonths(1))
+        }
+
+    @Test
+    fun `selectDate loads that day's snapshot`() =
+        runTest {
+            val viewModel = viewModel()
+            viewModel.load()
+            val target =
+                viewModel.uiState.value.yearMonth
+                    .atDay(15)
+
+            viewModel.selectDate(target)
+
+            val state = viewModel.uiState.value
+            assertThat(state.selectedDate).isEqualTo(target)
+            assertThat(state.selectedSnapshot).isEqualTo(SAMPLE)
         }
 
     @Test
     fun `falls back to the default location when unavailable`() =
         runTest {
-            val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
-            val failure = AppResult.Failure(SecurityException("no permission"))
-            val viewModel = HomeViewModel(engine, FakeLocationProvider(failure))
+            val viewModel = viewModel(location = AppResult.Failure(SecurityException("no permission")))
 
             viewModel.load()
 
-            val state = viewModel.uiState.value
-            assertThat(state.usingDefaultLocation).isTrue()
-            assertThat(state.snapshot).isEqualTo(SAMPLE)
-            // The fallback location was passed to the engine (not the caller-provided device location).
-            assertThat(engine.lastLocation).isNotNull()
+            assertThat(viewModel.uiState.value.usingDefaultLocation).isTrue()
         }
 
-    @Test
-    fun `surfaces engine failures as an error message`() =
-        runTest {
-            val engine = RecordingAstronomyEngine(AppResult.Failure(IllegalStateException("boom")))
-            val location = GeoCoordinates(latitude = 0.0, longitude = 0.0)
-            val viewModel = HomeViewModel(engine, FakeLocationProvider(AppResult.Success(location)))
-
-            viewModel.load()
-
-            val state = viewModel.uiState.value
-            assertThat(state.snapshot).isNull()
-            assertThat(state.errorMessage).isEqualTo("boom")
-        }
+    private fun viewModel(location: AppResult<GeoCoordinates> = AppResult.Success(BENGALURU)): CalendarViewModel =
+        CalendarViewModel(
+            astronomyEngine = FakeAstronomyEngine(),
+            locationProvider = FakeLocationProvider(location),
+        )
 }
 
-private class RecordingAstronomyEngine(
-    private val result: AppResult<AstronomySnapshot>,
-) : AstronomyEngine {
-    var lastLocation: GeoCoordinates? = null
-
+private class FakeAstronomyEngine : AstronomyEngine {
     override suspend fun snapshotAt(
         instant: Instant,
         location: GeoCoordinates,
-    ): AppResult<AstronomySnapshot> {
-        lastLocation = location
-        return result
-    }
+    ): AppResult<AstronomySnapshot> = AppResult.Success(SAMPLE)
 
     override suspend fun daySummaryAt(
         instant: Instant,
@@ -121,9 +145,9 @@ private class RecordingAstronomyEngine(
     ): AppResult<PanchangaDaySummary> =
         AppResult.Success(
             PanchangaDaySummary(
-                tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
-                nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
-                moonPhase = MoonPhase.FULL_MOON,
+                tithi = SAMPLE.tithi,
+                nakshatra = SAMPLE.nakshatra,
+                moonPhase = SAMPLE.moonPhase,
             ),
         )
 }
@@ -136,10 +160,12 @@ private class FakeLocationProvider(
     override fun locationUpdates(): Flow<GeoCoordinates> = emptyFlow()
 }
 
+private val BENGALURU = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
+
 private val SAMPLE =
     AstronomySnapshot(
         instant = Instant.fromEpochMilliseconds(0L),
-        location = GeoCoordinates(latitude = 0.0, longitude = 0.0),
+        location = BENGALURU,
         sunTimes = SunTimes(sunrise = null, sunset = null),
         moonTimes = MoonTimes(moonrise = null, moonset = null),
         tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),

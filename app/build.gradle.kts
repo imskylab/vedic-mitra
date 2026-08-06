@@ -23,6 +23,7 @@ dependencies {
 
     // Feature modules — the app is the only place these are assembled together.
     implementation(projects.feature.home)
+    implementation(projects.feature.calendar)
     implementation(projects.feature.settings)
     implementation(projects.feature.alarm)
 
