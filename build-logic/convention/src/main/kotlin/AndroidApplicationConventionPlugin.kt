@@ -29,14 +29,18 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         with(target) {
             pluginManager.apply("com.android.application")
 
+            val version = appVersion()
+
             extensions.configure<ApplicationExtension> {
                 compileSdk = ProjectConfig.COMPILE_SDK
                 defaultConfig {
                     applicationId = ProjectConfig.NAMESPACE_PREFIX
                     minSdk = ProjectConfig.MIN_SDK
                     targetSdk = ProjectConfig.TARGET_SDK
-                    versionCode = 1
-                    versionName = "0.1.0"
+                    // Sourced from the committed root version.properties so a release is a one-line
+                    // bump; versionCode must strictly increase for in-place updates to install.
+                    versionCode = version.code
+                    versionName = version.name
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
                 compileOptions {

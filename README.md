@@ -481,6 +481,20 @@ Convenience wrappers live in [`scripts/`](scripts) (`format` and `check`).
 
 The debug APK is written to `app/build/outputs/apk/debug/`.
 
+### Release builds (installable, updatable)
+
+For a signed release that **updates** an already-installed copy in place, see
+**[docs/RELEASING.md](docs/RELEASING.md)**. In short: create a release keystore once with `keytool`,
+copy [`keystore.properties.example`](keystore.properties.example) to `keystore.properties` (both the
+keystore and this file are gitignored), bump [`version.properties`](version.properties), then build
+`:app:assembleRelease` (APK) or `:app:bundleRelease` (AAB for Play). The design is recorded in
+[ADR 0010](docs/adr/0010-release-signing-and-versioning.md).
+
+> The `v*` tag [release workflow](.github/workflows/release.yml) currently attaches a **debug-signed**
+> APK for convenience. Debug-signed builds cannot update a keystore-signed install (different
+> certificate), so use a locally signed release build for real distribution until CI is wired to sign
+> with the release keystore.
+
 ## Contribution Guide
 
 Contributions are welcome! Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for the workflow,
