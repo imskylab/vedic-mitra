@@ -32,6 +32,7 @@ import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.PersistedReminder
@@ -226,6 +227,24 @@ class AlarmViewModelTest {
         }
 
     @Test
+    fun `setAlertType persists the chosen alert style`() =
+        runTest {
+            val repository = FakeReminderRepository()
+            val viewModel = viewModel(repository = repository)
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                awaitItem() // Ready
+
+                viewModel.setAlertType("Rahu Kalam", AlertStyle.ALARM)
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            assertThat(repository.alertTypeByName.value).containsEntry("Rahu Kalam", AlertStyle.ALARM)
+        }
+
+    @Test
     fun `reminder body reflects the configured offset and quality`() =
         runTest {
             val scheduler = FakeTaskScheduler()
@@ -371,6 +390,7 @@ private class FakeTaskScheduler : TaskScheduler {
 private class FakeReminderRepository : ReminderRepository {
     override val reminders = MutableStateFlow<List<PersistedReminder>>(emptyList())
     override val offsetMinutesByName = MutableStateFlow<Map<String, Int>>(emptyMap())
+    override val alertTypeByName = MutableStateFlow<Map<String, AlertStyle>>(emptyMap())
 
     override suspend fun upsert(reminder: PersistedReminder) {
         reminders.value = reminders.value.filterNot { it.id == reminder.id } + reminder
@@ -389,6 +409,13 @@ private class FakeReminderRepository : ReminderRepository {
         minutes: Int,
     ) {
         offsetMinutesByName.value = offsetMinutesByName.value + (name to minutes)
+    }
+
+    override suspend fun setAlertType(
+        name: String,
+        alert: AlertStyle,
+    ) {
+        alertTypeByName.value = alertTypeByName.value + (name to alert)
     }
 }
 

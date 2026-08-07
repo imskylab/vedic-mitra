@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Library module manifest. Namespace is declared in build.gradle.kts. USE_FULL_SCREEN_INTENT lets
+     an alarm-mode reminder launch its full-screen alarm over the lock screen; VIBRATE drives the
+     alarm's vibration. The alarm activity is registered (and kept private) here; showWhenLocked /
+     turnScreenOn (API 27+) surface it on a locked, sleeping device, reinforced by window flags for
+     API 26. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application>
+        <activity
+            android:name=".AlarmActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+            android:turnScreenOn="true" />
+    </application>
+
+</manifest>

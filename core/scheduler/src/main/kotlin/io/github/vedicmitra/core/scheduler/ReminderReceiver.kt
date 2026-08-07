@@ -14,7 +14,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.vedicmitra.core.alarm.AlarmAlert
 import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.notifications.Notifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -41,6 +43,13 @@ class ReminderReceiver : BroadcastReceiver() {
         intent: Intent,
     ) {
         val notification = ReminderIntent.readNotification(intent) ?: return
+
+        // Alarm-mode reminders ring full-screen; the rest post a quiet notification.
+        if (notification.alert == AlertStyle.ALARM) {
+            AlarmAlert.raise(context, notification.id, notification.title, notification.body)
+            return
+        }
+
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + dispatchers.default).launch {
             try {

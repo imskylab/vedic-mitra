@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.PersistedReminder
@@ -66,14 +67,15 @@ class AlarmViewModel
                 loadState,
                 reminderRepository.reminders,
                 reminderRepository.offsetMinutesByName,
-            ) { load, reminders, offsets ->
+                reminderRepository.alertTypeByName,
+            ) { load, reminders, offsets, alerts ->
                 when (load) {
                     AlarmLoad.Loading -> AlarmUiState.Loading
                     is AlarmLoad.Error -> AlarmUiState.Error(load.message)
                     is AlarmLoad.Ready -> {
                         val enabledIds = reminders.mapTo(mutableSetOf()) { it.id }
                         AlarmUiState.Ready(
-                            reminders = load.muhurtas.map { it.toReminderItem(enabledIds, offsets) },
+                            reminders = load.muhurtas.map { it.toReminderItem(enabledIds, offsets, alerts) },
                             canScheduleExactAlarms = load.canScheduleExactAlarms,
                             usingDefaultLocation = load.usingDefaultLocation,
                         )
@@ -157,12 +159,14 @@ class AlarmViewModel
             if (persisted.isEmpty()) return
 
             val offsets = reminderRepository.offsetMinutesByName.first()
+            val alerts = reminderRepository.alertTypeByName.first()
             val byName = upcoming.associateBy { it.muhurta.name }
             persisted.forEach { reminder ->
                 val name = reminder.id.removePrefix(MUHURTA_ID_PREFIX)
                 val window = byName[name]?.muhurta ?: return@forEach
                 val offset = offsets[name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
-                scheduleAndPersist(reminder.id, window.name, window.start, window.quality, offset)
+                val alert = alerts[name] ?: AlertStyle.NOTIFICATION
+                scheduleAndPersist(reminder.id, window.name, window.start, window.quality, offset, alert)
             }
         }
 
@@ -177,7 +181,7 @@ class AlarmViewModel
         ) {
             viewModelScope.launch {
                 if (enabled) {
-                    scheduleAndPersist(item.id, item.name, item.start, item.quality, item.offsetMinutes)
+                    scheduleAndPersist(item.id, item.name, item.start, item.quality, item.offsetMinutes, item.alertType)
                 } else {
                     taskScheduler.cancel(item.id)
                     reminderRepository.remove(item.id)
@@ -207,7 +211,37 @@ class AlarmViewModel
                         ?.firstOrNull { it.muhurta.name == name }
                         ?.muhurta
                 if (window != null) {
-                    scheduleAndPersist(id, window.name, window.start, window.quality, minutes)
+                    val alert = reminderRepository.alertTypeByName.first()[name] ?: AlertStyle.NOTIFICATION
+                    scheduleAndPersist(id, window.name, window.start, window.quality, minutes, alert)
+                }
+            }
+        }
+
+        /**
+         * Sets whether the muhurta named [name] alerts as a notification or a ringing [alert]. If a
+         * reminder for it is enabled, it is immediately re-scheduled so the change isn't deferred.
+         */
+        fun setAlertType(
+            name: String,
+            alert: AlertStyle,
+        ) {
+            viewModelScope.launch {
+                reminderRepository.setAlertType(name, alert)
+
+                val id = "$MUHURTA_ID_PREFIX$name"
+                val isEnabled = reminderRepository.reminders.first().any { it.id == id }
+                if (!isEnabled) return@launch
+
+                val window =
+                    (loadState.value as? AlarmLoad.Ready)
+                        ?.muhurtas
+                        ?.firstOrNull { it.muhurta.name == name }
+                        ?.muhurta
+                if (window != null) {
+                    val offset =
+                        reminderRepository.offsetMinutesByName.first()[name]
+                            ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
+                    scheduleAndPersist(id, window.name, window.start, window.quality, offset, alert)
                 }
             }
         }
@@ -219,6 +253,7 @@ class AlarmViewModel
             start: Instant,
             quality: MuhurtaQuality,
             offsetMinutes: Int,
+            alert: AlertStyle,
         ) {
             val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
             val triggerAt = maxOf(start - offsetMinutes.minutes, now)
@@ -234,6 +269,7 @@ class AlarmViewModel
                             channel = AppNotificationChannel.MUHURTA_REMINDERS,
                             title = name,
                             body = body,
+                            alert = alert,
                         ),
                 ),
             )
@@ -250,6 +286,7 @@ class AlarmViewModel
         private fun UpcomingMuhurta.toReminderItem(
             enabledIds: Set<String>,
             offsetsByName: Map<String, Int>,
+            alertsByName: Map<String, AlertStyle>,
         ): ReminderItem {
             val id = "$MUHURTA_ID_PREFIX${muhurta.name}"
             return ReminderItem(
@@ -261,6 +298,7 @@ class AlarmViewModel
                 isEnabled = id in enabledIds,
                 isTomorrow = isTomorrow,
                 offsetMinutes = offsetsByName[muhurta.name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
+                alertType = alertsByName[muhurta.name] ?: AlertStyle.NOTIFICATION,
             )
         }
 
@@ -338,6 +376,7 @@ sealed interface AlarmUiState {
  * @property isTomorrow whether this upcoming occurrence falls on the next day (today's has passed).
  * @property offsetMinutes how many minutes before [start] this reminder fires (0 = at start),
  *   resolved from the user's per-muhurta override or [ReminderRepository.DEFAULT_OFFSET_MINUTES].
+ * @property alertType whether this reminder alerts as a notification or a ringing alarm.
  */
 data class ReminderItem(
     val id: String,
@@ -348,6 +387,7 @@ data class ReminderItem(
     val isEnabled: Boolean,
     val isTomorrow: Boolean,
     val offsetMinutes: Int,
+    val alertType: AlertStyle,
 )
 
 /** Internal load result, before it is combined with the persisted reminders and lead time. */

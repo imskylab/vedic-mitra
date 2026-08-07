@@ -14,6 +14,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import io.github.vedicmitra.core.common.model.AlertStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -32,6 +33,9 @@ class DefaultReminderRepository
 
         override val offsetMinutesByName: Flow<Map<String, Int>> =
             dataStore.data.map { preferences -> preferences.decodeOffsets().associate { it.name to it.offsetMinutes } }
+
+        override val alertTypeByName: Flow<Map<String, AlertStyle>> =
+            dataStore.data.map { preferences -> preferences.decodeAlerts().associate { it.name to it.alert } }
 
         override suspend fun upsert(reminder: PersistedReminder) {
             dataStore.edit { preferences ->
@@ -64,6 +68,17 @@ class DefaultReminderRepository
             }
         }
 
+        override suspend fun setAlertType(
+            name: String,
+            alert: AlertStyle,
+        ) {
+            dataStore.edit { preferences ->
+                val kept = preferences.decodeAlerts().filterNot { it.name == name }
+                preferences[MUHURTA_ALERTS] =
+                    (kept + MuhurtaAlert(name, alert)).map(MuhurtaAlertCodec::encode).toSet()
+            }
+        }
+
         private fun Preferences.decodeReminders(): List<PersistedReminder> =
             this[REMINDERS].orEmpty().mapNotNull(ReminderCodec::decode)
 
@@ -72,8 +87,12 @@ class DefaultReminderRepository
         private fun Preferences.decodeOffsets(): List<MuhurtaOffset> =
             this[MUHURTA_OFFSETS].orEmpty().mapNotNull(MuhurtaOffsetCodec::decode)
 
+        private fun Preferences.decodeAlerts(): List<MuhurtaAlert> =
+            this[MUHURTA_ALERTS].orEmpty().mapNotNull(MuhurtaAlertCodec::decode)
+
         private companion object {
             val REMINDERS = stringSetPreferencesKey("reminders")
             val MUHURTA_OFFSETS = stringSetPreferencesKey("muhurta_offset_minutes")
+            val MUHURTA_ALERTS = stringSetPreferencesKey("muhurta_alert_styles")
         }
     }

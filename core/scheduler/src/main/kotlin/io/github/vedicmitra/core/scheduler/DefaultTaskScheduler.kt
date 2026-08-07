@@ -18,6 +18,7 @@ import android.os.Build
 import androidx.core.app.AlarmManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.notifications.AppNotification
 import kotlinx.coroutines.withContext
@@ -46,20 +47,31 @@ class DefaultTaskScheduler
                 runCatching {
                     val operation = pendingIntent(request.id, request.notification)
                     val triggerAtMillis = request.triggerAt.toEpochMilliseconds()
-                    if (request.exact && canScheduleExactAlarms()) {
-                        AlarmManagerCompat.setExactAndAllowWhileIdle(
-                            alarmManager,
-                            AlarmManager.RTC_WAKEUP,
-                            triggerAtMillis,
-                            operation,
-                        )
-                    } else {
-                        AlarmManagerCompat.setAndAllowWhileIdle(
-                            alarmManager,
-                            AlarmManager.RTC_WAKEUP,
-                            triggerAtMillis,
-                            operation,
-                        )
+                    when {
+                        // Alarm-mode reminders use setAlarmClock: the highest-priority exact alarm,
+                        // exempt from Doze, and — unlike setExactAndAllowWhileIdle — not gated on the
+                        // SCHEDULE_EXACT_ALARM permission on API 31+.
+                        request.notification.alert == AlertStyle.ALARM ->
+                            alarmManager.setAlarmClock(
+                                AlarmManager.AlarmClockInfo(triggerAtMillis, launchAppIntent()),
+                                operation,
+                            )
+
+                        request.exact && canScheduleExactAlarms() ->
+                            AlarmManagerCompat.setExactAndAllowWhileIdle(
+                                alarmManager,
+                                AlarmManager.RTC_WAKEUP,
+                                triggerAtMillis,
+                                operation,
+                            )
+
+                        else ->
+                            AlarmManagerCompat.setAndAllowWhileIdle(
+                                alarmManager,
+                                AlarmManager.RTC_WAKEUP,
+                                triggerAtMillis,
+                                operation,
+                            )
                     }
                 }.fold(
                     onSuccess = { AppResult.Success(Unit) },
@@ -82,6 +94,12 @@ class DefaultTaskScheduler
 
         override fun canScheduleExactAlarms(): Boolean =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+
+        /** A PendingIntent that opens the app, shown when the user taps the status-bar alarm icon. */
+        private fun launchAppIntent(): PendingIntent {
+            val launch = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: Intent()
+            return PendingIntent.getActivity(context, 0, launch, PendingIntent.FLAG_IMMUTABLE)
+        }
 
         /** Builds (creating if needed) the alarm's broadcast intent, carrying the notification. */
         private fun pendingIntent(

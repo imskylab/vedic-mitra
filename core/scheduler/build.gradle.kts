@@ -17,6 +17,7 @@ android {
 dependencies {
     api(projects.core.common)
     api(projects.core.notifications)
+    implementation(projects.core.alarm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.bundles.coroutines)
 }
