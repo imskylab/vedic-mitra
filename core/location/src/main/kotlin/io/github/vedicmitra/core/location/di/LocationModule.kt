@@ -22,8 +22,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.vedicmitra.core.location.DefaultGeocodingClient
 import io.github.vedicmitra.core.location.DefaultLocationProvider
+import io.github.vedicmitra.core.location.DefaultTimeZoneResolver
 import io.github.vedicmitra.core.location.GeocodingClient
 import io.github.vedicmitra.core.location.LocationProvider
+import io.github.vedicmitra.core.location.TimeZoneResolver
 import javax.inject.Singleton
 
 /** Binds the [LocationProvider] port and provides the fused location client it depends on. */
@@ -35,6 +37,9 @@ internal abstract class LocationModule {
 
     @Binds
     abstract fun bindGeocodingClient(impl: DefaultGeocodingClient): GeocodingClient
+
+    @Binds
+    abstract fun bindTimeZoneResolver(impl: DefaultTimeZoneResolver): TimeZoneResolver
 
     companion object {
         @Provides

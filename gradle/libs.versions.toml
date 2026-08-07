@@ -44,6 +44,10 @@ coroutines = "1.11.0"
 
 # --- Location ----------------------------------------------------------------
 playServicesLocation = "21.4.0"
+# Offline coordinate -> IANA time-zone resolution (data is ODbL, from timezone-boundary-builder).
+timezonemap = "4.5"
+# Native compression used by timezonemap; on Android the @aar variant supplies the .so files.
+zstdJni = "1.4.9-5"
 
 # --- Serialization -----------------------------------------------------------
 kotlinxSerialization = "1.11.0"
@@ -102,6 +106,8 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 # --- Location ----------------------------------------------------------------
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
+timezonemap = { group = "us.dustinj.timezonemap", name = "timezonemap", version.ref = "timezonemap" }
+zstd-jni = { group = "com.github.luben", name = "zstd-jni", version.ref = "zstdJni" }
 
 # --- Testing -----------------------------------------------------------------
 junit = { group = "junit", name = "junit", version.ref = "junit" }

@@ -15,13 +15,8 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.LocationSource
 import io.github.vedicmitra.core.common.model.SavedLocation
-import io.github.vedicmitra.core.datastore.LocationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -100,32 +95,4 @@ class LocationViewModelTest {
             zoneId = "UTC",
             source = LocationSource.CITY,
         )
-}
-
-private class FakeLocationRepository(
-    initial: List<SavedLocation> = emptyList(),
-    selected: String? = null,
-) : LocationRepository {
-    private val saved = MutableStateFlow(initial)
-    private val selectedId = MutableStateFlow(selected)
-
-    override val savedLocations: StateFlow<List<SavedLocation>> = saved.asStateFlow()
-    override val selectedLocationId: StateFlow<String?> = selectedId.asStateFlow()
-
-    override suspend fun upsert(location: SavedLocation) {
-        saved.update { current -> current.filterNot { it.id == location.id } + location }
-    }
-
-    override suspend fun remove(id: String) {
-        saved.update { current -> current.filterNot { it.id == id } }
-        if (selectedId.value == id) selectedId.value = null
-    }
-
-    override suspend fun select(id: String) {
-        selectedId.value = id
-    }
-
-    override suspend fun clearSelection() {
-        selectedId.value = null
-    }
 }

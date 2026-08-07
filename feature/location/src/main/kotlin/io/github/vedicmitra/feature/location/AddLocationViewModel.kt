@@ -20,7 +20,7 @@ import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.LocationRepository
 import io.github.vedicmitra.core.location.GeocodeResult
 import io.github.vedicmitra.core.location.GeocodingClient
-import io.github.vedicmitra.core.location.TimeZoneEstimator
+import io.github.vedicmitra.core.location.TimeZoneResolver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,8 +32,8 @@ import javax.inject.Inject
 /**
  * Presentation logic for adding a location, shared by the city-search and custom-coordinates
  * screens. Runs city searches through the geocoder and saves the chosen place, auto-selecting it so
- * it takes effect immediately. New locations get a best-guess time zone (see [TimeZoneEstimator]);
- * the coordinates screen lets the user override it.
+ * it takes effect immediately. Each new location's IANA time zone is resolved from its coordinates
+ * (see [TimeZoneResolver]); the coordinates screen can override it.
  */
 @HiltViewModel
 class AddLocationViewModel
@@ -41,6 +41,7 @@ class AddLocationViewModel
     constructor(
         private val locationRepository: LocationRepository,
         private val geocodingClient: GeocodingClient,
+        private val timeZoneResolver: TimeZoneResolver,
     ) : ViewModel() {
         private val _searchState = MutableStateFlow(CitySearchState())
 
@@ -77,19 +78,18 @@ class AddLocationViewModel
             }
         }
 
-        /** Saves a geocoded [result] as a new location and selects it. */
+        /** Saves a geocoded [result] as a new location (with its resolved time zone) and selects it. */
         fun saveFromResult(
             result: GeocodeResult,
             onSaved: () -> Unit,
-        ) = save(
-            label = result.label,
-            coordinates = result.coordinates,
-            zoneId = TimeZoneEstimator.estimate(result.coordinates),
-            source = LocationSource.CITY,
-            onSaved = onSaved,
-        )
+        ) {
+            viewModelScope.launch {
+                val zoneId = timeZoneResolver.resolve(result.coordinates)
+                persist(result.label, result.coordinates, zoneId, LocationSource.CITY, onSaved)
+            }
+        }
 
-        /** Saves a manually entered location and selects it. */
+        /** Saves a manually entered location and selects it. A blank [zoneId] is auto-detected. */
         fun saveManual(
             label: String,
             latitude: Double,
@@ -97,36 +97,32 @@ class AddLocationViewModel
             zoneId: String,
             onSaved: () -> Unit,
         ) {
-            val coordinates = GeoCoordinates(latitude = latitude, longitude = longitude)
-            save(
-                label = label.ifBlank { "%.4f, %.4f".format(latitude, longitude) },
-                coordinates = coordinates,
-                zoneId = zoneId,
-                source = LocationSource.MANUAL,
-                onSaved = onSaved,
-            )
+            viewModelScope.launch {
+                val coordinates = GeoCoordinates(latitude = latitude, longitude = longitude)
+                val resolvedZone = zoneId.ifBlank { timeZoneResolver.resolve(coordinates) }
+                val resolvedLabel = label.ifBlank { "%.4f, %.4f".format(latitude, longitude) }
+                persist(resolvedLabel, coordinates, resolvedZone, LocationSource.MANUAL, onSaved)
+            }
         }
 
-        private fun save(
+        private suspend fun persist(
             label: String,
             coordinates: GeoCoordinates,
             zoneId: String,
             source: LocationSource,
             onSaved: () -> Unit,
         ) {
-            viewModelScope.launch {
-                val location =
-                    SavedLocation(
-                        id = UUID.randomUUID().toString(),
-                        label = label,
-                        coordinates = coordinates,
-                        zoneId = zoneId,
-                        source = source,
-                    )
-                locationRepository.upsert(location)
-                locationRepository.select(location.id)
-                onSaved()
-            }
+            val location =
+                SavedLocation(
+                    id = UUID.randomUUID().toString(),
+                    label = label,
+                    coordinates = coordinates,
+                    zoneId = zoneId,
+                    source = source,
+                )
+            locationRepository.upsert(location)
+            locationRepository.select(location.id)
+            onSaved()
         }
     }
 

@@ -19,6 +19,10 @@ Licensed under the Apache License, Version 2.0
 - **Google Truth** (`com.google.truth`) — © Google LLC (test only)
 - **Turbine** (`app.cash.turbine`) — © Cash App / Block, Inc. (test only)
 - **MockK** (`io.mockk`) — © MockK contributors (test only)
+- **Esri Geometry API** (`com.esri.geometry:esri-geometry-api`) — © Esri
+  (transitive dependency of Time Zone Map)
+- **Apache Commons Compress** (`org.apache.commons:commons-compress`) —
+  © The Apache Software Foundation (transitive dependency of Time Zone Map)
 - Build tooling: **Detekt**, **ktlint**, **Spotless** — respective authors
 
 ## Google APIs Terms of Service
@@ -26,6 +30,28 @@ Licensed under the Apache License, Version 2.0
 - **Google Play Services — Location** (`com.google.android.gms:play-services-location`)
   — © Google LLC, used under the Google APIs Terms of Service
   (<https://developers.google.com/terms>).
+
+## MIT License
+
+Licensed under the MIT License:
+
+- **Time Zone Map** (`us.dustinj.timezonemap:timezonemap`) — © Dustin Johnson.
+  Offline coordinate-to-time-zone resolution (library code only; its bundled
+  boundary data is covered under the ODbL section below).
+
+## BSD 2-Clause License
+
+- **Zstd-jni** (`com.github.luben:zstd-jni`) — © Luben Karavelov; wraps the
+  Zstandard library © Meta Platforms, Inc. Native compression used by Time Zone
+  Map.
+
+## Open Data Commons Open Database License (ODbL) v1.0
+
+Licensed under the ODbL (<https://opendatacommons.org/licenses/odbl/1-0/>):
+
+- **Time-zone boundary data** (`us.dustinj.timezonemap:timezonemap-data`) —
+  derived from [timezone-boundary-builder](https://github.com/evansiroky/timezone-boundary-builder),
+  which is built from **OpenStreetMap** data. © OpenStreetMap contributors.
 
 ---
 
