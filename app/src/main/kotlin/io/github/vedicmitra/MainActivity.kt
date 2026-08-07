@@ -35,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -67,15 +66,6 @@ private enum class TopDestination(
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
-
-/** Switches to a bottom-nav tab with the same single-instance, state-preserving behaviour as the bar. */
-private fun NavHostController.switchTab(route: String) {
-    navigate(route) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
-        launchSingleTop = true
-        restoreState = true
-    }
-}
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -142,8 +132,6 @@ private fun VedicMitraApp() {
         ) {
             composable(TopDestination.HOME.route) {
                 HomeScreen(
-                    onNavigateToCalendar = { navController.switchTab(TopDestination.CALENDAR.route) },
-                    onNavigateToReminders = { navController.switchTab(TopDestination.ALARM.route) },
                     onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 )
             }

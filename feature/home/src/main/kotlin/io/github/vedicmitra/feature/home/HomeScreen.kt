@@ -27,22 +27,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,6 +55,7 @@ import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
+import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
@@ -82,8 +80,6 @@ import kotlin.time.Instant
  */
 @Composable
 fun HomeScreen(
-    onNavigateToCalendar: () -> Unit,
-    onNavigateToReminders: () -> Unit,
     onNavigateToLocation: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -104,8 +100,6 @@ fun HomeScreen(
 
     HomeContent(
         uiState = uiState,
-        onNavigateToCalendar = onNavigateToCalendar,
-        onNavigateToReminders = onNavigateToReminders,
         onNavigateToLocation = onNavigateToLocation,
         modifier = modifier,
     )
@@ -114,8 +108,6 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     uiState: HomeUiState,
-    onNavigateToCalendar: () -> Unit,
-    onNavigateToReminders: () -> Unit,
     onNavigateToLocation: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,10 +128,21 @@ private fun HomeContent(
             ) {
                 Header(uiState.locationLabel, onNavigateToLocation)
                 HeroCard(snapshot)
+                PanchangaLimbsStrip(snapshot)
                 uiState.auspicious?.let { AuspiciousCard(it) }
                 SunMoonStrip(snapshot)
+                SeasonAyanaStrip(snapshot)
+                val auspiciousPeriods =
+                    snapshot.muhurtas.filter { it.quality == MuhurtaQuality.AUSPICIOUS }.sortedBy { it.start }
+                val inauspiciousPeriods =
+                    snapshot.muhurtas.filter { it.quality == MuhurtaQuality.INAUSPICIOUS }.sortedBy { it.start }
+                if (auspiciousPeriods.isNotEmpty()) {
+                    PeriodsCard("Auspicious periods", MaterialTheme.colorScheme.primary, auspiciousPeriods)
+                }
+                if (inauspiciousPeriods.isNotEmpty()) {
+                    PeriodsCard("Inauspicious periods", MaterialTheme.colorScheme.error, inauspiciousPeriods)
+                }
                 uiState.nextFestival?.let { FestivalCard(it) }
-                QuickActions(onNavigateToCalendar, onNavigateToReminders, onNavigateToLocation)
                 if (uiState.usingDefaultLocation) {
                     Text(
                         text = "Showing New Delhi — grant location access for your area.",
@@ -291,35 +294,49 @@ private fun FestivalCard(festival: Festival) {
 }
 
 @Composable
-private fun QuickActions(
-    onNavigateToCalendar: () -> Unit,
-    onNavigateToReminders: () -> Unit,
-    onNavigateToLocation: () -> Unit,
-) {
+private fun PanchangaLimbsStrip(snapshot: AstronomySnapshot) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        ActionTile("Calendar", Icons.Filled.DateRange, onNavigateToCalendar, Modifier.weight(1f))
-        ActionTile("Reminders", Icons.Filled.Notifications, onNavigateToReminders, Modifier.weight(1f))
-        ActionTile("Location", Icons.Filled.LocationOn, onNavigateToLocation, Modifier.weight(1f))
-    }
-    OutlinedButton(onClick = onNavigateToCalendar, modifier = Modifier.fillMaxWidth()) {
-        Text(text = "See full panchang")
+        StatCard("Nakshatra", snapshot.nakshatra.name, Modifier.weight(1f))
+        StatCard("Yoga", snapshot.yoga.name, Modifier.weight(1f))
+        StatCard("Karana", snapshot.karana.name, Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun ActionTile(
-    label: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+private fun SeasonAyanaStrip(snapshot: AstronomySnapshot) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        StatCard("Season", snapshot.ritu.displayName, Modifier.weight(1f))
+        StatCard("Ayana", snapshot.ayana.displayName, Modifier.weight(1f))
+    }
+}
+
+/** A card listing named muhurta windows (auspicious or inauspicious) with their start–end times. */
+@Composable
+private fun PeriodsCard(
+    title: String,
+    accent: Color,
+    periods: List<Muhurta>,
 ) {
-    Card(modifier = modifier.clickable(onClick = onClick)) {
+    Card(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(imageVector = icon, contentDescription = null)
-            Text(text = label, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 6.dp))
+            Text(text = title, style = MaterialTheme.typography.labelMedium, color = accent)
+            periods.forEach { period ->
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = period.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = formatRange(period.start, period.end),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
 }
@@ -361,6 +378,12 @@ private fun zoned(instant: Instant) =
 /** Formats an instant as local wall-clock time in the device's zone, or an em dash if absent. */
 private fun formatTime(instant: Instant?): String = if (instant == null) "—" else zoned(instant).format(timeFormatter)
 
+/** Formats a start–end muhurta window as local wall-clock times, e.g. "06:12–07:00". */
+private fun formatRange(
+    start: Instant,
+    end: Instant,
+): String = "${formatTime(start)}–${formatTime(end)}"
+
 /** Formats a festival's sunrise instant as a local date (e.g. "Wed, 8 Nov"). */
 private fun formatDate(instant: Instant): String = zoned(instant).format(festivalDateFormatter)
 
@@ -392,7 +415,27 @@ private fun HomeContentPreview() {
             ritu = Ritu.SHISHIRA,
             moonPhase = MoonPhase.WAXING_GIBBOUS,
             goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
-            muhurtas = emptyList(),
+            muhurtas =
+                listOf(
+                    Muhurta(
+                        name = "Brahma Muhurta",
+                        start = Instant.fromEpochMilliseconds(1_705_280_400_000L),
+                        end = Instant.fromEpochMilliseconds(1_705_282_200_000L),
+                        quality = MuhurtaQuality.AUSPICIOUS,
+                    ),
+                    Muhurta(
+                        name = "Abhijit Muhurta",
+                        start = Instant.fromEpochMilliseconds(1_705_300_140_000L),
+                        end = Instant.fromEpochMilliseconds(1_705_302_960_000L),
+                        quality = MuhurtaQuality.AUSPICIOUS,
+                    ),
+                    Muhurta(
+                        name = "Rahu Kalam",
+                        start = Instant.fromEpochMilliseconds(1_705_287_540_000L),
+                        end = Instant.fromEpochMilliseconds(1_705_292_265_000L),
+                        quality = MuhurtaQuality.INAUSPICIOUS,
+                    ),
+                ),
         )
     VedicMitraTheme {
         HomeContent(
@@ -415,8 +458,6 @@ private fun HomeContentPreview() {
                         ),
                     locationLabel = "New Delhi",
                 ),
-            onNavigateToCalendar = {},
-            onNavigateToReminders = {},
             onNavigateToLocation = {},
         )
     }
