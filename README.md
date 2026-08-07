@@ -309,8 +309,8 @@ Status marks reflect what's actually implemented today, verified against the cod
 **Offline Engine**
 
 - [x] Offline astronomical calculations (on-device Meeus ephemeris, no network)
-- [ ] Automatic timezone detection
-- [ ] DST support
+- [x] Automatic timezone detection
+- [x] DST support
 - [ ] Regional Panchang support
 
 ### 🟡 Phase 8 — Reminders & Automation

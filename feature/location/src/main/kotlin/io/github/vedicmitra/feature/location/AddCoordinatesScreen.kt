@@ -23,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,8 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import io.github.vedicmitra.core.common.model.GeoCoordinates
-import io.github.vedicmitra.core.location.TimeZoneEstimator
 import java.time.ZoneId
 
 private const val MIN_LATITUDE = -90.0
@@ -42,9 +39,9 @@ private const val MIN_LONGITUDE = -180.0
 private const val MAX_LONGITUDE = 180.0
 
 /**
- * Add-by-coordinates screen. Takes a name, latitude, longitude, and an IANA time-zone id
- * (pre-filled with a best guess once the coordinates are valid, and editable), then saves and
- * selects the location and returns via [onDone].
+ * Add-by-coordinates screen. Takes a name, latitude, and longitude; the time zone is optional and
+ * auto-detected from the coordinates when left blank (or overridden with an IANA id). Saves and
+ * selects the location, then returns via [onDone].
  */
 @Composable
 fun AddCoordinatesScreen(
@@ -56,23 +53,13 @@ fun AddCoordinatesScreen(
     var latitude by rememberSaveable { mutableStateOf("") }
     var longitude by rememberSaveable { mutableStateOf("") }
     var zoneId by rememberSaveable { mutableStateOf("") }
-    var zoneEdited by rememberSaveable { mutableStateOf(false) }
 
     val latitudeValue = latitude.toDoubleOrNull()
     val longitudeValue = longitude.toDoubleOrNull()
     val latitudeValid = latitudeValue != null && latitudeValue in MIN_LATITUDE..MAX_LATITUDE
     val longitudeValid = longitudeValue != null && longitudeValue in MIN_LONGITUDE..MAX_LONGITUDE
-    val zoneValid = zoneId.isNotBlank() && runCatching { ZoneId.of(zoneId) }.isSuccess
-
-    // Pre-fill the time zone with a best guess once the coordinates parse, unless the user edited it.
-    LaunchedEffect(latitude, longitude) {
-        if (!zoneEdited && latitudeValid && longitudeValid) {
-            zoneId =
-                TimeZoneEstimator.estimate(
-                    GeoCoordinates(latitude = latitudeValue!!, longitude = longitudeValue!!),
-                )
-        }
-    }
+    // Time zone is optional; blank means auto-detect from the coordinates on save.
+    val zoneValid = zoneId.isBlank() || runCatching { ZoneId.of(zoneId) }.isSuccess
 
     CoordinatesForm(
         label = label,
@@ -84,10 +71,7 @@ fun AddCoordinatesScreen(
         onLongitudeChange = { longitude = it },
         longitudeError = longitude.isNotBlank() && !longitudeValid,
         zoneId = zoneId,
-        onZoneChange = {
-            zoneId = it
-            zoneEdited = true
-        },
+        onZoneChange = { zoneId = it },
         zoneError = zoneId.isNotBlank() && !zoneValid,
         canSave = latitudeValid && longitudeValid && zoneValid,
         onSave = {
@@ -159,8 +143,8 @@ private fun CoordinatesForm(
         OutlinedTextField(
             value = zoneId,
             onValueChange = onZoneChange,
-            label = { Text(text = "Time zone") },
-            supportingText = { Text(text = "IANA id, e.g. Asia/Kolkata") },
+            label = { Text(text = "Time zone (optional)") },
+            supportingText = { Text(text = "Leave blank to auto-detect · e.g. Asia/Kolkata") },
             isError = zoneError,
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
