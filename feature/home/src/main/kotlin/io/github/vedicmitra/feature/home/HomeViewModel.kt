@@ -15,9 +15,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
-import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
-import io.github.vedicmitra.core.location.LocationProvider
+import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,8 +26,9 @@ import javax.inject.Inject
 import kotlin.time.Instant
 
 /**
- * Presentation logic for the home screen (MVVM). Loads today's panchanga for the device's location,
- * falling back to a fixed default when the location is unavailable (e.g. permission not granted).
+ * Presentation logic for the home screen (MVVM). Loads today's panchanga for the resolved location
+ * — the user's selected saved location, else the device location, else a built-in default (see
+ * [ResolveLocationUseCase]).
  *
  * [load] is driven by the screen once it has resolved the location permission.
  */
@@ -37,31 +37,29 @@ class HomeViewModel
     @Inject
     constructor(
         private val astronomyEngine: AstronomyEngine,
-        private val locationProvider: LocationProvider,
+        private val resolveLocation: ResolveLocationUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(HomeUiState())
 
         /** Observable UI state consumed by the home screen. */
         val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-        /** (Re)loads the panchanga, using the device location when available. */
+        /** (Re)loads the panchanga for the resolved location. */
         fun load() {
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-                val locationResult = locationProvider.currentLocation()
-                val usingDefault = locationResult !is AppResult.Success
-                val location =
-                    when (locationResult) {
-                        is AppResult.Success -> locationResult.data
-                        is AppResult.Failure -> DEFAULT_LOCATION
-                    }
-
+                val resolved = resolveLocation()
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-                when (val snapshot = astronomyEngine.snapshotAt(now, location)) {
+                when (val snapshot = astronomyEngine.snapshotAt(now, resolved.coordinates)) {
                     is AppResult.Success ->
                         _uiState.update {
-                            it.copy(isLoading = false, snapshot = snapshot.data, usingDefaultLocation = usingDefault)
+                            it.copy(
+                                isLoading = false,
+                                snapshot = snapshot.data,
+                                usingDefaultLocation = resolved.isDefault,
+                                locationLabel = resolved.label,
+                            )
                         }
 
                     is AppResult.Failure ->
@@ -71,11 +69,6 @@ class HomeViewModel
                 }
             }
         }
-
-        private companion object {
-            // Used when the device location is unavailable (New Delhi).
-            val DEFAULT_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
-        }
     }
 
 /**
@@ -84,12 +77,14 @@ class HomeViewModel
  * @property isLoading whether the panchanga is being computed.
  * @property snapshot the computed panchanga, or `null` before it loads or on error.
  * @property errorMessage a human-readable error, or `null` when there is none.
- * @property usingDefaultLocation whether the default location was used because the device location
- *   was unavailable.
+ * @property usingDefaultLocation whether the built-in default location was used (no selection and no
+ *   device location).
+ * @property locationLabel human-readable name of the location the panchanga was computed for.
  */
 data class HomeUiState(
     val isLoading: Boolean = true,
     val snapshot: AstronomySnapshot? = null,
     val errorMessage: String? = null,
     val usingDefaultLocation: Boolean = false,
+    val locationLabel: String? = null,
 )

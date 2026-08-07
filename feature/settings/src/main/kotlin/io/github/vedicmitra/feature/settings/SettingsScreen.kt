@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.feature.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +42,7 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
  */
 @Composable
 fun SettingsScreen(
+    onNavigateToLocation: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -52,6 +54,7 @@ fun SettingsScreen(
                 settings = state.settings,
                 onDarkThemeConfigChange = viewModel::setDarkThemeConfig,
                 onDynamicColorChange = viewModel::setDynamicColor,
+                onNavigateToLocation = onNavigateToLocation,
                 modifier = modifier,
             )
     }
@@ -62,6 +65,7 @@ private fun SettingsContent(
     settings: ThemeSettings,
     onDarkThemeConfigChange: (DarkThemeConfig) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
+    onNavigateToLocation: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -100,6 +104,21 @@ private fun SettingsContent(
             Text(text = "Dynamic colour", modifier = Modifier.weight(1f))
             Switch(checked = settings.useDynamicColor, onCheckedChange = onDynamicColorChange)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Location", style = MaterialTheme.typography.titleMedium)
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onNavigateToLocation)
+                    .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = "Panchanga location", modifier = Modifier.weight(1f))
+            Text(text = "Change", color = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
@@ -119,6 +138,7 @@ private fun SettingsContentPreview() {
             settings = ThemeSettings(darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM, useDynamicColor = true),
             onDarkThemeConfigChange = {},
             onDynamicColorChange = {},
+            onNavigateToLocation = {},
         )
     }
 }

@@ -53,9 +53,11 @@ include(":core:astronomy")
 include(":core:scheduler")
 include(":core:notifications")
 include(":core:location")
+include(":core:domain")
 
 // --- Features (feature-first screens) ----------------------------------------
 include(":feature:home")
 include(":feature:calendar")
 include(":feature:settings")
 include(":feature:alarm")
+include(":feature:location")

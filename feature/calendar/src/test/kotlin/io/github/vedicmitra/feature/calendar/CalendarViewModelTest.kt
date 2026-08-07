@@ -30,11 +30,12 @@ import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
-import io.github.vedicmitra.core.location.LocationProvider
+import io.github.vedicmitra.core.domain.ResolveLocationUseCase
+import io.github.vedicmitra.core.domain.ResolvedLocation
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -119,20 +120,35 @@ class CalendarViewModelTest {
         }
 
     @Test
-    fun `falls back to the default location when unavailable`() =
+    fun `flags when the default location was used`() =
         runTest {
-            val viewModel = viewModel(location = AppResult.Failure(SecurityException("no permission")))
+            val fallback =
+                ResolvedLocation(
+                    coordinates = GeoCoordinates(latitude = 28.6139, longitude = 77.2090),
+                    zoneId = "Asia/Kolkata",
+                    label = "New Delhi",
+                    isDefault = true,
+                )
+            val viewModel = viewModel(resolved = fallback)
 
             viewModel.load()
 
             assertThat(viewModel.uiState.value.usingDefaultLocation).isTrue()
         }
 
-    private fun viewModel(location: AppResult<GeoCoordinates> = AppResult.Success(BENGALURU)): CalendarViewModel =
-        CalendarViewModel(
-            astronomyEngine = FakeAstronomyEngine(),
-            locationProvider = FakeLocationProvider(location),
-        )
+    private fun viewModel(
+        resolved: ResolvedLocation =
+            ResolvedLocation(
+                coordinates = BENGALURU,
+                zoneId = "Asia/Kolkata",
+                label = "Bengaluru",
+                isDefault = false,
+            ),
+    ): CalendarViewModel {
+        val resolveLocation = mockk<ResolveLocationUseCase>()
+        coEvery { resolveLocation() } returns resolved
+        return CalendarViewModel(astronomyEngine = FakeAstronomyEngine(), resolveLocation = resolveLocation)
+    }
 }
 
 private class FakeAstronomyEngine : AstronomyEngine {
@@ -152,14 +168,6 @@ private class FakeAstronomyEngine : AstronomyEngine {
                 moonPhase = SAMPLE.moonPhase,
             ),
         )
-}
-
-private class FakeLocationProvider(
-    private val result: AppResult<GeoCoordinates>,
-) : LocationProvider {
-    override suspend fun currentLocation(): AppResult<GeoCoordinates> = result
-
-    override fun locationUpdates(): Flow<GeoCoordinates> = emptyFlow()
 }
 
 private val BENGALURU = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)

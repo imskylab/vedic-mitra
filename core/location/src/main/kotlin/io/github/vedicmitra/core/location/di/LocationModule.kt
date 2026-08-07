@@ -11,6 +11,7 @@
 package io.github.vedicmitra.core.location.di
 
 import android.content.Context
+import android.location.Geocoder
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Binds
@@ -19,7 +20,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.github.vedicmitra.core.location.DefaultGeocodingClient
 import io.github.vedicmitra.core.location.DefaultLocationProvider
+import io.github.vedicmitra.core.location.GeocodingClient
 import io.github.vedicmitra.core.location.LocationProvider
 import javax.inject.Singleton
 
@@ -30,11 +33,19 @@ internal abstract class LocationModule {
     @Binds
     abstract fun bindLocationProvider(impl: DefaultLocationProvider): LocationProvider
 
+    @Binds
+    abstract fun bindGeocodingClient(impl: DefaultGeocodingClient): GeocodingClient
+
     companion object {
         @Provides
         @Singleton
         fun provideFusedLocationProviderClient(
             @ApplicationContext context: Context,
         ): FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+
+        @Provides
+        fun provideGeocoder(
+            @ApplicationContext context: Context,
+        ): Geocoder = Geocoder(context)
     }
 }
