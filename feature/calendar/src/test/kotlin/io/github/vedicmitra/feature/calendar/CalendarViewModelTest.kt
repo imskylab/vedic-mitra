@@ -14,6 +14,7 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Maasa
@@ -168,6 +169,13 @@ private class FakeAstronomyEngine : AstronomyEngine {
                 moonPhase = SAMPLE.moonPhase,
             ),
         )
+
+    override suspend fun upcomingFestivals(
+        instant: Instant,
+        location: GeoCoordinates,
+        withinDays: Int,
+        limit: Int,
+    ): AppResult<List<Festival>> = AppResult.Success(emptyList())
 }
 
 private val BENGALURU = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)

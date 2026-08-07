@@ -46,6 +46,20 @@ interface AstronomyEngine {
         instant: Instant,
         location: GeoCoordinates,
     ): AppResult<PanchangaDaySummary>
+
+    /**
+     * Finds up to [limit] upcoming festivals and observances within [withinDays] of [instant] for
+     * [location], in date order, judged by each day's sunrise panchanga (see [Festival]).
+     *
+     * @return [AppResult.Success] with the (possibly empty) list, or [AppResult.Failure] if it
+     *   cannot be computed.
+     */
+    suspend fun upcomingFestivals(
+        instant: Instant,
+        location: GeoCoordinates,
+        withinDays: Int,
+        limit: Int,
+    ): AppResult<List<Festival>>
 }
 
 /**
