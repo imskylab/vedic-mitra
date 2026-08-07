@@ -35,14 +35,16 @@ class LunarDayTest {
     }
 
     @Test
-    fun `returns no moonrise for a civil day the Moon doesn't rise in`() {
+    fun `carries the next moonrise forward when the civil day has none`() {
         // 2026-08-07 12:00 IST: the Moon doesn't rise again until 00:37 IST on 2026-08-08 — just
-        // outside 2026-08-07's civil day — because the lunar day (~24h50m) is longer than the
-        // civil day. Confirmed against drikpanchang.com, which attributes that same rise to its
-        // Aug-07 page as the "next" one even though it technically falls on Aug 8.
+        // outside 2026-08-07's civil day — because the lunar day (~24h50m) is longer than the civil
+        // day. Panchang almanacs (drikpanchang) show that "next" rise on the Aug-07 page, so the app
+        // carries it forward rather than showing nothing.
         val result = LunarDay.moonTimes(1_786_084_200_000L, delhi.latitude, delhi.longitude)
 
-        assertThat(result.moonrise).isNull()
         assertThat(result.moonset).isNotNull()
+        assertThat(result.moonrise).isNotNull()
+        // Reference: 2026-08-08 00:37 IST.
+        assertThat(abs(result.moonrise!!.toEpochMilliseconds() - 1_786_129_620_000L)).isLessThan(600_000L)
     }
 }

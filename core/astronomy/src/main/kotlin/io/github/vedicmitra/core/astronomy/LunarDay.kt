@@ -43,10 +43,17 @@ internal object LunarDay {
     private const val SAMPLE_SEGMENTS = 48
     private const val BISECTION_ITERATIONS = 40
 
+    // How many civil days to search. The lunar day is ~50 min longer than the civil day, so roughly
+    // once a month a rise or set skips a calendar day; rather than showing nothing, carry forward the
+    // next one (into the following day), as panchang almanacs do.
+    private const val SEARCH_DAYS = 2
+
     /**
      * Computes moonrise and moonset for the civil day (in local mean solar time, matching
      * [SolarDay.sunTimes]) containing [epochMillis], at latitude [latDeg] and east-positive
-     * longitude [lonEastDeg].
+     * longitude [lonEastDeg]. When a rise or set doesn't fall within that civil day — the lunar day
+     * is ~50 min longer, so one of them skips a calendar day roughly once a month — the next one is
+     * carried forward into the following day, matching how panchang almanacs present it.
      */
     fun moonTimes(
         epochMillis: Long,
@@ -57,7 +64,6 @@ internal object LunarDay {
         val localMillis = epochMillis + lonOffsetMillis
         val localDay = floor(localMillis.toDouble() / MILLIS_PER_DAY)
         val dayStartUtc = (localDay * MILLIS_PER_DAY).toLong() - lonOffsetMillis
-        val dayEndUtc = dayStartUtc + MILLIS_PER_DAY
 
         fun altitudeMinusThreshold(ms: Long): Double {
             val (altitudeDeg, parallaxDeg) = geocentricAltitudeAndParallax(ms, latDeg, lonEastDeg)
@@ -66,10 +72,12 @@ internal object LunarDay {
 
         var moonrise: Long? = null
         var moonset: Long? = null
-        val step = (dayEndUtc - dayStartUtc) / SAMPLE_SEGMENTS
+        val step = MILLIS_PER_DAY / SAMPLE_SEGMENTS
         var prevMs = dayStartUtc
         var prevValue = altitudeMinusThreshold(prevMs)
-        for (i in 1..SAMPLE_SEGMENTS) {
+        // Scan the civil day and, if a rise or set is missing, on into the next day for its next one.
+        for (i in 1..SAMPLE_SEGMENTS * SEARCH_DAYS) {
+            if (moonrise != null && moonset != null) break
             val curMs = dayStartUtc + i * step
             val curValue = altitudeMinusThreshold(curMs)
 
