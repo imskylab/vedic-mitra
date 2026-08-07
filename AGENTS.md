@@ -5,9 +5,14 @@ repository. Follow it precisely; it encodes the architecture and conventions the
 on. When a request conflicts with these rules, surface the conflict rather than silently breaking
 them.
 
-> **Project state:** Phase 1 foundation. Do **not** implement business logic, astronomy
-> calculations, scheduling, or alarm behaviour unless the task explicitly asks for that phase. Core
-> capability modules are **contracts (interfaces) only** right now.
+> **Project state:** Phase 1 (Foundation) is complete, and Phases 2 (Daily Timings) and 3
+> (Panchang) are partially built. The core capability modules are **no longer contracts-only** — the
+> astronomy engine (`:core:astronomy`), exact-alarm scheduler (`:core:scheduler`), notifications
+> (`:core:notifications`), location (`:core:location`), and DataStore persistence (`:core:datastore`)
+> all have working implementations behind their ports. When adding behaviour, still extend a port
+> and bind the implementation in that module's `di/` package rather than reaching across layers. See
+> the README roadmap and CHANGELOG for exactly what is and isn't built before starting a phase's
+> work.
 
 ---
 
@@ -40,13 +45,15 @@ Rules:
 :core:common             AppResult, dispatcher abstractions, shared value types (no UI)
 :core:ui                 reusable composables + preview tooling
 :core:designsystem       Material 3 theme (colour/type/shape/spacing)
-:core:astronomy          PORT: AstronomyEngine (contracts only)
-:core:scheduler          PORT: TaskScheduler (contracts only)
-:core:notifications      PORT: Notifier (contracts only)
-:core:location           PORT: LocationProvider (contracts only)
+:core:astronomy          AstronomyEngine port + DefaultAstronomyEngine (Meeus ephemeris, panchanga, muhurta)
+:core:scheduler          TaskScheduler port + DefaultTaskScheduler (AlarmManager exact alarms, ReminderReceiver)
+:core:notifications      Notifier port + DefaultNotifier (NotificationManagerCompat channels)
+:core:location           LocationProvider port + DefaultLocationProvider (Play Services fused location)
+:core:datastore          ReminderRepository + UserPreferencesRepository (Jetpack DataStore prefs)
 :feature:home            home screen (UI + ViewModel)
+:feature:calendar        monthly panchang calendar screen (UI + ViewModel)
 :feature:settings        settings screen (UI + ViewModel)
-:feature:alarm           alarm screen (UI + ViewModel)
+:feature:alarm           reminders screen (UI + ViewModel + BootReceiver, ReminderRescheduler)
 build-logic/convention   Gradle convention plugins (vedicmitra.*)
 config/                  detekt + spotless configuration
 docs/                    architecture, module guide, ADRs
@@ -179,8 +186,12 @@ A task is complete only when **all** hold:
 
 ## 11. Guardrails for AI assistants
 
-- **Do not** invent astronomy math, alarm delivery, or scheduling in Phase 1 — extend the **ports**
-  only, and stop if implementation is required but not requested.
+- **Astronomy math must be verifiable.** The engine cross-checks against datepanchang.com and
+  drikpanchang.com; any new or changed calculation must cite the convention it follows and be
+  validated against those references before shipping. Don't guess formulas or magic constants.
+- **Respect the port boundary.** Add capability behaviour behind its `:core` port and bind the
+  implementation in that module's `di/` package; don't have features reach past a port to a concrete
+  engine, scheduler, notifier, or location provider.
 - **Do not** add libraries without adding them to the version catalog and justifying them.
 - **Do not** bypass convention plugins by copying build config into modules.
 - **Prefer editing** existing files and reusing `:core` utilities over creating parallel ones.

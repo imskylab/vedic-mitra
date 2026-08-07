@@ -16,12 +16,14 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.PanchangaDaySummary
 import io.github.vedicmitra.core.astronomy.Ritu
+import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
@@ -173,6 +175,8 @@ private val SAMPLE =
         yoga = Yoga(number = 18, name = "Variyana"),
         karana = Karana(number = 10, name = "Balava"),
         vara = Vara.SOMAVARA,
+        maasa = Maasa(number = 4, name = "Ashadha", adhika = false),
+        samvatsara = Samvatsara(number = 40, name = "Parabhava", shakaYear = 1948),
         ayana = Ayana.UTTARAYANA,
         ritu = Ritu.SHISHIRA,
         moonPhase = MoonPhase.FULL_MOON,

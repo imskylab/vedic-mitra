@@ -35,6 +35,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
@@ -42,6 +43,7 @@ import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.Ritu
+import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
@@ -123,6 +125,11 @@ private fun Panchanga(snapshot: AstronomySnapshot) {
     PanchangaRow(label = "Nakshatra", value = snapshot.nakshatra.name)
     PanchangaRow(label = "Yoga", value = snapshot.yoga.name)
     PanchangaRow(label = "Karana", value = snapshot.karana.name)
+    PanchangaRow(label = "Maasa", value = snapshot.maasa.displayName)
+    PanchangaRow(
+        label = "Samvatsara",
+        value = "${snapshot.samvatsara.name} (Shaka ${snapshot.samvatsara.shakaYear})",
+    )
     PanchangaRow(label = "Ayana", value = snapshot.ayana.displayName)
     PanchangaRow(label = "Ritu", value = snapshot.ritu.displayName)
     PanchangaRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
@@ -203,6 +210,8 @@ private fun HomeContentPreview() {
             yoga = Yoga(number = 18, name = "Variyana"),
             karana = Karana(number = 10, name = "Balava"),
             vara = Vara.SOMAVARA,
+            maasa = Maasa(number = 10, name = "Pausha", adhika = false),
+            samvatsara = Samvatsara(number = 37, name = "Shobhakruth", shakaYear = 1945),
             ayana = Ayana.UTTARAYANA,
             ritu = Ritu.SHISHIRA,
             moonPhase = MoonPhase.WAXING_GIBBOUS,

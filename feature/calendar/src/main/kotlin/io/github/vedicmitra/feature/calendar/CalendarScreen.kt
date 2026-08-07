@@ -55,6 +55,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
@@ -62,6 +63,7 @@ import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.Ritu
+import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
@@ -324,6 +326,11 @@ private fun DetailCard(
             DetailRow(label = "Nakshatra", value = snapshot.nakshatra.name)
             DetailRow(label = "Yoga", value = snapshot.yoga.name)
             DetailRow(label = "Karana", value = snapshot.karana.name)
+            DetailRow(label = "Maasa", value = snapshot.maasa.displayName)
+            DetailRow(
+                label = "Samvatsara",
+                value = "${snapshot.samvatsara.name} (Shaka ${snapshot.samvatsara.shakaYear})",
+            )
             DetailRow(label = "Ayana", value = snapshot.ayana.displayName)
             DetailRow(label = "Ritu", value = snapshot.ritu.displayName)
             DetailRow(label = "Moon Phase", value = snapshot.moonPhase.displayName)
@@ -428,6 +435,8 @@ private fun CalendarContentPreview() {
             yoga = Yoga(number = 9, name = "Shula"),
             karana = Karana(number = 44, name = "Bava"),
             vara = Vara.BUDHAVARA,
+            maasa = Maasa(number = 4, name = "Ashadha", adhika = false),
+            samvatsara = Samvatsara(number = 40, name = "Parabhava", shakaYear = 1948),
             ayana = Ayana.DAKSHINAYANA,
             ritu = Ritu.VARSHA,
             moonPhase = MoonPhase.WANING_CRESCENT,

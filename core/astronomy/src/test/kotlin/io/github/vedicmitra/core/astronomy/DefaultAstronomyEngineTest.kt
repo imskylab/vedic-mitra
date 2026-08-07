@@ -118,6 +118,23 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
+    fun `maasa and samvatsara match drikpanchang reference for New Delhi`() =
+        runTest {
+            // 2026-08-05 12:00 IST — amanta Ashadha, Krishna paksha (2026 has an intercalary Adhika
+            // Jyeshtha, so early August is Ashadha, not Shravana), in the Parabhava samvatsara
+            // (Shaka 1948). Cross-checked against drikpanchang.com and the published Ugadi 2026
+            // almanac (Parabhava Nama Samvatsara, new year 19 March 2026).
+            val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
+            val snap = snapshot(result)
+
+            assertThat(snap.maasa.name).isEqualTo("Ashadha")
+            assertThat(snap.maasa.number).isEqualTo(4)
+            assertThat(snap.maasa.adhika).isFalse()
+            assertThat(snap.samvatsara.name).isEqualTo("Parabhava")
+            assertThat(snap.samvatsara.shakaYear).isEqualTo(1948)
+        }
+
+    @Test
     fun `moonrise and moonset match drikpanchang reference for New Delhi`() =
         runTest {
             // 2026-08-05 12:00 IST — cross-checked against drikpanchang.com for Delhi: moonrise

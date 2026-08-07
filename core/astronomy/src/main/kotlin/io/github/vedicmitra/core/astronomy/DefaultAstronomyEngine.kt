@@ -56,6 +56,16 @@ class DefaultAstronomyEngine
                         val atT = Ephemeris.julianCenturies(atEpochMillis)
                         Ephemeris.norm360(Ephemeris.moonLongitude(atT) - Ephemeris.lahiriAyanamsa(atT))
                     }
+                val elongationAt: (Long) -> Double = { at ->
+                    val atT = Ephemeris.julianCenturies(at)
+                    Ephemeris.norm360(Ephemeris.moonLongitude(atT) - Ephemeris.sunApparentLongitude(atT))
+                }
+                val sunSiderealAt: (Long) -> Double = { at ->
+                    val atT = Ephemeris.julianCenturies(at)
+                    Ephemeris.norm360(Ephemeris.sunApparentLongitude(atT) - Ephemeris.lahiriAyanamsa(atT))
+                }
+                val maasa = maasaOf(epochMillis, elongationAt, sunSiderealAt)
+                val samvatsara = samvatsaraOf(epochMillis, elongationAt, sunSiderealAt)
 
                 AppResult.Success(
                     AstronomySnapshot(
@@ -68,6 +78,8 @@ class DefaultAstronomyEngine
                         yoga = yogaOf(yogaSum),
                         karana = karanaOf(elongation),
                         vara = vara,
+                        maasa = maasa,
+                        samvatsara = samvatsara,
                         ayana = ayanaOf(sunSidereal),
                         ritu = rituOf(sunSidereal),
                         moonPhase = moonPhaseOf(elongation),
