@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.core.notifications
 
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.result.AppResult
 
 /**
@@ -32,10 +33,13 @@ interface Notifier {
  * @property channel the channel the notification is posted to.
  * @property title short headline text.
  * @property body body text.
+ * @property alert how the reminder should alert the user when it fires (quiet notification, or a
+ *   full-screen ringing alarm). The scheduler and receiver branch on this.
  */
 data class AppNotification(
     val id: Int,
     val channel: AppNotificationChannel,
     val title: String,
     val body: String,
+    val alert: AlertStyle = AlertStyle.NOTIFICATION,
 )

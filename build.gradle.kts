@@ -24,8 +24,11 @@ spotless {
 
     kotlin {
         target("**/*.kt")
-        // Exclude generated build output and the license-header template itself.
-        targetExclude("**/build/**/*.kt", "config/spotless/copyright.kt")
+        // Exclude generated build output and the license-header template itself. Excluding the
+        // `build` directory itself (not just its contents) prunes the directory walk so Spotless
+        // never descends into build intermediates — avoiding a race where a concurrent codegen
+        // task rewrites/deletes files under build/ mid-scan ("Could not read path").
+        targetExclude("**/build", "**/build/**/*.kt", "config/spotless/copyright.kt")
         ktlint(libs.versions.ktlint.get())
             .editorConfigOverride(
                 mapOf(
@@ -40,13 +43,13 @@ spotless {
     }
     kotlinGradle {
         target("**/*.gradle.kts")
-        targetExclude("**/build/**/*.gradle.kts")
+        targetExclude("**/build", "**/build/**/*.gradle.kts")
         ktlint(libs.versions.ktlint.get())
             .editorConfigOverride(mapOf("ktlint_code_style" to "ktlint_official"))
     }
     format("misc") {
         target("**/*.md", "**/*.yml", "**/*.yaml", "**/.gitignore")
-        targetExclude("**/build/**")
+        targetExclude("**/build", "**/build/**")
         trimTrailingWhitespace()
         endWithNewline()
     }

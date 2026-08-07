@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.alarm
 
 import com.google.common.truth.Truth.assertThat
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.PersistedReminder
 import io.github.vedicmitra.core.datastore.ReminderRepository
@@ -62,6 +63,7 @@ private class StubReminderRepository(
 ) : ReminderRepository {
     override val reminders = MutableStateFlow(initial)
     override val offsetMinutesByName = MutableStateFlow<Map<String, Int>>(emptyMap())
+    override val alertTypeByName = MutableStateFlow<Map<String, AlertStyle>>(emptyMap())
 
     override suspend fun upsert(reminder: PersistedReminder) {
         reminders.value = reminders.value.filterNot { it.id == reminder.id } + reminder
@@ -80,6 +82,13 @@ private class StubReminderRepository(
         minutes: Int,
     ) {
         offsetMinutesByName.value = offsetMinutesByName.value + (name to minutes)
+    }
+
+    override suspend fun setAlertType(
+        name: String,
+        alert: AlertStyle,
+    ) {
+        alertTypeByName.value = alertTypeByName.value + (name to alert)
     }
 }
 

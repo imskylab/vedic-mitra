@@ -12,6 +12,7 @@ package io.github.vedicmitra.core.datastore
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.google.common.truth.Truth.assertThat
+import io.github.vedicmitra.core.common.model.AlertStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -105,6 +106,27 @@ class DefaultReminderRepositoryTest {
 
             assertThat(repository.offsetMinutesByName.first())
                 .containsExactly("Brahma Muhurta", 30, "Rahu Kalam", 5)
+        }
+
+    @Test
+    fun `alertTypeByName has no overrides by default`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+
+            assertThat(repository.alertTypeByName.first()).isEmpty()
+        }
+
+    @Test
+    fun `setAlertType stores and replaces the alert style for a name`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+
+            repository.setAlertType("Brahma Muhurta", AlertStyle.ALARM)
+            repository.setAlertType("Rahu Kalam", AlertStyle.NOTIFICATION)
+            repository.setAlertType("Brahma Muhurta", AlertStyle.NOTIFICATION) // replaces the first
+
+            assertThat(repository.alertTypeByName.first())
+                .containsExactly("Brahma Muhurta", AlertStyle.NOTIFICATION, "Rahu Kalam", AlertStyle.NOTIFICATION)
         }
 
     private fun reminder(

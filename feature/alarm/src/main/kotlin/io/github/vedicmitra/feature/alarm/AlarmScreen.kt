@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -85,6 +86,7 @@ fun AlarmScreen(
         uiState = uiState,
         onToggleReminder = viewModel::setReminder,
         onOffsetChange = viewModel::setOffsetMinutes,
+        onAlertChange = viewModel::setAlertType,
         onRequestExactAlarm = context::openExactAlarmSettings,
         modifier = modifier,
     )
@@ -95,6 +97,7 @@ private fun AlarmContent(
     uiState: AlarmUiState,
     onToggleReminder: (ReminderItem, Boolean) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
+    onAlertChange: (String, AlertStyle) -> Unit,
     onRequestExactAlarm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -131,7 +134,12 @@ private fun AlarmContent(
                     }
                 }
                 items(items = uiState.reminders, key = { it.id }) { item ->
-                    ReminderRow(item = item, onToggle = onToggleReminder, onOffsetChange = onOffsetChange)
+                    ReminderRow(
+                        item = item,
+                        onToggle = onToggleReminder,
+                        onOffsetChange = onOffsetChange,
+                        onAlertChange = onAlertChange,
+                    )
                 }
             }
     }
@@ -142,6 +150,7 @@ private fun ReminderRow(
     item: ReminderItem,
     onToggle: (ReminderItem, Boolean) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
+    onAlertChange: (String, AlertStyle) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -172,6 +181,18 @@ private fun ReminderRow(
                     label = { Text(leadTimeLabel(minutes)) },
                 )
             }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = item.alertType == AlertStyle.NOTIFICATION,
+                onClick = { onAlertChange(item.name, AlertStyle.NOTIFICATION) },
+                label = { Text("Notify") },
+            )
+            FilterChip(
+                selected = item.alertType == AlertStyle.ALARM,
+                onClick = { onAlertChange(item.name, AlertStyle.ALARM) },
+                label = { Text("Alarm") },
+            )
         }
     }
 }
@@ -260,6 +281,7 @@ private fun AlarmContentPreview() {
                 isEnabled = true,
                 isTomorrow = false,
                 offsetMinutes = 30,
+                alertType = AlertStyle.ALARM,
             ),
             ReminderItem(
                 id = "muhurta:rahu",
@@ -270,6 +292,7 @@ private fun AlarmContentPreview() {
                 isEnabled = false,
                 isTomorrow = true,
                 offsetMinutes = 10,
+                alertType = AlertStyle.NOTIFICATION,
             ),
         )
     VedicMitraTheme {
@@ -282,6 +305,7 @@ private fun AlarmContentPreview() {
                 ),
             onToggleReminder = { _, _ -> },
             onOffsetChange = { _, _ -> },
+            onAlertChange = { _, _ -> },
             onRequestExactAlarm = {},
         )
     }

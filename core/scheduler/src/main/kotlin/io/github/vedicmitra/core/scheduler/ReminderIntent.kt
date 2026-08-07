@@ -11,6 +11,7 @@
 package io.github.vedicmitra.core.scheduler
 
 import android.content.Intent
+import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.notifications.AppNotification
 import io.github.vedicmitra.core.notifications.AppNotificationChannel
 
@@ -27,6 +28,7 @@ internal object ReminderIntent {
     private const val EXTRA_CHANNEL = "extra_channel"
     private const val EXTRA_TITLE = "extra_title"
     private const val EXTRA_BODY = "extra_body"
+    private const val EXTRA_ALERT = "extra_alert"
 
     /** Writes [notification] onto [intent] as extras. */
     fun putNotification(
@@ -38,6 +40,7 @@ internal object ReminderIntent {
             putExtra(EXTRA_CHANNEL, notification.channel.name)
             putExtra(EXTRA_TITLE, notification.title)
             putExtra(EXTRA_BODY, notification.body)
+            putExtra(EXTRA_ALERT, notification.alert.name)
         }
 
     /**
@@ -48,6 +51,7 @@ internal object ReminderIntent {
     fun readNotification(intent: Intent): AppNotification? {
         if (!intent.hasExtra(EXTRA_ID)) return null
         val channelName = intent.getStringExtra(EXTRA_CHANNEL)
+        val alertName = intent.getStringExtra(EXTRA_ALERT)
         return AppNotification(
             id = intent.getIntExtra(EXTRA_ID, 0),
             channel =
@@ -55,6 +59,7 @@ internal object ReminderIntent {
                     ?: AppNotificationChannel.entries.first(),
             title = intent.getStringExtra(EXTRA_TITLE).orEmpty(),
             body = intent.getStringExtra(EXTRA_BODY).orEmpty(),
+            alert = AlertStyle.entries.firstOrNull { it.name == alertName } ?: AlertStyle.NOTIFICATION,
         )
     }
 }

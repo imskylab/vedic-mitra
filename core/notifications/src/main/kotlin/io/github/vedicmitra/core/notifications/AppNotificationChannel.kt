@@ -36,4 +36,12 @@ enum class AppNotificationChannel(
         description = "Alerts for upcoming auspicious time windows (muhurta).",
         importance = NotificationManagerCompat.IMPORTANCE_HIGH,
     ),
+
+    /** Full-screen ringing alarms for muhurta reminders set to alarm mode. */
+    MUHURTA_ALARMS(
+        id = "muhurta_alarms",
+        channelName = "Muhurta alarms",
+        description = "Full-screen ringing alarms for upcoming muhurta.",
+        importance = NotificationManagerCompat.IMPORTANCE_HIGH,
+    ),
 }

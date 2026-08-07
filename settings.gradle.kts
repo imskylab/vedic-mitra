@@ -52,6 +52,7 @@ include(":core:designsystem")
 include(":core:astronomy")
 include(":core:scheduler")
 include(":core:notifications")
+include(":core:alarm")
 include(":core:location")
 include(":core:domain")
 

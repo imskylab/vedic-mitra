@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.core.datastore
 
+import io.github.vedicmitra.core.common.model.AlertStyle
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -28,6 +29,13 @@ interface ReminderRepository {
      */
     val offsetMinutesByName: Flow<Map<String, Int>>
 
+    /**
+     * Per-muhurta-name alert-style overrides — whether that muhurta's reminder fires as a quiet
+     * notification or a full-screen ringing alarm. Sparse: a name absent here uses the default
+     * [AlertStyle.NOTIFICATION].
+     */
+    val alertTypeByName: Flow<Map<String, AlertStyle>>
+
     /** Adds [reminder], replacing any existing reminder with the same [PersistedReminder.id]. */
     suspend fun upsert(reminder: PersistedReminder)
 
@@ -41,6 +49,12 @@ interface ReminderRepository {
     suspend fun setOffsetMinutes(
         name: String,
         minutes: Int,
+    )
+
+    /** Sets whether the muhurta named [name] alerts as a notification or a ringing alarm. */
+    suspend fun setAlertType(
+        name: String,
+        alert: AlertStyle,
     )
 
     companion object {
