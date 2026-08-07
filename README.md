@@ -302,9 +302,9 @@ Status marks reflect what's actually implemented today, verified against the cod
 **Location Support**
 
 - [x] GPS location
-- [ ] City selection
-- [ ] Custom latitude/longitude
-- [ ] Multiple saved locations
+- [x] City selection
+- [x] Custom latitude/longitude
+- [x] Multiple saved locations
 
 **Offline Engine**
 

@@ -26,6 +26,7 @@ dependencies {
     implementation(projects.feature.calendar)
     implementation(projects.feature.settings)
     implementation(projects.feature.alarm)
+    implementation(projects.feature.location)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)

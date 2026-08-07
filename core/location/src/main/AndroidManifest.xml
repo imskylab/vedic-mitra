@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Library module manifest. Location permissions are merged into the app; the app is responsible
-     for requesting them at runtime before calling LocationProvider. -->
+     for requesting them at runtime before calling LocationProvider. INTERNET is required by the
+     platform Geocoder used for city search. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

@@ -30,11 +30,12 @@ import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
-import io.github.vedicmitra.core.location.LocationProvider
+import io.github.vedicmitra.core.domain.ResolveLocationUseCase
+import io.github.vedicmitra.core.domain.ResolvedLocation
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -58,11 +59,11 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `uses the device location when available`() =
+    fun `computes for the resolved location`() =
         runTest {
             val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
-            val deviceLocation = GeoCoordinates(latitude = 12.9716, longitude = 77.5946) // Bengaluru
-            val viewModel = HomeViewModel(engine, FakeLocationProvider(AppResult.Success(deviceLocation)))
+            val coordinates = GeoCoordinates(latitude = 12.9716, longitude = 77.5946) // Bengaluru
+            val viewModel = HomeViewModel(engine, resolveTo(coordinates, label = "Bengaluru", isDefault = false))
 
             viewModel.load()
 
@@ -70,23 +71,23 @@ class HomeViewModelTest {
             assertThat(state.isLoading).isFalse()
             assertThat(state.snapshot).isEqualTo(SAMPLE)
             assertThat(state.usingDefaultLocation).isFalse()
-            assertThat(engine.lastLocation).isEqualTo(deviceLocation)
+            assertThat(state.locationLabel).isEqualTo("Bengaluru")
+            assertThat(engine.lastLocation).isEqualTo(coordinates)
         }
 
     @Test
-    fun `falls back to the default location when unavailable`() =
+    fun `flags when the default location was used`() =
         runTest {
             val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
-            val failure = AppResult.Failure(SecurityException("no permission"))
-            val viewModel = HomeViewModel(engine, FakeLocationProvider(failure))
+            val fallback = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
+            val viewModel = HomeViewModel(engine, resolveTo(fallback, label = "New Delhi", isDefault = true))
 
             viewModel.load()
 
             val state = viewModel.uiState.value
             assertThat(state.usingDefaultLocation).isTrue()
             assertThat(state.snapshot).isEqualTo(SAMPLE)
-            // The fallback location was passed to the engine (not the caller-provided device location).
-            assertThat(engine.lastLocation).isNotNull()
+            assertThat(engine.lastLocation).isEqualTo(fallback)
         }
 
     @Test
@@ -94,7 +95,7 @@ class HomeViewModelTest {
         runTest {
             val engine = RecordingAstronomyEngine(AppResult.Failure(IllegalStateException("boom")))
             val location = GeoCoordinates(latitude = 0.0, longitude = 0.0)
-            val viewModel = HomeViewModel(engine, FakeLocationProvider(AppResult.Success(location)))
+            val viewModel = HomeViewModel(engine, resolveTo(location, label = "Nowhere", isDefault = false))
 
             viewModel.load()
 
@@ -102,6 +103,17 @@ class HomeViewModelTest {
             assertThat(state.snapshot).isNull()
             assertThat(state.errorMessage).isEqualTo("boom")
         }
+
+    private fun resolveTo(
+        coordinates: GeoCoordinates,
+        label: String,
+        isDefault: Boolean,
+    ): ResolveLocationUseCase {
+        val useCase = mockk<ResolveLocationUseCase>()
+        coEvery { useCase() } returns
+            ResolvedLocation(coordinates = coordinates, zoneId = "UTC", label = label, isDefault = isDefault)
+        return useCase
+    }
 }
 
 private class RecordingAstronomyEngine(
@@ -128,14 +140,6 @@ private class RecordingAstronomyEngine(
                 moonPhase = MoonPhase.FULL_MOON,
             ),
         )
-}
-
-private class FakeLocationProvider(
-    private val result: AppResult<GeoCoordinates>,
-) : LocationProvider {
-    override suspend fun currentLocation(): AppResult<GeoCoordinates> = result
-
-    override fun locationUpdates(): Flow<GeoCoordinates> = emptyFlow()
 }
 
 private val SAMPLE =

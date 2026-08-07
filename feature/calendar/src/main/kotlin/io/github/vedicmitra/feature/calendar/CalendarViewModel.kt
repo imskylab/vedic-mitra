@@ -19,7 +19,7 @@ import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
-import io.github.vedicmitra.core.location.LocationProvider
+import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,8 +33,9 @@ import kotlin.time.Instant
 
 /**
  * Presentation logic for the calendar screen (MVVM). Shows a month of days — each with a cheap
- * per-day panchanga summary — and the full panchanga for whichever day is selected. Uses the device
- * location, falling back to a fixed default when it is unavailable (e.g. permission not granted).
+ * per-day panchanga summary — and the full panchanga for whichever day is selected. Computes for the
+ * resolved location (selected saved location, else device, else default; see
+ * [ResolveLocationUseCase]) and places each day's boundaries in that location's own time zone.
  *
  * [load] is driven by the screen once it has resolved the location permission.
  */
@@ -43,26 +44,30 @@ class CalendarViewModel
     @Inject
     constructor(
         private val astronomyEngine: AstronomyEngine,
-        private val locationProvider: LocationProvider,
+        private val resolveLocation: ResolveLocationUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(CalendarUiState())
 
         /** Observable UI state consumed by the calendar screen. */
         val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
-        private var location: GeoCoordinates = DEFAULT_LOCATION
+        // Set by load() before any month is computed; the initial values are placeholders only.
+        private var location: GeoCoordinates = PLACEHOLDER_LOCATION
+        private var zone: ZoneId = ZoneId.systemDefault()
 
-        /** (Re)loads the current month, using the device location when available. */
+        /** (Re)loads the current month for the resolved location and time zone. */
         fun load() {
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-                val locationResult = locationProvider.currentLocation()
-                val usingDefault = locationResult !is AppResult.Success
-                location = (locationResult as? AppResult.Success)?.data ?: DEFAULT_LOCATION
-                _uiState.update { it.copy(usingDefaultLocation = usingDefault) }
+                val resolved = resolveLocation()
+                location = resolved.coordinates
+                zone = ZoneId.of(resolved.zoneId)
+                _uiState.update {
+                    it.copy(usingDefaultLocation = resolved.isDefault, locationLabel = resolved.label)
+                }
 
-                val today = LocalDate.now(ZoneId.systemDefault())
+                val today = LocalDate.now(zone)
                 refreshMonth(YearMonth.from(today), select = today)
             }
         }
@@ -118,12 +123,12 @@ class CalendarViewModel
             }
         }
 
-        /** Local noon on [date] — a representative time of day for that date's panchanga. */
+        /** Local noon on [date] in the resolved location's time zone — a representative time of day. */
         private fun noonOf(date: LocalDate): Instant {
             val epochMillis =
                 date
                     .atTime(NOON_HOUR, 0)
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(zone)
                     .toInstant()
                     .toEpochMilli()
             return Instant.fromEpochMilliseconds(epochMillis)
@@ -132,8 +137,8 @@ class CalendarViewModel
         private companion object {
             const val NOON_HOUR = 12
 
-            // Used when the device location is unavailable (New Delhi).
-            val DEFAULT_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
+            // Pre-load placeholder only; the real fallback is centralized in ResolveLocationUseCase.
+            val PLACEHOLDER_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
         }
     }
 
@@ -159,7 +164,8 @@ data class CalendarDay(
  * @property selectedSnapshot the selected day's full panchanga, or `null` before it loads.
  * @property isLoading whether the month grid is being computed.
  * @property errorMessage a human-readable error, or `null` when there is none.
- * @property usingDefaultLocation whether the default location was used (device location unavailable).
+ * @property usingDefaultLocation whether the built-in default location was used.
+ * @property locationLabel human-readable name of the location the month was computed for.
  */
 data class CalendarUiState(
     val yearMonth: YearMonth = YearMonth.now(),
@@ -169,4 +175,5 @@ data class CalendarUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val usingDefaultLocation: Boolean = false,
+    val locationLabel: String? = null,
 )
