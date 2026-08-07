@@ -15,6 +15,7 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Maasa
@@ -299,6 +300,13 @@ private class FakeAstronomyEngine : AstronomyEngine {
             ),
         )
     }
+
+    override suspend fun upcomingFestivals(
+        instant: Instant,
+        location: GeoCoordinates,
+        withinDays: Int,
+        limit: Int,
+    ): AppResult<List<Festival>> = AppResult.Success(emptyList())
 }
 
 private fun snapshotFor(instant: Instant): AstronomySnapshot =

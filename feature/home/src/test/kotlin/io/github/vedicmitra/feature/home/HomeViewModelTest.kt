@@ -14,11 +14,15 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.Festival
+import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
+import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.PanchangaDaySummary
@@ -49,7 +53,6 @@ import kotlin.time.Instant
 class HomeViewModelTest {
     @Before
     fun setUp() {
-        // Unconfined main runs viewModelScope work eagerly, so load() completes inline.
         Dispatchers.setMain(UnconfinedTestDispatcher())
     }
 
@@ -59,43 +62,76 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `computes for the resolved location`() =
+    fun `computes for the resolved location and surfaces the next festival`() =
         runTest {
-            val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
-            val coordinates = GeoCoordinates(latitude = 12.9716, longitude = 77.5946) // Bengaluru
-            val viewModel = HomeViewModel(engine, resolveTo(coordinates, label = "Bengaluru", isDefault = false))
+            val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
+            val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(festival))
+            val coordinates = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
+            val viewModel = HomeViewModel(engine, resolveTo(coordinates, "Bengaluru", isDefault = false))
 
             viewModel.load()
 
             val state = viewModel.uiState.value
             assertThat(state.isLoading).isFalse()
-            assertThat(state.snapshot).isEqualTo(SAMPLE)
-            assertThat(state.usingDefaultLocation).isFalse()
+            assertThat(state.snapshot).isNotNull()
+            assertThat(state.nextFestival).isEqualTo(festival)
             assertThat(state.locationLabel).isEqualTo("Bengaluru")
             assertThat(engine.lastLocation).isEqualTo(coordinates)
         }
 
     @Test
-    fun `flags when the default location was used`() =
+    fun `prefers a named festival over an earlier observance`() =
         runTest {
-            val engine = RecordingAstronomyEngine(AppResult.Success(SAMPLE))
-            val fallback = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
-            val viewModel = HomeViewModel(engine, resolveTo(fallback, label = "New Delhi", isDefault = true))
+            val observance =
+                Festival("Ekadashi", Instant.fromEpochMilliseconds(1_760_000_000_000L), FestivalType.OBSERVANCE)
+            val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
+            val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(observance, festival))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false))
 
             viewModel.load()
 
-            val state = viewModel.uiState.value
-            assertThat(state.usingDefaultLocation).isTrue()
-            assertThat(state.snapshot).isEqualTo(SAMPLE)
-            assertThat(engine.lastLocation).isEqualTo(fallback)
+            assertThat(viewModel.uiState.value.nextFestival).isEqualTo(festival)
+        }
+
+    @Test
+    fun `marks an auspicious muhurta active now as the current window`() =
+        runTest {
+            val now = System.currentTimeMillis()
+            val active =
+                Muhurta(
+                    name = "Abhijit Muhurta",
+                    start = Instant.fromEpochMilliseconds(now - 60_000L),
+                    end = Instant.fromEpochMilliseconds(now + 3_600_000L),
+                    quality = MuhurtaQuality.AUSPICIOUS,
+                )
+            val engine = FakeEngine(AppResult.Success(snapshot(muhurtas = listOf(active))))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false))
+
+            viewModel.load()
+
+            val window = viewModel.uiState.value.auspicious
+            assertThat(window).isNotNull()
+            assertThat(window?.name).isEqualTo("Abhijit Muhurta")
+            assertThat(window?.isActive).isTrue()
+            assertThat(window?.quality).isEqualTo(MuhurtaQuality.AUSPICIOUS)
+        }
+
+    @Test
+    fun `flags when the default location was used`() =
+        runTest {
+            val engine = FakeEngine(AppResult.Success(snapshot()))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "New Delhi", isDefault = true))
+
+            viewModel.load()
+
+            assertThat(viewModel.uiState.value.usingDefaultLocation).isTrue()
         }
 
     @Test
     fun `surfaces engine failures as an error message`() =
         runTest {
-            val engine = RecordingAstronomyEngine(AppResult.Failure(IllegalStateException("boom")))
-            val location = GeoCoordinates(latitude = 0.0, longitude = 0.0)
-            val viewModel = HomeViewModel(engine, resolveTo(location, label = "Nowhere", isDefault = false))
+            val engine = FakeEngine(AppResult.Failure(IllegalStateException("boom")))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false))
 
             viewModel.load()
 
@@ -114,10 +150,15 @@ class HomeViewModelTest {
             ResolvedLocation(coordinates = coordinates, zoneId = "UTC", label = label, isDefault = isDefault)
         return useCase
     }
+
+    private companion object {
+        val SOMEWHERE = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
+    }
 }
 
-private class RecordingAstronomyEngine(
-    private val result: AppResult<AstronomySnapshot>,
+private class FakeEngine(
+    private val snapshotResult: AppResult<AstronomySnapshot>,
+    private val festivals: List<Festival> = emptyList(),
 ) : AstronomyEngine {
     var lastLocation: GeoCoordinates? = null
 
@@ -126,7 +167,7 @@ private class RecordingAstronomyEngine(
         location: GeoCoordinates,
     ): AppResult<AstronomySnapshot> {
         lastLocation = location
-        return result
+        return snapshotResult
     }
 
     override suspend fun daySummaryAt(
@@ -140,9 +181,16 @@ private class RecordingAstronomyEngine(
                 moonPhase = MoonPhase.FULL_MOON,
             ),
         )
+
+    override suspend fun upcomingFestivals(
+        instant: Instant,
+        location: GeoCoordinates,
+        withinDays: Int,
+        limit: Int,
+    ): AppResult<List<Festival>> = AppResult.Success(festivals)
 }
 
-private val SAMPLE =
+private fun snapshot(muhurtas: List<Muhurta> = emptyList()): AstronomySnapshot =
     AstronomySnapshot(
         instant = Instant.fromEpochMilliseconds(0L),
         location = GeoCoordinates(latitude = 0.0, longitude = 0.0),
@@ -159,5 +207,5 @@ private val SAMPLE =
         ritu = Ritu.SHISHIRA,
         moonPhase = MoonPhase.FULL_MOON,
         goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
-        muhurtas = emptyList(),
+        muhurtas = muhurtas,
     )

@@ -66,7 +66,7 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
                        ┌─────────┐
                        │  :app   │  (assembles everything, Hilt root, single Activity)
                        └────┬────┘
-          ┌─────────────────┼──────────────────┐
+          ┌─────────────────┼───────────────────┐
    ┌──────▼──────┐   ┌──────▼───────┐   ┌───────▼──────┐
    │ :feature:   │   │ :feature:    │   │ :feature:    │
    │   home      │   │  settings    │   │   alarm      │
@@ -74,9 +74,9 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
           │                 │                  │
           └───────── depend on core ports ─────┘
    ┌──────────────────────────────────────────────────────┐
-   │ :core:common  :core:ui  :core:designsystem            │
-   │ :core:astronomy  :core:scheduler                      │
-   │ :core:notifications  :core:location                   │
+   │ :core:common  :core:ui  :core:designsystem           │
+   │ :core:astronomy  :core:scheduler                     │
+   │ :core:notifications  :core:location                  │
    └──────────────────────────────────────────────────────┘
 ```
 

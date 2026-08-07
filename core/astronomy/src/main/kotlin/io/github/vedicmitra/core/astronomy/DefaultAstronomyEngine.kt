@@ -90,6 +90,55 @@ class DefaultAstronomyEngine
             }
         }
 
+        override suspend fun upcomingFestivals(
+            instant: Instant,
+            location: GeoCoordinates,
+            withinDays: Int,
+            limit: Int,
+        ): AppResult<List<Festival>> {
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            return withContext(dispatchers.default) {
+                val source = ephemerisFestivalSource(location)
+                AppResult.Success(upcomingFestivals(instant.toEpochMilliseconds(), withinDays, limit, source))
+            }
+        }
+
+        private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
+            object : FestivalPanchangaSource {
+                override fun sunrise(dayEpochMillis: Long): Long? =
+                    SolarDay
+                        .sunTimes(dayEpochMillis, location.latitude, location.longitude)
+                        .sunrise
+                        ?.toEpochMilliseconds()
+
+                override fun tithiNumber(epochMillis: Long): Int {
+                    val t = Ephemeris.julianCenturies(epochMillis)
+                    val elongation = Ephemeris.norm360(Ephemeris.moonLongitude(t) - Ephemeris.sunApparentLongitude(t))
+                    return tithiOf(elongation).number
+                }
+
+                override fun sunRashi(epochMillis: Long): Int {
+                    val t = Ephemeris.julianCenturies(epochMillis)
+                    val sunSidereal = Ephemeris.norm360(Ephemeris.sunApparentLongitude(t) - Ephemeris.lahiriAyanamsa(t))
+                    return (sunSidereal / 30.0).toInt() % 12
+                }
+
+                override fun maasa(epochMillis: Long): Maasa {
+                    val elongationAt: (Long) -> Double = { at ->
+                        val atT = Ephemeris.julianCenturies(at)
+                        Ephemeris.norm360(Ephemeris.moonLongitude(atT) - Ephemeris.sunApparentLongitude(atT))
+                    }
+                    val sunSiderealAt: (Long) -> Double = { at ->
+                        val atT = Ephemeris.julianCenturies(at)
+                        Ephemeris.norm360(Ephemeris.sunApparentLongitude(atT) - Ephemeris.lahiriAyanamsa(atT))
+                    }
+                    return maasaOf(epochMillis, elongationAt, sunSiderealAt)
+                }
+            }
+
         override suspend fun daySummaryAt(
             instant: Instant,
             location: GeoCoordinates,
