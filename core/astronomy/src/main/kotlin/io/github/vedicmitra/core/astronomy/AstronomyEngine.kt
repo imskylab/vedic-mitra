@@ -60,6 +60,23 @@ interface AstronomyEngine {
         withinDays: Int,
         limit: Int,
     ): AppResult<List<Festival>>
+
+    /**
+     * The next civil day, within [withinDays] of [instant] for [location], whose sunrise tithi is
+     * one of [tithis] (global 1..30) and — when [maasa] is non-null — whose amanta month matches it.
+     * Returns the day's **sunrise** instant, `null` if none falls in the window, or [AppResult.Failure]
+     * if it cannot be computed. A `null` [maasa] recurs every lunar month; a specific month is annual.
+     *
+     * Used to schedule tithi-based reminders (Amavasya, Purnima, Ekadashi, …); the default no-op lets
+     * test doubles ignore it.
+     */
+    suspend fun nextTithiOccurrence(
+        instant: Instant,
+        location: GeoCoordinates,
+        maasa: String?,
+        tithis: Set<Int>,
+        withinDays: Int,
+    ): AppResult<Instant?> = AppResult.Success<Instant?>(null)
 }
 
 /**

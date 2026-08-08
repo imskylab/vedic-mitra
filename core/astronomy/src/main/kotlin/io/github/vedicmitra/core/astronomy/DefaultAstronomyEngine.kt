@@ -112,6 +112,25 @@ class DefaultAstronomyEngine
             }
         }
 
+        override suspend fun nextTithiOccurrence(
+            instant: Instant,
+            location: GeoCoordinates,
+            maasa: String?,
+            tithis: Set<Int>,
+            withinDays: Int,
+        ): AppResult<Instant?> {
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            return withContext(dispatchers.default) {
+                val source = ephemerisFestivalSource(location)
+                val sunriseMillis =
+                    nextTithiOccurrence(instant.toEpochMilliseconds(), withinDays, maasa, tithis, source)
+                AppResult.Success(sunriseMillis?.let { Instant.fromEpochMilliseconds(it) })
+            }
+        }
+
         private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
             object : FestivalPanchangaSource {
                 override fun sunrise(dayEpochMillis: Long): Long? =
