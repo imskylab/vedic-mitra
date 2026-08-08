@@ -22,24 +22,36 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,9 +67,9 @@ import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
 
 /**
- * Reminders screen entry point. Resolves the location (to compute muhurtas) and notification
- * permissions, drives [AlarmViewModel.load], and renders the togglable list. The stateless
- * [AlarmContent] takes state and callbacks as parameters so it is trivially previewable.
+ * Reminders screen entry point. Resolves location + notification permissions, drives
+ * [AlarmViewModel.load], and renders the list of **added** reminders plus an "add reminder" picker.
+ * The stateless [AlarmContent] takes state and callbacks so it is trivially previewable.
  */
 @Composable
 fun AlarmScreen(
@@ -84,7 +96,8 @@ fun AlarmScreen(
 
     AlarmContent(
         uiState = uiState,
-        onToggleReminder = viewModel::setReminder,
+        onAdd = viewModel::addReminder,
+        onRemove = viewModel::removeReminder,
         onOffsetChange = viewModel::setOffsetMinutes,
         onAlertChange = viewModel::setAlertType,
         onRequestExactAlarm = context::openExactAlarmSettings,
@@ -95,7 +108,8 @@ fun AlarmScreen(
 @Composable
 private fun AlarmContent(
     uiState: AlarmUiState,
-    onToggleReminder: (ReminderItem, Boolean) -> Unit,
+    onAdd: (String) -> Unit,
+    onRemove: (String) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
     onAlertChange: (String, AlertStyle) -> Unit,
     onRequestExactAlarm: () -> Unit,
@@ -125,74 +139,109 @@ private fun AlarmContent(
                         )
                     }
                 }
+                item { AddReminderButton(available = uiState.available, onAdd = onAdd) }
                 if (uiState.reminders.isEmpty()) {
                     item {
                         Text(
-                            text = "No muhurta windows for today.",
+                            text = "No reminders yet — add one above.",
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     }
                 }
                 items(items = uiState.reminders, key = { it.id }) { item ->
-                    ReminderRow(
-                        item = item,
-                        onToggle = onToggleReminder,
-                        onOffsetChange = onOffsetChange,
-                        onAlertChange = onAlertChange,
-                    )
+                    ReminderCard(item, onRemove, onOffsetChange, onAlertChange)
                 }
             }
     }
 }
 
 @Composable
-private fun ReminderRow(
+private fun AddReminderButton(
+    available: List<SourceOption>,
+    onAdd: (String) -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        Button(onClick = { open = true }, enabled = available.isNotEmpty()) {
+            Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = if (available.isEmpty()) "All periods added" else "Add reminder")
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            val onSelect: (String) -> Unit = { key ->
+                onAdd(key)
+                open = false
+            }
+            SourceSection("Auspicious", available.filter { it.quality == MuhurtaQuality.AUSPICIOUS }, onSelect)
+            SourceSection("Inauspicious", available.filterNot { it.quality == MuhurtaQuality.AUSPICIOUS }, onSelect)
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.SourceSection(
+    title: String,
+    options: List<SourceOption>,
+    onSelect: (String) -> Unit,
+) {
+    if (options.isEmpty()) return
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+    )
+    options.forEach { option ->
+        DropdownMenuItem(text = { Text(option.label) }, onClick = { onSelect(option.key) })
+    }
+}
+
+@Composable
+private fun ReminderCard(
     item: ReminderItem,
-    onToggle: (ReminderItem, Boolean) -> Unit,
+    onRemove: (String) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
     onAlertChange: (String, AlertStyle) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.name, style = MaterialTheme.typography.titleMedium)
-                val whenLabel = if (item.isTomorrow) "Tomorrow · " else ""
-                Text(
-                    text = "$whenLabel${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
-                    style = MaterialTheme.typography.bodySmall,
-                )
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = item.name, style = MaterialTheme.typography.titleMedium)
+                    val whenLabel = if (item.isTomorrow) "Tomorrow · " else ""
+                    Text(
+                        text = "$whenLabel${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                IconButton(onClick = { onRemove(item.id) }) {
+                    Icon(imageVector = Icons.Filled.Delete, contentDescription = "Remove reminder")
+                }
             }
-            Switch(
-                checked = item.isEnabled,
-                onCheckedChange = { checked -> onToggle(item, checked) },
-            )
-        }
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            LEAD_TIME_OPTIONS.forEach { minutes ->
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                LEAD_TIME_OPTIONS.forEach { minutes ->
+                    FilterChip(
+                        selected = minutes == item.offsetMinutes,
+                        onClick = { onOffsetChange(item.id, minutes) },
+                        label = { Text(leadTimeLabel(minutes)) },
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
-                    selected = minutes == item.offsetMinutes,
-                    onClick = { onOffsetChange(item.name, minutes) },
-                    label = { Text(leadTimeLabel(minutes)) },
+                    selected = item.alertType == AlertStyle.NOTIFICATION,
+                    onClick = { onAlertChange(item.id, AlertStyle.NOTIFICATION) },
+                    label = { Text("Notify") },
+                )
+                FilterChip(
+                    selected = item.alertType == AlertStyle.ALARM,
+                    onClick = { onAlertChange(item.id, AlertStyle.ALARM) },
+                    label = { Text("Alarm") },
                 )
             }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = item.alertType == AlertStyle.NOTIFICATION,
-                onClick = { onAlertChange(item.name, AlertStyle.NOTIFICATION) },
-                label = { Text("Notify") },
-            )
-            FilterChip(
-                selected = item.alertType == AlertStyle.ALARM,
-                onClick = { onAlertChange(item.name, AlertStyle.ALARM) },
-                label = { Text("Alarm") },
-            )
         }
     }
 }
@@ -273,37 +322,42 @@ private fun AlarmContentPreview() {
     val reminders =
         listOf(
             ReminderItem(
-                id = "muhurta:abhijit",
+                id = "muhurta:Abhijit Muhurta",
                 name = "Abhijit Muhurta",
                 start = Instant.fromEpochMilliseconds(1_705_300_140_000L),
                 end = Instant.fromEpochMilliseconds(1_705_302_960_000L),
                 quality = MuhurtaQuality.AUSPICIOUS,
-                isEnabled = true,
                 isTomorrow = false,
                 offsetMinutes = 30,
                 alertType = AlertStyle.ALARM,
             ),
             ReminderItem(
-                id = "muhurta:rahu",
-                name = "Rahu Kalam",
+                id = "choghadiya:AMRIT",
+                name = "Amrit",
                 start = Instant.fromEpochMilliseconds(1_705_287_540_000L),
                 end = Instant.fromEpochMilliseconds(1_705_292_265_000L),
-                quality = MuhurtaQuality.INAUSPICIOUS,
-                isEnabled = false,
+                quality = MuhurtaQuality.AUSPICIOUS,
                 isTomorrow = true,
                 offsetMinutes = 10,
                 alertType = AlertStyle.NOTIFICATION,
             ),
+        )
+    val available =
+        listOf(
+            SourceOption("muhurta:Brahma Muhurta", "Brahma Muhurta", MuhurtaQuality.AUSPICIOUS),
+            SourceOption("muhurta:Rahu Kalam", "Rahu Kalam", MuhurtaQuality.INAUSPICIOUS),
         )
     VedicMitraTheme {
         AlarmContent(
             uiState =
                 AlarmUiState.Ready(
                     reminders = reminders,
+                    available = available,
                     canScheduleExactAlarms = false,
                     usingDefaultLocation = true,
                 ),
-            onToggleReminder = { _, _ -> },
+            onAdd = {},
+            onRemove = {},
             onOffsetChange = { _, _ -> },
             onAlertChange = { _, _ -> },
             onRequestExactAlarm = {},

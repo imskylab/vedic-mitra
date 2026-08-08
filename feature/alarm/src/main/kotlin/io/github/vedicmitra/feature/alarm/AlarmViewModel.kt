@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
-import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.model.GeoCoordinates
@@ -39,16 +39,15 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
- * Presentation logic for the reminders screen (MVVM). For each muhurta it resolves the **next
- * upcoming** occurrence — today's window if it is still ahead, otherwise tomorrow's — so a reminder
- * can always be set and never shows as "already passed". Combined with the user's persisted
- * reminders and per-muhurta lead-time overrides, it exposes a togglable list. Toggling on schedules
- * (or off cancels) an exact alarm — lead-time adjusted — and persists it so it survives a reboot.
+ * Presentation logic for the reminders screen (MVVM), clock-app style: the user **adds** reminders
+ * from a catalog of the day's periods — the sun/weekday **muhurtas** (Brahma, Abhijit, Rahu Kalam,
+ * …) and the **Choghadiya** windows (Amrit, Shubh, …) — and the screen lists only what has been
+ * added. Each reminder is resolved to its **next upcoming** occurrence (today if still ahead, else
+ * tomorrow), so it can always be set and never shows as passed. Every [load] also renews the added
+ * reminders onto their next occurrence, rolling fired ones forward.
  *
- * Each [load] also **renews** every already-enabled reminder onto its next upcoming occurrence, so
- * simply reopening the screen rolls fired reminders forward to the following day.
- *
- * [load] is driven by the screen once it has resolved the location permission.
+ * A source is identified by a stable key: `muhurta:<name>` or `choghadiya:<TYPE>`. Lead-time and
+ * alert-style overrides, and the scheduled alarm, are all keyed by it.
  */
 @HiltViewModel
 class AlarmViewModel
@@ -72,14 +71,7 @@ class AlarmViewModel
                 when (load) {
                     AlarmLoad.Loading -> AlarmUiState.Loading
                     is AlarmLoad.Error -> AlarmUiState.Error(load.message)
-                    is AlarmLoad.Ready -> {
-                        val enabledIds = reminders.mapTo(mutableSetOf()) { it.id }
-                        AlarmUiState.Ready(
-                            reminders = load.muhurtas.map { it.toReminderItem(enabledIds, offsets, alerts) },
-                            canScheduleExactAlarms = load.canScheduleExactAlarms,
-                            usingDefaultLocation = load.usingDefaultLocation,
-                        )
-                    }
+                    is AlarmLoad.Ready -> readyState(load, reminders.map { it.id }.toSet(), offsets, alerts)
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -87,10 +79,31 @@ class AlarmViewModel
                 initialValue = AlarmUiState.Loading,
             )
 
-        /**
-         * (Re)loads the next upcoming occurrence of each muhurta, using the device location when
-         * available, then renews any already-enabled reminders onto those upcoming windows.
-         */
+        private fun readyState(
+            load: AlarmLoad.Ready,
+            addedKeys: Set<String>,
+            offsets: Map<String, Int>,
+            alerts: Map<String, AlertStyle>,
+        ): AlarmUiState.Ready {
+            val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+            val reminders =
+                addedKeys
+                    .mapNotNull { key ->
+                        load.periods.nextWindow(key, now)?.toReminderItem(
+                            key,
+                            offsets[key] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
+                            alerts[key] ?: AlertStyle.NOTIFICATION,
+                        )
+                    }.sortedBy { it.start.toEpochMilliseconds() }
+            return AlarmUiState.Ready(
+                reminders = reminders,
+                available = load.periods.catalog.filterNot { it.key in addedKeys },
+                canScheduleExactAlarms = load.canScheduleExactAlarms,
+                usingDefaultLocation = load.usingDefaultLocation,
+            )
+        }
+
+        /** (Re)loads today's and tomorrow's periods, then renews the added reminders onto them. */
         fun load() {
             viewModelScope.launch {
                 loadState.value = AlarmLoad.Loading
@@ -105,14 +118,10 @@ class AlarmViewModel
 
                 loadState.value =
                     if (today is AppResult.Success && tomorrow is AppResult.Success) {
-                        val upcoming = upcomingMuhurtas(today.data.muhurtas, tomorrow.data.muhurtas, now)
-                        renewEnabledReminders(upcoming)
+                        val periods = DayPeriods(periodsOf(today.data), periodsOf(tomorrow.data))
+                        renewAddedReminders(periods, now)
                         reminderRepository.removePast(now.toEpochMilliseconds())
-                        AlarmLoad.Ready(
-                            muhurtas = upcoming,
-                            canScheduleExactAlarms = taskScheduler.canScheduleExactAlarms(),
-                            usingDefaultLocation = usingDefault,
-                        )
+                        AlarmLoad.Ready(periods, taskScheduler.canScheduleExactAlarms(), usingDefault)
                     } else {
                         val message =
                             (today as? AppResult.Failure)?.cause?.message
@@ -123,151 +132,94 @@ class AlarmViewModel
             }
         }
 
-        /**
-         * For each of [today]'s muhurtas, keeps it if its window is still ahead of [now], otherwise
-         * substitutes the same-named window from [tomorrow] (flagged [UpcomingMuhurta.isTomorrow]).
-         * The result therefore never contains a window that has already begun.
-         */
-        private fun upcomingMuhurtas(
-            today: List<Muhurta>,
-            tomorrow: List<Muhurta>,
-            now: Instant,
-        ): List<UpcomingMuhurta> =
-            today.map { window ->
-                if (window.start > now) {
-                    UpcomingMuhurta(window, isTomorrow = false)
-                } else {
-                    // Names are stable day to day; fall back to today's window on the rare day a
-                    // name differs (e.g. Saturday's split "Dur Muhurta 1/2").
-                    val next = tomorrow.firstOrNull { it.name == window.name }
-                    if (next !=
-                        null
-                    ) {
-                        UpcomingMuhurta(next, isTomorrow = true)
-                    } else {
-                        UpcomingMuhurta(window, isTomorrow = false)
-                    }
-                }
-            }
-
-        /**
-         * Re-schedules every persisted (i.e. enabled) reminder onto its [upcoming] occurrence, so a
-         * reminder that has already fired rolls forward to the next day the moment the screen loads.
-         */
-        private suspend fun renewEnabledReminders(upcoming: List<UpcomingMuhurta>) {
-            val persisted = reminderRepository.reminders.first()
-            if (persisted.isEmpty()) return
-
-            val offsets = reminderRepository.offsetMinutesByName.first()
-            val alerts = reminderRepository.alertTypeByName.first()
-            val byName = upcoming.associateBy { it.muhurta.name }
-            persisted.forEach { reminder ->
-                val name = reminder.id.removePrefix(MUHURTA_ID_PREFIX)
-                val window = byName[name]?.muhurta ?: return@forEach
-                val offset = offsets[name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
-                val alert = alerts[name] ?: AlertStyle.NOTIFICATION
-                scheduleAndPersist(reminder.id, window.name, window.start, window.quality, offset, alert)
-            }
+        /** Adds a reminder for the period [key], scheduling its next occurrence with saved settings. */
+        fun addReminder(key: String) {
+            viewModelScope.launch { rescheduleFor(key) }
         }
 
-        /**
-         * Enables or disables the reminder for [item]. Enabling schedules an exact alarm — fired
-         * [ReminderItem.offsetMinutes] before the (always upcoming) window — and persists it;
-         * disabling cancels and forgets it.
-         */
-        fun setReminder(
-            item: ReminderItem,
-            enabled: Boolean,
-        ) {
+        /** Removes the reminder [id]: cancels its alarm and forgets it. */
+        fun removeReminder(id: String) {
             viewModelScope.launch {
-                if (enabled) {
-                    scheduleAndPersist(item.id, item.name, item.start, item.quality, item.offsetMinutes, item.alertType)
-                } else {
-                    taskScheduler.cancel(item.id)
-                    reminderRepository.remove(item.id)
-                }
+                taskScheduler.cancel(id)
+                reminderRepository.remove(id)
             }
         }
 
-        /**
-         * Sets how many minutes before the muhurta named [name] its reminder should fire. If a
-         * reminder for that muhurta is currently enabled, it is immediately re-scheduled at the new
-         * trigger time — the change isn't deferred until the next toggle.
-         */
+        /** Sets the lead time for [key] and, if it is an added reminder, re-schedules it immediately. */
         fun setOffsetMinutes(
-            name: String,
+            key: String,
             minutes: Int,
         ) {
             viewModelScope.launch {
-                reminderRepository.setOffsetMinutes(name, minutes)
-
-                val id = "$MUHURTA_ID_PREFIX$name"
-                val isEnabled = reminderRepository.reminders.first().any { it.id == id }
-                if (!isEnabled) return@launch
-
-                val window =
-                    (loadState.value as? AlarmLoad.Ready)
-                        ?.muhurtas
-                        ?.firstOrNull { it.muhurta.name == name }
-                        ?.muhurta
-                if (window != null) {
-                    val alert = reminderRepository.alertTypeByName.first()[name] ?: AlertStyle.NOTIFICATION
-                    scheduleAndPersist(id, window.name, window.start, window.quality, minutes, alert)
-                }
+                reminderRepository.setOffsetMinutes(key, minutes)
+                if (isAdded(key)) rescheduleFor(key)
             }
         }
 
-        /**
-         * Sets whether the muhurta named [name] alerts as a notification or a ringing [alert]. If a
-         * reminder for it is enabled, it is immediately re-scheduled so the change isn't deferred.
-         */
+        /** Sets the alert style for [key] and, if it is an added reminder, re-schedules it. */
         fun setAlertType(
-            name: String,
+            key: String,
             alert: AlertStyle,
         ) {
             viewModelScope.launch {
-                reminderRepository.setAlertType(name, alert)
-
-                val id = "$MUHURTA_ID_PREFIX$name"
-                val isEnabled = reminderRepository.reminders.first().any { it.id == id }
-                if (!isEnabled) return@launch
-
-                val window =
-                    (loadState.value as? AlarmLoad.Ready)
-                        ?.muhurtas
-                        ?.firstOrNull { it.muhurta.name == name }
-                        ?.muhurta
-                if (window != null) {
-                    val offset =
-                        reminderRepository.offsetMinutesByName.first()[name]
-                            ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
-                    scheduleAndPersist(id, window.name, window.start, window.quality, offset, alert)
-                }
+                reminderRepository.setAlertType(key, alert)
+                if (isAdded(key)) rescheduleFor(key)
             }
+        }
+
+        private suspend fun isAdded(key: String): Boolean = reminderRepository.reminders.first().any { it.id == key }
+
+        /** Renews every added reminder onto its next occurrence in [periods]. */
+        private suspend fun renewAddedReminders(
+            periods: DayPeriods,
+            now: Instant,
+        ) {
+            val persisted = reminderRepository.reminders.first()
+            if (persisted.isEmpty()) return
+            val offsets = reminderRepository.offsetMinutesByName.first()
+            val alerts = reminderRepository.alertTypeByName.first()
+            persisted.forEach { reminder ->
+                val window = periods.nextWindow(reminder.id, now) ?: return@forEach
+                scheduleAndPersist(
+                    reminder.id,
+                    window,
+                    offsets[reminder.id] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
+                    alerts[reminder.id] ?: AlertStyle.NOTIFICATION,
+                )
+            }
+        }
+
+        /** Resolves [key]'s next window from the loaded state and (re)schedules + persists it. */
+        private suspend fun rescheduleFor(key: String) {
+            val periods = (loadState.value as? AlarmLoad.Ready)?.periods ?: return
+            val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+            val window = periods.nextWindow(key, now) ?: return
+            val offset =
+                reminderRepository.offsetMinutesByName.first()[key] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
+            val alert = reminderRepository.alertTypeByName.first()[key] ?: AlertStyle.NOTIFICATION
+            scheduleAndPersist(key, window, offset, alert)
         }
 
         /** Computes the lead-adjusted trigger time, schedules the alarm, and persists the reminder. */
         private suspend fun scheduleAndPersist(
-            id: String,
-            name: String,
-            start: Instant,
-            quality: MuhurtaQuality,
+            key: String,
+            window: ResolvedWindow,
             offsetMinutes: Int,
             alert: AlertStyle,
         ) {
             val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-            val triggerAt = maxOf(start - offsetMinutes.minutes, now)
-            val body = reminderBody(name, quality, offsetMinutes)
+            val triggerAt = maxOf(window.period.start - offsetMinutes.minutes, now)
+            val body = reminderBody(window.period.label, window.period.quality, offsetMinutes)
 
             taskScheduler.schedule(
                 ScheduledTask(
-                    id = id,
+                    id = key,
                     triggerAt = triggerAt,
                     notification =
                         AppNotification(
-                            id = id.hashCode(),
+                            id = key.hashCode(),
                             channel = AppNotificationChannel.MUHURTA_REMINDERS,
-                            title = name,
+                            title = window.period.label,
                             body = body,
                             alert = alert,
                         ),
@@ -275,32 +227,29 @@ class AlarmViewModel
             )
             reminderRepository.upsert(
                 PersistedReminder(
-                    id = id,
+                    id = key,
                     triggerAtEpochMillis = triggerAt.toEpochMilliseconds(),
-                    title = name,
+                    title = window.period.label,
                     body = body,
                 ),
             )
         }
 
-        private fun UpcomingMuhurta.toReminderItem(
-            enabledIds: Set<String>,
-            offsetsByName: Map<String, Int>,
-            alertsByName: Map<String, AlertStyle>,
-        ): ReminderItem {
-            val id = "$MUHURTA_ID_PREFIX${muhurta.name}"
-            return ReminderItem(
-                id = id,
-                name = muhurta.name,
-                start = muhurta.start,
-                end = muhurta.end,
-                quality = muhurta.quality,
-                isEnabled = id in enabledIds,
+        private fun ResolvedWindow.toReminderItem(
+            key: String,
+            offsetMinutes: Int,
+            alert: AlertStyle,
+        ): ReminderItem =
+            ReminderItem(
+                id = key,
+                name = period.label,
+                start = period.start,
+                end = period.end,
+                quality = period.quality,
                 isTomorrow = isTomorrow,
-                offsetMinutes = offsetsByName[muhurta.name] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
-                alertType = alertsByName[muhurta.name] ?: AlertStyle.NOTIFICATION,
+                offsetMinutes = offsetMinutes,
+                alertType = alert,
             )
-        }
 
         /** Notification body reflecting how far ahead of the window this reminder fires. */
         private fun reminderBody(
@@ -325,22 +274,66 @@ class AlarmViewModel
 
         private companion object {
             const val STOP_TIMEOUT_MILLIS = 5_000L
-            const val MUHURTA_ID_PREFIX = "muhurta:"
 
             // Used when the device location is unavailable (New Delhi).
             val DEFAULT_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
         }
     }
 
-/** A muhurta window resolved to its next upcoming occurrence, with whether that falls tomorrow. */
-private data class UpcomingMuhurta(
-    val muhurta: Muhurta,
+/** Builds the day's period windows (muhurtas + Choghadiya) with their stable source keys. */
+private fun periodsOf(snapshot: AstronomySnapshot): List<PeriodWindow> =
+    snapshot.muhurtas.map {
+        PeriodWindow("muhurta:${it.name}", it.name, it.start, it.end, it.quality)
+    } +
+        snapshot.choghadiya.map {
+            PeriodWindow("choghadiya:${it.name.name}", it.name.label, it.start, it.end, it.quality)
+        }
+
+/** One selectable period occurrence on a given day, keyed by its source. */
+private data class PeriodWindow(
+    val key: String,
+    val label: String,
+    val start: Instant,
+    val end: Instant,
+    val quality: MuhurtaQuality,
+)
+
+/** A period resolved to a concrete upcoming occurrence, with whether it falls tomorrow. */
+private data class ResolvedWindow(
+    val period: PeriodWindow,
     val isTomorrow: Boolean,
 )
 
+/** Today's and tomorrow's period windows, with helpers to resolve the next upcoming one per key. */
+private class DayPeriods(
+    private val today: List<PeriodWindow>,
+    private val tomorrow: List<PeriodWindow>,
+) {
+    /** The distinct sources available to add, in a stable order (auspicious first, then by label). */
+    val catalog: List<SourceOption> =
+        (today + tomorrow)
+            .distinctBy { it.key }
+            .sortedWith(compareBy({ it.quality != MuhurtaQuality.AUSPICIOUS }, { it.label }))
+            .map { SourceOption(it.key, it.label, it.quality) }
+
+    /** The next occurrence of [key] after [now] — today if still ahead, else tomorrow's first. */
+    fun nextWindow(
+        key: String,
+        now: Instant,
+    ): ResolvedWindow? {
+        today.filter { it.key == key && it.start > now }.minByOrNull { it.start }?.let {
+            return ResolvedWindow(it, isTomorrow = false)
+        }
+        tomorrow.filter { it.key == key }.minByOrNull { it.start }?.let {
+            return ResolvedWindow(it, isTomorrow = true)
+        }
+        return null
+    }
+}
+
 /** UI state for the reminders screen. */
 sealed interface AlarmUiState {
-    /** The muhurtas are being computed. */
+    /** The periods are being computed. */
     data object Loading : AlarmUiState
 
     /** Computation failed; [message] is human-readable. */
@@ -349,9 +342,8 @@ sealed interface AlarmUiState {
     ) : AlarmUiState
 
     /**
-     * The next upcoming occurrence of each muhurta, ready to display.
-     *
-     * @property reminders the windows, each with its enabled state and lead-time offset.
+     * @property reminders the added reminders, each resolved to its next occurrence, by time.
+     * @property available the sources not yet added, for the "add reminder" picker.
      * @property canScheduleExactAlarms whether exact alarms are permitted; when false the UI should
      *   invite the user to grant the permission.
      * @property usingDefaultLocation whether a default location was used (device location
@@ -359,23 +351,35 @@ sealed interface AlarmUiState {
      */
     data class Ready(
         val reminders: List<ReminderItem>,
+        val available: List<SourceOption>,
         val canScheduleExactAlarms: Boolean,
         val usingDefaultLocation: Boolean,
     ) : AlarmUiState
 }
 
 /**
- * A single muhurta window as shown on the reminders screen.
+ * A period the user can add a reminder for.
  *
- * @property id stable id used to schedule/cancel and persist the reminder.
- * @property name the window's traditional name.
- * @property start when the window begins.
- * @property end when the window ends.
+ * @property key the stable source key (`muhurta:<name>` or `choghadiya:<TYPE>`).
+ * @property label the display name.
+ * @property quality whether the period is auspicious or inauspicious.
+ */
+data class SourceOption(
+    val key: String,
+    val label: String,
+    val quality: MuhurtaQuality,
+)
+
+/**
+ * An added reminder as shown on the screen, resolved to its next occurrence.
+ *
+ * @property id the source key used to schedule/cancel and persist the reminder.
+ * @property name the period's display name.
+ * @property start when the next window begins.
+ * @property end when the next window ends.
  * @property quality whether the window is auspicious or inauspicious.
- * @property isEnabled whether the user has a reminder set for it.
- * @property isTomorrow whether this upcoming occurrence falls on the next day (today's has passed).
- * @property offsetMinutes how many minutes before [start] this reminder fires (0 = at start),
- *   resolved from the user's per-muhurta override or [ReminderRepository.DEFAULT_OFFSET_MINUTES].
+ * @property isTomorrow whether this occurrence falls on the next day (today's has passed).
+ * @property offsetMinutes minutes before [start] this reminder fires (0 = at start).
  * @property alertType whether this reminder alerts as a notification or a ringing alarm.
  */
 data class ReminderItem(
@@ -384,13 +388,12 @@ data class ReminderItem(
     val start: Instant,
     val end: Instant,
     val quality: MuhurtaQuality,
-    val isEnabled: Boolean,
     val isTomorrow: Boolean,
     val offsetMinutes: Int,
     val alertType: AlertStyle,
 )
 
-/** Internal load result, before it is combined with the persisted reminders and lead time. */
+/** Internal load result, before it is combined with the persisted reminders and preferences. */
 private sealed interface AlarmLoad {
     data object Loading : AlarmLoad
 
@@ -399,7 +402,7 @@ private sealed interface AlarmLoad {
     ) : AlarmLoad
 
     data class Ready(
-        val muhurtas: List<UpcomingMuhurta>,
+        val periods: DayPeriods,
         val canScheduleExactAlarms: Boolean,
         val usingDefaultLocation: Boolean,
     ) : AlarmLoad

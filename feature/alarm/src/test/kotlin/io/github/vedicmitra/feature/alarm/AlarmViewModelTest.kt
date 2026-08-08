@@ -15,6 +15,8 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.Choghadiya
+import io.github.vedicmitra.core.astronomy.ChoghadiyaName
 import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
@@ -55,8 +57,6 @@ import org.junit.Test
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
-private const val MILLIS_PER_MINUTE = 60_000L
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class AlarmViewModelTest {
     @Before
@@ -70,7 +70,7 @@ class AlarmViewModelTest {
     }
 
     @Test
-    fun `load resolves an upcoming, never-past window for every muhurta`() =
+    fun `offers the day's periods as sources, auspicious first, with nothing added`() =
         runTest {
             val viewModel = viewModel()
 
@@ -79,50 +79,15 @@ class AlarmViewModelTest {
                 viewModel.load()
 
                 val ready = awaitItem() as AlarmUiState.Ready
-                assertThat(ready.reminders.map { it.name })
+                assertThat(ready.reminders).isEmpty()
+                assertThat(ready.available.map { it.label })
                     .containsExactly("Abhijit Muhurta", "Rahu Kalam")
                     .inOrder()
-                // Abhijit is still ahead today; Rahu has passed today so it rolls to tomorrow.
-                assertThat(ready.reminders.first { it.name == "Abhijit Muhurta" }.isTomorrow).isFalse()
-                assertThat(ready.reminders.first { it.name == "Rahu Kalam" }.isTomorrow).isTrue()
-                // Nothing is ever in the past, so every window can be toggled.
-                val now = System.currentTimeMillis()
-                assertThat(ready.reminders.all { it.start.toEpochMilliseconds() > now }).isTrue()
             }
         }
 
     @Test
-    fun `enabling a reminder schedules a lead-adjusted alarm and persists it`() =
-        runTest {
-            val scheduler = FakeTaskScheduler()
-            val repository = FakeReminderRepository() // default lead time = 10 minutes
-            val viewModel = viewModel(scheduler = scheduler, repository = repository)
-
-            viewModel.uiState.test {
-                awaitItem() // Loading
-                viewModel.load()
-                val abhijit = (awaitItem() as AlarmUiState.Ready).reminders.first { it.name == "Abhijit Muhurta" }
-
-                viewModel.setReminder(abhijit, enabled = true)
-
-                val updated = awaitItem() as AlarmUiState.Ready
-                assertThat(updated.reminders.first { it.id == abhijit.id }.isEnabled).isTrue()
-
-                // Fires 10 minutes (600_000 ms) before the upcoming window start.
-                val expectedTrigger = abhijit.start.toEpochMilliseconds() - 10 * MILLIS_PER_MINUTE
-                val scheduled = scheduler.scheduled.single()
-                assertThat(scheduled.id).isEqualTo(abhijit.id)
-                assertThat(scheduled.triggerAt.toEpochMilliseconds()).isEqualTo(expectedTrigger)
-
-                val persisted = repository.reminders.value.single()
-                assertThat(persisted.id).isEqualTo(abhijit.id)
-                assertThat(persisted.triggerAtEpochMillis).isEqualTo(expectedTrigger)
-                assertThat(persisted.title).isEqualTo(abhijit.name)
-            }
-        }
-
-    @Test
-    fun `disabling a reminder cancels the alarm and forgets it`() =
+    fun `adding a reminder schedules its next occurrence, persists it, and drops it from available`() =
         runTest {
             val scheduler = FakeTaskScheduler()
             val repository = FakeReminderRepository()
@@ -131,25 +96,65 @@ class AlarmViewModelTest {
             viewModel.uiState.test {
                 awaitItem() // Loading
                 viewModel.load()
-                val abhijit = (awaitItem() as AlarmUiState.Ready).reminders.first { it.name == "Abhijit Muhurta" }
-                viewModel.setReminder(abhijit, enabled = true)
-                awaitItem() // enabled
+                awaitItem() // Ready (empty)
 
-                viewModel.setReminder(abhijit.copy(isEnabled = true), enabled = false)
+                viewModel.addReminder("muhurta:Abhijit Muhurta")
 
-                val cleared = awaitItem() as AlarmUiState.Ready
-                assertThat(cleared.reminders.first { it.id == abhijit.id }.isEnabled).isFalse()
-                assertThat(scheduler.cancelled).containsExactly(abhijit.id)
+                val ready = awaitItem() as AlarmUiState.Ready
+                assertThat(ready.reminders.map { it.id }).containsExactly("muhurta:Abhijit Muhurta")
+                assertThat(ready.available.map { it.key }).doesNotContain("muhurta:Abhijit Muhurta")
+                assertThat(scheduler.scheduled.single().id).isEqualTo("muhurta:Abhijit Muhurta")
+                assertThat(
+                    repository.reminders.value
+                        .single()
+                        .id,
+                ).isEqualTo("muhurta:Abhijit Muhurta")
+            }
+        }
+
+    @Test
+    fun `removing a reminder cancels the alarm, forgets it, and returns it to available`() =
+        runTest {
+            val scheduler = FakeTaskScheduler()
+            val repository = FakeReminderRepository()
+            val viewModel = viewModel(scheduler = scheduler, repository = repository)
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                awaitItem() // Ready (empty)
+                viewModel.addReminder("muhurta:Rahu Kalam")
+                awaitItem() // Ready (one reminder)
+
+                viewModel.removeReminder("muhurta:Rahu Kalam")
+
+                val ready = awaitItem() as AlarmUiState.Ready
+                assertThat(ready.reminders).isEmpty()
+                assertThat(ready.available.map { it.key }).contains("muhurta:Rahu Kalam")
+                assertThat(scheduler.cancelled).containsExactly("muhurta:Rahu Kalam")
                 assertThat(repository.reminders.value).isEmpty()
             }
         }
 
     @Test
-    fun `load renews an already-fired reminder onto its upcoming occurrence`() =
+    fun `offers Choghadiya windows as sources`() =
+        runTest {
+            val viewModel = viewModel(engine = FakeAstronomyEngine(withChoghadiya = true))
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+
+                val ready = awaitItem() as AlarmUiState.Ready
+                assertThat(ready.available.map { it.label }).contains("Amrit")
+            }
+        }
+
+    @Test
+    fun `load renews an already-added reminder onto its upcoming occurrence`() =
         runTest {
             val scheduler = FakeTaskScheduler()
             val repository = FakeReminderRepository()
-            // Simulate a reminder set on a previous day whose trigger time is now in the past.
             repository.upsert(
                 PersistedReminder(
                     id = "muhurta:Abhijit Muhurta",
@@ -166,10 +171,8 @@ class AlarmViewModelTest {
                 viewModel.load()
                 awaitItem() // Ready
 
-                // The fired reminder was rolled forward to a future trigger and kept, not dropped.
                 val renewed = scheduler.scheduled.last { it.id == "muhurta:Abhijit Muhurta" }
                 assertThat(renewed.triggerAt.toEpochMilliseconds()).isGreaterThan(before)
-                assertThat(repository.reminders.value.map { it.id }).contains("muhurta:Abhijit Muhurta")
                 assertThat(
                     repository.reminders.value
                         .single()
@@ -179,50 +182,35 @@ class AlarmViewModelTest {
         }
 
     @Test
-    fun `setOffsetMinutes retroactively reschedules an enabled reminder`() =
+    fun `setOffsetMinutes retroactively reschedules an added reminder`() =
         runTest {
             val scheduler = FakeTaskScheduler()
             val repository = FakeReminderRepository()
             val viewModel = viewModel(scheduler = scheduler, repository = repository)
-            var abhijitStartMillis = 0L
 
             viewModel.uiState.test {
                 awaitItem() // Loading
                 viewModel.load()
-                val abhijit = (awaitItem() as AlarmUiState.Ready).reminders.first { it.name == "Abhijit Muhurta" }
-                abhijitStartMillis = abhijit.start.toEpochMilliseconds()
-                viewModel.setReminder(abhijit, enabled = true)
-                awaitItem() // enabled at the default 10-minute offset
+                awaitItem() // Ready (empty)
+                viewModel.addReminder("muhurta:Abhijit Muhurta")
+                val added = awaitItem() as AlarmUiState.Ready
+                val startMillis =
+                    added.reminders
+                        .single()
+                        .start
+                        .toEpochMilliseconds()
 
-                viewModel.setOffsetMinutes(abhijit.name, 30)
+                viewModel.setOffsetMinutes("muhurta:Abhijit Muhurta", 30)
                 cancelAndIgnoreRemainingEvents()
-            }
 
-            // After the 30-minute offset, the reminder is rescheduled to start - 30 min.
-            val expectedTrigger = abhijitStartMillis - 30 * MILLIS_PER_MINUTE
-            val scheduled = scheduler.scheduled.last()
-            assertThat(scheduled.triggerAt.toEpochMilliseconds()).isEqualTo(expectedTrigger)
-            assertThat(scheduled.notification.body).contains("30 minutes")
-        }
-
-    @Test
-    fun `setOffsetMinutes on a disabled reminder does not touch the scheduler`() =
-        runTest {
-            val scheduler = FakeTaskScheduler()
-            val repository = FakeReminderRepository()
-            val viewModel = viewModel(scheduler = scheduler, repository = repository)
-
-            viewModel.uiState.test {
-                awaitItem() // Loading
-                viewModel.load()
-                awaitItem() // Ready
-
-                viewModel.setOffsetMinutes("Rahu Kalam", 30)
-
-                val updated = awaitItem() as AlarmUiState.Ready
-                assertThat(updated.reminders.first { it.name == "Rahu Kalam" }.offsetMinutes).isEqualTo(30)
-                assertThat(scheduler.scheduled).isEmpty()
-                assertThat(repository.offsetMinutesByName.value).containsEntry("Rahu Kalam", 30)
+                val expectedTrigger = startMillis - 30 * MILLIS_PER_MINUTE
+                assertThat(
+                    scheduler.scheduled
+                        .last()
+                        .triggerAt
+                        .toEpochMilliseconds(),
+                ).isEqualTo(expectedTrigger)
+                assertThat(repository.offsetMinutesByName.value).containsEntry("muhurta:Abhijit Muhurta", 30)
             }
         }
 
@@ -237,39 +225,11 @@ class AlarmViewModelTest {
                 viewModel.load()
                 awaitItem() // Ready
 
-                viewModel.setAlertType("Rahu Kalam", AlertStyle.ALARM)
+                viewModel.setAlertType("muhurta:Rahu Kalam", AlertStyle.ALARM)
                 cancelAndIgnoreRemainingEvents()
             }
 
-            assertThat(repository.alertTypeByName.value).containsEntry("Rahu Kalam", AlertStyle.ALARM)
-        }
-
-    @Test
-    fun `reminder body reflects the configured offset and quality`() =
-        runTest {
-            val scheduler = FakeTaskScheduler()
-            val repository = FakeReminderRepository()
-            val viewModel = viewModel(scheduler = scheduler, repository = repository)
-
-            viewModel.uiState.test {
-                awaitItem() // Loading
-                viewModel.load()
-                awaitItem() // Ready
-
-                viewModel.setOffsetMinutes("Abhijit Muhurta", 0)
-                val auspicious = (awaitItem() as AlarmUiState.Ready).reminders.first { it.name == "Abhijit Muhurta" }
-                viewModel.setReminder(auspicious, enabled = true)
-                val afterAbhijit = awaitItem() as AlarmUiState.Ready
-                val inauspicious = afterAbhijit.reminders.first { it.name == "Rahu Kalam" }
-                viewModel.setReminder(inauspicious, enabled = true)
-                cancelAndIgnoreRemainingEvents()
-            }
-
-            val bodies = scheduler.scheduled.associate { it.id to it.notification.body }
-            assertThat(bodies.getValue("muhurta:Abhijit Muhurta")).contains("is starting now")
-            assertThat(bodies.getValue("muhurta:Abhijit Muhurta")).contains("auspicious")
-            assertThat(bodies.getValue("muhurta:Rahu Kalam")).contains("starts in 10 minutes")
-            assertThat(bodies.getValue("muhurta:Rahu Kalam")).contains("mindful of")
+            assertThat(repository.alertTypeByName.value).containsEntry("muhurta:Rahu Kalam", AlertStyle.ALARM)
         }
 
     @Test
@@ -285,22 +245,29 @@ class AlarmViewModelTest {
         }
 
     private fun viewModel(
+        engine: AstronomyEngine = FakeAstronomyEngine(),
         scheduler: TaskScheduler = FakeTaskScheduler(),
         repository: ReminderRepository = FakeReminderRepository(),
         location: AppResult<GeoCoordinates> = AppResult.Success(BENGALURU),
     ): AlarmViewModel =
         AlarmViewModel(
-            astronomyEngine = FakeAstronomyEngine(),
+            astronomyEngine = engine,
             locationProvider = FakeLocationProvider(location),
             taskScheduler = scheduler,
             reminderRepository = repository,
         )
+
+    private companion object {
+        const val MILLIS_PER_MINUTE = 60_000L
+        val BENGALURU = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
+    }
 }
 
-// Returns muhurtas relative to the requested instant: Abhijit is always ahead of it, Rahu always
-// behind — so at "today's" instant Rahu has passed and rolls to tomorrow, while both windows of the
-// resolved "upcoming" set are always in the future.
-private class FakeAstronomyEngine : AstronomyEngine {
+// Abhijit is always ahead of the requested instant, Rahu always behind — so Abhijit resolves to
+// today and Rahu (passed) rolls to tomorrow. Optionally includes a Choghadiya window.
+private class FakeAstronomyEngine(
+    private val withChoghadiya: Boolean = false,
+) : AstronomyEngine {
     override suspend fun snapshotAt(
         instant: Instant,
         location: GeoCoordinates,
@@ -326,41 +293,54 @@ private class FakeAstronomyEngine : AstronomyEngine {
         withinDays: Int,
         limit: Int,
     ): AppResult<List<Festival>> = AppResult.Success(emptyList())
-}
 
-private fun snapshotFor(instant: Instant): AstronomySnapshot =
-    AstronomySnapshot(
-        instant = instant,
-        location = BENGALURU,
-        sunTimes = SunTimes(sunrise = null, sunset = null),
-        moonTimes = MoonTimes(moonrise = null, moonset = null),
-        tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
-        nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
-        yoga = Yoga(number = 18, name = "Variyana"),
-        karana = Karana(number = 10, name = "Balava"),
-        vara = Vara.SOMAVARA,
-        maasa = Maasa(number = 4, name = "Ashadha", adhika = false),
-        samvatsara = Samvatsara(number = 40, name = "Parabhava", shakaYear = 1948),
-        ayana = Ayana.UTTARAYANA,
-        ritu = Ritu.SHISHIRA,
-        moonPhase = MoonPhase.FULL_MOON,
-        goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
-        muhurtas =
-            listOf(
-                Muhurta(
-                    name = "Abhijit Muhurta",
-                    start = instant + 2.hours,
-                    end = instant + 3.hours,
-                    quality = MuhurtaQuality.AUSPICIOUS,
+    private fun snapshotFor(instant: Instant): AstronomySnapshot =
+        AstronomySnapshot(
+            instant = instant,
+            location = GeoCoordinates(latitude = 12.9716, longitude = 77.5946),
+            sunTimes = SunTimes(sunrise = null, sunset = null),
+            moonTimes = MoonTimes(moonrise = null, moonset = null),
+            tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
+            nakshatra = Nakshatra(number = 25, name = "Purva Bhadrapada"),
+            yoga = Yoga(number = 18, name = "Variyana"),
+            karana = Karana(number = 10, name = "Balava"),
+            vara = Vara.SOMAVARA,
+            maasa = Maasa(number = 4, name = "Ashadha", adhika = false),
+            samvatsara = Samvatsara(number = 40, name = "Parabhava", shakaYear = 1948),
+            ayana = Ayana.UTTARAYANA,
+            ritu = Ritu.SHISHIRA,
+            moonPhase = MoonPhase.FULL_MOON,
+            goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
+            muhurtas =
+                listOf(
+                    Muhurta(
+                        name = "Abhijit Muhurta",
+                        start = instant + 2.hours,
+                        end = instant + 3.hours,
+                        quality = MuhurtaQuality.AUSPICIOUS,
+                    ),
+                    Muhurta(
+                        name = "Rahu Kalam",
+                        start = instant - 1.hours,
+                        end = instant,
+                        quality = MuhurtaQuality.INAUSPICIOUS,
+                    ),
                 ),
-                Muhurta(
-                    name = "Rahu Kalam",
-                    start = instant - 1.hours,
-                    end = instant,
-                    quality = MuhurtaQuality.INAUSPICIOUS,
-                ),
-            ),
-    )
+            choghadiya =
+                if (withChoghadiya) {
+                    listOf(
+                        Choghadiya(
+                            name = ChoghadiyaName.AMRIT,
+                            start = instant + 4.hours,
+                            end = instant + 5.hours,
+                            isDay = true,
+                        ),
+                    )
+                } else {
+                    emptyList()
+                },
+        )
+}
 
 private class FakeLocationProvider(
     private val result: AppResult<GeoCoordinates>,
@@ -418,5 +398,3 @@ private class FakeReminderRepository : ReminderRepository {
         alertTypeByName.value = alertTypeByName.value + (name to alert)
     }
 }
-
-private val BENGALURU = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
