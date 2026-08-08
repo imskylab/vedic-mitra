@@ -54,6 +54,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
@@ -271,6 +272,33 @@ class AlarmViewModelTest {
         }
 
     @Test
+    fun `adding a tithi reminder resolves its next date, schedules it, and persists it`() =
+        runTest {
+            val scheduler = FakeTaskScheduler()
+            val repository = FakeReminderRepository()
+            val viewModel = viewModel(scheduler = scheduler, repository = repository)
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                awaitItem() // Ready (empty)
+
+                viewModel.addTithiReminder(TithiTarget(maasa = null, tithis = setOf(30)))
+
+                val item = (awaitItem() as AlarmUiState.Ready).reminders.single()
+                assertThat(item.id).isEqualTo("tithi:*:30")
+                assertThat(item.name).isEqualTo("Amavasya")
+                assertThat(item.dateLabel).contains("Every month")
+                assertThat(scheduler.scheduled.single().id).isEqualTo("tithi:*:30")
+                assertThat(
+                    repository.reminders.value
+                        .single()
+                        .id,
+                ).isEqualTo("tithi:*:30")
+            }
+        }
+
+    @Test
     fun `falls back to the default location when unavailable`() =
         runTest {
             val viewModel = viewModel(location = AppResult.Failure(SecurityException("no permission")))
@@ -332,6 +360,15 @@ private class FakeAstronomyEngine(
         withinDays: Int,
         limit: Int,
     ): AppResult<List<Festival>> = AppResult.Success(emptyList())
+
+    // A fixed future occurrence three days out, so tithi reminders resolve to a real date.
+    override suspend fun nextTithiOccurrence(
+        instant: Instant,
+        location: GeoCoordinates,
+        maasa: String?,
+        tithis: Set<Int>,
+        withinDays: Int,
+    ): AppResult<Instant?> = AppResult.Success(instant + 3.days)
 
     private fun snapshotFor(instant: Instant): AstronomySnapshot =
         AstronomySnapshot(
