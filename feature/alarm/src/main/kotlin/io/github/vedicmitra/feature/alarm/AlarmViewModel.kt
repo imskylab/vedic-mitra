@@ -207,8 +207,13 @@ class AlarmViewModel
             offsetMinutes: Int,
             alert: AlertStyle,
         ) {
+            // Fire the lead time before the window — but if the window is already within the lead
+            // time, fire at its start (always still in the future, since a resolved window's start
+            // is always > now) rather than clamping to now. Clamping made adding a reminder for an
+            // imminent window fire the instant it was added.
+            val leadTrigger = window.period.start - offsetMinutes.minutes
             val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-            val triggerAt = maxOf(window.period.start - offsetMinutes.minutes, now)
+            val triggerAt = if (leadTrigger > now) leadTrigger else window.period.start
             val body = reminderBody(window.period.label, window.period.quality, offsetMinutes)
 
             taskScheduler.schedule(

@@ -104,7 +104,10 @@ class AlarmActivity : ComponentActivity() {
                 putExtra(EXTRA_ID, id)
                 putExtra(EXTRA_TITLE, title)
                 putExtra(EXTRA_BODY, body)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                // NEW_TASK (required from a non-activity context) + SINGLE_TOP to reuse an existing
+                // alarm screen. Deliberately NOT CLEAR_TASK: that tore down the app's own task, so a
+                // firing alarm would close the running app.
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
     }
 }
