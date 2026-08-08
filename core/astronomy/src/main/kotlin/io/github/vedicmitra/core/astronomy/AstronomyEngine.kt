@@ -94,6 +94,9 @@ data class PanchangaDaySummary(
  * @property moonPhase the Moon's current phase.
  * @property goldenHour the day's golden-hour windows.
  * @property muhurtas the day's auspicious/inauspicious time windows.
+ * @property choghadiya the day's sixteen Choghadiya windows (eight day, eight night); empty when
+ *   the sun does not rise/set. Defaults to empty so lightweight/synthetic snapshots need not
+ *   provide it — the real engine always populates it.
  */
 data class AstronomySnapshot(
     val instant: Instant,
@@ -112,4 +115,5 @@ data class AstronomySnapshot(
     val moonPhase: MoonPhase,
     val goldenHour: GoldenHour,
     val muhurtas: List<Muhurta>,
+    val choghadiya: List<Choghadiya> = emptyList(),
 )
