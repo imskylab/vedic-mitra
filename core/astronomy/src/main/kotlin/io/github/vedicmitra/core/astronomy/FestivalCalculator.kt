@@ -107,6 +107,34 @@ internal fun upcomingFestivals(
 }
 
 /**
+ * The sunrise instant (epoch millis) of the next civil day within [windowDays] of [fromEpochMillis]
+ * whose sunrise tithi is one of [tithis] (global 1..30) and — when [maasa] is non-null — whose
+ * amanta month name matches it, or `null` if no such day falls in the window.
+ *
+ * A `null` [maasa] makes the match recur every lunar month (any month with that tithi); a specific
+ * month name pins it to that month's occurrence (roughly annual). [tithis] carries a set so a single
+ * reminder can span both fortnights — e.g. Ekadashi is `{11, 26}`.
+ */
+internal fun nextTithiOccurrence(
+    fromEpochMillis: Long,
+    windowDays: Int,
+    maasa: String?,
+    tithis: Set<Int>,
+    source: FestivalPanchangaSource,
+): Long? {
+    var day = 0
+    while (day < windowDays) {
+        val dayMillis = fromEpochMillis + day * DAY_MILLIS
+        val sunrise = source.sunrise(dayMillis) ?: (dayMillis + FALLBACK_SUNRISE_OFFSET_MILLIS)
+        if (source.tithiNumber(sunrise) in tithis && (maasa == null || source.maasa(sunrise).name == maasa)) {
+            return sunrise
+        }
+        day++
+    }
+    return null
+}
+
+/**
  * The named festival on a day whose sunrise tithi is [tithi], or `null`. [maasaProvider] is only
  * consulted when some rule shares the tithi, so the (relatively expensive) month lookup is skipped
  * on the vast majority of days.
