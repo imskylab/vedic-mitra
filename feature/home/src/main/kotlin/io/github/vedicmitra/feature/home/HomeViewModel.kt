@@ -55,17 +55,24 @@ class HomeViewModel
                 val resolved = resolveLocation()
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
                 when (val snapshot = astronomyEngine.snapshotAt(now, resolved.coordinates)) {
-                    is AppResult.Success ->
+                    is AppResult.Success -> {
+                        val upcoming = upcomingEntries(now, resolved.coordinates)
+                        // Only three FestivalTypes exist; anything that isn't a lunar OBSERVANCE
+                        // (Amavasya/Purnima/Ekadashi) is a named festival or a Sankranti.
+                        val festivals = upcoming.filter { it.type != FestivalType.OBSERVANCE }
+                        val events = upcoming.filter { it.type == FestivalType.OBSERVANCE }
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
                                 snapshot = snapshot.data,
                                 auspicious = auspiciousWindow(snapshot.data, now),
-                                nextFestival = nextFestival(now, resolved.coordinates),
+                                festivals = festivals,
+                                events = events,
                                 usingDefaultLocation = resolved.isDefault,
                                 locationLabel = resolved.label,
                             )
                         }
+                    }
 
                     is AppResult.Failure ->
                         _uiState.update {
@@ -92,19 +99,19 @@ class HomeViewModel
             return AuspiciousWindow(next.name, next.quality, boundary = next.start, isActive = false)
         }
 
-        /** The next named festival if one is within range, otherwise the soonest observance. */
-        private suspend fun nextFestival(
+        /** All upcoming festivals, observances and Sankrantis within the window, in date order. */
+        private suspend fun upcomingEntries(
             now: Instant,
             coordinates: GeoCoordinates,
-        ): Festival? {
-            val result = astronomyEngine.upcomingFestivals(now, coordinates, FESTIVAL_WINDOW_DAYS, FESTIVAL_LIMIT)
-            if (result !is AppResult.Success) return null
-            return result.data.firstOrNull { it.type == FestivalType.FESTIVAL } ?: result.data.firstOrNull()
+        ): List<Festival> {
+            val result = astronomyEngine.upcomingFestivals(now, coordinates, UPCOMING_WINDOW_DAYS, UPCOMING_LIMIT)
+            return if (result is AppResult.Success) result.data else emptyList()
         }
 
         private companion object {
-            const val FESTIVAL_WINDOW_DAYS = 210
-            const val FESTIVAL_LIMIT = 12
+            // A little over a year, so every annual festival appears once; the engine dedupes by name.
+            const val UPCOMING_WINDOW_DAYS = 400
+            const val UPCOMING_LIMIT = 60
         }
     }
 
@@ -130,7 +137,8 @@ data class AuspiciousWindow(
  * @property isLoading whether today's content is being computed.
  * @property snapshot today's panchanga, or `null` before it loads or on error.
  * @property auspicious the auspicious-now / next-auspicious window, or `null` if none.
- * @property nextFestival the upcoming festival or observance, or `null`.
+ * @property festivals upcoming named festivals and Sankrantis, in date order.
+ * @property events upcoming lunar observances (Amavasya, Purnima, Ekadashi), in date order.
  * @property errorMessage a human-readable error, or `null` when there is none.
  * @property usingDefaultLocation whether the built-in default location was used.
  * @property locationLabel human-readable name of the location.
@@ -139,7 +147,8 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val snapshot: AstronomySnapshot? = null,
     val auspicious: AuspiciousWindow? = null,
-    val nextFestival: Festival? = null,
+    val festivals: List<Festival> = emptyList(),
+    val events: List<Festival> = emptyList(),
     val errorMessage: String? = null,
     val usingDefaultLocation: Boolean = false,
     val locationLabel: String? = null,

@@ -62,7 +62,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `computes for the resolved location and surfaces the next festival`() =
+    fun `computes for the resolved location and lists upcoming festivals`() =
         runTest {
             val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(festival))
@@ -74,13 +74,13 @@ class HomeViewModelTest {
             val state = viewModel.uiState.value
             assertThat(state.isLoading).isFalse()
             assertThat(state.snapshot).isNotNull()
-            assertThat(state.nextFestival).isEqualTo(festival)
+            assertThat(state.festivals).containsExactly(festival)
             assertThat(state.locationLabel).isEqualTo("Bengaluru")
             assertThat(engine.lastLocation).isEqualTo(coordinates)
         }
 
     @Test
-    fun `prefers a named festival over an earlier observance`() =
+    fun `splits named festivals and lunar observances into separate lists`() =
         runTest {
             val observance =
                 Festival("Ekadashi", Instant.fromEpochMilliseconds(1_760_000_000_000L), FestivalType.OBSERVANCE)
@@ -90,7 +90,9 @@ class HomeViewModelTest {
 
             viewModel.load()
 
-            assertThat(viewModel.uiState.value.nextFestival).isEqualTo(festival)
+            val state = viewModel.uiState.value
+            assertThat(state.festivals).containsExactly(festival)
+            assertThat(state.events).containsExactly(observance)
         }
 
     @Test

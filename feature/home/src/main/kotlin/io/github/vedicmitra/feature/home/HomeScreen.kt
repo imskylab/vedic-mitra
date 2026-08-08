@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,6 +39,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -132,17 +137,28 @@ private fun HomeContent(
                 uiState.auspicious?.let { AuspiciousCard(it) }
                 SunMoonStrip(snapshot)
                 SeasonAyanaStrip(snapshot)
-                val auspiciousPeriods =
-                    snapshot.muhurtas.filter { it.quality == MuhurtaQuality.AUSPICIOUS }.sortedBy { it.start }
-                val inauspiciousPeriods =
-                    snapshot.muhurtas.filter { it.quality == MuhurtaQuality.INAUSPICIOUS }.sortedBy { it.start }
-                if (auspiciousPeriods.isNotEmpty()) {
-                    PeriodsCard("Auspicious periods", MaterialTheme.colorScheme.primary, auspiciousPeriods)
+                val auspiciousRows = snapshot.periodRows(MuhurtaQuality.AUSPICIOUS)
+                if (auspiciousRows.isNotEmpty()) {
+                    ExpandableSection("Auspicious periods", MaterialTheme.colorScheme.primary, auspiciousRows)
                 }
-                if (inauspiciousPeriods.isNotEmpty()) {
-                    PeriodsCard("Inauspicious periods", MaterialTheme.colorScheme.error, inauspiciousPeriods)
+                val inauspiciousRows = snapshot.periodRows(MuhurtaQuality.INAUSPICIOUS)
+                if (inauspiciousRows.isNotEmpty()) {
+                    ExpandableSection("Inauspicious periods", MaterialTheme.colorScheme.error, inauspiciousRows)
                 }
-                uiState.nextFestival?.let { FestivalCard(it) }
+                if (uiState.festivals.isNotEmpty()) {
+                    ExpandableSection(
+                        title = "Upcoming festivals",
+                        accent = MaterialTheme.colorScheme.primary,
+                        rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                    )
+                }
+                if (uiState.events.isNotEmpty()) {
+                    ExpandableSection(
+                        title = "Upcoming events",
+                        accent = MaterialTheme.colorScheme.tertiary,
+                        rows = uiState.events.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                    )
+                }
                 if (uiState.usingDefaultLocation) {
                     Text(
                         text = "Showing New Delhi — grant location access for your area.",
@@ -277,23 +293,6 @@ private fun StatCard(
 }
 
 @Composable
-private fun FestivalCard(festival: Festival) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = festival.typeLabel,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(text = festival.name, style = MaterialTheme.typography.titleMedium)
-            }
-            Text(text = formatDate(festival.atSunrise), style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
 private fun PanchangaLimbsStrip(snapshot: AstronomySnapshot) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         StatCard("Nakshatra", snapshot.nakshatra.name, Modifier.weight(1f))
@@ -310,44 +309,69 @@ private fun SeasonAyanaStrip(snapshot: AstronomySnapshot) {
     }
 }
 
-/** A card listing named muhurta windows (auspicious or inauspicious) with their start–end times. */
+/**
+ * A collapsible card for a titled list. Collapsed (the default) it shows the section title and a
+ * one-line peek of the soonest row; tapping anywhere on the card expands it to the full list.
+ */
 @Composable
-private fun PeriodsCard(
+private fun ExpandableSection(
     title: String,
     accent: Color,
-    periods: List<Muhurta>,
+    rows: List<SectionRow>,
 ) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = title, style = MaterialTheme.typography.labelMedium, color = accent)
-            periods.forEach { period ->
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = period.name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        text = formatRange(period.start, period.end),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = title, style = MaterialTheme.typography.labelMedium, color = accent)
+                    if (!expanded) SectionRowLine(rows.first())
                 }
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                )
             }
+            if (expanded) rows.forEach { SectionRowLine(it) }
         }
     }
 }
 
-private val Festival.typeLabel: String
-    get() =
-        when (type) {
-            FestivalType.FESTIVAL -> "Upcoming festival"
-            FestivalType.OBSERVANCE -> "Upcoming observance"
-            FestivalType.SANKRANTI -> "Upcoming Sankranti"
-        }
+@Composable
+private fun SectionRowLine(row: SectionRow) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = row.label,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = row.trailing,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** One row of an [ExpandableSection]: a label and a right-aligned trailing value (time or date). */
+private data class SectionRow(
+    val label: String,
+    val trailing: String,
+)
+
+/** Builds collapsible rows for the muhurtas of a given [quality], in chronological order. */
+private fun AstronomySnapshot.periodRows(quality: MuhurtaQuality): List<SectionRow> =
+    muhurtas
+        .filter { it.quality == quality }
+        .sortedBy { it.start }
+        .map { SectionRow(it.name, formatRange(it.start, it.end)) }
 
 private val Paksha.title: String
     get() =
@@ -390,6 +414,15 @@ private fun formatDate(instant: Instant): String = zoned(instant).format(festiva
 @Preview
 @Composable
 private fun HomeContentPreview() {
+    VedicMitraTheme {
+        HomeContent(uiState = sampleHomeState(), onNavigateToLocation = {})
+    }
+}
+
+// Fixture data for the preview. Kept out of the @Composable so it doesn't trip LongMethod, and
+// suppressed for the sample epoch/coordinate literals it necessarily contains.
+@Suppress("MagicNumber", "LongMethod")
+private fun sampleHomeState(): HomeUiState {
     val sample =
         AstronomySnapshot(
             instant = Instant.fromEpochMilliseconds(1_705_320_000_000L),
@@ -437,28 +470,42 @@ private fun HomeContentPreview() {
                     ),
                 ),
         )
-    VedicMitraTheme {
-        HomeContent(
-            uiState =
-                HomeUiState(
-                    isLoading = false,
-                    snapshot = sample,
-                    auspicious =
-                        AuspiciousWindow(
-                            name = "Abhijit Muhurta",
-                            quality = MuhurtaQuality.AUSPICIOUS,
-                            boundary = Instant.fromEpochMilliseconds(1_705_302_960_000L),
-                            isActive = true,
-                        ),
-                    nextFestival =
-                        Festival(
-                            name = "Ganesh Chaturthi",
-                            atSunrise = Instant.fromEpochMilliseconds(1_757_808_000_000L),
-                            type = FestivalType.FESTIVAL,
-                        ),
-                    locationLabel = "New Delhi",
+    return HomeUiState(
+        isLoading = false,
+        snapshot = sample,
+        auspicious =
+            AuspiciousWindow(
+                name = "Abhijit Muhurta",
+                quality = MuhurtaQuality.AUSPICIOUS,
+                boundary = Instant.fromEpochMilliseconds(1_705_302_960_000L),
+                isActive = true,
+            ),
+        festivals =
+            listOf(
+                Festival(
+                    name = "Ganesh Chaturthi",
+                    atSunrise = Instant.fromEpochMilliseconds(1_757_808_000_000L),
+                    type = FestivalType.FESTIVAL,
                 ),
-            onNavigateToLocation = {},
-        )
-    }
+                Festival(
+                    name = "Makara Sankranti",
+                    atSunrise = Instant.fromEpochMilliseconds(1_768_003_200_000L),
+                    type = FestivalType.SANKRANTI,
+                ),
+            ),
+        events =
+            listOf(
+                Festival(
+                    name = "Purnima",
+                    atSunrise = Instant.fromEpochMilliseconds(1_757_030_400_000L),
+                    type = FestivalType.OBSERVANCE,
+                ),
+                Festival(
+                    name = "Amavasya",
+                    atSunrise = Instant.fromEpochMilliseconds(1_758_240_000_000L),
+                    type = FestivalType.OBSERVANCE,
+                ),
+            ),
+        locationLabel = "New Delhi",
+    )
 }
