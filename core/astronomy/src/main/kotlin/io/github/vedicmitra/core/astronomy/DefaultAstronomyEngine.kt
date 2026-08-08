@@ -48,6 +48,11 @@ class DefaultAstronomyEngine
                 val moonSidereal = Ephemeris.norm360(moonLongitude - ayanamsa)
                 val yogaSum = Ephemeris.norm360(sunSidereal + moonSidereal)
                 val sunTimes = SolarDay.sunTimes(epochMillis, location.latitude, location.longitude)
+                // The night Choghadiya run from sunset to the *following* sunrise, so resolve it too.
+                val nextSunrise =
+                    SolarDay
+                        .sunTimes(epochMillis + 86_400_000L, location.latitude, location.longitude)
+                        .sunrise
                 val moonTimes = LunarDay.moonTimes(epochMillis, location.latitude, location.longitude)
                 val goldenHour = SolarDay.goldenHour(epochMillis, location.latitude, location.longitude)
                 val vara = varaOf(instant, epochMillis, location.longitude, sunTimes.sunrise)
@@ -85,6 +90,7 @@ class DefaultAstronomyEngine
                         moonPhase = moonPhaseOf(elongation),
                         goldenHour = goldenHour,
                         muhurtas = muhurtasOf(sunTimes, vara.ordinal) + varjyam,
+                        choghadiya = choghadiyaOf(sunTimes, nextSunrise, vara.ordinal),
                     ),
                 )
             }
