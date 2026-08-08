@@ -55,6 +55,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -215,6 +216,43 @@ class AlarmViewModelTest {
         }
 
     @Test
+    fun `adding a reminder for an imminent window fires at its start, not immediately`() =
+        runTest {
+            val scheduler = FakeTaskScheduler()
+            val repository = FakeReminderRepository()
+            val viewModel =
+                viewModel(
+                    engine = FakeAstronomyEngine(imminentMuhurta = true),
+                    scheduler = scheduler,
+                    repository = repository,
+                )
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                awaitItem() // Ready (empty)
+
+                viewModel.addReminder("muhurta:Sandhya")
+
+                val windowStart =
+                    (awaitItem() as AlarmUiState.Ready)
+                        .reminders
+                        .single()
+                        .start
+                        .toEpochMilliseconds()
+                // The window begins within the default lead time, so the reminder fires at the window
+                // start (still in the future) rather than being clamped to now / firing immediately.
+                assertThat(
+                    scheduler.scheduled
+                        .last()
+                        .triggerAt
+                        .toEpochMilliseconds(),
+                ).isEqualTo(windowStart)
+                assertThat(windowStart).isGreaterThan(System.currentTimeMillis())
+            }
+        }
+
+    @Test
     fun `setAlertType persists the chosen alert style`() =
         runTest {
             val repository = FakeReminderRepository()
@@ -267,6 +305,7 @@ class AlarmViewModelTest {
 // today and Rahu (passed) rolls to tomorrow. Optionally includes a Choghadiya window.
 private class FakeAstronomyEngine(
     private val withChoghadiya: Boolean = false,
+    private val imminentMuhurta: Boolean = false,
 ) : AstronomyEngine {
     override suspend fun snapshotAt(
         instant: Instant,
@@ -312,20 +351,35 @@ private class FakeAstronomyEngine(
             moonPhase = MoonPhase.FULL_MOON,
             goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
             muhurtas =
-                listOf(
-                    Muhurta(
-                        name = "Abhijit Muhurta",
-                        start = instant + 2.hours,
-                        end = instant + 3.hours,
-                        quality = MuhurtaQuality.AUSPICIOUS,
-                    ),
-                    Muhurta(
-                        name = "Rahu Kalam",
-                        start = instant - 1.hours,
-                        end = instant,
-                        quality = MuhurtaQuality.INAUSPICIOUS,
-                    ),
-                ),
+                buildList {
+                    add(
+                        Muhurta(
+                            name = "Abhijit Muhurta",
+                            start = instant + 2.hours,
+                            end = instant + 3.hours,
+                            quality = MuhurtaQuality.AUSPICIOUS,
+                        ),
+                    )
+                    add(
+                        Muhurta(
+                            name = "Rahu Kalam",
+                            start = instant - 1.hours,
+                            end = instant,
+                            quality = MuhurtaQuality.INAUSPICIOUS,
+                        ),
+                    )
+                    if (imminentMuhurta) {
+                        // Starts inside the default 10-minute lead time.
+                        add(
+                            Muhurta(
+                                name = "Sandhya",
+                                start = instant + 1.minutes,
+                                end = instant + 2.minutes,
+                                quality = MuhurtaQuality.AUSPICIOUS,
+                            ),
+                        )
+                    }
+                },
             choghadiya =
                 if (withChoghadiya) {
                     listOf(

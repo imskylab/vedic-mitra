@@ -12,7 +12,9 @@ package io.github.vedicmitra.core.datastore.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.Binds
 import dagger.Module
@@ -28,7 +30,13 @@ import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.datastore.UserPreferencesRepository
 import javax.inject.Singleton
 
-private val Context.userPreferencesDataStore by preferencesDataStore(name = "user_preferences")
+// All settings (theme, saved locations, reminders) share this store. A corruption handler lets a
+// damaged file self-heal to empty on next read instead of throwing on every launch — which would
+// otherwise brick the whole app, since the home screen reads theme/location at startup.
+private val Context.userPreferencesDataStore by preferencesDataStore(
+    name = "user_preferences",
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+)
 
 /** Binds the preferences repositories and provides the underlying [DataStore]. */
 @Module
