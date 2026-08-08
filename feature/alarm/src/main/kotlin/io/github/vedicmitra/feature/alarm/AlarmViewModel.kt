@@ -33,6 +33,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -89,11 +91,13 @@ class AlarmViewModel
             val reminders =
                 addedKeys
                     .mapNotNull { key ->
-                        load.periods.nextWindow(key, now)?.toReminderItem(
-                            key,
-                            offsets[key] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
-                            alerts[key] ?: AlertStyle.NOTIFICATION,
-                        )
+                        val offset = offsets[key] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
+                        val alert = alerts[key] ?: AlertStyle.NOTIFICATION
+                        if (key.startsWith(TITHI_PREFIX)) {
+                            load.tithiResolved[key]?.toReminderItem(key, offset, alert)
+                        } else {
+                            load.periods.nextWindow(key, now)?.toReminderItem(key, offset, alert)
+                        }
                     }.sortedBy { it.start.toEpochMilliseconds() }
             return AlarmUiState.Ready(
                 reminders = reminders,
@@ -119,9 +123,16 @@ class AlarmViewModel
                 loadState.value =
                     if (today is AppResult.Success && tomorrow is AppResult.Success) {
                         val periods = DayPeriods(periodsOf(today.data), periodsOf(tomorrow.data))
-                        renewAddedReminders(periods, now)
+                        val tithiResolved = resolveTithiReminders(now, location)
+                        renewAddedReminders(periods, tithiResolved, now)
                         reminderRepository.removePast(now.toEpochMilliseconds())
-                        AlarmLoad.Ready(periods, taskScheduler.canScheduleExactAlarms(), usingDefault)
+                        AlarmLoad.Ready(
+                            periods = periods,
+                            location = location,
+                            tithiResolved = tithiResolved,
+                            canScheduleExactAlarms = taskScheduler.canScheduleExactAlarms(),
+                            usingDefaultLocation = usingDefault,
+                        )
                     } else {
                         val message =
                             (today as? AppResult.Failure)?.cause?.message
@@ -169,9 +180,10 @@ class AlarmViewModel
 
         private suspend fun isAdded(key: String): Boolean = reminderRepository.reminders.first().any { it.id == key }
 
-        /** Renews every added reminder onto its next occurrence in [periods]. */
+        /** Renews every added reminder onto its next occurrence (periods and tithi events alike). */
         private suspend fun renewAddedReminders(
             periods: DayPeriods,
+            tithiResolved: Map<String, ResolvedTithi>,
             now: Instant,
         ) {
             val persisted = reminderRepository.reminders.first()
@@ -179,14 +191,107 @@ class AlarmViewModel
             val offsets = reminderRepository.offsetMinutesByName.first()
             val alerts = reminderRepository.alertTypeByName.first()
             persisted.forEach { reminder ->
-                val window = periods.nextWindow(reminder.id, now) ?: return@forEach
-                scheduleAndPersist(
-                    reminder.id,
-                    window,
-                    offsets[reminder.id] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES,
-                    alerts[reminder.id] ?: AlertStyle.NOTIFICATION,
-                )
+                val offset = offsets[reminder.id] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
+                val alert = alerts[reminder.id] ?: AlertStyle.NOTIFICATION
+                if (reminder.id.startsWith(TITHI_PREFIX)) {
+                    val resolved = tithiResolved[reminder.id] ?: return@forEach
+                    scheduleTithiAndPersist(reminder.id, resolved, offset, alert)
+                } else {
+                    val window = periods.nextWindow(reminder.id, now) ?: return@forEach
+                    scheduleAndPersist(reminder.id, window, offset, alert)
+                }
             }
+        }
+
+        /**
+         * Adds a tithi-event reminder for [target], resolving its next occurrence and scheduling it.
+         * The resolved date is folded into the loaded state so the list shows it immediately.
+         */
+        fun addTithiReminder(target: TithiTarget) {
+            viewModelScope.launch {
+                val ready = loadState.value as? AlarmLoad.Ready ?: return@launch
+                val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                val sunrise = resolveFutureTithi(now, ready.location, target) ?: return@launch
+                val resolved = ResolvedTithi(target.eventName, target.recurrence, sunrise)
+                loadState.value = ready.copy(tithiResolved = ready.tithiResolved + (target.key to resolved))
+                val offset =
+                    reminderRepository.offsetMinutesByName.first()[target.key]
+                        ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
+                val alert = reminderRepository.alertTypeByName.first()[target.key] ?: AlertStyle.NOTIFICATION
+                scheduleTithiAndPersist(target.key, resolved, offset, alert)
+            }
+        }
+
+        /** Resolves [target]'s next occurrence whose sunrise is in the future (rolling past today). */
+        private suspend fun resolveFutureTithi(
+            now: Instant,
+            location: GeoCoordinates,
+            target: TithiTarget,
+        ): Instant? {
+            val first = tithiOccurrence(now, location, target) ?: return null
+            if (first > now) return first
+            // Today matched but its sunrise has passed — roll to the next month's occurrence.
+            return tithiOccurrence(first + 1.days, location, target)
+        }
+
+        private suspend fun tithiOccurrence(
+            from: Instant,
+            location: GeoCoordinates,
+            target: TithiTarget,
+        ): Instant? {
+            val result =
+                astronomyEngine.nextTithiOccurrence(from, location, target.maasa, target.tithis, TITHI_WINDOW_DAYS)
+            return (result as? AppResult.Success)?.data
+        }
+
+        /** Resolves the next occurrence of every added tithi reminder, keyed by its reminder key. */
+        private suspend fun resolveTithiReminders(
+            now: Instant,
+            location: GeoCoordinates,
+        ): Map<String, ResolvedTithi> =
+            reminderRepository.reminders
+                .first()
+                .filter { it.id.startsWith(TITHI_PREFIX) }
+                .mapNotNull { reminder ->
+                    val target = TithiTarget.fromKey(reminder.id) ?: return@mapNotNull null
+                    val sunrise = resolveFutureTithi(now, location, target) ?: return@mapNotNull null
+                    reminder.id to ResolvedTithi(target.eventName, target.recurrence, sunrise)
+                }.toMap()
+
+        /** Schedules and persists a tithi reminder to fire at sunrise minus the lead time. */
+        private suspend fun scheduleTithiAndPersist(
+            key: String,
+            resolved: ResolvedTithi,
+            offsetMinutes: Int,
+            alert: AlertStyle,
+        ) {
+            val leadTrigger = resolved.sunrise - offsetMinutes.minutes
+            val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+            val triggerAt = if (leadTrigger > now) leadTrigger else resolved.sunrise
+            val body = "${resolved.eventName} is on ${formatDate(resolved.sunrise)}."
+
+            taskScheduler.schedule(
+                ScheduledTask(
+                    id = key,
+                    triggerAt = triggerAt,
+                    notification =
+                        AppNotification(
+                            id = key.hashCode(),
+                            channel = AppNotificationChannel.MUHURTA_REMINDERS,
+                            title = resolved.eventName,
+                            body = body,
+                            alert = alert,
+                        ),
+                ),
+            )
+            reminderRepository.upsert(
+                PersistedReminder(
+                    id = key,
+                    triggerAtEpochMillis = triggerAt.toEpochMilliseconds(),
+                    title = resolved.eventName,
+                    body = body,
+                ),
+            )
         }
 
         /** Resolves [key]'s next window from the loaded state and (re)schedules + persists it. */
@@ -279,6 +384,9 @@ class AlarmViewModel
 
         private companion object {
             const val STOP_TIMEOUT_MILLIS = 5_000L
+
+            // A little over a year, so annual (month-pinned) tithi targets always resolve.
+            const val TITHI_WINDOW_DAYS = 400
 
             // Used when the device location is unavailable (New Delhi).
             val DEFAULT_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
@@ -386,6 +494,8 @@ data class SourceOption(
  * @property isTomorrow whether this occurrence falls on the next day (today's has passed).
  * @property offsetMinutes minutes before [start] this reminder fires (0 = at start).
  * @property alertType whether this reminder alerts as a notification or a ringing alarm.
+ * @property dateLabel a pre-formatted subtitle for tithi reminders (recurrence + next date); `null`
+ *   for period reminders, which the screen renders as a time range instead.
  */
 data class ReminderItem(
     val id: String,
@@ -396,7 +506,41 @@ data class ReminderItem(
     val isTomorrow: Boolean,
     val offsetMinutes: Int,
     val alertType: AlertStyle,
+    val dateLabel: String? = null,
 )
+
+/** An added tithi reminder resolved to its next occurrence's sunrise. */
+private data class ResolvedTithi(
+    val eventName: String,
+    val recurrence: String,
+    val sunrise: Instant,
+) {
+    fun toReminderItem(
+        key: String,
+        offsetMinutes: Int,
+        alert: AlertStyle,
+    ): ReminderItem =
+        ReminderItem(
+            id = key,
+            name = eventName,
+            start = sunrise,
+            end = sunrise,
+            quality = MuhurtaQuality.AUSPICIOUS,
+            isTomorrow = false,
+            offsetMinutes = offsetMinutes,
+            alertType = alert,
+            dateLabel = "$recurrence · ${formatDate(sunrise)}",
+        )
+}
+
+private val tithiDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEE, d MMM")
+
+/** Formats a tithi occurrence's sunrise as a local date, e.g. "Wed, 8 Nov". */
+private fun formatDate(instant: Instant): String =
+    java.time.Instant
+        .ofEpochMilli(instant.toEpochMilliseconds())
+        .atZone(ZoneId.systemDefault())
+        .format(tithiDateFormatter)
 
 /** Internal load result, before it is combined with the persisted reminders and preferences. */
 private sealed interface AlarmLoad {
@@ -408,6 +552,8 @@ private sealed interface AlarmLoad {
 
     data class Ready(
         val periods: DayPeriods,
+        val location: GeoCoordinates,
+        val tithiResolved: Map<String, ResolvedTithi>,
         val canScheduleExactAlarms: Boolean,
         val usingDefaultLocation: Boolean,
     ) : AlarmLoad

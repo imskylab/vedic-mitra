@@ -35,17 +35,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -97,6 +103,7 @@ fun AlarmScreen(
     AlarmContent(
         uiState = uiState,
         onAdd = viewModel::addReminder,
+        onAddTithi = viewModel::addTithiReminder,
         onRemove = viewModel::removeReminder,
         onOffsetChange = viewModel::setOffsetMinutes,
         onAlertChange = viewModel::setAlertType,
@@ -109,6 +116,7 @@ fun AlarmScreen(
 private fun AlarmContent(
     uiState: AlarmUiState,
     onAdd: (String) -> Unit,
+    onAddTithi: (TithiTarget) -> Unit,
     onRemove: (String) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
     onAlertChange: (String, AlertStyle) -> Unit,
@@ -139,7 +147,12 @@ private fun AlarmContent(
                         )
                     }
                 }
-                item { AddReminderButton(available = uiState.available, onAdd = onAdd) }
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AddReminderButton(available = uiState.available, onAdd = onAdd)
+                        AddEventButton(onAddTithi = onAddTithi)
+                    }
+                }
                 if (uiState.reminders.isEmpty()) {
                     item {
                         Text(
@@ -197,6 +210,107 @@ private fun ColumnScope.SourceSection(
 }
 
 @Composable
+private fun AddEventButton(onAddTithi: (TithiTarget) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    OutlinedButton(onClick = { open = true }) {
+        Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = "Tithi event")
+    }
+    if (open) {
+        TithiPickerDialog(
+            onDismiss = { open = false },
+            onConfirm = { target ->
+                onAddTithi(target)
+                open = false
+            },
+        )
+    }
+}
+
+private val MAASA_LABELS = listOf("Every month") + MAASA_OPTIONS
+private val PAKSHA_LABELS = listOf("Shukla (waxing)", "Krishna (waning)", "Either fortnight")
+
+@Composable
+private fun TithiPickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (TithiTarget) -> Unit,
+) {
+    var maasaIndex by remember { mutableStateOf(0) }
+    var pakshaIndex by remember { mutableStateOf(0) }
+    var tithiIndex by remember { mutableStateOf(0) }
+    val paksha = PickPaksha.entries[pakshaIndex]
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Add a tithi reminder") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Common events", style = MaterialTheme.typography.labelMedium)
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    TITHI_PRESETS.forEach { preset ->
+                        AssistChip(onClick = { onConfirm(preset) }, label = { Text(preset.eventName) })
+                    }
+                }
+                HorizontalDivider()
+                Text(text = "Or build your own", style = MaterialTheme.typography.labelMedium)
+                LabeledDropdown("Month", MAASA_LABELS, maasaIndex) { maasaIndex = it }
+                LabeledDropdown("Fortnight", PAKSHA_LABELS, pakshaIndex) { pakshaIndex = it }
+                LabeledDropdown("Tithi", pickerTithiLabels(shukla = paksha == PickPaksha.SHUKLA), tithiIndex) {
+                    tithiIndex = it
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val maasa = MAASA_OPTIONS.getOrNull(maasaIndex - 1)
+                    onConfirm(TithiTarget.custom(maasa, paksha, tithiIndex + 1))
+                },
+            ) { Text(text = "Add") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(text = "Cancel") } },
+    )
+}
+
+@Composable
+private fun LabeledDropdown(
+    label: String,
+    options: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Box {
+            OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = options.getOrElse(selectedIndex) { "" }, modifier = Modifier.weight(1f))
+                Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
+            }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                options.forEachIndexed { index, option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onSelect(index)
+                            open = false
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ReminderCard(
     item: ReminderItem,
     onRemove: (String) -> Unit,
@@ -208,11 +322,12 @@ private fun ReminderCard(
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(text = item.name, style = MaterialTheme.typography.titleMedium)
-                    val whenLabel = if (item.isTomorrow) "Tomorrow · " else ""
-                    Text(
-                        text = "$whenLabel${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                    val subtitle =
+                        item.dateLabel ?: run {
+                            val whenLabel = if (item.isTomorrow) "Tomorrow · " else ""
+                            "$whenLabel${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}"
+                        }
+                    Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
                 }
                 IconButton(onClick = { onRemove(item.id) }) {
                     Icon(imageVector = Icons.Filled.Delete, contentDescription = "Remove reminder")
@@ -341,6 +456,17 @@ private fun AlarmContentPreview() {
                 offsetMinutes = 10,
                 alertType = AlertStyle.NOTIFICATION,
             ),
+            ReminderItem(
+                id = "tithi:*:30",
+                name = "Amavasya",
+                start = Instant.fromEpochMilliseconds(1_762_560_000_000L),
+                end = Instant.fromEpochMilliseconds(1_762_560_000_000L),
+                quality = MuhurtaQuality.AUSPICIOUS,
+                isTomorrow = false,
+                offsetMinutes = 15,
+                alertType = AlertStyle.NOTIFICATION,
+                dateLabel = "Every month · Fri, 7 Nov",
+            ),
         )
     val available =
         listOf(
@@ -357,6 +483,7 @@ private fun AlarmContentPreview() {
                     usingDefaultLocation = true,
                 ),
             onAdd = {},
+            onAddTithi = {},
             onRemove = {},
             onOffsetChange = { _, _ -> },
             onAlertChange = { _, _ -> },
