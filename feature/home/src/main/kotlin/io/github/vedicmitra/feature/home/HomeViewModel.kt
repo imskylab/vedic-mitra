@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.time.Instant
 
@@ -54,7 +56,11 @@ class HomeViewModel
 
                 val resolved = resolveLocation()
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-                when (val snapshot = astronomyEngine.snapshotAt(now, resolved.coordinates)) {
+                // Read the day's identity (tithi, nakshatra, …) at local noon — the same convention
+                // the Panchang view uses — so the two never disagree on a tithi-transition day. The
+                // "auspicious now" band below still uses `now`.
+                val dayReference = noonOf(LocalDate.now(ZoneId.of(resolved.zoneId)), resolved.zoneId)
+                when (val snapshot = astronomyEngine.snapshotAt(dayReference, resolved.coordinates)) {
                     is AppResult.Success -> {
                         val upcoming = upcomingEntries(now, resolved.coordinates)
                         // Only three FestivalTypes exist; anything that isn't a lunar OBSERVANCE
@@ -108,7 +114,23 @@ class HomeViewModel
             return if (result is AppResult.Success) result.data else emptyList()
         }
 
+        /** Local noon on [date] in [zoneId] — a representative time of day for the day's identity. */
+        private fun noonOf(
+            date: LocalDate,
+            zoneId: String,
+        ): Instant {
+            val epochMillis =
+                date
+                    .atTime(NOON_HOUR, 0)
+                    .atZone(ZoneId.of(zoneId))
+                    .toInstant()
+                    .toEpochMilli()
+            return Instant.fromEpochMilliseconds(epochMillis)
+        }
+
         private companion object {
+            const val NOON_HOUR = 12
+
             // A little over a year, so every annual festival appears once; the engine dedupes by name.
             const val UPCOMING_WINDOW_DAYS = 400
             const val UPCOMING_LIMIT = 60

@@ -19,14 +19,26 @@ private const val DAY_MILLIS = 86_400_000L
 class FestivalCalculatorTest {
     @Test
     fun `detects recurring observances by tithi`() {
-        // Tithi runs 9,10,11,12,13,14,15 over seven days: Ekadashi on day 2, Purnima on day 6.
+        // Tithi 9..15 over seven days: Ekadashi (11) on day 2, Pradosh (13) on day 4, Purnima (15) day 6.
         val source = source(tithis = listOf(9, 10, 11, 12, 13, 14, 15))
 
         val festivals = upcomingFestivals(fromEpochMillis = 0L, windowDays = 7, limit = 10, source = source)
 
-        assertThat(festivals.map { it.name }).containsExactly("Ekadashi", "Purnima").inOrder()
+        assertThat(festivals.map { it.name }).containsExactly("Ekadashi", "Pradosh", "Purnima").inOrder()
         assertThat(festivals.first { it.name == "Ekadashi" }.atSunrise).isEqualTo(dayInstant(2))
         assertThat(festivals.first { it.name == "Ekadashi" }.type).isEqualTo(FestivalType.OBSERVANCE)
+    }
+
+    @Test
+    fun `recognises the added monthly observances`() {
+        // Krishna Chaturthi (19) = Sankashti; Krishna Chaturdashi (29) = Masik Shivaratri.
+        val source = source(tithis = listOf(4, 19, 29))
+
+        val festivals = upcomingFestivals(fromEpochMillis = 0L, windowDays = 3, limit = 10, source = source)
+
+        assertThat(festivals.map { it.name })
+            .containsExactly("Vinayaka Chaturthi", "Sankashti Chaturthi", "Masik Shivaratri")
+            .inOrder()
     }
 
     @Test
@@ -42,8 +54,8 @@ class FestivalCalculatorTest {
 
     @Test
     fun `a festival tithi in the wrong month is not matched`() {
-        // Tithi 4 is Ganesh Chaturthi only in Bhadrapada; in Chaitra it is nothing.
-        val source = source(tithis = listOf(4), maasas = listOf(maasa("Chaitra")))
+        // Tithi 3 is Akshaya Tritiya only in Vaishakha; in Chaitra it is neither festival nor observance.
+        val source = source(tithis = listOf(3), maasas = listOf(maasa("Chaitra")))
 
         val festivals = upcomingFestivals(fromEpochMillis = 0L, windowDays = 1, limit = 10, source = source)
 

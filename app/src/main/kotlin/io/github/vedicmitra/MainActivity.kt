@@ -57,7 +57,7 @@ private enum class TopDestination(
     val icon: ImageVector,
 ) {
     HOME("home", "Home", Icons.Filled.Home),
-    CALENDAR("calendar", "Calendar", Icons.Filled.DateRange),
+    CALENDAR("calendar", "Panchang", Icons.Filled.DateRange),
     ALARM("alarm", "Reminders", Icons.Filled.Notifications),
     SETTINGS("settings", "Settings", Icons.Filled.Settings),
 }
