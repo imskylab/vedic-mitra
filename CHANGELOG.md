@@ -8,6 +8,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Planetary positions.** The home screen shows the rashi of the Sun, Moon, Guru (Jupiter), and
+  Shukra (Venus), each with the date it next changes rashi (pravesh), in a collapsible list. Sun and
+  Moon reuse the existing Meeus ephemeris; Guru and Shukra are computed geocentrically from JPL
+  "Approximate Positions" Keplerian elements (heliocentric solve → Earth subtraction → sidereal via
+  Lahiri), with the ingress found by a daily scan plus bisection. Venus's separation from the Sun
+  stays within its ~47° maximum elongation as a physical sanity check.
+- **Festivals, observances, and a redesigned home dashboard.** `FestivalCalculator` derives upcoming
+  named festivals (Ugadi, Rama Navami, Ganesh Chaturthi, Navaratri, Diwali, Holi, Janmashtami, Maha
+  Shivaratri, …), recurring lunar observances (Ekadashi, Purnima, Amavasya, Sankashti Chaturthi,
+  Pradosh, Masik Shivaratri, Vinayaka Chaturthi), and Sankrantis — each judged by that day's
+  **sunrise** panchanga and cross-checked against published 2026 dates. The home screen was reworked
+  around panchanga-limb and season/ayana strips, an auspicious-now band, and collapsible
+  Auspicious/Inauspicious/Festivals/Events sections. See
+  [docs/adr/0008-festivals-and-home-landing.md](docs/adr/0008-festivals-and-home-landing.md).
+- **Choghadiya.** The sixteen Choghadiya windows (eight day, eight night, weekday-sequenced) are now
+  computed and available for reminders. See [docs/adr/0011-choghadiya.md](docs/adr/0011-choghadiya.md).
+- **Reminders redesign with tithi reminders.** The reminders screen now works like a clock app —
+  add and remove reminders from a unified list whose sources are the day's muhurta and Choghadiya
+  windows plus **custom tithi** targets (built from Maasa · Paksha · Tithi, or presets like Ekadashi,
+  Purnima, Amavasya). Each is resolved to its next occurrence, fires at sunrise minus a lead, and is
+  renewed on load.
+- **Panchang calendar highlighting.** The monthly grid highlights festival, observance, and
+  Sankranti days, and each day's detail card names its notable entry.
+- **Selectable and saved locations with offline timezone detection.** GPS, city search, and manual
+  latitude/longitude, with multiple saved locations, resolved to a time zone (and DST) entirely
+  offline. See [docs/adr/0006-selectable-and-saved-locations.md](docs/adr/0006-selectable-and-saved-locations.md)
+  and [docs/adr/0007-coordinate-timezone-resolution.md](docs/adr/0007-coordinate-timezone-resolution.md).
 - **Maasa and Samvatsara.** `:core:astronomy` now derives the amanta lunar month (Maasa) and the
   sixty-year-cycle year name (Samvatsara), shown on the home dashboard and each calendar day's
   detail. The month is named from the Sun's rashi at the new moon that begins it (found by a
@@ -61,6 +88,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
 
 ### Changed
+- **The Calendar screen is now "Panchang."** The tab and screen were renamed to reflect what they
+  show; the bottom navigation reads Home · Panchang · Reminders · Settings.
 - **License changed from MIT to a dual license** — GNU AGPL-3.0-or-later for open-source use, plus a
   commercial license for proprietary use. See [LICENSING.md](LICENSING.md) and
   [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
@@ -70,6 +99,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stdlib `kotlin.time.Instant`.
 
 ### Fixed
+- **The day's tithi is now named by its sunrise, not local noon.** On days where the tithi rolls
+  over between sunrise and midday, sampling at noon read one tithi ahead of published panchangas —
+  e.g. 9 August 2026 showed Krishna Dwadashi where Drik/Date Panchang show Krishna Ekadashi (the
+  tithi prevailing at sunrise, by which the day is named). Home and Panchang now resolve the day's
+  sunrise (`AstronomyEngine.sunriseAt`) and sample the panchanga identity there, so they agree with
+  each other and with reference panchangas. (Tithi is Moon−Sun elongation and so ayanamsa-independent;
+  this was a sampling-instant convention, not a computation error.) See
+  [docs/adr/0004-golden-theme-and-calendar.md](docs/adr/0004-golden-theme-and-calendar.md).
 - **Muhurta reminders could not be set once a window had passed.** The reminders screen only ever
   computed *today's* windows, so by later in the day every row showed "already passed" with a
   disabled toggle. It now resolves each muhurta's **next upcoming** occurrence — today's if still

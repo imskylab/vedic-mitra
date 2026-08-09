@@ -95,6 +95,17 @@ interface AstronomyEngine {
      */
     suspend fun planetaryPositionsAt(instant: Instant): AppResult<PlanetaryPositions> =
         AppResult.Success(PlanetaryPositions(emptyList()))
+
+    /**
+     * The sunrise instant of the civil day containing [instant] at [location], or `null` when the
+     * sun does not rise that day (polar). Callers use this to anchor a day's panchanga identity
+     * (tithi, nakshatra, …) to sunrise — the convention by which panchangas name the day — rather
+     * than to an arbitrary time. The default no-op lets test doubles ignore it.
+     */
+    suspend fun sunriseAt(
+        instant: Instant,
+        location: GeoCoordinates,
+    ): AppResult<Instant?> = AppResult.Success<Instant?>(null)
 }
 
 /**

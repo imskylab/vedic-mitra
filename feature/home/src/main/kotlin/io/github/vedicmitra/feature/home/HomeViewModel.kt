@@ -57,10 +57,14 @@ class HomeViewModel
 
                 val resolved = resolveLocation()
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-                // Read the day's identity (tithi, nakshatra, …) at local noon — the same convention
-                // the Panchang view uses — so the two never disagree on a tithi-transition day. The
-                // "auspicious now" band below still uses `now`.
-                val dayReference = noonOf(LocalDate.now(ZoneId.of(resolved.zoneId)), resolved.zoneId)
+                // Read the day's identity (tithi, nakshatra, …) at today's *sunrise* — the convention
+                // by which panchangas name the day. Sampling at sunrise (not noon) matches Drik/Date
+                // Panchang on days where the tithi rolls over between sunrise and midday, and the
+                // Panchang view anchors to the same instant so the two never disagree. The "auspicious
+                // now" band below still uses `now`.
+                val today = LocalDate.now(ZoneId.of(resolved.zoneId))
+                val dayReference =
+                    sunriseReference(noonOf(today, resolved.zoneId), resolved.coordinates)
                 when (val snapshot = astronomyEngine.snapshotAt(dayReference, resolved.coordinates)) {
                     is AppResult.Success -> {
                         val upcoming = upcomingEntries(now, resolved.coordinates)
@@ -118,6 +122,15 @@ class HomeViewModel
             val result = astronomyEngine.upcomingFestivals(now, coordinates, UPCOMING_WINDOW_DAYS, UPCOMING_LIMIT)
             return if (result is AppResult.Success) result.data else emptyList()
         }
+
+        /**
+         * The day's sunrise instant for [coordinates], resolved from a representative [dayInstant]
+         * within the civil day, falling back to [dayInstant] itself if the sun does not rise (polar).
+         */
+        private suspend fun sunriseReference(
+            dayInstant: Instant,
+            coordinates: GeoCoordinates,
+        ): Instant = (astronomyEngine.sunriseAt(dayInstant, coordinates) as? AppResult.Success)?.data ?: dayInstant
 
         /** Local noon on [date] in [zoneId] — a representative time of day for the day's identity. */
         private fun noonOf(

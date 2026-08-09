@@ -14,18 +14,22 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
 > **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
-> (Foundation) is done**, and **Phase 2 (Daily Timings)** and **Phase 3 (Panchang)** are partially
-> built: the app already computes today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara,
-> ayana, ritu, maasa, samvatsara), Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, and the inauspicious kalams (Rahu,
-> Yamaganda, Gulika), sunrise/sunset, moonrise/moonset, Moon phase, and golden-hour windows for the
-> device's location, persists theme preferences, and schedules reboot-survivable,
-> per-event-configurable notification reminders for muhurta windows. It shows all of this on a
-> home dashboard and a browsable monthly **calendar** (tap any day for its full panchang), wrapped
-> in a golden/maroon brand theme drawn from the app emblem, navigated via a bottom bar. Calculations
-> are cross-checked against [datepanchang.com](https://datepanchang.com) and
-> [drikpanchang.com](https://www.drikpanchang.com) before shipping. All of
-> Phases 4–12 remain aspirational — see the [Roadmap](#roadmap) for the full picture and current
-> progress.
+> (Foundation) is done**; **Phase 2 (Daily Timings)**, **Phase 3 (Panchang)**, **Phase 4 (Festivals
+> & Vrats)**, and **Phase 7 (Location & Astronomy)** are partially built: the app already computes
+> today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa, samvatsara),
+> Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, the inauspicious kalams (Rahu, Yamaganda, Gulika),
+> the sixteen Choghadiya windows, sunrise/sunset, moonrise/moonset, Moon phase, golden-hour windows,
+> and the graha rashi positions (Sun/Moon/Guru/Shukra) with their next pravesh — for any saved or
+> GPS location, with offline timezone/DST detection. It derives upcoming festivals, lunar
+> observances (Ekadashi, Purnima, Amavasya, Sankashti Chaturthi, Pradosh, …) and Sankrantis, and
+> schedules reboot-survivable, per-event-configurable reminders for muhurta, Choghadiya, and tithi
+> events. It shows all of this on a home dashboard and a browsable monthly **Panchang** calendar
+> (tap any day for its full panchang; notable days are highlighted), wrapped in a golden/maroon
+> brand theme drawn from the app emblem, navigated via a bottom bar. Calculations — including the
+> sunrise-tithi convention by which the day is named — are cross-checked against
+> [datepanchang.com](https://datepanchang.com) and [drikpanchang.com](https://www.drikpanchang.com)
+> before shipping. Phases 5–6 and 8–12 remain largely aspirational — see the [Roadmap](#roadmap) for
+> the full picture and current progress.
 
 ---
 
@@ -172,7 +176,7 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 - [x] Current time
 - [x] Today's Panchang summary
-- [ ] Upcoming events
+- [x] Upcoming events
 - [x] Current moon phase
 - [ ] Next alarm
 
@@ -205,28 +209,28 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Moonrise
 - [x] Moonset
 - [x] Moon phase
-- [ ] Planetary positions
-- [ ] Zodiac transitions
+- [x] Planetary positions
+- [x] Zodiac transitions
 
-### ⬜ Phase 4 — Festivals & Vrats
+### 🟡 Phase 4 — Festivals & Vrats
 
 **Festival Calendar**
 
-- [ ] Major Hindu festivals
+- [x] Major Hindu festivals
 - [ ] Regional festivals
-- [ ] Sankranti
-- [ ] Ekadashi
-- [ ] Purnima
-- [ ] Amavasya
-- [ ] Chaturthi
-- [ ] Pradosham
-- [ ] Shivaratri
-- [ ] Navaratri
-- [ ] Diwali
-- [ ] Holi
-- [ ] Janmashtami
-- [ ] Rama Navami
-- [ ] Guru Purnima
+- [x] Sankranti
+- [x] Ekadashi
+- [x] Purnima
+- [x] Amavasya
+- [x] Chaturthi
+- [x] Pradosham
+- [x] Shivaratri
+- [x] Navaratri
+- [x] Diwali
+- [x] Holi
+- [x] Janmashtami
+- [x] Rama Navami
+- [x] Guru Purnima
 
 **Vrat Support**
 
@@ -234,14 +238,14 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [ ] Parana timings
 - [ ] Festival descriptions
 - [ ] Ritual guidance
-- [ ] Important observances
+- [x] Important observances
 
 **Notifications**
 
 - [ ] Festival reminders
-- [ ] Vrat reminders
+- [x] Vrat reminders
 - [ ] Panchang alerts
-- [ ] Upcoming observances
+- [x] Upcoming observances
 
 ### ⬜ Phase 5 — Personalization
 
@@ -339,8 +343,8 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Monthly grid
 - [ ] Agenda view
 - [ ] Timeline view
-- [ ] Festival highlights
-- [ ] Color-coded observances
+- [x] Festival highlights
+- [x] Color-coded observances
 
 **Dashboard**
 

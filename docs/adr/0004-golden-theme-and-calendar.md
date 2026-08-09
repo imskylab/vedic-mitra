@@ -27,8 +27,14 @@ so Home/Alarm/Settings re-skinned with no code change.
 **Calendar.** A new `:feature:calendar` module (mirroring `:feature:home`) renders a monthly grid —
 each cell shows the day's tithi — with month paging and a detail card showing the selected day's
 full panchanga. It reuses the existing `AstronomyEngine`, which already accepts an arbitrary
-`Instant`, computing each day at local noon (the conventional representative time for a day's
-tithi), and follows the established location-with-default-fallback pattern.
+`Instant`, computing each day at that day's **sunrise** — the convention by which panchangas name
+the day — and follows the established location-with-default-fallback pattern.
+
+> Superseded detail: earlier revisions sampled each day at local noon. On days where the tithi
+> rolls over between sunrise and midday, noon reads one tithi ahead of published panchangas
+> (Drik/Date Panchang), which name the day by its sunrise tithi. Both Home and Panchang now resolve
+> the day's sunrise via `AstronomyEngine.sunriseAt(...)` and sample the panchanga identity there, so
+> they agree with each other and with reference panchangas.
 
 **A lightweight engine method.** A month grid needs ~28–42 days of panchanga but only tithi +
 moon phase per cell. Running the full `snapshotAt` for every cell would run its expensive

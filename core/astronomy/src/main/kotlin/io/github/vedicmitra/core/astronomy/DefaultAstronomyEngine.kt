@@ -149,6 +149,23 @@ class DefaultAstronomyEngine
                 AppResult.Success(planetaryPositions(instant.toEpochMilliseconds()))
             }
 
+        override suspend fun sunriseAt(
+            instant: Instant,
+            location: GeoCoordinates,
+        ): AppResult<Instant?> {
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            return withContext(dispatchers.default) {
+                AppResult.Success(
+                    SolarDay
+                        .sunTimes(instant.toEpochMilliseconds(), location.latitude, location.longitude)
+                        .sunrise,
+                )
+            }
+        }
+
         private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
             object : FestivalPanchangaSource {
                 override fun sunrise(dayEpochMillis: Long): Long? =
