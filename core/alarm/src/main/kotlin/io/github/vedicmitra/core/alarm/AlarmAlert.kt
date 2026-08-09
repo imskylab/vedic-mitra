@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.core.alarm
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import androidx.core.app.NotificationChannelCompat
@@ -18,24 +19,24 @@ import androidx.core.app.NotificationManagerCompat
 import io.github.vedicmitra.core.notifications.AppNotificationChannel
 
 /**
- * Raises and dismisses the full-screen ringing alarm for an alarm-mode reminder. Called by the
- * scheduler's receiver when such a reminder fires.
+ * Builds and dismisses the ringing-alarm notification for an alarm-mode reminder. The notification
+ * is used as the foreground notification of [AlarmService], which owns the actual ringtone so the
+ * alarm sounds even when the system demotes the full-screen intent to a heads-up (the default on
+ * Android 14+ until the user grants the full-screen-intent permission).
  *
- * It posts a **full-screen-intent** notification on a high-importance channel: on a locked or
- * sleeping device the system launches [AlarmActivity] directly (which rings); otherwise it shows as
- * a heads-up the user taps to open the same activity.
+ * It carries a **full-screen intent** so a locked/sleeping device still launches [AlarmActivity]
+ * (the dismissable lock-screen UI) when the permission is granted, and a **Dismiss** action that
+ * stops the service — the only stop affordance when no activity is shown.
  */
 object AlarmAlert {
-    /** Posts the full-screen alarm notification for [id] with [title] and [body]. */
-    fun raise(
+    /** Builds the ongoing full-screen alarm notification for [id] with [title] and [body]. */
+    fun notification(
         context: Context,
         id: Int,
         title: String,
         body: String,
-    ) {
-        val manager = NotificationManagerCompat.from(context)
-        if (!manager.areNotificationsEnabled()) return
-        ensureChannel(manager)
+    ): Notification {
+        ensureChannel(NotificationManagerCompat.from(context))
 
         val fullScreen =
             PendingIntent.getActivity(
@@ -44,20 +45,26 @@ object AlarmAlert {
                 AlarmActivity.intent(context, id, title, body),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
-        val notification =
-            NotificationCompat
-                .Builder(context, AppNotificationChannel.MUHURTA_ALARMS.id)
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setOngoing(true)
-                .setAutoCancel(false)
-                .setFullScreenIntent(fullScreen, true)
-                .setContentIntent(fullScreen)
-                .build()
-        manager.notify(id, notification)
+        val dismiss =
+            PendingIntent.getService(
+                context,
+                id,
+                AlarmService.dismissIntent(context),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        return NotificationCompat
+            .Builder(context, AppNotificationChannel.MUHURTA_ALARMS.id)
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .setFullScreenIntent(fullScreen, true)
+            .setContentIntent(fullScreen)
+            .addAction(android.R.drawable.ic_lock_idle_alarm, "Dismiss", dismiss)
+            .build()
     }
 
     /** Cancels the alarm notification for [id] (called when the alarm is dismissed). */

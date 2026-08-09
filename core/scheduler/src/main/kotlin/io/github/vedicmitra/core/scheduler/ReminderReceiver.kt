@@ -13,8 +13,9 @@ package io.github.vedicmitra.core.scheduler
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.vedicmitra.core.alarm.AlarmAlert
+import io.github.vedicmitra.core.alarm.AlarmService
 import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
 import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.notifications.Notifier
@@ -44,9 +45,15 @@ class ReminderReceiver : BroadcastReceiver() {
     ) {
         val notification = ReminderIntent.readNotification(intent) ?: return
 
-        // Alarm-mode reminders ring full-screen; the rest post a quiet notification.
+        // Alarm-mode reminders ring via a foreground service (so the tone plays even when the
+        // full-screen intent is demoted to a notification); the rest post a quiet notification.
+        // Starting a foreground service is permitted here because the firing exact alarm temporarily
+        // exempts the app from background-start restrictions.
         if (notification.alert == AlertStyle.ALARM) {
-            AlarmAlert.raise(context, notification.id, notification.title, notification.body)
+            ContextCompat.startForegroundService(
+                context,
+                AlarmService.start(context, notification.id, notification.title, notification.body),
+            )
             return
         }
 

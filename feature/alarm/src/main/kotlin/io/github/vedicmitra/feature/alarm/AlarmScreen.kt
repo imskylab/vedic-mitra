@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.alarm
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -63,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
@@ -130,7 +132,9 @@ private fun AlarmContent(
                 Text(text = uiState.message, style = MaterialTheme.typography.bodyLarge)
             }
 
-        is AlarmUiState.Ready ->
+        is AlarmUiState.Ready -> {
+            val fullScreenContext = LocalContext.current
+            val needsFullScreenIntent = !fullScreenContext.canUseFullScreenIntent()
             LazyColumn(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
@@ -138,6 +142,13 @@ private fun AlarmContent(
             ) {
                 if (!uiState.canScheduleExactAlarms) {
                     item { ExactAlarmBanner(onRequestExactAlarm = onRequestExactAlarm) }
+                }
+                if (needsFullScreenIntent) {
+                    item {
+                        FullScreenIntentBanner(
+                            onRequestFullScreenIntent = fullScreenContext::openFullScreenIntentSettings,
+                        )
+                    }
                 }
                 if (uiState.usingDefaultLocation) {
                     item {
@@ -165,6 +176,7 @@ private fun AlarmContent(
                     ReminderCard(item, onRemove, onOffsetChange, onAlertChange)
                 }
             }
+        }
     }
 }
 
@@ -378,6 +390,24 @@ private fun ExactAlarmBanner(onRequestExactAlarm: () -> Unit) {
 }
 
 @Composable
+private fun FullScreenIntentBanner(onRequestFullScreenIntent: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text =
+                    "Alarms may not appear on the lock screen. Allow full-screen alarms so they " +
+                        "ring over a locked device.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Button(onClick = onRequestFullScreenIntent) { Text("Allow full-screen alarms") }
+        }
+    }
+}
+
+@Composable
 private fun CenteredBox(
     modifier: Modifier,
     content: @Composable () -> Unit,
@@ -415,6 +445,28 @@ private fun Context.openExactAlarmSettings() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         startActivity(
             Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
+}
+
+/**
+ * Whether this app may post full-screen-intent notifications. Always true before Android 14, where
+ * the permission is granted on install; from Android 14 it must be granted explicitly, so alarms are
+ * demoted to plain notifications until the user allows it.
+ */
+private fun Context.canUseFullScreenIntent(): Boolean =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        getSystemService(NotificationManager::class.java)?.canUseFullScreenIntent() == true
+    } else {
+        true
+    }
+
+/** Opens the system screen where the user can allow this app to use full-screen intents (API 34+). */
+private fun Context.openFullScreenIntentSettings() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        startActivity(
+            Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, "package:$packageName".toUri())
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         )
     }
