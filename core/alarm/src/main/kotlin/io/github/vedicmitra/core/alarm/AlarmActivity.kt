@@ -14,8 +14,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,41 +34,28 @@ import androidx.compose.ui.unit.dp
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 
 /**
- * Full-screen alarm shown when an alarm-mode muhurta reminder fires. It surfaces over the lock
- * screen, turns the screen on, and plays the ringtone/vibration (via [AlarmRinger]) until the user
- * taps Dismiss or a safety timeout elapses.
+ * Full-screen lock-screen UI shown when an alarm-mode muhurta reminder fires and the system honours
+ * the full-screen intent. It surfaces over the lock screen and turns the screen on; the ringtone and
+ * vibration are owned by [AlarmService] (so the alarm sounds even when this activity never launches),
+ * and Dismiss stops that service.
  */
 class AlarmActivity : ComponentActivity() {
-    private var ringer: AlarmRinger? = null
-    private val autoStop = Handler(Looper.getMainLooper())
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         showWhenLockedAndTurnScreenOn()
 
-        val id = intent.getIntExtra(EXTRA_ID, 0)
         val title = intent.getStringExtra(EXTRA_TITLE).orEmpty()
         val body = intent.getStringExtra(EXTRA_BODY).orEmpty()
 
-        ringer = AlarmRinger(applicationContext).also { it.start() }
-        autoStop.postDelayed({ dismiss(id) }, AUTO_STOP_MILLIS)
-
         setContent {
             VedicMitraTheme {
-                AlarmContent(title = title, body = body, onDismiss = { dismiss(id) })
+                AlarmContent(title = title, body = body, onDismiss = ::dismiss)
             }
         }
     }
 
-    override fun onDestroy() {
-        autoStop.removeCallbacksAndMessages(null)
-        ringer?.stop()
-        ringer = null
-        super.onDestroy()
-    }
-
-    private fun dismiss(id: Int) {
-        AlarmAlert.dismiss(this, id)
+    private fun dismiss() {
+        startService(AlarmService.dismissIntent(this))
         finish()
     }
 
@@ -91,7 +76,6 @@ class AlarmActivity : ComponentActivity() {
         private const val EXTRA_ID = "alarm_id"
         private const val EXTRA_TITLE = "alarm_title"
         private const val EXTRA_BODY = "alarm_body"
-        private const val AUTO_STOP_MILLIS = 120_000L
 
         /** An intent that launches the full-screen alarm for [id] with [title] and [body]. */
         fun intent(

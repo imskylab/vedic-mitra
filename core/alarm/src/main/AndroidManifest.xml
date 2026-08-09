@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Library module manifest. Namespace is declared in build.gradle.kts. USE_FULL_SCREEN_INTENT lets
-     an alarm-mode reminder launch its full-screen alarm over the lock screen; VIBRATE drives the
-     alarm's vibration. The alarm activity is registered (and kept private) here; showWhenLocked /
-     turnScreenOn (API 27+) surface it on a locked, sleeping device, reinforced by window flags for
-     API 26. -->
+     an alarm-mode reminder launch its full-screen alarm over the lock screen (user-grantable on
+     Android 14+); VIBRATE drives the alarm's vibration. FOREGROUND_SERVICE(+_SPECIAL_USE) let
+     AlarmService ring the alarm tone as a foreground service, so the alarm sounds even when the
+     system demotes the full-screen intent to a plain notification. The alarm activity and service
+     are registered (and kept private) here; showWhenLocked / turnScreenOn (API 27+) surface the
+     activity on a locked, sleeping device, reinforced by window flags for API 26. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application>
         <activity
@@ -18,6 +22,15 @@
             android:showWhenLocked="true"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
             android:turnScreenOn="true" />
+
+        <service
+            android:name=".AlarmService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="alarm" />
+        </service>
     </application>
 
 </manifest>

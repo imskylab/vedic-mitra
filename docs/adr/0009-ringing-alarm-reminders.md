@@ -58,3 +58,32 @@ Add a per-reminder `AlertStyle` (`NOTIFICATION` | `ALARM`), persisted per muhurt
 - **Negative — full-screen-intent policy.** Android 14 restricts `USE_FULL_SCREEN_INTENT` for
   non-calling/alarm apps; an alarm app qualifies, but the grant may need requesting on some devices.
 - Snooze is intentionally out of scope for this first cut (Dismiss only).
+
+## Update (2026-08-09) — ring via a foreground service
+
+Device testing on Android 15 (Poco M7) confirmed the predicted gap: an alarm-mode reminder fired
+and posted its notification, but did **not** ring — the sideloaded app had not been granted the
+Android 14+ full-screen-intent permission, so the system demoted the full-screen intent to a plain
+notification and `AlarmActivity` (which owned the sound) never launched. Because the ringtone lived
+in the activity, no activity meant no sound.
+
+Fix: move the ringtone into a foreground service so sound no longer depends on the full-screen
+intent.
+
+- **`AlarmService` (`:core:alarm`)** now owns `AlarmRinger`. On fire, `ReminderReceiver` starts it
+  with `ContextCompat.startForegroundService` (permitted from the exact-alarm broadcast, which
+  temporarily exempts the app from background-FGS-start limits). The service `startForeground`s with
+  the ongoing full-screen-intent notification built by `AlarmAlert.notification(...)`, rings until
+  Dismiss or the ~2-min timeout, and is declared `foregroundServiceType="specialUse"` (subtype
+  `alarm`) with `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE`.
+- **`AlarmActivity`** is now only the lock-screen UI; it no longer creates a ringer. Its Dismiss and
+  the notification's new **Dismiss** action both stop the service. The full-screen intent still
+  launches the activity when the permission is granted, so a locked device shows the full-screen
+  alarm as before — but the tone plays regardless.
+- **Full-screen-intent permission.** The reminders screen now shows a banner
+  (`Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT`) when `NotificationManager.canUseFullScreenIntent()`
+  is false, so the user can restore lock-screen surfacing. Sound works with or without it.
+- **OEM note.** Aggressive vendors (MIUI/HyperOS, etc.) may additionally require the user to enable
+  "Autostart" / "show on lock screen" for reliable ringing; these are user-only settings with no API.
+
+This supersedes the "No foreground service" decision above.
