@@ -43,22 +43,7 @@ private val FESTIVAL_RULES =
         FestivalRule("Holi", "Phalguna", 15),
     )
 
-// Rashi (zodiac sign) names, index 0 = Mesha, used to name a Sankranti (e.g. "Makara Sankranti").
-private val RASHI_NAMES =
-    listOf(
-        "Mesha",
-        "Vrishabha",
-        "Mithuna",
-        "Karka",
-        "Simha",
-        "Kanya",
-        "Tula",
-        "Vrishchika",
-        "Dhanu",
-        "Makara",
-        "Kumbha",
-        "Meena",
-    )
+// Rashi names for naming a Sankranti (e.g. "Makara Sankranti") come from the shared RASHI_NAMES.
 
 private const val DAY_MILLIS = 86_400_000L
 

@@ -144,6 +144,11 @@ class DefaultAstronomyEngine
             }
         }
 
+        override suspend fun planetaryPositionsAt(instant: Instant): AppResult<PlanetaryPositions> =
+            withContext(dispatchers.default) {
+                AppResult.Success(planetaryPositions(instant.toEpochMilliseconds()))
+            }
+
         private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
             object : FestivalPanchangaSource {
                 override fun sunrise(dayEpochMillis: Long): Long? =

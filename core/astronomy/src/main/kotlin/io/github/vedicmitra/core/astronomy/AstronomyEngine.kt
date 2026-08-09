@@ -87,6 +87,14 @@ interface AstronomyEngine {
         instant: Instant,
         location: GeoCoordinates,
     ): AppResult<String?> = AppResult.Success<String?>(null)
+
+    /**
+     * The rashi of each tracked graha (Sun, Moon, Guru, Shukra) at [instant], each with its next
+     * rashi ingress (pravesh). Geocentric, so it does not depend on the observer's location. The
+     * default returns no positions so test doubles can ignore it.
+     */
+    suspend fun planetaryPositionsAt(instant: Instant): AppResult<PlanetaryPositions> =
+        AppResult.Success(PlanetaryPositions(emptyList()))
 }
 
 /**
