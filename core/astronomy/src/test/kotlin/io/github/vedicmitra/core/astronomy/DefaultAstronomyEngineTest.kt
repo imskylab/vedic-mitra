@@ -211,6 +211,32 @@ class DefaultAstronomyEngineTest {
                 )
             assertThat(result).isInstanceOf(AppResult.Failure::class.java)
         }
+
+    @Test
+    fun `sunriseAt anchors the day's tithi to sunrise, matching published panchangas`() =
+        runTest {
+            // 2026-08-09 at New Delhi: the tithi rolls Krishna Ekadashi -> Dwadashi around 11:15 IST.
+            // Published panchangas (Drik / Date Panchang) name the day by its *sunrise* tithi, so the
+            // day's identity must be sampled at sunrise, not at noon.
+            val noon = Instant.fromEpochMilliseconds(1_786_257_000_000L) // 2026-08-09 12:00 IST
+
+            // Sampled at noon it reads one tithi ahead: Krishna Dwadashi (global 27).
+            val atNoon = snapshot(engine.snapshotAt(noon, delhi))
+            assertThat(atNoon.tithi.paksha).isEqualTo(Paksha.KRISHNA)
+            assertThat(atNoon.tithi.number).isEqualTo(27)
+
+            // sunriseAt resolves that morning's sunrise (before noon)...
+            val sunriseResult = engine.sunriseAt(noon, delhi)
+            check(sunriseResult is AppResult.Success)
+            val sunrise = requireNotNull(sunriseResult.data)
+            assertThat(sunrise.toEpochMilliseconds()).isLessThan(noon.toEpochMilliseconds())
+
+            // ...and sampled there the day is Krishna Ekadashi (global 26), matching the reference.
+            val atSunrise = snapshot(engine.snapshotAt(sunrise, delhi))
+            assertThat(atSunrise.tithi.paksha).isEqualTo(Paksha.KRISHNA)
+            assertThat(atSunrise.tithi.number).isEqualTo(26)
+            assertThat(atSunrise.tithi.name).isEqualTo("Ekadashi")
+        }
 }
 
 /** Runs everything on the unconfined dispatcher so `withContext` executes inline in tests. */

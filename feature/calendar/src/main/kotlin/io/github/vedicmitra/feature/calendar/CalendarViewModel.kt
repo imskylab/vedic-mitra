@@ -99,10 +99,10 @@ class CalendarViewModel
             val days =
                 (1..yearMonth.lengthOfMonth()).mapNotNull { dayOfMonth ->
                     val date = yearMonth.atDay(dayOfMonth)
-                    val noon = noonOf(date)
-                    val summary = astronomyEngine.daySummaryAt(noon, location)
+                    val reference = sunriseReference(date)
+                    val summary = astronomyEngine.daySummaryAt(reference, location)
                     (summary as? AppResult.Success)?.data?.let { data ->
-                        val festival = (astronomyEngine.festivalOn(noon, location) as? AppResult.Success)?.data
+                        val festival = (astronomyEngine.festivalOn(reference, location) as? AppResult.Success)?.data
                         CalendarDay(date = date, tithi = data.tithi, moonPhase = data.moonPhase, festival = festival)
                     }
                 }
@@ -112,7 +112,7 @@ class CalendarViewModel
         }
 
         private suspend fun loadSelected(date: LocalDate) {
-            when (val snapshot = astronomyEngine.snapshotAt(noonOf(date), location)) {
+            when (val snapshot = astronomyEngine.snapshotAt(sunriseReference(date), location)) {
                 is AppResult.Success ->
                     _uiState.update {
                         it.copy(selectedDate = date, selectedSnapshot = snapshot.data, errorMessage = null)
@@ -123,6 +123,15 @@ class CalendarViewModel
                         it.copy(selectedDate = date, errorMessage = snapshot.cause.message ?: "Unknown error")
                     }
             }
+        }
+
+        /**
+         * The instant to sample [date]'s panchanga identity at: that day's sunrise, the convention by
+         * which panchangas name the day. Falls back to local noon if the sun does not rise (polar).
+         */
+        private suspend fun sunriseReference(date: LocalDate): Instant {
+            val noon = noonOf(date)
+            return (astronomyEngine.sunriseAt(noon, location) as? AppResult.Success)?.data ?: noon
         }
 
         /** Local noon on [date] in the resolved location's time zone — a representative time of day. */
