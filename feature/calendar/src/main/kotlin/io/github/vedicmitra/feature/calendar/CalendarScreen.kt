@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -158,9 +160,11 @@ private fun CalendarContent(
         }
 
         uiState.selectedSnapshot?.let { snapshot ->
+            val festival = uiState.days.firstOrNull { it.date == uiState.selectedDate }?.festival
             DetailCard(
                 date = uiState.selectedDate,
                 snapshot = snapshot,
+                festival = festival,
                 modifier = Modifier.padding(top = 16.dp),
             )
         }
@@ -299,6 +303,23 @@ private fun RowScope.DayCell(
                         MaterialTheme.colorScheme.tertiary
                     },
             )
+            if (day.festival != null) {
+                // A dot marks a notable day (festival / observance / Sankranti); the detail card names it.
+                Box(
+                    modifier =
+                        Modifier
+                            .padding(top = 2.dp)
+                            .size(5.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.tertiary
+                                },
+                            ),
+                )
+            }
         }
     }
 }
@@ -307,6 +328,7 @@ private fun RowScope.DayCell(
 private fun DetailCard(
     date: LocalDate,
     snapshot: AstronomySnapshot,
+    festival: String?,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -320,8 +342,17 @@ private fun DetailCard(
                 text = snapshot.vara.displayName,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = if (festival == null) Modifier.padding(bottom = 8.dp) else Modifier,
             )
+            festival?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             DetailRow(label = "Tithi", value = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}")
             DetailRow(label = "Nakshatra", value = snapshot.nakshatra.name)
             DetailRow(label = "Yoga", value = snapshot.yoga.name)
@@ -414,6 +445,12 @@ private fun CalendarContentPreview() {
                 date = month.atDay(day),
                 tithi = Tithi(number = (day % 30) + 1, paksha = Paksha.SHUKLA, name = "Panchami"),
                 moonPhase = MoonPhase.WAXING_GIBBOUS,
+                festival =
+                    when (day) {
+                        5 -> "Ganesh Chaturthi"
+                        15 -> "Purnima"
+                        else -> null
+                    },
             )
         }
     val sample =

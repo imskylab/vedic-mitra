@@ -165,6 +165,35 @@ private fun observanceAt(tithi: Int): String? =
         else -> null
     }
 
+/**
+ * The single most notable entry on the civil day containing [dayEpochMillis] — a named festival,
+ * else a recurring observance, else a Sankranti — judged by that day's sunrise panchanga, or `null`
+ * for an ordinary day. Used to highlight days in the calendar.
+ */
+internal fun festivalOn(
+    dayEpochMillis: Long,
+    source: FestivalPanchangaSource,
+): String? {
+    val sunrise = source.sunrise(dayEpochMillis) ?: (dayEpochMillis + FALLBACK_SUNRISE_OFFSET_MILLIS)
+    val tithi = source.tithiNumber(sunrise)
+    return namedFestivalAt(tithi) { source.maasa(sunrise) }
+        ?: observanceAt(tithi)
+        ?: sankrantiOn(dayEpochMillis, sunrise, source)
+}
+
+/** "<Rashi> Sankranti" if the Sun entered a new rashi at [sunrise] versus the previous day, else null. */
+private fun sankrantiOn(
+    dayEpochMillis: Long,
+    sunrise: Long,
+    source: FestivalPanchangaSource,
+): String? {
+    val previousSunrise =
+        source.sunrise(dayEpochMillis - DAY_MILLIS)
+            ?: (dayEpochMillis - DAY_MILLIS + FALLBACK_SUNRISE_OFFSET_MILLIS)
+    val rashi = source.sunRashi(sunrise)
+    return if (rashi != source.sunRashi(previousSunrise)) "${RASHI_NAMES[rashi]} Sankranti" else null
+}
+
 private fun addUnique(
     results: MutableList<Festival>,
     seen: MutableSet<String>,
