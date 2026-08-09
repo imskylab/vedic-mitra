@@ -150,11 +150,17 @@ private inline fun namedFestivalAt(
     return candidates.firstOrNull { it.maasa == maasa.name }?.name
 }
 
-/** The recurring observance for a sunrise tithi, or `null`. */
+// The recurring monthly observance for a sunrise tithi (global 1..30), or null. Krishna tithis are
+// 15 + their number in the fortnight, so Sankashti Chaturthi (Krishna Chaturthi) = 19, Pradosh
+// (Trayodashi) = 13 & 28, and Masik Shivaratri (Krishna Chaturdashi) = 29.
 private fun observanceAt(tithi: Int): String? =
     when (tithi) {
+        4 -> "Vinayaka Chaturthi"
         11, 26 -> "Ekadashi"
+        13, 28 -> "Pradosh"
         15 -> "Purnima"
+        19 -> "Sankashti Chaturthi"
+        29 -> "Masik Shivaratri"
         30 -> "Amavasya"
         else -> null
     }
