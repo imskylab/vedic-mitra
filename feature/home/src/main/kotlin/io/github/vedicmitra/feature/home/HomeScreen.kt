@@ -56,6 +56,8 @@ import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
+import io.github.vedicmitra.core.astronomy.Graha
+import io.github.vedicmitra.core.astronomy.GrahaPosition
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
@@ -64,6 +66,7 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SunTimes
@@ -137,6 +140,13 @@ private fun HomeContent(
                 uiState.auspicious?.let { AuspiciousCard(it) }
                 SunMoonStrip(snapshot)
                 SeasonAyanaStrip(snapshot)
+                if (uiState.planets.isNotEmpty()) {
+                    ExpandableSection(
+                        title = "Planetary positions",
+                        accent = MaterialTheme.colorScheme.primary,
+                        rows = uiState.planets.map { it.toSectionRow() },
+                    )
+                }
                 val auspiciousRows = snapshot.periodRows(MuhurtaQuality.AUSPICIOUS)
                 if (auspiciousRows.isNotEmpty()) {
                     ExpandableSection("Auspicious periods", MaterialTheme.colorScheme.primary, auspiciousRows)
@@ -366,6 +376,13 @@ private data class SectionRow(
     val trailing: String,
 )
 
+/** A graha's rashi as a row: "Guru · Karka" with its next pravesh date, or an em dash if none. */
+private fun GrahaPosition.toSectionRow(): SectionRow =
+    SectionRow(
+        label = "${graha.displayName} · ${rasi.name}",
+        trailing = pravesh?.let { "→ ${formatDate(it)}" } ?: "—",
+    )
+
 /** Builds collapsible rows for the muhurtas of a given [quality], in chronological order. */
 private fun AstronomySnapshot.periodRows(quality: MuhurtaQuality): List<SectionRow> =
     muhurtas
@@ -504,6 +521,29 @@ private fun sampleHomeState(): HomeUiState {
                     name = "Amavasya",
                     atSunrise = Instant.fromEpochMilliseconds(1_758_240_000_000L),
                     type = FestivalType.OBSERVANCE,
+                ),
+            ),
+        planets =
+            listOf(
+                GrahaPosition(
+                    graha = Graha.MOON,
+                    rasi = Rasi(index = 11, name = "Meena"),
+                    pravesh = Instant.fromEpochMilliseconds(1_705_449_600_000L),
+                ),
+                GrahaPosition(
+                    graha = Graha.SUN,
+                    rasi = Rasi(index = 9, name = "Makara"),
+                    pravesh = Instant.fromEpochMilliseconds(1_707_566_400_000L),
+                ),
+                GrahaPosition(
+                    graha = Graha.GURU,
+                    rasi = Rasi(index = 1, name = "Vrishabha"),
+                    pravesh = Instant.fromEpochMilliseconds(1_716_336_000_000L),
+                ),
+                GrahaPosition(
+                    graha = Graha.SHUKRA,
+                    rasi = Rasi(index = 9, name = "Makara"),
+                    pravesh = Instant.fromEpochMilliseconds(1_706_140_800_000L),
                 ),
             ),
         locationLabel = "New Delhi",
