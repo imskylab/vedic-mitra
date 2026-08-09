@@ -31,9 +31,9 @@ import android.os.Looper
  * safety timeout stops the alarm after two minutes if the user never dismisses it.
  */
 class AlarmService : Service() {
-    private var ringer: AlarmRinger? = null
     private val autoStop = Handler(Looper.getMainLooper())
     private var activeId: Int = 0
+    private var ringing = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -52,10 +52,13 @@ class AlarmService : Service() {
         val body = intent?.getStringExtra(EXTRA_BODY).orEmpty()
         activeId = id
 
-        startForegroundCompat(id, title, body)
+        // Becoming a foreground service can be refused on some OEMs; guard it so we neither crash nor
+        // skip the ring. The alarm notification is already posted by the receiver either way.
+        runCatching { startForegroundCompat(id, title, body) }
 
-        if (ringer == null) {
-            ringer = AlarmRinger(applicationContext).also { it.start() }
+        if (!ringing) {
+            ringing = true
+            AlarmRinger.ensureRinging(applicationContext)
             autoStop.postDelayed({ stopAlarm() }, AUTO_STOP_MILLIS)
         }
         return START_NOT_STICKY
@@ -63,15 +66,13 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         autoStop.removeCallbacksAndMessages(null)
-        ringer?.stop()
-        ringer = null
         super.onDestroy()
     }
 
     private fun stopAlarm() {
         autoStop.removeCallbacksAndMessages(null)
-        ringer?.stop()
-        ringer = null
+        AlarmRinger.stop()
+        ringing = false
         AlarmAlert.dismiss(this, activeId)
         stopForegroundCompat()
         stopSelf()

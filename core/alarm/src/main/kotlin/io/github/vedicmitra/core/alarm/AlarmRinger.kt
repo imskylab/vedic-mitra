@@ -22,21 +22,29 @@ import android.os.Vibrator
 import android.os.VibratorManager
 
 /**
- * Plays the system alarm ringtone on a loop (on the alarm audio stream, so it bypasses ringer mute
- * and, by default, Do Not Disturb) and vibrates, until [stop]. Failures to obtain or play the tone
- * are swallowed so the alarm UI still shows.
+ * Process-wide ringer that plays the system alarm ringtone on a loop (on the alarm audio stream, so
+ * it bypasses ringer mute and, by default, Do Not Disturb) and vibrates until [stop].
+ *
+ * It is a singleton so that whichever component reaches it first — the ringing [AlarmService] or the
+ * lock-screen [AlarmActivity] — starts the sound, and the other's [ensureRinging] is a no-op. That
+ * way the alarm sounds if *either* path runs (covering devices/OEMs that refuse the background
+ * foreground-service start) without ever double-playing. Failures to obtain or play the tone are
+ * swallowed so the alarm UI still shows.
  */
-internal class AlarmRinger(
-    private val context: Context,
-) {
+object AlarmRinger {
     private var player: MediaPlayer? = null
     private var vibrator: Vibrator? = null
 
-    fun start() {
-        startSound()
-        startVibration()
+    /** Starts the ringtone and vibration if not already ringing; a no-op if they already are. */
+    @Synchronized
+    fun ensureRinging(context: Context) {
+        if (player != null) return
+        startSound(context)
+        startVibration(context)
     }
 
+    /** Stops and releases the ringtone and vibration if ringing. */
+    @Synchronized
     fun stop() {
         player?.let { p ->
             runCatching { if (p.isPlaying) p.stop() }
@@ -47,7 +55,7 @@ internal class AlarmRinger(
         vibrator = null
     }
 
-    private fun startSound() {
+    private fun startSound(context: Context) {
         val uri =
             RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
                 ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_RINGTONE)
@@ -70,7 +78,7 @@ internal class AlarmRinger(
         }
     }
 
-    private fun startVibration() {
+    private fun startVibration(context: Context) {
         val vibrator =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 context.getSystemService(VibratorManager::class.java)?.defaultVibrator

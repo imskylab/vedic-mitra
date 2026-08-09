@@ -21,8 +21,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Re-arms persisted reminders after the device reboots (the platform clears alarms on reboot). The
- * suspending rescheduling is hoisted onto a coroutine kept alive by [goAsync] until it completes.
+ * Re-arms persisted reminders after the platform clears alarms — on device reboot
+ * ([Intent.ACTION_BOOT_COMPLETED]) and after the app is updated/reinstalled
+ * ([Intent.ACTION_MY_PACKAGE_REPLACED]), which also cancels pending alarms. The suspending
+ * rescheduling is hoisted onto a coroutine kept alive by [goAsync] until it completes.
  */
 @AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
@@ -36,7 +38,8 @@ class BootReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        val action = intent.action
+        if (action != Intent.ACTION_BOOT_COMPLETED && action != Intent.ACTION_MY_PACKAGE_REPLACED) return
         val pendingResult = goAsync()
         CoroutineScope(SupervisorJob() + dispatchers.default).launch {
             try {

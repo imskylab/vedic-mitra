@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.vedicmitra.core.alarm.AlarmAlert
 import io.github.vedicmitra.core.alarm.AlarmService
 import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
 import io.github.vedicmitra.core.common.model.AlertStyle
@@ -47,13 +48,19 @@ class ReminderReceiver : BroadcastReceiver() {
 
         // Alarm-mode reminders ring via a foreground service (so the tone plays even when the
         // full-screen intent is demoted to a notification); the rest post a quiet notification.
-        // Starting a foreground service is permitted here because the firing exact alarm temporarily
-        // exempts the app from background-start restrictions.
         if (notification.alert == AlertStyle.ALARM) {
-            ContextCompat.startForegroundService(
-                context,
-                AlarmService.start(context, notification.id, notification.title, notification.body),
-            )
+            // Always post the notification first so the alarm is visible even if the ringer service
+            // cannot start; the service adopts the same notification id when it does start.
+            AlarmAlert.post(context, notification.id, notification.title, notification.body)
+            // Starting a foreground service is permitted here because the firing exact alarm
+            // temporarily exempts the app from background-start restrictions; guard it anyway so a
+            // platform refusal never swallows the alarm.
+            runCatching {
+                ContextCompat.startForegroundService(
+                    context,
+                    AlarmService.start(context, notification.id, notification.title, notification.body),
+                )
+            }
             return
         }
 
