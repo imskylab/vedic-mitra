@@ -98,6 +98,22 @@ class FestivalCalculatorTest {
         assertThat(festivals.single().atSunrise).isEqualTo(dayInstant(0))
     }
 
+    @Test
+    fun `festivalOn names a festival, else an observance, else a Sankranti, else nothing`() {
+        // Day index 1 is queried so the Sankranti check's previous-day lookup stays in range.
+        val festival = source(tithis = listOf(3, 4), maasas = listOf(maasa("Bhadrapada"), maasa("Bhadrapada")))
+        assertThat(festivalOn(DAY_MILLIS, festival)).isEqualTo("Ganesh Chaturthi")
+
+        val observance = source(tithis = listOf(10, 11))
+        assertThat(festivalOn(DAY_MILLIS, observance)).isEqualTo("Ekadashi")
+
+        val sankranti = source(tithis = listOf(5, 6), rashis = listOf(8, 9))
+        assertThat(festivalOn(DAY_MILLIS, sankranti)).isEqualTo("Makara Sankranti")
+
+        val ordinary = source(tithis = listOf(5, 6))
+        assertThat(festivalOn(DAY_MILLIS, ordinary)).isNull()
+    }
+
     private fun source(
         tithis: List<Int>,
         rashis: List<Int> = List(tithis.size) { 0 },

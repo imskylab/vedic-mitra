@@ -99,9 +99,11 @@ class CalendarViewModel
             val days =
                 (1..yearMonth.lengthOfMonth()).mapNotNull { dayOfMonth ->
                     val date = yearMonth.atDay(dayOfMonth)
-                    val summary = astronomyEngine.daySummaryAt(noonOf(date), location)
+                    val noon = noonOf(date)
+                    val summary = astronomyEngine.daySummaryAt(noon, location)
                     (summary as? AppResult.Success)?.data?.let { data ->
-                        CalendarDay(date = date, tithi = data.tithi, moonPhase = data.moonPhase)
+                        val festival = (astronomyEngine.festivalOn(noon, location) as? AppResult.Success)?.data
+                        CalendarDay(date = date, tithi = data.tithi, moonPhase = data.moonPhase, festival = festival)
                     }
                 }
 
@@ -148,11 +150,13 @@ class CalendarViewModel
  * @property date the Gregorian date.
  * @property tithi the day's lunar day (shown in the cell).
  * @property moonPhase the day's moon phase.
+ * @property festival the notable festival/observance/Sankranti on this day, or `null` if none.
  */
 data class CalendarDay(
     val date: LocalDate,
     val tithi: Tithi,
     val moonPhase: MoonPhase,
+    val festival: String? = null,
 )
 
 /**

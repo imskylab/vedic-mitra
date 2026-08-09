@@ -77,6 +77,16 @@ interface AstronomyEngine {
         tithis: Set<Int>,
         withinDays: Int,
     ): AppResult<Instant?> = AppResult.Success<Instant?>(null)
+
+    /**
+     * The single most notable entry on the day containing [instant] for [location] — a named
+     * festival, else a recurring observance, else a Sankranti — or `null` for an ordinary day. Used
+     * to highlight days in the calendar. The default no-op lets test doubles ignore it.
+     */
+    suspend fun festivalOn(
+        instant: Instant,
+        location: GeoCoordinates,
+    ): AppResult<String?> = AppResult.Success<String?>(null)
 }
 
 /**

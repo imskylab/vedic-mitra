@@ -131,6 +131,19 @@ class DefaultAstronomyEngine
             }
         }
 
+        override suspend fun festivalOn(
+            instant: Instant,
+            location: GeoCoordinates,
+        ): AppResult<String?> {
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            return withContext(dispatchers.default) {
+                AppResult.Success(festivalOn(instant.toEpochMilliseconds(), ephemerisFestivalSource(location)))
+            }
+        }
+
         private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
             object : FestivalPanchangaSource {
                 override fun sunrise(dayEpochMillis: Long): Long? =
