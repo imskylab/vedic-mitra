@@ -67,6 +67,23 @@ object AlarmAlert {
             .build()
     }
 
+    /**
+     * Posts the ongoing full-screen alarm notification for [id] directly. Used as a safety net so
+     * the alarm is at least visible even if [AlarmService] cannot start (e.g. a platform restriction
+     * on background foreground-service starts); the service, when it does start, adopts the same
+     * notification id.
+     */
+    fun post(
+        context: Context,
+        id: Int,
+        title: String,
+        body: String,
+    ) {
+        val manager = NotificationManagerCompat.from(context)
+        if (!manager.areNotificationsEnabled()) return
+        manager.notify(id, notification(context, id, title, body))
+    }
+
     /** Cancels the alarm notification for [id] (called when the alarm is dismissed). */
     fun dismiss(
         context: Context,

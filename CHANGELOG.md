@@ -99,6 +99,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stdlib `kotlin.time.Instant`.
 
 ### Fixed
+- **Reminders now survive an app update, and alarm-mode reminders always surface.** Reinstalling the
+  APK (like a reboot) clears pending alarms, but `BootReceiver` only re-armed on `BOOT_COMPLETED`, so
+  after an update a reminder silently never fired until the Reminders screen was reopened. It now also
+  re-arms on `MY_PACKAGE_REPLACED`. And the alarm receiver posts the alarm notification before starting
+  the ringing foreground service (and guards the start), so the alarm is visible even if the platform
+  refuses the background foreground-service start.
 - **The day's tithi is now named by its sunrise, not local noon.** On days where the tithi rolls
   over between sunrise and midday, sampling at noon read one tithi ahead of published panchangas —
   e.g. 9 August 2026 showed Krishna Dwadashi where Drik/Date Panchang show Krishna Ekadashi (the

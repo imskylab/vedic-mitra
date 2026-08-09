@@ -87,3 +87,24 @@ intent.
   "Autostart" / "show on lock screen" for reliable ringing; these are user-only settings with no API.
 
 This supersedes the "No foreground service" decision above.
+
+### Follow-up (2026-08-09) — never show nothing
+
+A second device test surfaced a worse symptom: nothing appeared at all. Two causes, both fixed:
+
+- **Reminders were not re-armed after an app update.** Reinstalling the APK cancels pending alarms
+  just like a reboot, but `BootReceiver` only listened for `BOOT_COMPLETED`, so an alarm set before
+  the update never fired until the Reminders screen was reopened. `BootReceiver` now also handles
+  `MY_PACKAGE_REPLACED`.
+- **A failed foreground-service start could swallow the alarm.** `ReminderReceiver` now posts the
+  alarm notification *before* starting `AlarmService` and wraps the start in `runCatching`, so even
+  if the platform refuses the background FGS start the alarm is still visible; the service adopts the
+  same notification id when it does start.
+- **Sound no longer depends solely on the foreground service.** `AlarmRinger` is now a process-wide
+  singleton with an idempotent `ensureRinging`/`stop`. Both `AlarmService` and `AlarmActivity` drive
+  it, so the alarm rings whether the background FGS start succeeds *or* the full-screen intent (or a
+  tap on the notification, whose content intent opens `AlarmActivity`) launches the activity —
+  without ever double-playing. This restores a working sound path on OEMs that block background FGS
+  starts, provided the full-screen-intent permission is granted (hence the banner). Reliable
+  lock-screen ringing on such OEMs still also needs the user's Autostart / battery-unrestricted
+  settings.
