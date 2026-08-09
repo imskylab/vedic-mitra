@@ -17,6 +17,7 @@ import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
+import io.github.vedicmitra.core.astronomy.GrahaPosition
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
@@ -67,6 +68,9 @@ class HomeViewModel
                         // (Amavasya/Purnima/Ekadashi) is a named festival or a Sankranti.
                         val festivals = upcoming.filter { it.type != FestivalType.OBSERVANCE }
                         val events = upcoming.filter { it.type == FestivalType.OBSERVANCE }
+                        val planets =
+                            (astronomyEngine.planetaryPositionsAt(now) as? AppResult.Success)?.data?.positions
+                                ?: emptyList()
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -74,6 +78,7 @@ class HomeViewModel
                                 auspicious = auspiciousWindow(snapshot.data, now),
                                 festivals = festivals,
                                 events = events,
+                                planets = planets,
                                 usingDefaultLocation = resolved.isDefault,
                                 locationLabel = resolved.label,
                             )
@@ -161,6 +166,7 @@ data class AuspiciousWindow(
  * @property auspicious the auspicious-now / next-auspicious window, or `null` if none.
  * @property festivals upcoming named festivals and Sankrantis, in date order.
  * @property events upcoming lunar observances (Amavasya, Purnima, Ekadashi), in date order.
+ * @property planets the grahas' current rashi positions with their next pravesh (ingress).
  * @property errorMessage a human-readable error, or `null` when there is none.
  * @property usingDefaultLocation whether the built-in default location was used.
  * @property locationLabel human-readable name of the location.
@@ -171,6 +177,7 @@ data class HomeUiState(
     val auspicious: AuspiciousWindow? = null,
     val festivals: List<Festival> = emptyList(),
     val events: List<Festival> = emptyList(),
+    val planets: List<GrahaPosition> = emptyList(),
     val errorMessage: String? = null,
     val usingDefaultLocation: Boolean = false,
     val locationLabel: String? = null,
