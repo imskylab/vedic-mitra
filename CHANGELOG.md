@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Flexible reminder lead time.** A reminder's "remind before" time is now any whole value in
+  minutes, hours, or days (up to 30 days), entered via a number field and a unit picker — replacing
+  the fixed 0/5/10/15/30-minute chips. It is still stored as total minutes, and the fired
+  notification phrases the lead naturally (e.g. "starts in 2 hours").
 - **Rename reminders.** Each added reminder can be given a custom display name (pencil icon → rename
   dialog); it shows as the reminder's label, survives the daily renew, and reverts to the derived
   name when cleared. Persisted alongside the reminder (older saved reminders decode unchanged).
