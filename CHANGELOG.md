@@ -8,9 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- **Tap a Home list item for its significance.** Rows in the Auspicious/Inauspicious periods and
-  Upcoming festivals/events lists are now tappable, opening a bottom sheet with the item's time or
-  date and a short, offline explanation of what it is and why it matters (from `PanchangaGlossary`).
+- **Tap a Home list item for its significance — and set a reminder.** Rows in the
+  Auspicious/Inauspicious periods and Upcoming festivals/events lists are tappable, opening a bottom
+  sheet with the item's time or date and a short, offline explanation of what it is and why it
+  matters (from `PanchangaGlossary`). Muhurta and recurring-observance rows also offer a **Set
+  reminder** button that schedules the reminder (via a shared `AddReminderUseCase`) so it appears and
+  can be edited on the Reminders screen.
 - **Flexible reminder lead time.** A reminder's "remind before" time is now any whole value in
   minutes, hours, or days (up to 30 days), entered via a number field and a unit picker — replacing
   the fixed 0/5/10/15/30-minute chips. It is still stored as total minutes, and the fired

@@ -16,7 +16,10 @@ android {
 
 dependencies {
     api(projects.core.common)
+    implementation(projects.core.astronomy)
     implementation(projects.core.datastore)
     implementation(projects.core.location)
+    implementation(projects.core.notifications)
+    implementation(projects.core.scheduler)
     implementation(libs.bundles.coroutines)
 }

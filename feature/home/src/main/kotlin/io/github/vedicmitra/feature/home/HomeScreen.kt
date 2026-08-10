@@ -12,6 +12,7 @@ package io.github.vedicmitra.feature.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -77,6 +79,7 @@ import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
+import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.LocalDate
@@ -110,9 +113,16 @@ fun HomeScreen(
         if (granted) viewModel.load() else permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     HomeContent(
         uiState = uiState,
         onNavigateToLocation = onNavigateToLocation,
+        onSetReminder = viewModel::setReminder,
         modifier = modifier,
     )
 }
@@ -121,6 +131,7 @@ fun HomeScreen(
 private fun HomeContent(
     uiState: HomeUiState,
     onNavigateToLocation: () -> Unit,
+    onSetReminder: (ReminderTarget) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snapshot = uiState.snapshot
@@ -182,7 +193,7 @@ private fun HomeContent(
                     ExpandableSection(
                         title = "UPCOMING EVENTS",
                         accent = MaterialTheme.colorScheme.tertiary,
-                        rows = uiState.events.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                        rows = uiState.events.map { it.toEventRow() },
                         onRowClick = { selectedRow = it },
                     )
                 }
@@ -194,7 +205,9 @@ private fun HomeContent(
                     )
                 }
             }
-            selectedRow?.let { row -> RowDetailSheet(row) { selectedRow = null } }
+            selectedRow?.let { row ->
+                RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null }
+            }
         }
     }
 }
@@ -406,6 +419,7 @@ private fun SectionRowLine(
 @Composable
 private fun RowDetailSheet(
     row: SectionRow,
+    onSetReminder: (ReminderTarget) -> Unit,
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -428,14 +442,29 @@ private fun RowDetailSheet(
                 text = PanchangaGlossary.significanceOf(row.label) ?: "More details coming soon.",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            row.reminderTarget?.let { target ->
+                Button(
+                    onClick = {
+                        onSetReminder(target)
+                        onDismiss()
+                    },
+                    modifier = Modifier.padding(top = 8.dp),
+                ) {
+                    Text("Set reminder")
+                }
+            }
         }
     }
 }
 
-/** One row of an [ExpandableSection]: a label and a right-aligned trailing value (time or date). */
+/**
+ * One row of an [ExpandableSection]: a label, a right-aligned trailing value (time or date), and —
+ * when the item can be reminded for — the [reminderTarget] the detail sheet's "Set reminder" uses.
+ */
 private data class SectionRow(
     val label: String,
     val trailing: String,
+    val reminderTarget: ReminderTarget? = null,
 )
 
 /** A graha's rashi as a row: "Guru · Karka" with its next pravesh date, or an em dash if none. */
@@ -450,7 +479,15 @@ private fun AstronomySnapshot.periodRows(quality: MuhurtaQuality): List<SectionR
     muhurtas
         .filter { it.quality == quality }
         .sortedBy { it.start }
-        .map { SectionRow(it.name, formatRange(it.start, it.end)) }
+        .map { SectionRow(it.name, formatRange(it.start, it.end), ReminderTarget.Muhurta(it.name)) }
+
+/** A festival/observance as a row; observances also carry a [ReminderTarget] so they can be reminded for. */
+private fun Festival.toEventRow(): SectionRow =
+    SectionRow(
+        label = name,
+        trailing = formatDate(atSunrise),
+        reminderTarget = observanceTithis(name)?.let { ReminderTarget.Observance(name, it) },
+    )
 
 private val Paksha.title: String
     get() =
@@ -494,7 +531,7 @@ private fun formatDate(instant: Instant): String = zoned(instant).format(festiva
 @Composable
 private fun HomeContentPreview() {
     VedicMitraTheme {
-        HomeContent(uiState = sampleHomeState(), onNavigateToLocation = {})
+        HomeContent(uiState = sampleHomeState(), onNavigateToLocation = {}, onSetReminder = {})
     }
 }
 
