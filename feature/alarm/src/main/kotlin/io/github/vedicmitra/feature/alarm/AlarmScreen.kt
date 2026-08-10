@@ -38,6 +38,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -51,6 +52,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -107,6 +109,7 @@ fun AlarmScreen(
         onAdd = viewModel::addReminder,
         onAddTithi = viewModel::addTithiReminder,
         onRemove = viewModel::removeReminder,
+        onRename = viewModel::renameReminder,
         onOffsetChange = viewModel::setOffsetMinutes,
         onAlertChange = viewModel::setAlertType,
         onRequestExactAlarm = context::openExactAlarmSettings,
@@ -120,6 +123,7 @@ private fun AlarmContent(
     onAdd: (String) -> Unit,
     onAddTithi: (TithiTarget) -> Unit,
     onRemove: (String) -> Unit,
+    onRename: (String, String) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
     onAlertChange: (String, AlertStyle) -> Unit,
     onRequestExactAlarm: () -> Unit,
@@ -173,7 +177,7 @@ private fun AlarmContent(
                     }
                 }
                 items(items = uiState.reminders, key = { it.id }) { item ->
-                    ReminderCard(item, onRemove, onOffsetChange, onAlertChange)
+                    ReminderCard(item, onRemove, onRename, onOffsetChange, onAlertChange)
                 }
             }
         }
@@ -326,20 +330,25 @@ private fun LabeledDropdown(
 private fun ReminderCard(
     item: ReminderItem,
     onRemove: (String) -> Unit,
+    onRename: (String, String) -> Unit,
     onOffsetChange: (String, Int) -> Unit,
     onAlertChange: (String, AlertStyle) -> Unit,
 ) {
+    var renaming by remember { mutableStateOf(false) }
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = item.name, style = MaterialTheme.typography.titleMedium)
+                    Text(text = item.displayName, style = MaterialTheme.typography.titleMedium)
                     val subtitle =
                         item.dateLabel ?: run {
                             val whenLabel = if (item.isTomorrow) "Tomorrow · " else ""
                             "$whenLabel${formatTime(item.start)}–${formatTime(item.end)} · ${item.quality.label}"
                         }
                     Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+                }
+                IconButton(onClick = { renaming = true }) {
+                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Rename reminder")
                 }
                 IconButton(onClick = { onRemove(item.id) }) {
                     Icon(imageVector = Icons.Filled.Delete, contentDescription = "Remove reminder")
@@ -371,6 +380,41 @@ private fun ReminderCard(
             }
         }
     }
+
+    if (renaming) {
+        RenameReminderDialog(
+            initial = item.nickname ?: item.name,
+            onDismiss = { renaming = false },
+            onSave = {
+                onRename(item.id, it)
+                renaming = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun RenameReminderDialog(
+    initial: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var text by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Rename reminder") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                singleLine = true,
+                label = { Text("Name") },
+                supportingText = { Text("Leave blank to use the default name.") },
+            )
+        },
+        confirmButton = { TextButton(onClick = { onSave(text.trim()) }) { Text("Save") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
 
 @Composable
@@ -537,6 +581,7 @@ private fun AlarmContentPreview() {
             onAdd = {},
             onAddTithi = {},
             onRemove = {},
+            onRename = { _, _ -> },
             onOffsetChange = { _, _ -> },
             onAlertChange = { _, _ -> },
             onRequestExactAlarm = {},

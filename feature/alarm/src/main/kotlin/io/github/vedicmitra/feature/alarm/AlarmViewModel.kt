@@ -73,7 +73,7 @@ class AlarmViewModel
                 when (load) {
                     AlarmLoad.Loading -> AlarmUiState.Loading
                     is AlarmLoad.Error -> AlarmUiState.Error(load.message)
-                    is AlarmLoad.Ready -> readyState(load, reminders.map { it.id }.toSet(), offsets, alerts)
+                    is AlarmLoad.Ready -> readyState(load, reminders, offsets, alerts)
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -83,21 +83,25 @@ class AlarmViewModel
 
         private fun readyState(
             load: AlarmLoad.Ready,
-            addedKeys: Set<String>,
+            persisted: List<PersistedReminder>,
             offsets: Map<String, Int>,
             alerts: Map<String, AlertStyle>,
         ): AlarmUiState.Ready {
             val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+            val addedKeys = persisted.map { it.id }.toSet()
+            val nicknames = persisted.associate { it.id to it.nickname }
             val reminders =
                 addedKeys
                     .mapNotNull { key ->
                         val offset = offsets[key] ?: ReminderRepository.DEFAULT_OFFSET_MINUTES
                         val alert = alerts[key] ?: AlertStyle.NOTIFICATION
-                        if (key.startsWith(TITHI_PREFIX)) {
-                            load.tithiResolved[key]?.toReminderItem(key, offset, alert)
-                        } else {
-                            load.periods.nextWindow(key, now)?.toReminderItem(key, offset, alert)
-                        }
+                        val item =
+                            if (key.startsWith(TITHI_PREFIX)) {
+                                load.tithiResolved[key]?.toReminderItem(key, offset, alert)
+                            } else {
+                                load.periods.nextWindow(key, now)?.toReminderItem(key, offset, alert)
+                            }
+                        item?.copy(nickname = nicknames[key])
                     }.sortedBy { it.start.toEpochMilliseconds() }
             return AlarmUiState.Ready(
                 reminders = reminders,
@@ -154,6 +158,14 @@ class AlarmViewModel
                 taskScheduler.cancel(id)
                 reminderRepository.remove(id)
             }
+        }
+
+        /** Sets a custom display name for reminder [id]; a blank [name] reverts to the derived name. */
+        fun renameReminder(
+            id: String,
+            name: String,
+        ) {
+            viewModelScope.launch { reminderRepository.setNickname(id, name) }
         }
 
         /** Sets the lead time for [key] and, if it is an added reminder, re-schedules it immediately. */
@@ -290,9 +302,17 @@ class AlarmViewModel
                     triggerAtEpochMillis = triggerAt.toEpochMilliseconds(),
                     title = resolved.eventName,
                     body = body,
+                    nickname = currentNickname(key),
                 ),
             )
         }
+
+        /** The user's custom name for [key], if any — read so re-scheduling doesn't wipe it. */
+        private suspend fun currentNickname(key: String): String? =
+            reminderRepository.reminders
+                .first()
+                .firstOrNull { it.id == key }
+                ?.nickname
 
         /** Resolves [key]'s next window from the loaded state and (re)schedules + persists it. */
         private suspend fun rescheduleFor(key: String) {
@@ -341,6 +361,7 @@ class AlarmViewModel
                     triggerAtEpochMillis = triggerAt.toEpochMilliseconds(),
                     title = window.period.label,
                     body = body,
+                    nickname = currentNickname(key),
                 ),
             )
         }
@@ -496,6 +517,7 @@ data class SourceOption(
  * @property alertType whether this reminder alerts as a notification or a ringing alarm.
  * @property dateLabel a pre-formatted subtitle for tithi reminders (recurrence + next date); `null`
  *   for period reminders, which the screen renders as a time range instead.
+ * @property nickname a user-chosen display name, or `null` to show [name].
  */
 data class ReminderItem(
     val id: String,
@@ -507,7 +529,11 @@ data class ReminderItem(
     val offsetMinutes: Int,
     val alertType: AlertStyle,
     val dateLabel: String? = null,
-)
+    val nickname: String? = null,
+) {
+    /** The name to display: the user's [nickname] if set, else the derived [name]. */
+    val displayName: String get() = nickname?.takeIf { it.isNotBlank() } ?: name
+}
 
 /** An added tithi reminder resolved to its next occurrence's sunrise. */
 private data class ResolvedTithi(

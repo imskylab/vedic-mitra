@@ -109,6 +109,29 @@ class DefaultReminderRepositoryTest {
         }
 
     @Test
+    fun `setNickname sets and clears a reminder's display name`() =
+        runTest {
+            val repository = DefaultReminderRepository(newDataStore())
+            repository.upsert(reminder("muhurta:a", triggerAt = 100L))
+
+            repository.setNickname("muhurta:a", "Morning sadhana")
+            assertThat(
+                repository.reminders
+                    .first()
+                    .first()
+                    .nickname,
+            ).isEqualTo("Morning sadhana")
+
+            repository.setNickname("muhurta:a", "  ") // blank clears it
+            assertThat(
+                repository.reminders
+                    .first()
+                    .first()
+                    .nickname,
+            ).isNull()
+        }
+
+    @Test
     fun `alertTypeByName has no overrides by default`() =
         runTest {
             val repository = DefaultReminderRepository(newDataStore())

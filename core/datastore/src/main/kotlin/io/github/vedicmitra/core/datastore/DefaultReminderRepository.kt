@@ -50,6 +50,19 @@ class DefaultReminderRepository
             }
         }
 
+        override suspend fun setNickname(
+            id: String,
+            nickname: String?,
+        ) {
+            dataStore.edit { preferences ->
+                preferences[REMINDERS] =
+                    preferences
+                        .decodeReminders()
+                        .map { if (it.id == id) it.copy(nickname = nickname?.ifBlank { null }) else it }
+                        .encode()
+            }
+        }
+
         override suspend fun removePast(nowEpochMillis: Long) {
             dataStore.edit { preferences ->
                 preferences[REMINDERS] =

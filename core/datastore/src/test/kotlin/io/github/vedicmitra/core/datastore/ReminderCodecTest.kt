@@ -28,6 +28,41 @@ class ReminderCodecTest {
     }
 
     @Test
+    fun `round-trips a reminder with a nickname`() {
+        val reminder =
+            PersistedReminder(
+                id = "muhurta:Abhijit Muhurta",
+                triggerAtEpochMillis = 1_705_300_140_000L,
+                title = "Abhijit Muhurta",
+                body = "This auspicious window is beginning now.",
+                nickname = "Study time",
+            )
+
+        assertThat(ReminderCodec.decode(ReminderCodec.encode(reminder))).isEqualTo(reminder)
+    }
+
+    @Test
+    fun `decodes a legacy four-field record with no nickname`() {
+        val separator = Char(0x1F).toString()
+        val legacy =
+            listOf(
+                "muhurta:Rahu Kalam",
+                "1705300140000",
+                "Rahu Kalam",
+                "Be mindful now.",
+            ).joinToString(separator)
+
+        val decoded = ReminderCodec.decode(legacy)
+
+        assertThat(decoded).isNotNull()
+        assertThat(decoded!!.id).isEqualTo("muhurta:Rahu Kalam")
+        assertThat(decoded.triggerAtEpochMillis).isEqualTo(1_705_300_140_000L)
+        assertThat(decoded.title).isEqualTo("Rahu Kalam")
+        assertThat(decoded.body).isEqualTo("Be mindful now.")
+        assertThat(decoded.nickname).isNull()
+    }
+
+    @Test
     fun `decode returns null for a malformed value`() {
         assertThat(ReminderCodec.decode("not-a-reminder")).isNull()
     }

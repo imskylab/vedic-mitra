@@ -19,10 +19,12 @@ package io.github.vedicmitra.core.datastore
  * @property triggerAtEpochMillis when the reminder should fire (already lead-time adjusted).
  * @property title notification title to post when it fires.
  * @property body notification body to post when it fires.
+ * @property nickname a user-chosen display name for this reminder, or `null` to use the derived name.
  */
 data class PersistedReminder(
     val id: String,
     val triggerAtEpochMillis: Long,
     val title: String,
     val body: String,
+    val nickname: String? = null,
 )
