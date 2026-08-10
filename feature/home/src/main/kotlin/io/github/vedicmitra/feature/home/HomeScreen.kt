@@ -33,13 +33,16 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,6 +69,7 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.PanchangaGlossary
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
@@ -125,7 +129,8 @@ private fun HomeContent(
         uiState.errorMessage != null ->
             CenteredBox(modifier) { Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge) }
 
-        snapshot != null ->
+        snapshot != null -> {
+            var selectedRow by remember { mutableStateOf<SectionRow?>(null) }
             Column(
                 modifier =
                     modifier
@@ -142,31 +147,43 @@ private fun HomeContent(
                 SeasonAyanaStrip(snapshot)
                 if (uiState.planets.isNotEmpty()) {
                     ExpandableSection(
-                        title = "Planetary positions",
+                        title = "PLANETORY POSITIONS",
                         accent = MaterialTheme.colorScheme.primary,
                         rows = uiState.planets.map { it.toSectionRow() },
                     )
                 }
                 val auspiciousRows = snapshot.periodRows(MuhurtaQuality.AUSPICIOUS)
                 if (auspiciousRows.isNotEmpty()) {
-                    ExpandableSection("Auspicious periods", MaterialTheme.colorScheme.primary, auspiciousRows)
+                    ExpandableSection(
+                        "AUSPICIOUS PERIODS",
+                        MaterialTheme.colorScheme.primary,
+                        auspiciousRows,
+                        onRowClick = { selectedRow = it },
+                    )
                 }
                 val inauspiciousRows = snapshot.periodRows(MuhurtaQuality.INAUSPICIOUS)
                 if (inauspiciousRows.isNotEmpty()) {
-                    ExpandableSection("Inauspicious periods", MaterialTheme.colorScheme.error, inauspiciousRows)
+                    ExpandableSection(
+                        "INAUSPICIOUS PERIODS",
+                        MaterialTheme.colorScheme.error,
+                        inauspiciousRows,
+                        onRowClick = { selectedRow = it },
+                    )
                 }
                 if (uiState.festivals.isNotEmpty()) {
                     ExpandableSection(
-                        title = "Upcoming festivals",
+                        title = "UPCOMING FESTIVALS",
                         accent = MaterialTheme.colorScheme.primary,
                         rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                        onRowClick = { selectedRow = it },
                     )
                 }
                 if (uiState.events.isNotEmpty()) {
                     ExpandableSection(
-                        title = "Upcoming events",
+                        title = "UPCOMING EVENTS",
                         accent = MaterialTheme.colorScheme.tertiary,
                         rows = uiState.events.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                        onRowClick = { selectedRow = it },
                     )
                 }
                 if (uiState.usingDefaultLocation) {
@@ -177,6 +194,8 @@ private fun HomeContent(
                     )
                 }
             }
+            selectedRow?.let { row -> RowDetailSheet(row) { selectedRow = null } }
+        }
     }
 }
 
@@ -328,6 +347,7 @@ private fun ExpandableSection(
     title: String,
     accent: Color,
     rows: List<SectionRow>,
+    onRowClick: ((SectionRow) -> Unit)? = null,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -349,14 +369,25 @@ private fun ExpandableSection(
                     contentDescription = if (expanded) "Collapse" else "Expand",
                 )
             }
-            if (expanded) rows.forEach { SectionRowLine(it) }
+            if (expanded) {
+                rows.forEach { row ->
+                    SectionRowLine(row, onClick = onRowClick?.let { handler -> { handler(row) } })
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun SectionRowLine(row: SectionRow) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+private fun SectionRowLine(
+    row: SectionRow,
+    onClick: (() -> Unit)? = null,
+) {
+    val rowModifier =
+        Modifier
+            .fillMaxWidth()
+            .let { if (onClick != null) it.clickable(onClick = onClick).padding(vertical = 6.dp) else it }
+    Row(modifier = rowModifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = row.label,
             style = MaterialTheme.typography.bodyMedium,
@@ -367,6 +398,37 @@ private fun SectionRowLine(row: SectionRow) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** A bottom sheet with the significance of a tapped list item (muhurta, festival, or observance). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RowDetailSheet(
+    row: SectionRow,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(text = row.label, style = MaterialTheme.typography.headlineSmall)
+            if (row.trailing.isNotBlank()) {
+                Text(
+                    text = row.trailing,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                text = PanchangaGlossary.significanceOf(row.label) ?: "More details coming soon.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
 }
 
