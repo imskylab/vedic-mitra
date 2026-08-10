@@ -101,6 +101,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
 
 ### Changed
+- **Reminder lead time reads as a label until you edit it.** Each reminder card now shows its lead
+  time as compact text (e.g. "Remind 2 hours before" / "Remind at start") and expands to the
+  number-and-unit editor only when tapped — lighter to scan and less prone to accidental edits.
 - **The Calendar screen is now "Panchang."** The tab and screen were renamed to reflect what they
   show; the bottom navigation reads Home · Panchang · Reminders · Settings.
 - **License changed from MIT to a dual license** — GNU AGPL-3.0-or-later for open-source use, plus a
