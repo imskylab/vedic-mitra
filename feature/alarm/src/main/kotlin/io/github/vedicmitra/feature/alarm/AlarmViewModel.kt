@@ -389,12 +389,7 @@ class AlarmViewModel
             offsetMinutes: Int,
         ): String {
             val timing =
-                if (offsetMinutes <= 0) {
-                    "$name is starting now"
-                } else {
-                    val unit = if (offsetMinutes == 1) "minute" else "minutes"
-                    "$name starts in $offsetMinutes $unit"
-                }
+                if (offsetMinutes <= 0) "$name is starting now" else "$name starts in ${humanLead(offsetMinutes)}"
             val tone =
                 when (quality) {
                     MuhurtaQuality.AUSPICIOUS -> "an auspicious window"
@@ -413,6 +408,28 @@ class AlarmViewModel
             val DEFAULT_LOCATION = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
         }
     }
+
+private const val MINUTES_PER_HOUR = 60
+private const val MINUTES_PER_DAY = 1440
+
+/** Formats a lead time in minutes as a human phrase, e.g. "1 day", "2 hours 30 minutes". */
+private fun humanLead(minutes: Int): String {
+    val parts =
+        buildList {
+            val days = minutes / MINUTES_PER_DAY
+            val hours = (minutes % MINUTES_PER_DAY) / MINUTES_PER_HOUR
+            val mins = minutes % MINUTES_PER_HOUR
+            if (days > 0) add(pluralize(days, "day"))
+            if (hours > 0) add(pluralize(hours, "hour"))
+            if (mins > 0) add(pluralize(mins, "minute"))
+        }
+    return parts.joinToString(" ").ifEmpty { pluralize(0, "minute") }
+}
+
+private fun pluralize(
+    count: Int,
+    unit: String,
+): String = "$count $unit${if (count == 1) "" else "s"}"
 
 /** Builds the day's period windows (muhurtas + Choghadiya) with their stable source keys. */
 private fun periodsOf(snapshot: AstronomySnapshot): List<PeriodWindow> =

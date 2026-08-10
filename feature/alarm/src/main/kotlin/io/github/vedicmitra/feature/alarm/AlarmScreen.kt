@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -64,6 +65,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -354,18 +356,11 @@ private fun ReminderCard(
                     Icon(imageVector = Icons.Filled.Delete, contentDescription = "Remove reminder")
                 }
             }
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                LEAD_TIME_OPTIONS.forEach { minutes ->
-                    FilterChip(
-                        selected = minutes == item.offsetMinutes,
-                        onClick = { onOffsetChange(item.id, minutes) },
-                        label = { Text(leadTimeLabel(minutes)) },
-                    )
-                }
-            }
+            OffsetEditor(
+                itemId = item.id,
+                offsetMinutes = item.offsetMinutes,
+                onOffsetChange = onOffsetChange,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = item.alertType == AlertStyle.NOTIFICATION,
@@ -417,6 +412,95 @@ private fun RenameReminderDialog(
     )
 }
 
+/**
+ * Editor for a reminder's lead time: a number field plus a minutes/hours/days unit dropdown, capped
+ * at [MAX_OFFSET_MINUTES]. The stored value stays as total minutes; on entry it is decomposed to the
+ * largest whole unit for display. Keyed by [itemId] so it doesn't reset while the user types.
+ */
+@Composable
+private fun OffsetEditor(
+    itemId: String,
+    offsetMinutes: Int,
+    onOffsetChange: (String, Int) -> Unit,
+) {
+    var valueText by remember(itemId) { mutableStateOf(decomposeOffset(offsetMinutes).first.toString()) }
+    var unit by remember(itemId) { mutableStateOf(decomposeOffset(offsetMinutes).second) }
+    var unitMenuOpen by remember { mutableStateOf(false) }
+
+    fun commit() {
+        val entered = valueText.toIntOrNull() ?: 0
+        onOffsetChange(itemId, (entered * unit.minutes).coerceIn(0, MAX_OFFSET_MINUTES))
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(text = "Remind", style = MaterialTheme.typography.bodyMedium)
+        OutlinedTextField(
+            value = valueText,
+            onValueChange = {
+                valueText = it.filter(Char::isDigit).take(OFFSET_MAX_DIGITS)
+                commit()
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.width(96.dp),
+        )
+        Box {
+            OutlinedButton(onClick = { unitMenuOpen = true }) {
+                Text(unit.label)
+                Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
+            }
+            DropdownMenu(expanded = unitMenuOpen, onDismissRequest = { unitMenuOpen = false }) {
+                OffsetUnit.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        onClick = {
+                            unit = option
+                            unitMenuOpen = false
+                            commit()
+                        },
+                    )
+                }
+            }
+        }
+        Text(
+            text = if ((valueText.toIntOrNull() ?: 0) == 0) "(at start)" else "before",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** Decomposes a lead time in minutes to its largest whole unit for display in the [OffsetEditor]. */
+private fun decomposeOffset(minutes: Int): Pair<Int, OffsetUnit> =
+    when {
+        minutes <= 0 -> 0 to OffsetUnit.MINUTES
+        minutes % OffsetUnit.DAYS.minutes == 0 -> (minutes / OffsetUnit.DAYS.minutes) to OffsetUnit.DAYS
+        minutes % OffsetUnit.HOURS.minutes == 0 -> (minutes / OffsetUnit.HOURS.minutes) to OffsetUnit.HOURS
+        else -> minutes to OffsetUnit.MINUTES
+    }
+
+/** A lead-time unit for the [OffsetEditor]. */
+private enum class OffsetUnit(
+    val label: String,
+) {
+    MINUTES("Minutes"),
+    HOURS("Hours"),
+    DAYS("Days"),
+    ;
+
+    /** How many minutes one of this unit is. */
+    val minutes: Int
+        get() =
+            when (this) {
+                MINUTES -> 1
+                HOURS -> MINUTES_PER_HOUR
+                DAYS -> MINUTES_PER_DAY
+            }
+}
+
 @Composable
 private fun ExactAlarmBanner(onRequestExactAlarm: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -462,9 +546,11 @@ private fun CenteredBox(
     ) { content() }
 }
 
-private val LEAD_TIME_OPTIONS = listOf(0, 5, 10, 15, 30)
-
-private fun leadTimeLabel(minutes: Int): String = if (minutes == 0) "At start" else "$minutes min"
+private const val MINUTES_PER_HOUR = 60
+private const val MINUTES_PER_DAY = 1440
+private const val MAX_OFFSET_DAYS = 30
+private const val MAX_OFFSET_MINUTES = MINUTES_PER_DAY * MAX_OFFSET_DAYS
+private const val OFFSET_MAX_DIGITS = 5
 
 private val MuhurtaQuality.label: String
     get() =
