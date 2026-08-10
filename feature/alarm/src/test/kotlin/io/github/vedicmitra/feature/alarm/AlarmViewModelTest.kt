@@ -217,6 +217,35 @@ class AlarmViewModelTest {
         }
 
     @Test
+    fun `renameReminder sets a display nickname that survives a renew`() =
+        runTest {
+            val scheduler = FakeTaskScheduler()
+            val repository = FakeReminderRepository()
+            val viewModel = viewModel(scheduler = scheduler, repository = repository)
+
+            viewModel.uiState.test {
+                awaitItem() // Loading
+                viewModel.load()
+                awaitItem() // Ready (empty)
+                viewModel.addReminder("muhurta:Abhijit Muhurta")
+                awaitItem() // Ready with the reminder
+
+                viewModel.renameReminder("muhurta:Abhijit Muhurta", "Study time")
+                val renamed = awaitItem() as AlarmUiState.Ready
+                assertThat(renamed.reminders.single().displayName).isEqualTo("Study time")
+
+                viewModel.load() // a renew must not wipe the nickname
+                cancelAndIgnoreRemainingEvents()
+            }
+
+            assertThat(
+                repository.reminders.value
+                    .single()
+                    .nickname,
+            ).isEqualTo("Study time")
+        }
+
+    @Test
     fun `adding a reminder for an imminent window fires at its start, not immediately`() =
         runTest {
             val scheduler = FakeTaskScheduler()
@@ -469,6 +498,14 @@ private class FakeReminderRepository : ReminderRepository {
 
     override suspend fun remove(id: String) {
         reminders.value = reminders.value.filterNot { it.id == id }
+    }
+
+    override suspend fun setNickname(
+        id: String,
+        nickname: String?,
+    ) {
+        reminders.value =
+            reminders.value.map { if (it.id == id) it.copy(nickname = nickname?.ifBlank { null }) else it }
     }
 
     override suspend fun removePast(nowEpochMillis: Long) {

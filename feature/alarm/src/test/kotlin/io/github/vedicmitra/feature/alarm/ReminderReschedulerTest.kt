@@ -73,6 +73,14 @@ private class StubReminderRepository(
         reminders.value = reminders.value.filterNot { it.id == id }
     }
 
+    override suspend fun setNickname(
+        id: String,
+        nickname: String?,
+    ) {
+        reminders.value =
+            reminders.value.map { if (it.id == id) it.copy(nickname = nickname?.ifBlank { null }) else it }
+    }
+
     override suspend fun removePast(nowEpochMillis: Long) {
         reminders.value = reminders.value.filter { it.triggerAtEpochMillis > nowEpochMillis }
     }

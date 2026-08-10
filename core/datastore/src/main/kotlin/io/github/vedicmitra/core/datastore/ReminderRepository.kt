@@ -42,6 +42,15 @@ interface ReminderRepository {
     /** Removes the reminder with [id]. No-op if none is stored. */
     suspend fun remove(id: String)
 
+    /**
+     * Sets the user-chosen display name for the reminder with [id]; a blank or `null` [nickname]
+     * clears it (reverting to the derived name). No-op if no reminder with [id] is stored.
+     */
+    suspend fun setNickname(
+        id: String,
+        nickname: String?,
+    )
+
     /** Drops any reminder whose trigger time is at or before [nowEpochMillis] (already fired/stale). */
     suspend fun removePast(nowEpochMillis: Long)
 

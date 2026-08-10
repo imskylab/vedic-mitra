@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Rename reminders.** Each added reminder can be given a custom display name (pencil icon → rename
+  dialog); it shows as the reminder's label, survives the daily renew, and reverts to the derived
+  name when cleared. Persisted alongside the reminder (older saved reminders decode unchanged).
 - **Planetary positions.** The home screen shows the rashi of the Sun, Moon, Guru (Jupiter), and
   Shukra (Venus), each with the date it next changes rashi (pravesh), in a collapsible list. Sun and
   Moon reuse the existing Meeus ephemeris; Guru and Shukra are computed geocentrically from JPL
