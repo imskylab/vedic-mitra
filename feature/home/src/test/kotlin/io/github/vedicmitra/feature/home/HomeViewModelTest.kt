@@ -34,9 +34,11 @@ import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.domain.AddReminderUseCase
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,6 +53,8 @@ import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
+    private val addReminder = mockk<AddReminderUseCase>(relaxed = true)
+
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -67,7 +71,7 @@ class HomeViewModelTest {
             val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(festival))
             val coordinates = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
-            val viewModel = HomeViewModel(engine, resolveTo(coordinates, "Bengaluru", isDefault = false))
+            val viewModel = HomeViewModel(engine, resolveTo(coordinates, "Bengaluru", isDefault = false), addReminder)
 
             viewModel.load()
 
@@ -86,7 +90,7 @@ class HomeViewModelTest {
                 Festival("Ekadashi", Instant.fromEpochMilliseconds(1_760_000_000_000L), FestivalType.OBSERVANCE)
             val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(observance, festival))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
 
             viewModel.load()
 
@@ -107,7 +111,7 @@ class HomeViewModelTest {
                     quality = MuhurtaQuality.AUSPICIOUS,
                 )
             val engine = FakeEngine(AppResult.Success(snapshot(muhurtas = listOf(active))))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
 
             viewModel.load()
 
@@ -122,7 +126,7 @@ class HomeViewModelTest {
     fun `flags when the default location was used`() =
         runTest {
             val engine = FakeEngine(AppResult.Success(snapshot()))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "New Delhi", isDefault = true))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "New Delhi", isDefault = true), addReminder)
 
             viewModel.load()
 
@@ -133,13 +137,25 @@ class HomeViewModelTest {
     fun `surfaces engine failures as an error message`() =
         runTest {
             val engine = FakeEngine(AppResult.Failure(IllegalStateException("boom")))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
 
             viewModel.load()
 
             val state = viewModel.uiState.value
             assertThat(state.snapshot).isNull()
             assertThat(state.errorMessage).isEqualTo("boom")
+        }
+
+    @Test
+    fun `setReminder for a muhurta delegates to the add-reminder use case with the resolved location`() =
+        runTest {
+            coEvery { addReminder.addMuhurta(any(), any()) } returns AppResult.Success(Unit)
+            val engine = FakeEngine(AppResult.Success(snapshot()))
+            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
+
+            viewModel.setReminder(ReminderTarget.Muhurta("Abhijit Muhurta"))
+
+            coVerify { addReminder.addMuhurta("Abhijit Muhurta", SOMEWHERE) }
         }
 
     private fun resolveTo(

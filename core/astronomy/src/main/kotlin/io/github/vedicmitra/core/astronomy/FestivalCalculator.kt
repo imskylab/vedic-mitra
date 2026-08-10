@@ -151,6 +151,23 @@ private fun observanceAt(tithi: Int): String? =
     }
 
 /**
+ * The global tithis (1..30) a recurring observance fires on — the reverse of [observanceAt], for
+ * turning an observance the app displays (e.g. "Ekadashi") into a monthly tithi reminder. Returns
+ * `null` for a name that is not a recurring observance.
+ */
+fun observanceTithis(name: String): Set<Int>? =
+    when (name) {
+        "Vinayaka Chaturthi" -> setOf(4)
+        "Ekadashi" -> setOf(11, 26)
+        "Pradosh" -> setOf(13, 28)
+        "Purnima" -> setOf(15)
+        "Sankashti Chaturthi" -> setOf(19)
+        "Masik Shivaratri" -> setOf(29)
+        "Amavasya" -> setOf(30)
+        else -> null
+    }
+
+/**
  * The single most notable entry on the civil day containing [dayEpochMillis] — a named festival,
  * else a recurring observance, else a Sankranti — judged by that day's sunrise panchanga, or `null`
  * for an ordinary day. Used to highlight days in the calendar.

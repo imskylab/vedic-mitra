@@ -21,9 +21,13 @@ import io.github.vedicmitra.core.astronomy.GrahaPosition
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.domain.AddReminderUseCase
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,8 +48,14 @@ class HomeViewModel
     constructor(
         private val astronomyEngine: AstronomyEngine,
         private val resolveLocation: ResolveLocationUseCase,
+        private val addReminder: AddReminderUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(HomeUiState())
+
+        private val _messages = MutableSharedFlow<String>()
+
+        /** One-shot user messages (e.g. reminder-set confirmations) for the screen to surface. */
+        val messages: SharedFlow<String> = _messages.asSharedFlow()
 
         /** Observable UI state consumed by the home screen. */
         val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -94,6 +104,21 @@ class HomeViewModel
                             it.copy(isLoading = false, errorMessage = snapshot.cause.message ?: "Unknown error")
                         }
                 }
+            }
+        }
+
+        /** Sets a reminder for a tapped list item, then emits a confirmation to [messages]. */
+        fun setReminder(target: ReminderTarget) {
+            viewModelScope.launch {
+                val location = resolveLocation().coordinates
+                val result =
+                    when (target) {
+                        is ReminderTarget.Muhurta -> addReminder.addMuhurta(target.name, location)
+                        is ReminderTarget.Observance -> addReminder.addObservance(target.name, target.tithis, location)
+                    }
+                _messages.emit(
+                    if (result is AppResult.Success) "Reminder set for ${target.name}" else "Couldn't set the reminder",
+                )
             }
         }
 
@@ -170,6 +195,23 @@ data class AuspiciousWindow(
     val boundary: Instant,
     val isActive: Boolean,
 )
+
+/** A home-list item the user can set a reminder for, carrying what [HomeViewModel.setReminder] needs. */
+sealed interface ReminderTarget {
+    /** The item's display name, used in the confirmation message. */
+    val name: String
+
+    /** A muhurta window, reminded for by its name (e.g. "Brahma Muhurta"). */
+    data class Muhurta(
+        override val name: String,
+    ) : ReminderTarget
+
+    /** A recurring observance (e.g. "Ekadashi"), reminded for by its global [tithis]. */
+    data class Observance(
+        override val name: String,
+        val tithis: Set<Int>,
+    ) : ReminderTarget
+}
 
 /**
  * Immutable UI state for the home screen.
