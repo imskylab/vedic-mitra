@@ -19,6 +19,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -423,6 +425,7 @@ private fun OffsetEditor(
     offsetMinutes: Int,
     onOffsetChange: (String, Int) -> Unit,
 ) {
+    var editing by remember(itemId) { mutableStateOf(false) }
     var valueText by remember(itemId) { mutableStateOf(decomposeOffset(offsetMinutes).first.toString()) }
     var unit by remember(itemId) { mutableStateOf(decomposeOffset(offsetMinutes).second) }
     var unitMenuOpen by remember { mutableStateOf(false) }
@@ -432,11 +435,27 @@ private fun OffsetEditor(
         onOffsetChange(itemId, (entered * unit.minutes).coerceIn(0, MAX_OFFSET_MINUTES))
     }
 
+    if (!editing) {
+        Row(
+            modifier = Modifier.clickable { editing = true },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(text = "Remind ${offsetLabel(offsetMinutes)}", style = MaterialTheme.typography.bodyMedium)
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = "Change lead time",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        return
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(text = "Remind", style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
             value = valueText,
             onValueChange = {
@@ -465,12 +484,21 @@ private fun OffsetEditor(
                 }
             }
         }
-        Text(
-            text = if ((valueText.toIntOrNull() ?: 0) == 0) "(at start)" else "before",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        TextButton(onClick = { editing = false }) { Text("Done") }
     }
+}
+
+/** The lead time as a compact label, e.g. "at start", "10 minutes before", "2 hours before". */
+private fun offsetLabel(minutes: Int): String {
+    if (minutes <= 0) return "at start"
+    val (value, unit) = decomposeOffset(minutes)
+    val noun =
+        when (unit) {
+            OffsetUnit.MINUTES -> "minute"
+            OffsetUnit.HOURS -> "hour"
+            OffsetUnit.DAYS -> "day"
+        }
+    return "$value $noun${if (value == 1) "" else "s"} before"
 }
 
 /** Decomposes a lead time in minutes to its largest whole unit for display in the [OffsetEditor]. */
