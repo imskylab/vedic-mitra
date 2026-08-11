@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Vedic Mitra — Offline Vedic Panchang &amp; Muhurta for Android</title>
+  <meta name="description" content="Vedic Mitra is a free, open-source Android panchang that computes tithi, nakshatra, muhurta, Choghadiya, festivals and planetary positions for your exact location. Offline, no ads, no tracking." />
+  <meta name="keywords" content="panchang, panchanga, hindu calendar, vedic astrology, jyotish, muhurta, tithi, nakshatra, choghadiya, ekadashi, rahu kalam, android panchang app, offline panchang, open source panchang" />
+  <meta name="author" content="Jayvardhan Potabatti" />
+  <link rel="canonical" href="https://imskylab.github.io/vedic-mitra/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Vedic Mitra — Offline Vedic Panchang for Android" />
+  <meta property="og:description" content="Computes tithi, nakshatra, muhurta, festivals and planetary positions for your exact location. Offline, open source, no ads, no tracking." />
+  <meta property="og:url" content="https://imskylab.github.io/vedic-mitra/" />
+  <meta property="og:image" content="https://github.com/imskylab/vedic-mitra/raw/main/art/logo/vedic-mitra-logo.png" />
+  <meta property="og:site_name" content="Vedic Mitra" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Vedic Mitra — Offline Vedic Panchang for Android" />
+  <meta name="twitter:description" content="Panchang, muhurta & festivals computed for your exact location. Offline, open source." />
+  <meta name="twitter:image" content="https://github.com/imskylab/vedic-mitra/raw/main/art/logo/vedic-mitra-logo.png" />
+
+  <!-- TODO: paste your Google Search Console HTML-tag verification here, e.g.
+  <meta name="google-site-verification" content="XXXXXXXXXXXXXXXXXXXXXXXX" /> -->
+
+  <!-- Structured data: helps Google understand this is a software app -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Vedic Mitra",
+    "operatingSystem": "Android",
+    "applicationCategory": "LifestyleApplication",
+    "description": "A modern, offline-first Android companion for Vedic timekeeping — panchanga, muhurta, Choghadiya, festivals and planetary positions, computed for the user's exact location.",
+    "url": "https://imskylab.github.io/vedic-mitra/",
+    "downloadUrl": "https://github.com/imskylab/vedic-mitra/releases",
+    "softwareVersion": "0.5.0",
+    "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+    "isAccessibleForFree": true,
+    "author": { "@type": "Person", "name": "Jayvardhan Potabatti" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+
+  <style>
+    :root {
+      --gold: #C79A3B;
+      --gold-light: #E4C56A;
+      --maroon: #5E1B22;
+      --maroon-deep: #43121a;
+      --ink: #2b1a12;
+      --paper: #FBF6EC;
+      --card: #ffffff;
+      --muted: #6a5a4c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.6;
+    }
+    a { color: var(--maroon); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 22px; }
+
+    /* Hero */
+    header.hero {
+      background: linear-gradient(160deg, var(--maroon) 0%, var(--maroon-deep) 100%);
+      color: #fff8ec;
+      text-align: center;
+      padding: 64px 22px 72px;
+      border-bottom: 4px solid var(--gold);
+    }
+    .hero img.logo { width: 128px; height: 128px; border-radius: 26px; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+    .hero h1 { font-size: 2.6rem; margin: 22px 0 6px; letter-spacing: .5px; }
+    .hero .sub { font-size: 1.25rem; color: var(--gold-light); font-weight: 500; }
+    .hero p.lede { max-width: 640px; margin: 18px auto 0; color: #f3e6d0; font-size: 1.05rem; }
+    .cta { margin-top: 28px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; padding: 13px 26px; border-radius: 999px;
+      font-weight: 700; text-decoration: none; font-size: 1rem; transition: transform .12s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn.primary { background: var(--gold); color: var(--maroon-deep); }
+    .btn.ghost { background: rgba(255,255,255,.08); color: #fff8ec; border: 1.5px solid var(--gold); }
+    .badges { margin-top: 26px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .badges span {
+      font-size: .78rem; background: rgba(255,255,255,.12); color: var(--gold-light);
+      padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(228,197,106,.35);
+    }
+
+    /* Sections */
+    section { padding: 56px 0; }
+    section h2 {
+      font-size: 1.7rem; color: var(--maroon); text-align: center; margin-bottom: 8px;
+    }
+    section .tag { text-align: center; color: var(--muted); margin-bottom: 34px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px; }
+    .feature {
+      background: var(--card); border: 1px solid #ecdfca; border-radius: 14px;
+      padding: 22px; box-shadow: 0 2px 10px rgba(94,27,34,.05);
+    }
+    .feature h3 { font-size: 1.05rem; color: var(--maroon); margin-bottom: 6px; }
+    .feature p { font-size: .95rem; color: var(--muted); }
+    .feature .ic { font-size: 1.6rem; }
+
+    /* Why band */
+    .why { background: #fff; border-top: 1px solid #ecdfca; border-bottom: 1px solid #ecdfca; }
+    .why .grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .why .feature { background: var(--paper); border-color: #ecdfca; }
+
+    footer {
+      background: var(--maroon-deep); color: #e9d7bd; text-align: center;
+      padding: 40px 22px; font-size: .92rem;
+    }
+    footer a { color: var(--gold-light); }
+    footer .note { color: #b79a86; font-size: .82rem; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <img class="logo" src="https://github.com/imskylab/vedic-mitra/raw/main/art/logo/vedic-mitra-logo.png" alt="Vedic Mitra logo" />
+      <h1>Vedic Mitra</h1>
+      <div class="sub">Your panchang, computed for your sky.</div>
+      <p class="lede">
+        A modern, offline-first Android companion for Vedic timekeeping — panchanga, muhurta,
+        Choghadiya, festivals and planetary positions, calculated for your <em>exact</em> location.
+        No ads. No tracking. Open source.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/imskylab/vedic-mitra/releases">Download APK</a>
+        <a class="btn ghost" href="https://github.com/imskylab/vedic-mitra">View on GitHub</a>
+      </div>
+      <div class="badges">
+        <span>Kotlin + Jetpack Compose</span>
+        <span>Offline-first</span>
+        <span>AGPL-3.0</span>
+        <span>No trackers</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <h2>What it does</h2>
+      <p class="tag">Everything below is computed on-device for your coordinates — not looked up from a table.</p>
+      <div class="grid">
+        <div class="feature"><div class="ic">🗓️</div><h3>Full daily panchanga</h3><p>Tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa &amp; samvatsara — named by the sunrise convention.</p></div>
+        <div class="feature"><div class="ic">🕉️</div><h3>Muhurta &amp; kalams</h3><p>Brahma &amp; Abhijit Muhurta, Dur Muhurta, Varjyam, and the inauspicious Rahu, Yamaganda &amp; Gulika kalams.</p></div>
+        <div class="feature"><div class="ic">⏳</div><h3>Choghadiya</h3><p>All sixteen day and night Choghadiya windows, weekday-sequenced.</p></div>
+        <div class="feature"><div class="ic">🌙</div><h3>Sky &amp; planets</h3><p>Sunrise/sunset, moonrise/moonset, moon phase, golden hour, and the rashi of Sun, Moon, Guru &amp; Shukra with next pravesh.</p></div>
+        <div class="feature"><div class="ic">🪔</div><h3>Festivals &amp; vrats</h3><p>Upcoming festivals, Ekadashi, Purnima, Amavasya, Sankashti Chaturthi, Pradosh, and Sankrantis.</p></div>
+        <div class="feature"><div class="ic">🔔</div><h3>Reminders that fire</h3><p>Exact, reboot-survivable alarms for muhurta, Choghadiya and custom tithi targets, with flexible lead times.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="why">
+    <div class="wrap">
+      <h2>Why it's different</h2>
+      <p class="tag">The things paid panchang apps usually don't offer.</p>
+      <div class="grid">
+        <div class="feature"><h3>Computed, not looked up</h3><p>Astronomy is derived from your coordinates using the Meeus ephemeris and Lahiri ayanamsa, so timings are right for where you actually are.</p></div>
+        <div class="feature"><h3>Offline &amp; private</h3><p>Core calculations run entirely on your phone. No account, no ads, no tracking — your practice isn't the product.</p></div>
+        <div class="feature"><h3>Open source</h3><p>AGPL-3.0, auditable and community-buildable. Cross-checked against drikpanchang.com and datepanchang.com before each release.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p><strong>Vedic Mitra</strong> — under active development (pre-1.0). Feedback and contributions welcome.</p>
+      <p style="margin-top:10px;">
+        <a href="https://github.com/imskylab/vedic-mitra">GitHub</a> ·
+        <a href="https://github.com/imskylab/vedic-mitra/releases">Releases</a> ·
+        <a href="https://github.com/imskylab/vedic-mitra/blob/main/LICENSING.md">License</a>
+      </p>
+      <p class="note">© 2026 Jayvardhan Potabatti. Dual-licensed under AGPL-3.0-or-later and a commercial license.</p>
+    </div>
+  </footer>
+</body>
+</html>

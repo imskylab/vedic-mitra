@@ -7,7 +7,7 @@
 > A modern Android companion for Vedic timekeeping — panchanga, muhurta, and astronomy-aware
 > reminders — built with Kotlin, Jetpack Compose, and Clean Architecture.
 
-[![CI](https://github.com/vedicmitra/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/vedicmitra/vedic-mitra/actions/workflows/ci.yml)
+[![CI](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![Commercial license](https://img.shields.io/badge/Commercial-available-brightgreen.svg)](LICENSING.md)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)

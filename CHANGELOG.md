@@ -167,5 +167,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Business logic, astronomy calculations, and alarm behaviour are intentionally **not** included in
   this release — see the roadmap in the README.
 
-[Unreleased]: https://github.com/vedicmitra/vedic-mitra/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/vedicmitra/vedic-mitra/releases/tag/v0.1.0
+[Unreleased]: https://github.com/imskylab/vedic-mitra/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/imskylab/vedic-mitra/releases/tag/v0.1.0
