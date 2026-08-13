@@ -55,10 +55,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vedicmitra.R
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
@@ -69,6 +72,8 @@ import io.github.vedicmitra.feature.home.HomeScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
 import io.github.vedicmitra.feature.location.AddCoordinatesScreen
 import io.github.vedicmitra.feature.location.LocationScreen
+import io.github.vedicmitra.feature.profile.ProfileEditScreen
+import io.github.vedicmitra.feature.profile.ProfileListScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
 
 /** The app's top-level destinations, shown in the bottom navigation bar in this order. */
@@ -83,10 +88,13 @@ private enum class TopDestination(
     SETTINGS("settings", "Settings", Icons.Filled.Settings),
 }
 
-// Non-tab routes reached from Settings, for managing the panchanga location.
+// Non-tab routes reached from Settings, for managing the panchanga location and the birth profile.
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
+private const val PROFILE_ROUTE = "settings/profile"
+private const val PROFILE_EDIT_ROUTE = "settings/profile/edit"
+private const val PROFILE_ID_ARG = "profileId"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -210,35 +218,64 @@ private fun VedicMitraApp() {
             }
         },
     ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = TopDestination.HOME.route,
-            modifier = Modifier.padding(padding),
-        ) {
-            composable(TopDestination.HOME.route) {
-                HomeScreen(
-                    onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
-                    onOpenCalendar = {
-                        navController.navigate(TopDestination.CALENDAR.route) { launchSingleTop = true }
-                    },
-                    onOpenReminders = {
-                        navController.navigate(TopDestination.ALARM.route) { launchSingleTop = true }
-                    },
-                )
-            }
-            composable(TopDestination.CALENDAR.route) { CalendarScreen() }
-            composable(TopDestination.ALARM.route) { AlarmScreen() }
-            composable(TopDestination.SETTINGS.route) {
-                SettingsScreen(onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) })
-            }
-            composable(LOCATION_ROUTE) {
-                LocationScreen(
-                    onAddCity = { navController.navigate(ADD_CITY_ROUTE) },
-                    onAddCoordinates = { navController.navigate(ADD_COORDINATES_ROUTE) },
-                )
-            }
-            composable(ADD_CITY_ROUTE) { AddCityScreen(onDone = { navController.popBackStack() }) }
-            composable(ADD_COORDINATES_ROUTE) { AddCoordinatesScreen(onDone = { navController.popBackStack() }) }
+        AppNavHost(navController = navController, modifier = Modifier.padding(padding))
+    }
+}
+
+/** The app's navigation graph — the top-level tabs plus the Settings sub-routes. */
+@Composable
+private fun AppNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = TopDestination.HOME.route,
+        modifier = modifier,
+    ) {
+        composable(TopDestination.HOME.route) {
+            HomeScreen(
+                onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+                onOpenCalendar = {
+                    navController.navigate(TopDestination.CALENDAR.route) { launchSingleTop = true }
+                },
+                onOpenReminders = {
+                    navController.navigate(TopDestination.ALARM.route) { launchSingleTop = true }
+                },
+            )
         }
+        composable(TopDestination.CALENDAR.route) { CalendarScreen() }
+        composable(TopDestination.ALARM.route) { AlarmScreen() }
+        composable(TopDestination.SETTINGS.route) {
+            SettingsScreen(
+                onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+                onNavigateToProfile = { navController.navigate(PROFILE_ROUTE) },
+            )
+        }
+        composable(LOCATION_ROUTE) {
+            LocationScreen(
+                onAddCity = { navController.navigate(ADD_CITY_ROUTE) },
+                onAddCoordinates = { navController.navigate(ADD_COORDINATES_ROUTE) },
+            )
+        }
+        composable(ADD_CITY_ROUTE) { AddCityScreen(onDone = { navController.popBackStack() }) }
+        composable(ADD_COORDINATES_ROUTE) { AddCoordinatesScreen(onDone = { navController.popBackStack() }) }
+        composable(PROFILE_ROUTE) {
+            ProfileListScreen(
+                onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },
+                onEditProfile = { id -> navController.navigate("$PROFILE_EDIT_ROUTE?$PROFILE_ID_ARG=$id") },
+            )
+        }
+        composable(
+            route = "$PROFILE_EDIT_ROUTE?$PROFILE_ID_ARG={$PROFILE_ID_ARG}",
+            arguments =
+                listOf(
+                    navArgument(PROFILE_ID_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
+        ) { ProfileEditScreen(onDone = { navController.popBackStack() }) }
     }
 }

@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Birth profiles.** Settings → Profiles keeps multiple birth profiles — yourself plus family or
+  friends — each with name, relation, date, exact time, and place of birth, stored on-device
+  (`:feature:profile` + a `ProfileRepository` in `:core:datastore`). One is always the primary
+  "Self"; the first profile you add becomes primary, and you can switch it. They're the foundation the
+  upcoming astrology features (Kundali, Rashifal, personalised Muhurat) build on.
 - **Home hub landing.** Home is now a hub: a tappable "today's panchang" hero, the auspicious-now
   strip, and a categorised shortcut grid (Daily · Astrology · Devotion) built with the brand's saffron
   theme and custom cultural glyphs. Daily tiles open the calendar, reminders, or the full daily

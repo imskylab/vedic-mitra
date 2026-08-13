@@ -43,6 +43,7 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 @Composable
 fun SettingsScreen(
     onNavigateToLocation: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -55,6 +56,7 @@ fun SettingsScreen(
                 onDarkThemeConfigChange = viewModel::setDarkThemeConfig,
                 onDynamicColorChange = viewModel::setDynamicColor,
                 onNavigateToLocation = onNavigateToLocation,
+                onNavigateToProfile = onNavigateToProfile,
                 modifier = modifier,
             )
     }
@@ -66,6 +68,7 @@ private fun SettingsContent(
     onDarkThemeConfigChange: (DarkThemeConfig) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onNavigateToLocation: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -119,6 +122,21 @@ private fun SettingsContent(
             Text(text = "Panchanga location", modifier = Modifier.weight(1f))
             Text(text = "Change", color = MaterialTheme.colorScheme.primary)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Profile", style = MaterialTheme.typography.titleMedium)
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onNavigateToProfile)
+                    .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = "Your birth profile", modifier = Modifier.weight(1f))
+            Text(text = "Set up", color = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
@@ -139,6 +157,7 @@ private fun SettingsContentPreview() {
             onDarkThemeConfigChange = {},
             onDynamicColorChange = {},
             onNavigateToLocation = {},
+            onNavigateToProfile = {},
         )
     }
 }
