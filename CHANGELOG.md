@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Intro splash video.** A short branded video plays full-screen (muted) when the app opens, then
+  hands off to the home screen. Tapping anywhere — or the back button — skips it. The clip is bundled
+  in the app (`res/raw`).
 - **Tap a Home list item for its significance — and set a reminder.** Rows in the
   Auspicious/Inauspicious periods and Upcoming festivals/events lists are tappable, opening a bottom
   sheet with the item's time or date and a short, offline explanation of what it is and why it

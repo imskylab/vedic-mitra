@@ -11,12 +11,21 @@
 package io.github.vedicmitra
 
 import android.os.Bundle
+import android.widget.VideoView
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
@@ -25,14 +34,25 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -40,6 +60,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.vedicmitra.R
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
@@ -87,11 +108,75 @@ class MainActivity : ComponentActivity() {
                     DarkThemeConfig.DARK -> true
                 }
             VedicMitraTheme(darkTheme = darkTheme, dynamicColor = theme.useDynamicColor) {
-                VedicMitraApp()
+                AppRoot()
             }
         }
     }
 }
+
+/** Plays the intro splash on each launch, then shows the app; a tap anywhere skips the splash. */
+@Composable
+private fun AppRoot() {
+    var splashDone by rememberSaveable { mutableStateOf(false) }
+    if (splashDone) {
+        VedicMitraApp()
+    } else {
+        SplashScreen(onFinished = { splashDone = true })
+    }
+}
+
+/** A full-screen intro video (muted). It finishes on its own, or a tap/back skips it. */
+@Composable
+private fun SplashScreen(onFinished: () -> Unit) {
+    BackHandler(onBack = onFinished)
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize().clipToBounds().background(Color.Black),
+        contentAlignment = Alignment.Center,
+    ) {
+        // Size the player to *cover* the screen at the video's aspect ratio so it fills edge-to-edge
+        // (the overflow is clipped) rather than letterboxing on tall phones.
+        val coverModifier =
+            if (maxWidth / maxHeight > SPLASH_VIDEO_ASPECT) {
+                Modifier.width(maxWidth).height(maxWidth / SPLASH_VIDEO_ASPECT)
+            } else {
+                Modifier.height(maxHeight).width(maxHeight * SPLASH_VIDEO_ASPECT)
+            }
+        AndroidView(
+            modifier = coverModifier,
+            factory = { context ->
+                VideoView(context).apply {
+                    setVideoURI("android.resource://${context.packageName}/${R.raw.splash_intro}".toUri())
+                    setOnPreparedListener { player ->
+                        player.setVolume(0f, 0f)
+                        start()
+                    }
+                    setOnCompletionListener { onFinished() }
+                    setOnErrorListener { _, _, _ ->
+                        onFinished()
+                        true
+                    }
+                }
+            },
+        )
+        Text(
+            text = "Tap to skip",
+            color = Color.White.copy(alpha = SKIP_HINT_ALPHA),
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp),
+        )
+        // A transparent overlay on top of the video surface so a tap anywhere is reliably caught.
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) { detectTapGestures { onFinished() } },
+        )
+    }
+}
+
+// The bundled splash clip is 720x1280 (portrait 9:16); width / height.
+private const val SPLASH_VIDEO_ASPECT = 0.5625f
+private const val SKIP_HINT_ALPHA = 0.7f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
