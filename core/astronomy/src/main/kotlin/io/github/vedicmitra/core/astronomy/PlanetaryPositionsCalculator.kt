@@ -76,12 +76,18 @@ private fun bisectPravesh(
     return high
 }
 
-// Search horizons: the Moon changes rashi ~every 2.25 days, the Sun/Shukra roughly monthly, Guru
-// (Jupiter) roughly yearly. Shukra and Guru are padded generously to cover retrograde lingering.
+// Search horizons for the next rashi ingress, padded generously to cover retrograde lingering: the
+// Moon changes rashi ~every 2.25 days, Mercury/Sun/Venus roughly monthly, Mars ~1.5 months, the
+// nodes ~1.5 years, Jupiter ~1 year, Saturn ~2.5 years. Beyond the horizon the pravesh reads null.
 private fun praveshHorizonDays(graha: Graha): Int =
     when (graha) {
         Graha.MOON -> 4
-        Graha.SUN -> 40
-        Graha.SHUKRA -> 120
-        Graha.GURU -> 420
+        Graha.BUDHA -> 90
+        Graha.SUN -> 45
+        Graha.SHUKRA -> 150
+        Graha.MANGALA -> 260
+        Graha.GURU -> 450
+        Graha.RAHU -> 700
+        Graha.KETU -> 700
+        Graha.SHANI -> 1200
     }

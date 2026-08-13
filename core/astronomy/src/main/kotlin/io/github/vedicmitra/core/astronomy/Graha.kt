@@ -29,14 +29,19 @@ val RASHI_NAMES: List<String> =
         "Meena",
     )
 
-/** A graha (planet) whose rashi the app tracks. */
+/** A graha (planet) whose rashi the app tracks, in the classical order Sun … Ketu. */
 enum class Graha(
     val displayName: String,
 ) {
     SUN("Sun"),
     MOON("Moon"),
+    MANGALA("Mangala"),
+    BUDHA("Budha"),
     GURU("Guru"),
     SHUKRA("Shukra"),
+    SHANI("Shani"),
+    RAHU("Rahu"),
+    KETU("Ketu"),
 }
 
 /**

@@ -36,12 +36,35 @@ class PlanetaryPositionsTest {
     }
 
     @Test
+    fun `Budha (Mercury) never strays beyond its maximum elongation from the Sun`() {
+        // Mercury's greatest elongation is ~28°; a larger separation would mean the geocentric
+        // computation is wrong for the innermost planet.
+        val separation = angularSeparation(siderealLongitude(Graha.SUN, t), siderealLongitude(Graha.BUDHA, t))
+        assertThat(separation).isLessThan(29.0)
+    }
+
+    @Test
+    fun `Ketu is exactly opposite Rahu`() {
+        val separation = angularSeparation(siderealLongitude(Graha.RAHU, t), siderealLongitude(Graha.KETU, t))
+        assertThat(separation).isWithin(1e-9).of(180.0)
+    }
+
+    @Test
     fun `every graha resolves to a valid rashi and a future pravesh`() {
         val positions = planetaryPositions(REFERENCE).positions
 
         assertThat(positions.map { it.graha })
-            .containsExactly(Graha.SUN, Graha.MOON, Graha.GURU, Graha.SHUKRA)
-            .inOrder()
+            .containsExactly(
+                Graha.SUN,
+                Graha.MOON,
+                Graha.MANGALA,
+                Graha.BUDHA,
+                Graha.GURU,
+                Graha.SHUKRA,
+                Graha.SHANI,
+                Graha.RAHU,
+                Graha.KETU,
+            ).inOrder()
         positions.forEach { position ->
             assertThat(position.rasi.index).isAtLeast(0)
             assertThat(position.rasi.index).isAtMost(11)
