@@ -52,10 +52,28 @@ private val JUPITER =
         rate = doubleArrayOf(-0.00011607, -0.00013253, -0.00183714, 3034.74612775, 0.21252668, 0.20469106),
     )
 
+private val MERCURY =
+    KeplerElements(
+        base = doubleArrayOf(0.38709927, 0.20563593, 7.00497902, 252.25032350, 77.45779628, 48.33076593),
+        rate = doubleArrayOf(0.00000037, 0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081),
+    )
+
+private val MARS =
+    KeplerElements(
+        base = doubleArrayOf(1.52371034, 0.09339410, 1.84969142, -4.55343205, -23.94362959, 49.55953891),
+        rate = doubleArrayOf(0.00001847, 0.00007882, -0.00813131, 19140.30268499, 0.44441088, -0.29257343),
+    )
+
+private val SATURN =
+    KeplerElements(
+        base = doubleArrayOf(9.53667594, 0.05386179, 2.48599187, 49.95424423, 92.59887831, 113.66242448),
+        rate = doubleArrayOf(-0.00125060, -0.00050991, 0.00193609, 1222.49362201, -0.41897216, -0.28867794),
+    )
+
 /**
  * The sidereal (Lahiri) ecliptic longitude of [graha] at [t] Julian centuries, in degrees 0..360.
- * The Sun and Moon reuse the app's of-date ephemeris; Guru (Jupiter) and Shukra (Venus) are computed
- * geocentrically from the JPL Keplerian elements.
+ * The Sun and Moon reuse the app's of-date ephemeris; the five tara grahas (Mars…Saturn) are computed
+ * geocentrically from the JPL Keplerian elements; Rahu/Ketu are the mean lunar nodes.
  */
 internal fun siderealLongitude(
     graha: Graha,
@@ -64,9 +82,24 @@ internal fun siderealLongitude(
     when (graha) {
         Graha.SUN -> Ephemeris.norm360(Ephemeris.sunApparentLongitude(t) - Ephemeris.lahiriAyanamsa(t))
         Graha.MOON -> Ephemeris.norm360(Ephemeris.moonLongitude(t) - Ephemeris.lahiriAyanamsa(t))
+        Graha.MANGALA -> planetSidereal(MARS, t)
+        Graha.BUDHA -> planetSidereal(MERCURY, t)
         Graha.GURU -> planetSidereal(JUPITER, t)
         Graha.SHUKRA -> planetSidereal(VENUS, t)
+        Graha.SHANI -> planetSidereal(SATURN, t)
+        Graha.RAHU -> meanRahu(t)
+        Graha.KETU -> Ephemeris.norm360(meanRahu(t) + 180.0)
     }
+
+/**
+ * The sidereal longitude of Rahu — the Moon's mean ascending node (Meeus). Ketu is 180° opposite.
+ * The mean node is referenced to the equinox of date, so subtracting the ayanamsa gives sidereal,
+ * consistent with the Sun/Moon derivation.
+ */
+private fun meanRahu(t: Double): Double {
+    val meanNode = 125.04452 - 1934.136261 * t + 0.0020708 * t * t + t * t * t / 450000.0
+    return Ephemeris.norm360(meanNode - Ephemeris.lahiriAyanamsa(t))
+}
 
 private fun planetSidereal(
     element: KeplerElements,

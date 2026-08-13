@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **All nine grahas.** Planetary positions now cover the full classical set — Sun, Moon, Mars,
+  Mercury, Jupiter, Venus, Saturn, Rahu and Ketu (sidereal / Lahiri) — up from four. Mars, Mercury and
+  Saturn use the JPL Keplerian ephemeris; Rahu/Ketu are the mean lunar nodes. This shows on the Home
+  planetary-positions list and is the first piece of the birth-chart engine.
 - **Birthplace geocoding.** A profile's place of birth is now searched through the geocoder and, on
   picking a result, resolved to coordinates + an IANA time zone (reusing `:core:location`) — the exact
   location and moment a birth chart needs.
