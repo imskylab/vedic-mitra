@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Birthplace geocoding.** A profile's place of birth is now searched through the geocoder and, on
+  picking a result, resolved to coordinates + an IANA time zone (reusing `:core:location`) — the exact
+  location and moment a birth chart needs.
 - **Birth profiles.** Settings → Profiles keeps multiple birth profiles — yourself plus family or
   friends — each with name, relation, date, exact time, and place of birth, stored on-device
   (`:feature:profile` + a `ProfileRepository` in `:core:datastore`). One is always the primary

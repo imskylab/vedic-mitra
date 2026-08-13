@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.core.datastore
 
+import io.github.vedicmitra.core.common.model.GeoCoordinates
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -35,6 +36,10 @@ enum class ProfileRelation(
  * @property dateOfBirth date of birth, or `null` if not yet set.
  * @property timeOfBirth exact local time of birth, or `null` if not yet set.
  * @property placeOfBirth free-text place of birth (city, country).
+ * @property birthCoordinates the birthplace geocoded to coordinates, or `null` until resolved.
+ * @property birthZoneId the birthplace's IANA time zone (e.g. "Asia/Kolkata"), or `null` until
+ *   resolved. Together with [birthCoordinates] this is what a chart needs — the zone fixes the exact
+ *   birth instant, the coordinates fix the ascendant/houses.
  */
 data class BirthProfile(
     val id: String,
@@ -43,8 +48,14 @@ data class BirthProfile(
     val dateOfBirth: LocalDate? = null,
     val timeOfBirth: LocalTime? = null,
     val placeOfBirth: String = "",
+    val birthCoordinates: GeoCoordinates? = null,
+    val birthZoneId: String? = null,
 ) {
-    /** Whether every field needed for a birth chart is present. */
+    /** Whether the user-entered essentials (name, date, time, place) are all present. */
     val isComplete: Boolean
         get() = name.isNotBlank() && dateOfBirth != null && timeOfBirth != null && placeOfBirth.isNotBlank()
+
+    /** Whether the profile has everything a birth chart needs, including geocoded coordinates + zone. */
+    val isChartReady: Boolean
+        get() = isComplete && birthCoordinates != null && birthZoneId != null
 }

@@ -17,19 +17,28 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.core.location.GeocodeResult
 
 /**
  * Add/edit-profile screen. Collects [ProfileEditViewModel] state, surfaces messages as toasts, and
@@ -69,6 +79,8 @@ fun ProfileEditScreen(
         onDateOfBirthChange = viewModel::onDateOfBirthChange,
         onTimeOfBirthChange = viewModel::onTimeOfBirthChange,
         onPlaceOfBirthChange = viewModel::onPlaceOfBirthChange,
+        onSearchPlace = viewModel::searchPlace,
+        onSelectPlace = viewModel::selectPlace,
         onSave = viewModel::save,
         modifier = modifier,
     )
@@ -82,6 +94,8 @@ private fun ProfileEditContent(
     onDateOfBirthChange: (String) -> Unit,
     onTimeOfBirthChange: (String) -> Unit,
     onPlaceOfBirthChange: (String) -> Unit,
+    onSearchPlace: () -> Unit,
+    onSelectPlace: (GeocodeResult) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -124,19 +138,77 @@ private fun ProfileEditContent(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(
-            value = uiState.placeOfBirth,
-            onValueChange = onPlaceOfBirthChange,
-            label = { Text("Place of birth") },
-            placeholder = { Text("City, Country") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+        BirthplaceField(
+            uiState = uiState,
+            onPlaceChange = onPlaceOfBirthChange,
+            onSearch = onSearchPlace,
+            onSelect = onSelectPlace,
         )
         Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
             Text(text = if (uiState.isEditing) "Save changes" else "Add profile")
         }
     }
 }
+
+/** The place-of-birth field: type a place, search, pick a result — which resolves coordinates + zone. */
+@Composable
+private fun BirthplaceField(
+    uiState: ProfileEditUiState,
+    onPlaceChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onSelect: (GeocodeResult) -> Unit,
+) {
+    OutlinedTextField(
+        value = uiState.placeOfBirth,
+        onValueChange = onPlaceChange,
+        label = { Text("Place of birth") },
+        placeholder = { Text("City, Country") },
+        singleLine = true,
+        trailingIcon = {
+            IconButton(onClick = onSearch) {
+                Icon(imageVector = Icons.Filled.Search, contentDescription = "Search places")
+            }
+        },
+        supportingText = { Text(birthplaceHint(uiState)) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+    when {
+        uiState.isSearchingPlace -> CircularProgressIndicator()
+        uiState.placeError != null ->
+            Text(
+                text = uiState.placeError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+
+        else ->
+            uiState.placeResults.forEach { result ->
+                PlaceResultRow(result = result, onClick = { onSelect(result) })
+            }
+    }
+}
+
+@Composable
+private fun PlaceResultRow(
+    result: GeocodeResult,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(imageVector = Icons.Filled.LocationOn, contentDescription = null)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = result.label, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+private fun birthplaceHint(uiState: ProfileEditUiState): String =
+    if (uiState.birthZoneId != null) {
+        "Located · ${uiState.birthZoneId}"
+    } else {
+        "Type a place, then tap search to locate it"
+    }
 
 /** A horizontal row of selectable chips for choosing the profile's [ProfileRelation]. */
 @Composable
@@ -186,6 +258,8 @@ private fun ProfileEditContentPreview() {
             onDateOfBirthChange = {},
             onTimeOfBirthChange = {},
             onPlaceOfBirthChange = {},
+            onSearchPlace = {},
+            onSelectPlace = {},
             onSave = {},
         )
     }

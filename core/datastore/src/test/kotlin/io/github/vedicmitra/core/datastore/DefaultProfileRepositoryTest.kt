@@ -14,6 +14,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.google.common.truth.Truth.assertThat
+import io.github.vedicmitra.core.common.model.GeoCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -52,6 +53,8 @@ class DefaultProfileRepositoryTest {
             dateOfBirth = LocalDate.of(1995, 3, 14),
             timeOfBirth = LocalTime.of(9, 30),
             placeOfBirth = "Hyderabad, India",
+            birthCoordinates = GeoCoordinates(latitude = 17.385, longitude = 78.4867),
+            birthZoneId = "Asia/Kolkata",
         )
     private val mia = BirthProfile(id = "b", name = "Mia", relation = ProfileRelation.SPOUSE)
 
