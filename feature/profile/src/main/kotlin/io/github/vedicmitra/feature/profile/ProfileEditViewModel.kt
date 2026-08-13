@@ -14,9 +14,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.BirthProfile
 import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.datastore.ProfileRepository
+import io.github.vedicmitra.core.location.GeocodeResult
+import io.github.vedicmitra.core.location.GeocodingClient
+import io.github.vedicmitra.core.location.TimeZoneResolver
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -37,12 +42,16 @@ internal const val PROFILE_ID_ARG = "profileId"
 /**
  * Presentation logic for adding or editing one [BirthProfile]. When the `profileId` argument is
  * present the form loads that profile; otherwise it starts blank and a new id is minted on save.
+ * The birthplace is searched via the geocoder and, on selection, resolved to coordinates + a time
+ * zone (what a chart needs).
  */
 @HiltViewModel
 class ProfileEditViewModel
     @Inject
     constructor(
         private val profileRepository: ProfileRepository,
+        private val geocodingClient: GeocodingClient,
+        private val timeZoneResolver: TimeZoneResolver,
         savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
         private val profileId: String? = savedStateHandle[PROFILE_ID_ARG]
@@ -60,18 +69,7 @@ class ProfileEditViewModel
             if (profileId != null) {
                 viewModelScope.launch {
                     val existing = profileRepository.profiles.first().firstOrNull { it.id == profileId }
-                    if (existing != null) {
-                        _uiState.update {
-                            it.copy(
-                                name = existing.name,
-                                relation = existing.relation,
-                                dateOfBirth = existing.dateOfBirth?.toString().orEmpty(),
-                                timeOfBirth = existing.timeOfBirth?.toString().orEmpty(),
-                                placeOfBirth = existing.placeOfBirth,
-                                isEditing = true,
-                            )
-                        }
-                    }
+                    if (existing != null) _uiState.update { it.fromProfile(existing) }
                 }
             }
         }
@@ -84,7 +82,65 @@ class ProfileEditViewModel
 
         fun onTimeOfBirthChange(value: String) = _uiState.update { it.copy(timeOfBirth = value) }
 
-        fun onPlaceOfBirthChange(value: String) = _uiState.update { it.copy(placeOfBirth = value) }
+        /** Editing the place text invalidates any previously resolved coordinates/zone. */
+        fun onPlaceOfBirthChange(value: String) {
+            _uiState.update {
+                it.copy(
+                    placeOfBirth = value,
+                    birthCoordinates = null,
+                    birthZoneId = null,
+                    placeResults = emptyList(),
+                    placeError = null,
+                )
+            }
+        }
+
+        /** Forward-geocodes the current place text into candidate places. */
+        fun searchPlace() {
+            val query = _uiState.value.placeOfBirth
+            if (query.isBlank()) {
+                _uiState.update { it.copy(placeResults = emptyList(), placeError = null) }
+                return
+            }
+            viewModelScope.launch {
+                _uiState.update { it.copy(isSearchingPlace = true, placeError = null) }
+                when (val result = geocodingClient.search(query)) {
+                    is AppResult.Success ->
+                        _uiState.update {
+                            it.copy(
+                                isSearchingPlace = false,
+                                placeResults = result.data,
+                                placeError = if (result.data.isEmpty()) "No matching places found" else null,
+                            )
+                        }
+
+                    is AppResult.Failure ->
+                        _uiState.update {
+                            it.copy(
+                                isSearchingPlace = false,
+                                placeResults = emptyList(),
+                                placeError = result.cause.message ?: "Search failed",
+                            )
+                        }
+                }
+            }
+        }
+
+        /** Chooses a geocoded [result] as the birthplace, resolving its time zone. */
+        fun selectPlace(result: GeocodeResult) {
+            viewModelScope.launch {
+                val zone = timeZoneResolver.resolve(result.coordinates)
+                _uiState.update {
+                    it.copy(
+                        placeOfBirth = result.label,
+                        birthCoordinates = result.coordinates,
+                        birthZoneId = zone,
+                        placeResults = emptyList(),
+                        placeError = null,
+                    )
+                }
+            }
+        }
 
         /** Validates and persists the form; emits a message and, on success, [saved]. */
         fun save() {
@@ -109,6 +165,8 @@ class ProfileEditViewModel
                                 dateOfBirth = date,
                                 timeOfBirth = time,
                                 placeOfBirth = state.placeOfBirth.trim(),
+                                birthCoordinates = state.birthCoordinates,
+                                birthZoneId = state.birthZoneId,
                             ),
                         )
                         _saved.emit(Unit)
@@ -122,6 +180,9 @@ class ProfileEditViewModel
  * Immutable form state for the profile-edit screen.
  *
  * @property isEditing whether an existing profile is being edited (vs. a new one added).
+ * @property placeResults candidate places from the last birthplace search.
+ * @property birthCoordinates the resolved birthplace coordinates once a place is chosen.
+ * @property birthZoneId the resolved birthplace time zone once a place is chosen.
  */
 data class ProfileEditUiState(
     val name: String = "",
@@ -130,7 +191,24 @@ data class ProfileEditUiState(
     val timeOfBirth: String = "",
     val placeOfBirth: String = "",
     val isEditing: Boolean = false,
+    val isSearchingPlace: Boolean = false,
+    val placeResults: List<GeocodeResult> = emptyList(),
+    val placeError: String? = null,
+    val birthCoordinates: GeoCoordinates? = null,
+    val birthZoneId: String? = null,
 )
+
+private fun ProfileEditUiState.fromProfile(profile: BirthProfile): ProfileEditUiState =
+    copy(
+        name = profile.name,
+        relation = profile.relation,
+        dateOfBirth = profile.dateOfBirth?.toString().orEmpty(),
+        timeOfBirth = profile.timeOfBirth?.toString().orEmpty(),
+        placeOfBirth = profile.placeOfBirth,
+        isEditing = true,
+        birthCoordinates = profile.birthCoordinates,
+        birthZoneId = profile.birthZoneId,
+    )
 
 private fun String.toLocalDateOrNull(): LocalDate? =
     if (isBlank()) null else runCatching { LocalDate.parse(trim()) }.getOrNull()

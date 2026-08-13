@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.core.datastore
 
+import io.github.vedicmitra.core.common.model.GeoCoordinates
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -25,9 +26,12 @@ internal object ProfileCodec {
     private const val INDEX_RELATION = 1
     private const val INDEX_DATE = 2
     private const val INDEX_TIME = 3
-    private const val INDEX_NAME = 4
-    private const val INDEX_PLACE = 5
-    private const val FIELD_COUNT = 6
+    private const val INDEX_LATITUDE = 4
+    private const val INDEX_LONGITUDE = 5
+    private const val INDEX_ZONE = 6
+    private const val INDEX_NAME = 7
+    private const val INDEX_PLACE = 8
+    private const val FIELD_COUNT = 9
     private val separator = Char(SEPARATOR_CODE).toString()
 
     fun encode(profile: BirthProfile): String =
@@ -36,6 +40,15 @@ internal object ProfileCodec {
             profile.relation.name,
             profile.dateOfBirth?.toString().orEmpty(),
             profile.timeOfBirth?.toString().orEmpty(),
+            profile.birthCoordinates
+                ?.latitude
+                ?.toString()
+                .orEmpty(),
+            profile.birthCoordinates
+                ?.longitude
+                ?.toString()
+                .orEmpty(),
+            profile.birthZoneId.orEmpty(),
             profile.name.replace(separator, " "),
             profile.placeOfBirth,
         ).joinToString(separator)
@@ -52,7 +65,18 @@ internal object ProfileCodec {
             dateOfBirth = parts[INDEX_DATE].toLocalDateOrNull(),
             timeOfBirth = parts[INDEX_TIME].toLocalTimeOrNull(),
             placeOfBirth = parts[INDEX_PLACE],
+            birthCoordinates = coordinatesOf(parts[INDEX_LATITUDE], parts[INDEX_LONGITUDE]),
+            birthZoneId = parts[INDEX_ZONE].ifBlank { null },
         )
+    }
+
+    private fun coordinatesOf(
+        latitude: String,
+        longitude: String,
+    ): GeoCoordinates? {
+        val lat = latitude.toDoubleOrNull()
+        val lng = longitude.toDoubleOrNull()
+        return if (lat != null && lng != null) GeoCoordinates(latitude = lat, longitude = lng) else null
     }
 
     private fun String.toLocalDateOrNull(): LocalDate? =
