@@ -122,6 +122,11 @@ Build configuration is not copy-pasted between modules — it lives in **convent
 A longer-range, 12-phase roadmap that balances a solid MVP with progressively richer features.
 Status marks reflect what's actually implemented today, verified against the code — not aspiration.
 
+> **Astrology arc — build order.** Profile (Phase 5) → the **chart-computation layer** in
+> `:core:astronomy` (Lagna/houses, D9/D10, Vimshottari dasha, transits — Phase 6) → Kundali display →
+> Rashifal → **Muhurta** (Phase 6). General (panchang) Muhurta needs none of this — it runs on today's
+> engine and can ship independently as a quick win.
+
 ### ✅ Phase 1 — Foundation
 
 **Engineering**
@@ -249,12 +254,12 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 ### ⬜ Phase 5 — Personalization
 
-**User Profile**
+**User Profile** *(prerequisite for the astrology features in Phase 6)*
 
 - [ ] Name
 - [ ] Date of Birth
-- [ ] Time of Birth
-- [ ] Place of Birth
+- [ ] Time of Birth *(exact — Lagna, houses and divisional charts collapse without it)*
+- [ ] Place of Birth *(reuses the `:feature:location` picker + offline timezone/DST resolver)*
 
 **Saved Information**
 
@@ -274,20 +279,44 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 ### ⬜ Phase 6 — Astrology
 
-**Horoscope**
+> Restructured to lead with the **chart-computation layer** — the shared foundation for Kundali,
+> Rashifal and Muhurta. The engine already computes graha rashi positions (with pravesh), nakshatra,
+> yoga and karana; this phase adds the natal-chart primitives it lacks.
 
-- [ ] Daily Rashifal
-- [ ] Weekly Rashifal
-- [ ] Monthly Rashifal
-- [ ] Yearly Rashifal
+**Chart-Computation Layer** *(build once, on `:core:astronomy`)*
 
-**Kundli**
+- [ ] Lagna / ascendant + house cusps
+- [ ] Whole-chart planetary rasi + degree
+- [ ] Navamsa (D9)
+- [ ] Dasamsa (D10) *(and further divisional charts as needed)*
+- [ ] Vimshottari dasha state at an arbitrary date
+- [ ] Transit snapshot at an arbitrary date
+- [ ] Pure `natalChart(birth)` + `chartStateAt(birth, moment)` API — offline, deterministic,
+  reference-checked
+
+**Kundli** *(consumes the chart layer)*
 
 - [ ] Birth chart
 - [ ] Planetary positions
 - [ ] Lagna
 - [ ] Navamsa
 - [ ] Dasha overview
+- [ ] Birth report
+
+**Horoscope (Rashifal)**
+
+- [ ] Daily Rashifal *(start light: transit vs. birth Moon rashi)*
+- [ ] Weekly Rashifal
+- [ ] Monthly Rashifal
+- [ ] Yearly Rashifal
+
+**Muhurta (Electional)** *(picking auspicious times for events)*
+
+- [ ] General / panchang muhurta — tithi · nakshatra · yoga · karana · Choghadiya/Hora · avoiding
+  Rahu/Yamaganda/Gulika · Abhijit *(needs only today's engine — buildable now)*
+- [ ] Personalized muhurta — Tarabala / Chandrabala relative to the user's birth Moon *(needs
+  Profile + the chart layer's birth-Moon slice)*
+- [ ] Event-type presets (marriage, housewarming, travel, purchase, …)
 
 **Match Making**
 
@@ -297,7 +326,6 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 **Reports**
 
-- [ ] Birth report
 - [ ] Planetary transit report
 - [ ] Personalized recommendations
 
@@ -353,6 +381,15 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [x] Dark mode
 - [x] Dynamic colors
 - [ ] Home screen widgets
+
+**Landing hub** *(new default Home — hero + categorised shortcut grid; see
+[ADR 0013](docs/adr/0013-home-hub-landing-and-navigation.md))*
+
+- [ ] Contextual "today" hero (panchang glance + auspicious-now strip) → opens the daily Panchang
+- [ ] Category tabs: Daily · Astrology · Devotion
+- [ ] Shortcut grid — tiles map to roadmap phases; unbuilt features show a "coming/unlock" state
+- [ ] Bottom nav: Home · Panchang · Reminders · Explore · Profile *(Settings moves under Profile)*
+- [ ] Panchang dashboard preserved as the Panchang destination (reachable from the hero + tab)
 
 **Accessibility**
 
