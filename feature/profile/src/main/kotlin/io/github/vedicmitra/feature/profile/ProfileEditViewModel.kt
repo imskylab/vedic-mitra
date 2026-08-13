@@ -10,11 +10,13 @@
 
 package io.github.vedicmitra.feature.profile
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.vedicmitra.core.datastore.BirthProfile
+import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.datastore.ProfileRepository
-import io.github.vedicmitra.core.datastore.UserProfile
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,48 +28,57 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import javax.inject.Inject
 
+/** The `profileId` nav argument; `null` (absent) means the form is adding a new profile. */
+internal const val PROFILE_ID_ARG = "profileId"
+
 /**
- * Presentation logic for the birth-profile screen. Holds the raw text fields (so the inputs are
- * simple to bind), validates the date/time on save, and persists via [ProfileRepository].
+ * Presentation logic for adding or editing one [BirthProfile]. When the `profileId` argument is
+ * present the form loads that profile; otherwise it starts blank and a new id is minted on save.
  */
 @HiltViewModel
-class ProfileViewModel
+class ProfileEditViewModel
     @Inject
     constructor(
         private val profileRepository: ProfileRepository,
+        savedStateHandle: SavedStateHandle,
     ) : ViewModel() {
-        private val _uiState = MutableStateFlow(ProfileUiState())
+        private val profileId: String? = savedStateHandle[PROFILE_ID_ARG]
 
-        /** Observable form state consumed by the profile screen. */
-        val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+        private val _uiState = MutableStateFlow(ProfileEditUiState())
+        val uiState: StateFlow<ProfileEditUiState> = _uiState.asStateFlow()
 
         private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
-
-        /** One-shot messages (validation errors, save confirmation) for the screen to surface. */
         val messages: SharedFlow<String> = _messages.asSharedFlow()
 
         private val _saved = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-
-        /** Emits once the profile has been saved successfully, so the screen can navigate back. */
         val saved: SharedFlow<Unit> = _saved.asSharedFlow()
 
         init {
-            viewModelScope.launch {
-                val profile = profileRepository.profile.first()
-                _uiState.update {
-                    it.copy(
-                        name = profile.name,
-                        dateOfBirth = profile.dateOfBirth?.toString().orEmpty(),
-                        timeOfBirth = profile.timeOfBirth?.toString().orEmpty(),
-                        placeOfBirth = profile.placeOfBirth,
-                    )
+            if (profileId != null) {
+                viewModelScope.launch {
+                    val existing = profileRepository.profiles.first().firstOrNull { it.id == profileId }
+                    if (existing != null) {
+                        _uiState.update {
+                            it.copy(
+                                name = existing.name,
+                                relation = existing.relation,
+                                dateOfBirth = existing.dateOfBirth?.toString().orEmpty(),
+                                timeOfBirth = existing.timeOfBirth?.toString().orEmpty(),
+                                placeOfBirth = existing.placeOfBirth,
+                                isEditing = true,
+                            )
+                        }
+                    }
                 }
             }
         }
 
         fun onNameChange(value: String) = _uiState.update { it.copy(name = value) }
+
+        fun onRelationChange(relation: ProfileRelation) = _uiState.update { it.copy(relation = relation) }
 
         fun onDateOfBirthChange(value: String) = _uiState.update { it.copy(dateOfBirth = value) }
 
@@ -82,6 +93,7 @@ class ProfileViewModel
                 val date = state.dateOfBirth.toLocalDateOrNull()
                 val time = state.timeOfBirth.toLocalTimeOrNull()
                 when {
+                    state.name.isBlank() -> _messages.emit("Enter a name")
                     state.dateOfBirth.isNotBlank() && date == null ->
                         _messages.emit("Enter the date of birth as YYYY-MM-DD")
 
@@ -89,15 +101,16 @@ class ProfileViewModel
                         _messages.emit("Enter the time of birth as HH:MM (24-hour)")
 
                     else -> {
-                        profileRepository.setProfile(
-                            UserProfile(
+                        profileRepository.upsert(
+                            BirthProfile(
+                                id = profileId ?: UUID.randomUUID().toString(),
                                 name = state.name.trim(),
+                                relation = state.relation,
                                 dateOfBirth = date,
                                 timeOfBirth = time,
                                 placeOfBirth = state.placeOfBirth.trim(),
                             ),
                         )
-                        _messages.emit("Profile saved")
                         _saved.emit(Unit)
                     }
                 }
@@ -106,14 +119,17 @@ class ProfileViewModel
     }
 
 /**
- * Immutable form state for the profile screen. Fields are raw strings mirroring the text inputs;
- * the date/time are parsed on [ProfileViewModel.save].
+ * Immutable form state for the profile-edit screen.
+ *
+ * @property isEditing whether an existing profile is being edited (vs. a new one added).
  */
-data class ProfileUiState(
+data class ProfileEditUiState(
     val name: String = "",
+    val relation: ProfileRelation = ProfileRelation.SELF,
     val dateOfBirth: String = "",
     val timeOfBirth: String = "",
     val placeOfBirth: String = "",
+    val isEditing: Boolean = false,
 )
 
 private fun String.toLocalDateOrNull(): LocalDate? =

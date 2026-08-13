@@ -12,11 +12,24 @@ package io.github.vedicmitra.core.datastore
 
 import kotlinx.coroutines.flow.Flow
 
-/** Reads and updates the user's persisted birth [UserProfile]. */
+/**
+ * Persists the user's birth [BirthProfile]s and which one is the primary "Self" profile. The app
+ * always keeps a primary while any profiles exist: the first profile added becomes primary, and
+ * removing the primary promotes another.
+ */
 interface ProfileRepository {
-    /** The user's current profile, emitting on every change. */
-    val profile: Flow<UserProfile>
+    /** The saved profiles, in insertion order, emitting on every change. */
+    val profiles: Flow<List<BirthProfile>>
 
-    /** Persists the given [profile], replacing what was stored. */
-    suspend fun setProfile(profile: UserProfile)
+    /** The id of the primary "Self" profile, or `null` when there are no profiles yet. */
+    val primaryProfileId: Flow<String?>
+
+    /** Adds [profile], replacing any existing one with the same [BirthProfile.id]. */
+    suspend fun upsert(profile: BirthProfile)
+
+    /** Removes the profile with [id], promoting another to primary if it was the primary. */
+    suspend fun remove(id: String)
+
+    /** Marks the profile with [id] as the primary "Self" profile. */
+    suspend fun setPrimary(id: String)
 }

@@ -30,12 +30,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@Suppress("MagicNumber")
 class DefaultProfileRepositoryTest {
     @get:Rule
     val tmpFolder = TemporaryFolder()
 
-    // DataStore keeps its backing file open on this scope; cancel it after each test so the temp
-    // file is released promptly (an open handle intermittently trips AccessDeniedException on Windows).
+    // Cancel each DataStore's scope after the test so its backing temp file is released promptly —
+    // a lingering handle intermittently trips AccessDeniedException on Windows.
     private val dataStoreScopes = mutableListOf<CoroutineScope>()
 
     @After
@@ -43,35 +44,65 @@ class DefaultProfileRepositoryTest {
         dataStoreScopes.forEach { it.cancel() }
     }
 
+    private val leo =
+        BirthProfile(
+            id = "a",
+            name = "Leo",
+            relation = ProfileRelation.SELF,
+            dateOfBirth = LocalDate.of(1995, 3, 14),
+            timeOfBirth = LocalTime.of(9, 30),
+            placeOfBirth = "Hyderabad, India",
+        )
+    private val mia = BirthProfile(id = "b", name = "Mia", relation = ProfileRelation.SPOUSE)
+
     @Test
-    fun `defaults to an empty, incomplete profile`() =
+    fun `defaults to no profiles and no primary`() =
         runTest {
             val repository = DefaultProfileRepository(newDataStore())
 
-            val profile = repository.profile.first()
-
-            assertThat(profile).isEqualTo(UserProfile())
-            assertThat(profile.isComplete).isFalse()
+            assertThat(repository.profiles.first()).isEmpty()
+            assertThat(repository.primaryProfileId.first()).isNull()
         }
 
     @Test
-    @Suppress("MagicNumber")
-    fun `persists and reads back the profile`() =
+    fun `the first profile added becomes primary and round-trips its fields`() =
         runTest {
             val repository = DefaultProfileRepository(newDataStore())
-            val saved =
-                UserProfile(
-                    name = "Leo",
-                    dateOfBirth = LocalDate.of(1995, 3, 14),
-                    timeOfBirth = LocalTime.of(9, 30),
-                    placeOfBirth = "Hyderabad, India",
-                )
 
-            repository.setProfile(saved)
+            repository.upsert(leo)
 
-            val loaded = repository.profile.first()
-            assertThat(loaded).isEqualTo(saved)
-            assertThat(loaded.isComplete).isTrue()
+            assertThat(repository.profiles.first()).containsExactly(leo)
+            assertThat(repository.primaryProfileId.first()).isEqualTo("a")
+        }
+
+    @Test
+    fun `adding more profiles keeps the primary and setPrimary switches it`() =
+        runTest {
+            val repository = DefaultProfileRepository(newDataStore())
+
+            repository.upsert(leo)
+            repository.upsert(mia)
+            assertThat(repository.profiles.first()).containsExactly(leo, mia)
+            assertThat(repository.primaryProfileId.first()).isEqualTo("a")
+
+            repository.setPrimary("b")
+            assertThat(repository.primaryProfileId.first()).isEqualTo("b")
+        }
+
+    @Test
+    fun `removing the primary promotes another and removing the last clears it`() =
+        runTest {
+            val repository = DefaultProfileRepository(newDataStore())
+            repository.upsert(leo)
+            repository.upsert(mia)
+
+            repository.remove("a")
+            assertThat(repository.profiles.first()).containsExactly(mia)
+            assertThat(repository.primaryProfileId.first()).isEqualTo("b")
+
+            repository.remove("b")
+            assertThat(repository.profiles.first()).isEmpty()
+            assertThat(repository.primaryProfileId.first()).isNull()
         }
 
     private fun TestScope.newDataStore(): DataStore<Preferences> {

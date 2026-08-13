@@ -254,7 +254,8 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 ### 🟡 Phase 5 — Personalization
 
-**User Profile** *(prerequisite for the astrology features in Phase 6)*
+**User Profile** *(multiple profiles — yourself + family/friends, one primary "Self"; prerequisite
+for the Phase 6 astrology features)*
 
 - [x] Name
 - [x] Date of Birth

@@ -11,12 +11,17 @@
 package io.github.vedicmitra.feature.profile
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -26,22 +31,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 
 /**
- * Birth-profile screen. Collects [ProfileViewModel] state, surfaces messages as toasts, and pops
- * back once the profile is saved. The stateless [ProfileContent] is previewable and testable.
+ * Add/edit-profile screen. Collects [ProfileEditViewModel] state, surfaces messages as toasts, and
+ * pops back once saved. The stateless [ProfileEditContent] is previewable and testable.
  */
 @Composable
-fun ProfileScreen(
+fun ProfileEditScreen(
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel(),
+    viewModel: ProfileEditViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -55,9 +62,10 @@ fun ProfileScreen(
         viewModel.saved.collect { onDone() }
     }
 
-    ProfileContent(
+    ProfileEditContent(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
+        onRelationChange = viewModel::onRelationChange,
         onDateOfBirthChange = viewModel::onDateOfBirthChange,
         onTimeOfBirthChange = viewModel::onTimeOfBirthChange,
         onPlaceOfBirthChange = viewModel::onPlaceOfBirthChange,
@@ -67,9 +75,10 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileContent(
-    uiState: ProfileUiState,
+private fun ProfileEditContent(
+    uiState: ProfileEditUiState,
     onNameChange: (String) -> Unit,
+    onRelationChange: (ProfileRelation) -> Unit,
     onDateOfBirthChange: (String) -> Unit,
     onTimeOfBirthChange: (String) -> Unit,
     onPlaceOfBirthChange: (String) -> Unit,
@@ -80,14 +89,16 @@ private fun ProfileContent(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = "Your birth profile", style = MaterialTheme.typography.titleLarge)
         Text(
-            text =
-                "Used to build your Kundali, Rashifal and personalised Muhurat (coming soon). " +
-                    "Stored only on this device.",
-            style = MaterialTheme.typography.bodyMedium,
+            text = if (uiState.isEditing) "Edit profile" else "Add profile",
+            style = MaterialTheme.typography.titleLarge,
+        )
+        Text(
+            text = "Relation",
+            style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        RelationSelector(selected = uiState.relation, onSelect = onRelationChange)
         OutlinedTextField(
             value = uiState.name,
             onValueChange = onNameChange,
@@ -122,24 +133,56 @@ private fun ProfileContent(
             modifier = Modifier.fillMaxWidth(),
         )
         Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Save profile")
+            Text(text = if (uiState.isEditing) "Save changes" else "Add profile")
+        }
+    }
+}
+
+/** A horizontal row of selectable chips for choosing the profile's [ProfileRelation]. */
+@Composable
+private fun RelationSelector(
+    selected: ProfileRelation,
+    onSelect: (ProfileRelation) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ProfileRelation.entries.forEach { relation ->
+            val active = relation == selected
+            Text(
+                text = relation.displayName,
+                style = MaterialTheme.typography.labelLarge,
+                color =
+                    if (active) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .clickable { onSelect(relation) }
+                        .background(
+                            if (active) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            },
+                        ).padding(horizontal = 14.dp, vertical = 8.dp),
+            )
         }
     }
 }
 
 @Preview
 @Composable
-private fun ProfileContentPreview() {
+private fun ProfileEditContentPreview() {
     VedicMitraTheme {
-        ProfileContent(
-            uiState =
-                ProfileUiState(
-                    name = "Leo",
-                    dateOfBirth = "1995-03-14",
-                    timeOfBirth = "09:30",
-                    placeOfBirth = "Hyderabad, India",
-                ),
+        ProfileEditContent(
+            uiState = ProfileEditUiState(name = "Mia", relation = ProfileRelation.SPOUSE),
             onNameChange = {},
+            onRelationChange = {},
             onDateOfBirthChange = {},
             onTimeOfBirthChange = {},
             onPlaceOfBirthChange = {},
