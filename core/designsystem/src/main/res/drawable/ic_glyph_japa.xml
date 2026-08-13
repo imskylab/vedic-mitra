@@ -1,0 +1,27 @@
+<!--
+  ~ Copyright (c) 2026 Jayvardhan Potabatti
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  ~
+  ~ Vedic Mitra is free software under the GNU Affero General Public License v3.0
+  ~ or later (see LICENSE). A commercial license is also available; see LICENSING.md.
+  -->
+<!-- Japa — a mala (prayer-bead ring) of maroon beads with a gold guru bead and tassel. Duotone
+     brand glyph (maroon + gold). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FF7C1D1D"
+        android:pathData="M22.3,8.5 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M28.6,10.2 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M33.1,14.8 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M34.8,21 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M33.1,27.3 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M28.6,31.8 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M22.3,33.5 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M16.1,31.8 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M11.5,27.3 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M9.8,21 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M11.5,14.8 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z M16.1,10.2 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0 Z" />
+    <path
+        android:fillColor="#FFC6971F"
+        android:pathData="M21.4,35.5 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0 Z" />
+    <path
+        android:pathData="M24,38 q-2,4 0,7 M24,38 q2,4 0,7"
+        android:strokeColor="#FFC6971F"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.3" />
+</vector>
