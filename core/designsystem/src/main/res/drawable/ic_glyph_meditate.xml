@@ -1,0 +1,30 @@
+<!--
+  ~ Copyright (c) 2026 Jayvardhan Potabatti
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  ~
+  ~ Vedic Mitra is free software under the GNU Affero General Public License v3.0
+  ~ or later (see LICENSE). A commercial license is also available; see LICENSING.md.
+  -->
+<!-- Meditate — a lotus: a maroon centre petal, two lighter side petals, on a gold water line.
+     Duotone brand glyph (maroon + gold). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FF9A2A22"
+        android:pathData="M24,33 q-10,-5 -13,-16 q10,3 13,16 Z" />
+    <path
+        android:fillColor="#FF9A2A22"
+        android:pathData="M24,33 q10,-5 13,-16 q-10,3 -13,16 Z" />
+    <path
+        android:fillColor="#FF7C1D1D"
+        android:pathData="M24,12 q5,11 0,21 q-5,-10 0,-21 Z" />
+    <path
+        android:pathData="M11,31 q13,7 26,0"
+        android:strokeColor="#FFC6971F"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.7" />
+</vector>
