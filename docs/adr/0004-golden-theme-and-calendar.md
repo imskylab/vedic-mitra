@@ -24,6 +24,14 @@ pass). Colour values are placed at Material 3 tonal positions and can be regener
 Material Theme Builder; they live only in `:core:designsystem` and are consumed via `MaterialTheme`,
 so Home/Alarm/Settings re-skinned with no code change.
 
+> Updated (2026-08-13): the palette was re-sampled from the intro splash video so the app hands off
+> seamlessly from the splash. The roles shifted from gold-primary/maroon-secondary/bronze-tertiary to
+> **saffron primary · temple-gold secondary · kumkum-maroon tertiary**, over a warm cream-parchment
+> ground (light, now the intended default — it matches the splash's closing parchment frame) and
+> temple-stone brown (dark). Same Material 3 structure and single `Color.kt`/`Theme.kt` location;
+> only the hex values and role names (`saffron*`/`gold*`/`maroon*`) changed, so every screen
+> re-skinned with no feature-code change.
+
 **Calendar.** A new `:feature:calendar` module (mirroring `:feature:home`) renders a monthly grid —
 each cell shows the day's tithi — with month paging and a detail card showing the selected day's
 full panchanga. It reuses the existing `AstronomyEngine`, which already accepts an arbitrary
