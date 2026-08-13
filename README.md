@@ -252,14 +252,14 @@ Status marks reflect what's actually implemented today, verified against the cod
 - [ ] Panchang alerts
 - [x] Upcoming observances
 
-### ⬜ Phase 5 — Personalization
+### 🟡 Phase 5 — Personalization
 
 **User Profile** *(prerequisite for the astrology features in Phase 6)*
 
-- [ ] Name
-- [ ] Date of Birth
-- [ ] Time of Birth *(exact — Lagna, houses and divisional charts collapse without it)*
-- [ ] Place of Birth *(reuses the `:feature:location` picker + offline timezone/DST resolver)*
+- [x] Name
+- [x] Date of Birth
+- [x] Time of Birth *(exact — Lagna, houses and divisional charts collapse without it)*
+- [x] Place of Birth *(free text for now; geocoding to coordinates + time zone is a later refinement)*
 
 **Saved Information**
 

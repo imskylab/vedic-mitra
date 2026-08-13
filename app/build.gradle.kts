@@ -58,6 +58,7 @@ dependencies {
     implementation(projects.feature.settings)
     implementation(projects.feature.alarm)
     implementation(projects.feature.location)
+    implementation(projects.feature.profile)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)

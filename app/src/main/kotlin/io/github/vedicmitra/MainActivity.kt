@@ -69,6 +69,7 @@ import io.github.vedicmitra.feature.home.HomeScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
 import io.github.vedicmitra.feature.location.AddCoordinatesScreen
 import io.github.vedicmitra.feature.location.LocationScreen
+import io.github.vedicmitra.feature.profile.ProfileScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
 
 /** The app's top-level destinations, shown in the bottom navigation bar in this order. */
@@ -83,10 +84,11 @@ private enum class TopDestination(
     SETTINGS("settings", "Settings", Icons.Filled.Settings),
 }
 
-// Non-tab routes reached from Settings, for managing the panchanga location.
+// Non-tab routes reached from Settings, for managing the panchanga location and the birth profile.
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
+private const val PROFILE_ROUTE = "settings/profile"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -229,7 +231,10 @@ private fun VedicMitraApp() {
             composable(TopDestination.CALENDAR.route) { CalendarScreen() }
             composable(TopDestination.ALARM.route) { AlarmScreen() }
             composable(TopDestination.SETTINGS.route) {
-                SettingsScreen(onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) })
+                SettingsScreen(
+                    onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+                    onNavigateToProfile = { navController.navigate(PROFILE_ROUTE) },
+                )
             }
             composable(LOCATION_ROUTE) {
                 LocationScreen(
@@ -239,6 +244,7 @@ private fun VedicMitraApp() {
             }
             composable(ADD_CITY_ROUTE) { AddCityScreen(onDone = { navController.popBackStack() }) }
             composable(ADD_COORDINATES_ROUTE) { AddCoordinatesScreen(onDone = { navController.popBackStack() }) }
+            composable(PROFILE_ROUTE) { ProfileScreen(onDone = { navController.popBackStack() }) }
         }
     }
 }

@@ -10,15 +10,20 @@
 
 package io.github.vedicmitra.core.datastore
 
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.common.model.AlertStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -27,6 +32,15 @@ import org.junit.rules.TemporaryFolder
 class DefaultReminderRepositoryTest {
     @get:Rule
     val tmpFolder = TemporaryFolder()
+
+    // Cancel each DataStore's scope after the test so its backing temp file is released promptly —
+    // a lingering handle intermittently trips AccessDeniedException on Windows.
+    private val dataStoreScopes = mutableListOf<CoroutineScope>()
+
+    @After
+    fun tearDown() {
+        dataStoreScopes.forEach { it.cancel() }
+    }
 
     @Test
     fun `upsert adds reminders and replaces by id`() =
@@ -157,10 +171,11 @@ class DefaultReminderRepositoryTest {
         triggerAt: Long,
     ) = PersistedReminder(id = id, triggerAtEpochMillis = triggerAt, title = "T", body = "B")
 
-    private fun kotlinx.coroutines.test.TestScope.newDataStore() =
-        PreferenceDataStoreFactory.create(
-            scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler) + Job()),
-        ) {
+    private fun TestScope.newDataStore(): DataStore<Preferences> {
+        val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler) + Job())
+        dataStoreScopes += scope
+        return PreferenceDataStoreFactory.create(scope = scope) {
             tmpFolder.newFile("reminders-${testScheduler.currentTime}.preferences_pb")
         }
+    }
 }

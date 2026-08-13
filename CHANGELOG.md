@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Birth profile.** A Settings → Profile screen captures your name, date, exact time, and place of
+  birth, stored on-device (`:feature:profile` + a `ProfileRepository` in `:core:datastore`). It is the
+  foundation the upcoming astrology features (Kundali, Rashifal, personalised Muhurat) build on.
 - **Home hub landing.** Home is now a hub: a tappable "today's panchang" hero, the auspicious-now
   strip, and a categorised shortcut grid (Daily · Astrology · Devotion) built with the brand's saffron
   theme and custom cultural glyphs. Daily tiles open the calendar, reminders, or the full daily
