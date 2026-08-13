@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Home hub landing.** Home is now a hub: a tappable "today's panchang" hero, the auspicious-now
+  strip, and a categorised shortcut grid (Daily · Astrology · Devotion) built with the brand's saffron
+  theme and custom cultural glyphs. Daily tiles open the calendar, reminders, or the full daily
+  panchang (the previous dashboard, now behind the hero and the Panchang tile); Astrology/Devotion
+  tiles are shown with a "coming soon" state so the growing roadmap stays discoverable.
 - **Intro splash video.** A short branded video plays full-screen (muted) when the app opens, then
   hands off to the home screen. Tapping anywhere — or the back button — skips it. The clip is bundled
   in the app (`res/raw`).

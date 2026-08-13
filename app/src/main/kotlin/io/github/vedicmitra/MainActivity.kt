@@ -218,6 +218,12 @@ private fun VedicMitraApp() {
             composable(TopDestination.HOME.route) {
                 HomeScreen(
                     onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+                    onOpenCalendar = {
+                        navController.navigate(TopDestination.CALENDAR.route) { launchSingleTop = true }
+                    },
+                    onOpenReminders = {
+                        navController.navigate(TopDestination.ALARM.route) { launchSingleTop = true }
+                    },
                 )
             }
             composable(TopDestination.CALENDAR.route) { CalendarScreen() }
