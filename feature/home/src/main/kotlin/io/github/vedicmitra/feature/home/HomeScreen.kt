@@ -15,8 +15,10 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,19 +26,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -49,8 +59,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,6 +93,7 @@ import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.LocalDate
 import java.time.LocalTime
@@ -89,13 +102,15 @@ import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
 
 /**
- * Home screen entry point — a glanceable landing view. Resolves the location permission, drives
- * [HomeViewModel.load], and delegates to the stateless, previewable [HomeContent]. Quick actions
- * navigate out to the other destinations.
+ * Home screen entry point — the hub landing. Resolves the location permission, drives
+ * [HomeViewModel.load], and delegates to the stateless, previewable [HomeContent]. Tiles either
+ * navigate out (calendar, reminders), open the in-screen panchang detail, or report "coming soon".
  */
 @Composable
 fun HomeScreen(
     onNavigateToLocation: () -> Unit,
+    onOpenCalendar: () -> Unit,
+    onOpenReminders: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -122,7 +137,10 @@ fun HomeScreen(
     HomeContent(
         uiState = uiState,
         onNavigateToLocation = onNavigateToLocation,
+        onOpenCalendar = onOpenCalendar,
+        onOpenReminders = onOpenReminders,
         onSetReminder = viewModel::setReminder,
+        onComingSoon = { name -> Toast.makeText(context, "$name is coming soon", Toast.LENGTH_SHORT).show() },
         modifier = modifier,
     )
 }
@@ -131,7 +149,10 @@ fun HomeScreen(
 private fun HomeContent(
     uiState: HomeUiState,
     onNavigateToLocation: () -> Unit,
+    onOpenCalendar: () -> Unit,
+    onOpenReminders: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
+    onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snapshot = uiState.snapshot
@@ -141,75 +162,320 @@ private fun HomeContent(
             CenteredBox(modifier) { Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge) }
 
         snapshot != null -> {
-            var selectedRow by remember { mutableStateOf<SectionRow?>(null) }
-            Column(
-                modifier =
-                    modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Header(uiState.locationLabel, onNavigateToLocation)
-                HeroCard(snapshot)
-                PanchangaLimbsStrip(snapshot)
-                uiState.auspicious?.let { AuspiciousCard(it) }
-                SunMoonStrip(snapshot)
-                SeasonAyanaStrip(snapshot)
-                if (uiState.planets.isNotEmpty()) {
-                    ExpandableSection(
-                        title = "PLANETORY POSITIONS",
-                        accent = MaterialTheme.colorScheme.primary,
-                        rows = uiState.planets.map { it.toSectionRow() },
-                    )
-                }
-                val auspiciousRows = snapshot.periodRows(MuhurtaQuality.AUSPICIOUS)
-                if (auspiciousRows.isNotEmpty()) {
-                    ExpandableSection(
-                        "AUSPICIOUS PERIODS",
-                        MaterialTheme.colorScheme.primary,
-                        auspiciousRows,
-                        onRowClick = { selectedRow = it },
-                    )
-                }
-                val inauspiciousRows = snapshot.periodRows(MuhurtaQuality.INAUSPICIOUS)
-                if (inauspiciousRows.isNotEmpty()) {
-                    ExpandableSection(
-                        "INAUSPICIOUS PERIODS",
-                        MaterialTheme.colorScheme.error,
-                        inauspiciousRows,
-                        onRowClick = { selectedRow = it },
-                    )
-                }
-                if (uiState.festivals.isNotEmpty()) {
-                    ExpandableSection(
-                        title = "UPCOMING FESTIVALS",
-                        accent = MaterialTheme.colorScheme.primary,
-                        rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
-                        onRowClick = { selectedRow = it },
-                    )
-                }
-                if (uiState.events.isNotEmpty()) {
-                    ExpandableSection(
-                        title = "UPCOMING EVENTS",
-                        accent = MaterialTheme.colorScheme.tertiary,
-                        rows = uiState.events.map { it.toEventRow() },
-                        onRowClick = { selectedRow = it },
-                    )
-                }
-                if (uiState.usingDefaultLocation) {
-                    Text(
-                        text = "Showing New Delhi — grant location access for your area.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            selectedRow?.let { row ->
-                RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null }
+            var showDetail by rememberSaveable { mutableStateOf(false) }
+            if (showDetail) {
+                PanchangaDetailView(
+                    uiState = uiState,
+                    onBack = { showDetail = false },
+                    onSetReminder = onSetReminder,
+                    modifier = modifier,
+                )
+            } else {
+                HubView(
+                    uiState = uiState,
+                    snapshot = snapshot,
+                    onNavigateToLocation = onNavigateToLocation,
+                    onOpenPanchang = { showDetail = true },
+                    onOpenCalendar = onOpenCalendar,
+                    onOpenReminders = onOpenReminders,
+                    onComingSoon = onComingSoon,
+                    modifier = modifier,
+                )
             }
         }
     }
+}
+
+/** The hub landing: header, a tappable today's-panchang hero, the auspicious-now strip, category
+ *  tabs, and the shortcut grid. */
+@Composable
+private fun HubView(
+    uiState: HomeUiState,
+    snapshot: AstronomySnapshot,
+    onNavigateToLocation: () -> Unit,
+    onOpenPanchang: () -> Unit,
+    onOpenCalendar: () -> Unit,
+    onOpenReminders: () -> Unit,
+    onComingSoon: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var category by rememberSaveable { mutableStateOf(HubCategory.DAILY) }
+    Column(
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Header(uiState.locationLabel, onNavigateToLocation)
+        HeroCard(snapshot, onClick = onOpenPanchang)
+        uiState.auspicious?.let { AuspiciousCard(it) }
+        CategoryTabs(category) { category = it }
+        ShortcutGrid(category, onOpenPanchang, onOpenCalendar, onOpenReminders, onComingSoon)
+        if (uiState.usingDefaultLocation) {
+            Text(
+                text = "Showing New Delhi — grant location access for your area.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** The Daily / Astrology / Devotion category selector above the shortcut grid. */
+@Composable
+private fun CategoryTabs(
+    selected: HubCategory,
+    onSelect: (HubCategory) -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        HubCategory.entries.forEach { category ->
+            val active = category == selected
+            Text(
+                text = category.label,
+                style = MaterialTheme.typography.labelLarge,
+                color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier =
+                    Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .clickable { onSelect(category) }
+                        .background(if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+            )
+        }
+    }
+}
+
+/** The shortcut grid for the selected [category], laid out [GRID_COLUMNS] tiles per row. */
+@Composable
+private fun ShortcutGrid(
+    category: HubCategory,
+    onOpenPanchang: () -> Unit,
+    onOpenCalendar: () -> Unit,
+    onOpenReminders: () -> Unit,
+    onComingSoon: (String) -> Unit,
+) {
+    val tiles: List<@Composable () -> Unit> =
+        when (category) {
+            HubCategory.DAILY ->
+                listOf(
+                    { GlyphTile("Panchang", VedicIcons.panchang, HubCategory.DAILY, onClick = onOpenPanchang) },
+                    { VectorTile("Calendar", Icons.Filled.DateRange, HubCategory.DAILY, onClick = onOpenCalendar) },
+                    { GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, onClick = onOpenPanchang) },
+                    { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenPanchang) },
+                    {
+                        VectorTile(
+                            label = "Reminders",
+                            icon = Icons.Filled.Notifications,
+                            category = HubCategory.DAILY,
+                            onClick = onOpenReminders,
+                        )
+                    },
+                )
+
+            HubCategory.ASTROLOGY ->
+                listOf(
+                    {
+                        GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, enabled = false) {
+                            onComingSoon("Kundali")
+                        }
+                    },
+                    {
+                        VectorTile("Rashifal", Icons.Filled.Star, HubCategory.ASTROLOGY, enabled = false) {
+                            onComingSoon("Rashifal")
+                        }
+                    },
+                    {
+                        VectorTile("Match", Icons.Filled.Favorite, HubCategory.ASTROLOGY, enabled = false) {
+                            onComingSoon("Match making")
+                        }
+                    },
+                )
+
+            HubCategory.DEVOTION ->
+                listOf(
+                    { OmTile("Stotra", enabled = false) { onComingSoon("Stotra") } },
+                    {
+                        GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, enabled = false) {
+                            onComingSoon("Japa")
+                        }
+                    },
+                    {
+                        GlyphTile("Meditate", VedicIcons.meditate, HubCategory.DEVOTION, enabled = false) {
+                            onComingSoon("Meditation")
+                        }
+                    },
+                )
+        }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        tiles.chunked(GRID_COLUMNS).forEach { rowTiles ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                rowTiles.forEach { tile -> Box(modifier = Modifier.weight(1f)) { tile() } }
+                repeat(GRID_COLUMNS - rowTiles.size) { Spacer(modifier = Modifier.weight(1f)) }
+            }
+        }
+    }
+}
+
+/** The detailed daily panchanga (limbs, sun/moon, periods, festivals, events), behind a back button. */
+@Composable
+private fun PanchangaDetailView(
+    uiState: HomeUiState,
+    onBack: () -> Unit,
+    onSetReminder: (ReminderTarget) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val snapshot = uiState.snapshot ?: return
+    var selectedRow by remember { mutableStateOf<SectionRow?>(null) }
+    Column(
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+            Text(text = "Today's Panchang", style = MaterialTheme.typography.titleMedium)
+        }
+        PanchangaLimbsStrip(snapshot)
+        SunMoonStrip(snapshot)
+        SeasonAyanaStrip(snapshot)
+        if (uiState.planets.isNotEmpty()) {
+            ExpandableSection(
+                title = "PLANETARY POSITIONS",
+                accent = MaterialTheme.colorScheme.primary,
+                rows = uiState.planets.map { it.toSectionRow() },
+            )
+        }
+        snapshot.periodRows(MuhurtaQuality.AUSPICIOUS).takeIf { it.isNotEmpty() }?.let { rows ->
+            ExpandableSection(
+                title = "AUSPICIOUS PERIODS",
+                accent = MaterialTheme.colorScheme.primary,
+                rows = rows,
+                onRowClick = { selectedRow = it },
+            )
+        }
+        snapshot.periodRows(MuhurtaQuality.INAUSPICIOUS).takeIf { it.isNotEmpty() }?.let { rows ->
+            ExpandableSection(
+                title = "INAUSPICIOUS PERIODS",
+                accent = MaterialTheme.colorScheme.error,
+                rows = rows,
+                onRowClick = { selectedRow = it },
+            )
+        }
+        if (uiState.festivals.isNotEmpty()) {
+            ExpandableSection(
+                "UPCOMING FESTIVALS",
+                MaterialTheme.colorScheme.primary,
+                uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                onRowClick = { selectedRow = it },
+            )
+        }
+        if (uiState.events.isNotEmpty()) {
+            ExpandableSection(
+                "UPCOMING EVENTS",
+                MaterialTheme.colorScheme.tertiary,
+                uiState.events.map { it.toEventRow() },
+                onRowClick = { selectedRow = it },
+            )
+        }
+    }
+    selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
+}
+
+/** A shortcut tile: a tinted rounded chip holding [icon], with a [label] below. */
+@Composable
+private fun TileButton(
+    label: String,
+    category: HubCategory,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(15.dp)).background(category.container()),
+            contentAlignment = Alignment.Center,
+        ) { icon() }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** A tile whose icon is one of the brand's duotone cultural glyphs (rendered in its own colours). */
+@Composable
+private fun GlyphTile(
+    label: String,
+    @androidx.annotation.DrawableRes glyph: Int,
+    category: HubCategory,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    TileButton(label, category, enabled, onClick) {
+        Icon(
+            painter = painterResource(glyph),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(26.dp),
+        )
+    }
+}
+
+/** A tile whose icon is a Material symbol, tinted to the category's on-container colour. */
+@Composable
+private fun VectorTile(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    category: HubCategory,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val tint = category.onContainer()
+    TileButton(label, category, enabled, onClick) {
+        Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(26.dp))
+    }
+}
+
+/** The Stotra tile: Om (ॐ) as a Devanagari text glyph rather than a drawable. */
+@Composable
+private fun OmTile(
+    label: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val tint = HubCategory.DEVOTION.onContainer()
+    TileButton(label, HubCategory.DEVOTION, enabled, onClick) {
+        Text(text = "ॐ", style = MaterialTheme.typography.headlineSmall, color = tint)
+    }
+}
+
+@Composable
+private fun HubCategory.container(): Color =
+    when (this) {
+        HubCategory.DAILY -> MaterialTheme.colorScheme.primaryContainer
+        HubCategory.ASTROLOGY -> MaterialTheme.colorScheme.secondaryContainer
+        HubCategory.DEVOTION -> MaterialTheme.colorScheme.tertiaryContainer
+    }
+
+@Composable
+private fun HubCategory.onContainer(): Color =
+    when (this) {
+        HubCategory.DAILY -> MaterialTheme.colorScheme.onPrimaryContainer
+        HubCategory.ASTROLOGY -> MaterialTheme.colorScheme.onSecondaryContainer
+        HubCategory.DEVOTION -> MaterialTheme.colorScheme.onTertiaryContainer
+    }
+
+/** The hub's shortcut categories, shown as tabs above the grid. */
+private enum class HubCategory(
+    val label: String,
+) {
+    DAILY("Daily"),
+    ASTROLOGY("Astrology"),
+    DEVOTION("Devotion"),
 }
 
 @Composable
@@ -250,28 +516,45 @@ private fun Header(
 }
 
 @Composable
-private fun HeroCard(snapshot: AstronomySnapshot) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+private fun HeroCard(
+    snapshot: AstronomySnapshot,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = snapshot.vara.displayName, style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    text = "Today's Panchang",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = snapshot.vara.displayName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
                 Text(
                     text = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
                     style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(top = 4.dp),
                 )
                 Text(
-                    text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp),
+                    text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name} · tap for full panchang ›",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
             Text(
                 text = snapshot.moonPhase.displayName,
                 style = MaterialTheme.typography.labelMedium,
                 textAlign = TextAlign.End,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
     }
@@ -498,6 +781,7 @@ private val Paksha.title: String
 
 private const val AFTERNOON_FROM_HOUR = 12
 private const val EVENING_FROM_HOUR = 17
+private const val GRID_COLUMNS = 3
 
 private fun greeting(): String =
     when (LocalTime.now().hour) {
@@ -531,7 +815,14 @@ private fun formatDate(instant: Instant): String = zoned(instant).format(festiva
 @Composable
 private fun HomeContentPreview() {
     VedicMitraTheme {
-        HomeContent(uiState = sampleHomeState(), onNavigateToLocation = {}, onSetReminder = {})
+        HomeContent(
+            uiState = sampleHomeState(),
+            onNavigateToLocation = {},
+            onOpenCalendar = {},
+            onOpenReminders = {},
+            onSetReminder = {},
+            onComingSoon = {},
+        )
     }
 }
 
