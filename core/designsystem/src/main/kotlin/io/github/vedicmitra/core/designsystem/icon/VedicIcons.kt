@@ -44,7 +44,7 @@ object VedicIcons {
     @get:DrawableRes
     val japa: Int = R.drawable.ic_glyph_japa
 
-    /** A lotus — Meditation. */
+    /** A figure seated in padmasana before a rising sun — Meditation. */
     @get:DrawableRes
     val meditate: Int = R.drawable.ic_glyph_meditate
 }

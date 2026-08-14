@@ -19,4 +19,6 @@ dependencies {
     implementation(projects.core.location)
     // For the runtime location-permission request (rememberLauncherForActivityResult).
     implementation(libs.androidx.activity.compose)
+    // The Events shortcut uses a Material Symbol (Icons.Filled.Event) outside the core icon set.
+    implementation(libs.androidx.compose.material.icons.extended)
 }
