@@ -27,13 +27,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -84,21 +85,20 @@ private enum class TopDestination(
     val icon: ImageVector,
 ) {
     HOME("home", "Home", Icons.Filled.Home),
-    CALENDAR("calendar", "Panchang", Icons.Filled.DateRange),
-    ALARM("alarm", "Reminders", Icons.Filled.Notifications),
     SETTINGS("settings", "Settings", Icons.Filled.Settings),
+    PROFILE("profile", "Profile", Icons.Filled.Person),
 }
 
-// Non-tab routes reached from Settings, for managing the panchanga location and the birth profile.
+// Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
+// tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
+private const val CALENDAR_ROUTE = "calendar"
+private const val ALARM_ROUTE = "alarm"
+private const val KUNDALI_ROUTE = "kundali"
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
-private const val PROFILE_ROUTE = "settings/profile"
-private const val PROFILE_EDIT_ROUTE = "settings/profile/edit"
+private const val PROFILE_EDIT_ROUTE = "profile/edit"
 private const val PROFILE_ID_ARG = "profileId"
-
-// Astrology destinations reached from the Home hub.
-private const val KUNDALI_ROUTE = "kundali"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -200,21 +200,24 @@ private fun VedicMitraApp() {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(title = { Text(current?.label ?: "Vedic Mitra") })
+            CenterAlignedTopAppBar(
+                title = { Text(current?.label ?: "Vedic Mitra") },
+                navigationIcon = {
+                    // Sub-routes (calendar, reminders, kundali, …) aren't tabs, so offer a back arrow.
+                    if (current == null) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
+            )
         },
         bottomBar = {
             NavigationBar {
                 TopDestination.entries.forEach { destination ->
                     NavigationBarItem(
                         selected = currentRoute == destination.route,
-                        onClick = {
-                            navController.navigate(destination.route) {
-                                // Single instance per tab; preserve/restore each tab's own state.
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
+                        onClick = { navController.navigateToTab(destination.route) },
                         icon = { Icon(destination.icon, contentDescription = destination.label) },
                         label = { Text(destination.label) },
                     )
@@ -223,6 +226,19 @@ private fun VedicMitraApp() {
         },
     ) { padding ->
         AppNavHost(navController = navController, modifier = Modifier.padding(padding))
+    }
+}
+
+/**
+ * Navigates to a bottom-bar [route] with the standard single-instance-per-tab behaviour: each tab
+ * keeps its own back stack, and re-selecting a tab restores that saved state instead of stacking a
+ * fresh copy. Used both by the bottom bar and by in-app shortcuts that jump to a tab.
+ */
+private fun NavHostController.navigateToTab(route: String) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 
@@ -240,23 +256,25 @@ private fun AppNavHost(
         composable(TopDestination.HOME.route) {
             HomeScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
-                onOpenCalendar = {
-                    navController.navigate(TopDestination.CALENDAR.route) { launchSingleTop = true }
-                },
-                onOpenReminders = {
-                    navController.navigate(TopDestination.ALARM.route) { launchSingleTop = true }
-                },
+                onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
+                onOpenReminders = { navController.navigate(ALARM_ROUTE) },
                 onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
             )
         }
-        composable(TopDestination.CALENDAR.route) { CalendarScreen() }
-        composable(TopDestination.ALARM.route) { AlarmScreen() }
         composable(TopDestination.SETTINGS.route) {
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
-                onNavigateToProfile = { navController.navigate(PROFILE_ROUTE) },
+                onNavigateToProfile = { navController.navigateToTab(TopDestination.PROFILE.route) },
             )
         }
+        composable(TopDestination.PROFILE.route) {
+            ProfileListScreen(
+                onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },
+                onEditProfile = { id -> navController.navigate("$PROFILE_EDIT_ROUTE?$PROFILE_ID_ARG=$id") },
+            )
+        }
+        composable(CALENDAR_ROUTE) { CalendarScreen() }
+        composable(ALARM_ROUTE) { AlarmScreen() }
         composable(LOCATION_ROUTE) {
             LocationScreen(
                 onAddCity = { navController.navigate(ADD_CITY_ROUTE) },
@@ -265,12 +283,6 @@ private fun AppNavHost(
         }
         composable(ADD_CITY_ROUTE) { AddCityScreen(onDone = { navController.popBackStack() }) }
         composable(ADD_COORDINATES_ROUTE) { AddCoordinatesScreen(onDone = { navController.popBackStack() }) }
-        composable(PROFILE_ROUTE) {
-            ProfileListScreen(
-                onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },
-                onEditProfile = { id -> navController.navigate("$PROFILE_EDIT_ROUTE?$PROFILE_ID_ARG=$id") },
-            )
-        }
         composable(
             route = "$PROFILE_EDIT_ROUTE?$PROFILE_ID_ARG={$PROFILE_ID_ARG}",
             arguments =
@@ -283,7 +295,7 @@ private fun AppNavHost(
                 ),
         ) { ProfileEditScreen(onDone = { navController.popBackStack() }) }
         composable(KUNDALI_ROUTE) {
-            KundaliScreen(onSetUpProfile = { navController.navigate(PROFILE_ROUTE) })
+            KundaliScreen(onSetUpProfile = { navController.navigateToTab(TopDestination.PROFILE.route) })
         }
     }
 }

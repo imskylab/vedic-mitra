@@ -125,6 +125,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
 
 ### Changed
+- **Bottom navigation is now Home · Settings · Profile.** Panchang and Reminders left the bottom bar
+  (they're already tiles on the Home hub) and Profile joined it as a first-class tab. The Home hub's
+  Daily / Astrology / Devotion tabs were removed too — every shortcut now sits on one screen, each
+  tile still tinted by its category. Panchang, Reminders, Kundali and the location/profile-edit
+  screens open as pushed sub-routes with a back arrow in the top bar.
+- **Festivals and Events are now their own full, tappable lists.** The Home hub's Festivals tile opens
+  the complete list of upcoming festivals and Sankrantis, and a new Events tile opens the full list of
+  lunar observances (Amavasya, Purnima, Ekadashi) — each row tappable for its significance, with a
+  Set-reminder button on recurring observances. The upcoming-festivals peek moved onto the hub landing,
+  and both lists were removed from the Today's Panchang detail screen (which keeps the day's limbs,
+  sun/moon, planetary positions and auspicious/inauspicious periods). The Panchang shortcut is renamed
+  "Today's Panchang", and Muhurat is now marked coming soon until it's implemented.
 - **Reminder lead time reads as a label until you edit it.** Each reminder card now shows its lead
   time as compact text (e.g. "Remind 2 hours before" / "Remind at start") and expands to the
   number-and-unit editor only when tapped — lighter to scan and less prone to accidental edits.
@@ -139,6 +151,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stdlib `kotlin.time.Instant`.
 
 ### Fixed
+- **Returning Home from a hub tile no longer gets stuck.** Opening Panchang or Reminders from a Home
+  tile and then tapping Home could freeze on a blank screen: the tiles pushed onto destinations that
+  were also bottom tabs, so the save/restore state of the two navigation paths collided. Those
+  screens are now plain pushed sub-routes and every tab jump goes through a single
+  `navigateToTab` helper, so back and tab switching behave consistently.
 - **Reminders now survive an app update, and alarm-mode reminders always surface.** Reinstalling the
   APK (like a reboot) clears pending alarms, but `BootReceiver` only re-armed on `BOOT_COMPLETED`, so
   after an update a reminder silently never fired until the Reminders screen was reopened. It now also

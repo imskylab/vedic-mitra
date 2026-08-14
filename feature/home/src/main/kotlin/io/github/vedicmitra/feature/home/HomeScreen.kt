@@ -34,6 +34,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -165,33 +166,66 @@ private fun HomeContent(
             CenteredBox(modifier) { Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge) }
 
         snapshot != null -> {
-            var showDetail by rememberSaveable { mutableStateOf(false) }
-            if (showDetail) {
-                PanchangaDetailView(
-                    uiState = uiState,
-                    onBack = { showDetail = false },
-                    onSetReminder = onSetReminder,
-                    modifier = modifier,
-                )
-            } else {
-                HubView(
-                    uiState = uiState,
-                    snapshot = snapshot,
-                    onNavigateToLocation = onNavigateToLocation,
-                    onOpenPanchang = { showDetail = true },
-                    onOpenCalendar = onOpenCalendar,
-                    onOpenReminders = onOpenReminders,
-                    onOpenKundali = onOpenKundali,
-                    onComingSoon = onComingSoon,
-                    modifier = modifier,
-                )
+            var view by rememberSaveable { mutableStateOf(HomeView.HUB) }
+            val toHub = { view = HomeView.HUB }
+            when (view) {
+                HomeView.HUB ->
+                    HubView(
+                        uiState = uiState,
+                        snapshot = snapshot,
+                        onNavigateToLocation = onNavigateToLocation,
+                        onOpenPanchang = { view = HomeView.PANCHANG },
+                        onOpenCalendar = onOpenCalendar,
+                        onOpenReminders = onOpenReminders,
+                        onOpenKundali = onOpenKundali,
+                        onOpenFestivals = { view = HomeView.FESTIVALS },
+                        onOpenEvents = { view = HomeView.EVENTS },
+                        onSetReminder = onSetReminder,
+                        onComingSoon = onComingSoon,
+                        modifier = modifier,
+                    )
+
+                HomeView.PANCHANG ->
+                    PanchangaDetailView(
+                        uiState = uiState,
+                        onBack = toHub,
+                        onSetReminder = onSetReminder,
+                        modifier = modifier,
+                    )
+
+                HomeView.FESTIVALS ->
+                    EventListView(
+                        title = "Festivals",
+                        rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                        onBack = toHub,
+                        onSetReminder = onSetReminder,
+                        modifier = modifier,
+                    )
+
+                HomeView.EVENTS ->
+                    EventListView(
+                        title = "Events",
+                        rows = uiState.events.map { it.toEventRow() },
+                        onBack = toHub,
+                        onSetReminder = onSetReminder,
+                        modifier = modifier,
+                    )
             }
         }
     }
 }
 
-/** The hub landing: header, a tappable today's-panchang hero, the auspicious-now strip, category
- *  tabs, and the shortcut grid. */
+/** Which sub-view the Home tab is showing: the hub, the full daily panchang, or a full list. */
+private enum class HomeView {
+    HUB,
+    PANCHANG,
+    FESTIVALS,
+    EVENTS,
+}
+
+/** The hub landing: header, a tappable today's-panchang hero, the auspicious-now strip, the full
+ *  shortcut grid (all shortcuts on one screen, each tinted by its category), and a peek at the next
+ *  upcoming festivals (tap a row for its significance). */
 @Composable
 private fun HubView(
     uiState: HomeUiState,
@@ -201,10 +235,13 @@ private fun HubView(
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
+    onOpenFestivals: () -> Unit,
+    onOpenEvents: () -> Unit,
+    onSetReminder: (ReminderTarget) -> Unit,
     onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var category by rememberSaveable { mutableStateOf(HubCategory.DAILY) }
+    var selectedRow by remember { mutableStateOf<SectionRow?>(null) }
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -212,8 +249,23 @@ private fun HubView(
         Header(uiState.locationLabel, onNavigateToLocation)
         HeroCard(snapshot, onClick = onOpenPanchang)
         uiState.auspicious?.let { AuspiciousCard(it) }
-        CategoryTabs(category) { category = it }
-        ShortcutGrid(category, onOpenPanchang, onOpenCalendar, onOpenReminders, onOpenKundali, onComingSoon)
+        ShortcutGrid(
+            onOpenPanchang = onOpenPanchang,
+            onOpenCalendar = onOpenCalendar,
+            onOpenReminders = onOpenReminders,
+            onOpenKundali = onOpenKundali,
+            onOpenFestivals = onOpenFestivals,
+            onOpenEvents = onOpenEvents,
+            onComingSoon = onComingSoon,
+        )
+        if (uiState.festivals.isNotEmpty()) {
+            ExpandableSection(
+                title = "UPCOMING FESTIVALS",
+                accent = MaterialTheme.colorScheme.primary,
+                rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                onRowClick = { selectedRow = it },
+            )
+        }
         if (uiState.usingDefaultLocation) {
             Text(
                 text = "Showing New Delhi — grant location access for your area.",
@@ -222,90 +274,51 @@ private fun HubView(
             )
         }
     }
+    selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
 }
 
-/** The Daily / Astrology / Devotion category selector above the shortcut grid. */
-@Composable
-private fun CategoryTabs(
-    selected: HubCategory,
-    onSelect: (HubCategory) -> Unit,
-) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        HubCategory.entries.forEach { category ->
-            val active = category == selected
-            Text(
-                text = category.label,
-                style = MaterialTheme.typography.labelLarge,
-                color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier =
-                    Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .clickable { onSelect(category) }
-                        .background(if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-            )
-        }
-    }
-}
-
-/** The shortcut grid for the selected [category], laid out [GRID_COLUMNS] tiles per row. */
+/** The full shortcut grid — every shortcut on one screen, [GRID_COLUMNS] tiles per row. */
 @Composable
 private fun ShortcutGrid(
-    category: HubCategory,
     onOpenPanchang: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
+    onOpenFestivals: () -> Unit,
+    onOpenEvents: () -> Unit,
     onComingSoon: (String) -> Unit,
 ) {
     val tiles: List<@Composable () -> Unit> =
-        when (category) {
-            HubCategory.DAILY ->
-                listOf(
-                    { GlyphTile("Panchang", VedicIcons.panchang, HubCategory.DAILY, onClick = onOpenPanchang) },
-                    { VectorTile("Calendar", Icons.Filled.DateRange, HubCategory.DAILY, onClick = onOpenCalendar) },
-                    { GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, onClick = onOpenPanchang) },
-                    { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenPanchang) },
-                    {
-                        VectorTile(
-                            label = "Reminders",
-                            icon = Icons.Filled.Notifications,
-                            category = HubCategory.DAILY,
-                            onClick = onOpenReminders,
-                        )
-                    },
-                )
-
-            HubCategory.ASTROLOGY ->
-                listOf(
-                    { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
-                    {
-                        VectorTile("Rashifal", Icons.Filled.Star, HubCategory.ASTROLOGY, enabled = false) {
-                            onComingSoon("Rashifal")
-                        }
-                    },
-                    {
-                        VectorTile("Match", Icons.Filled.Favorite, HubCategory.ASTROLOGY, enabled = false) {
-                            onComingSoon("Match making")
-                        }
-                    },
-                )
-
-            HubCategory.DEVOTION ->
-                listOf(
-                    { OmTile("Stotra", enabled = false) { onComingSoon("Stotra") } },
-                    {
-                        GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, enabled = false) {
-                            onComingSoon("Japa")
-                        }
-                    },
-                    {
-                        GlyphTile("Meditate", VedicIcons.meditate, HubCategory.DEVOTION, enabled = false) {
-                            onComingSoon("Meditation")
-                        }
-                    },
-                )
-        }
+        listOf(
+            { GlyphTile("Today's Panchang", VedicIcons.panchang, HubCategory.DAILY, onClick = onOpenPanchang) },
+            { VectorTile("Calendar", Icons.Filled.DateRange, HubCategory.DAILY, onClick = onOpenCalendar) },
+            {
+                GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, enabled = false) {
+                    onComingSoon("Muhurat")
+                }
+            },
+            { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenFestivals) },
+            { VectorTile("Events", Icons.Filled.Event, HubCategory.DAILY, onClick = onOpenEvents) },
+            { VectorTile("Reminders", Icons.Filled.Notifications, HubCategory.DAILY, onClick = onOpenReminders) },
+            { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
+            {
+                VectorTile("Rashifal", Icons.Filled.Star, HubCategory.ASTROLOGY, enabled = false) {
+                    onComingSoon("Rashifal")
+                }
+            },
+            {
+                VectorTile("Match", Icons.Filled.Favorite, HubCategory.ASTROLOGY, enabled = false) {
+                    onComingSoon("Match making")
+                }
+            },
+            { OmTile("Stotra", enabled = false) { onComingSoon("Stotra") } },
+            { GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, enabled = false) { onComingSoon("Japa") } },
+            {
+                GlyphTile("Meditate", VedicIcons.meditate, HubCategory.DEVOTION, enabled = false) {
+                    onComingSoon("Meditation")
+                }
+            },
+        )
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         tiles.chunked(GRID_COLUMNS).forEach { rowTiles ->
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -362,21 +375,42 @@ private fun PanchangaDetailView(
                 onRowClick = { selectedRow = it },
             )
         }
-        if (uiState.festivals.isNotEmpty()) {
-            ExpandableSection(
-                "UPCOMING FESTIVALS",
-                MaterialTheme.colorScheme.primary,
-                uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
-                onRowClick = { selectedRow = it },
-            )
+    }
+    selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
+}
+
+/**
+ * A full, scrollable list of [rows] under a [title] with a back button — used for the Festivals and
+ * Events shortcuts. Each row is tappable, opening the significance sheet (and a Set-reminder button
+ * for recurring observances).
+ */
+@Composable
+private fun EventListView(
+    title: String,
+    rows: List<SectionRow>,
+    onBack: () -> Unit,
+    onSetReminder: (ReminderTarget) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var selectedRow by remember { mutableStateOf<SectionRow?>(null) }
+    Column(
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
         }
-        if (uiState.events.isNotEmpty()) {
-            ExpandableSection(
-                "UPCOMING EVENTS",
-                MaterialTheme.colorScheme.tertiary,
-                uiState.events.map { it.toEventRow() },
-                onRowClick = { selectedRow = it },
+        if (rows.isEmpty()) {
+            Text(
+                text = "Nothing upcoming.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        } else {
+            rows.forEach { row -> SectionRowLine(row, onClick = { selectedRow = row }) }
         }
     }
     selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
@@ -471,13 +505,11 @@ private fun HubCategory.onContainer(): Color =
         HubCategory.DEVOTION -> MaterialTheme.colorScheme.onTertiaryContainer
     }
 
-/** The hub's shortcut categories, shown as tabs above the grid. */
-private enum class HubCategory(
-    val label: String,
-) {
-    DAILY("Daily"),
-    ASTROLOGY("Astrology"),
-    DEVOTION("Devotion"),
+/** The hub's shortcut categories — each tints its tiles with its own container colour. */
+private enum class HubCategory {
+    DAILY,
+    ASTROLOGY,
+    DEVOTION,
 }
 
 @Composable
