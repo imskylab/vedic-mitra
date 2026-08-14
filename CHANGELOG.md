@@ -10,8 +10,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - **Kundali (birth chart).** The Kundali tile on the Home hub now opens your birth chart, computed
   from your primary profile: the lagna, the nine grahas by rashi and house (with retrograde), the
-  Moon's nakshatra and pada, and your current Vimshottari mahadasha. A tabular view for now — the
-  North-Indian diamond visual is next.
+  Moon's nakshatra and pada, and your current Vimshottari mahadasha. Drawn as a **North-Indian diamond
+  chart** — the square divided by its diagonals and the side-midpoint diamond into twelve fixed houses
+  (house 1 at the top centre, running anticlockwise), each showing its rashi number and the grahas
+  placed there (retrograde in red) — above the same details as tappable cards.
 - **All nine grahas.** Planetary positions now cover the full classical set — Sun, Moon, Mars,
   Mercury, Jupiter, Venus, Saturn, Rahu and Ketu (sidereal / Lahiri) — up from four. Mars, Mercury and
   Saturn use the JPL Keplerian ephemeris; Rahu/Ketu are the mean lunar nodes. This shows on the Home
