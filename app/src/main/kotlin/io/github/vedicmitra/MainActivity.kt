@@ -69,6 +69,7 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
 import io.github.vedicmitra.feature.home.HomeScreen
+import io.github.vedicmitra.feature.kundali.KundaliScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
 import io.github.vedicmitra.feature.location.AddCoordinatesScreen
 import io.github.vedicmitra.feature.location.LocationScreen
@@ -95,6 +96,9 @@ private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
 private const val PROFILE_ROUTE = "settings/profile"
 private const val PROFILE_EDIT_ROUTE = "settings/profile/edit"
 private const val PROFILE_ID_ARG = "profileId"
+
+// Astrology destinations reached from the Home hub.
+private const val KUNDALI_ROUTE = "kundali"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -242,6 +246,7 @@ private fun AppNavHost(
                 onOpenReminders = {
                     navController.navigate(TopDestination.ALARM.route) { launchSingleTop = true }
                 },
+                onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
             )
         }
         composable(TopDestination.CALENDAR.route) { CalendarScreen() }
@@ -277,5 +282,8 @@ private fun AppNavHost(
                     },
                 ),
         ) { ProfileEditScreen(onDone = { navController.popBackStack() }) }
+        composable(KUNDALI_ROUTE) {
+            KundaliScreen(onSetUpProfile = { navController.navigate(PROFILE_ROUTE) })
+        }
     }
 }

@@ -111,6 +111,7 @@ fun HomeScreen(
     onNavigateToLocation: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
+    onOpenKundali: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -139,6 +140,7 @@ fun HomeScreen(
         onNavigateToLocation = onNavigateToLocation,
         onOpenCalendar = onOpenCalendar,
         onOpenReminders = onOpenReminders,
+        onOpenKundali = onOpenKundali,
         onSetReminder = viewModel::setReminder,
         onComingSoon = { name -> Toast.makeText(context, "$name is coming soon", Toast.LENGTH_SHORT).show() },
         modifier = modifier,
@@ -151,6 +153,7 @@ private fun HomeContent(
     onNavigateToLocation: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
+    onOpenKundali: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -178,6 +181,7 @@ private fun HomeContent(
                     onOpenPanchang = { showDetail = true },
                     onOpenCalendar = onOpenCalendar,
                     onOpenReminders = onOpenReminders,
+                    onOpenKundali = onOpenKundali,
                     onComingSoon = onComingSoon,
                     modifier = modifier,
                 )
@@ -196,6 +200,7 @@ private fun HubView(
     onOpenPanchang: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
+    onOpenKundali: () -> Unit,
     onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -208,7 +213,7 @@ private fun HubView(
         HeroCard(snapshot, onClick = onOpenPanchang)
         uiState.auspicious?.let { AuspiciousCard(it) }
         CategoryTabs(category) { category = it }
-        ShortcutGrid(category, onOpenPanchang, onOpenCalendar, onOpenReminders, onComingSoon)
+        ShortcutGrid(category, onOpenPanchang, onOpenCalendar, onOpenReminders, onOpenKundali, onComingSoon)
         if (uiState.usingDefaultLocation) {
             Text(
                 text = "Showing New Delhi — grant location access for your area.",
@@ -250,6 +255,7 @@ private fun ShortcutGrid(
     onOpenPanchang: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
+    onOpenKundali: () -> Unit,
     onComingSoon: (String) -> Unit,
 ) {
     val tiles: List<@Composable () -> Unit> =
@@ -272,11 +278,7 @@ private fun ShortcutGrid(
 
             HubCategory.ASTROLOGY ->
                 listOf(
-                    {
-                        GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, enabled = false) {
-                            onComingSoon("Kundali")
-                        }
-                    },
+                    { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
                     {
                         VectorTile("Rashifal", Icons.Filled.Star, HubCategory.ASTROLOGY, enabled = false) {
                             onComingSoon("Rashifal")
@@ -820,6 +822,7 @@ private fun HomeContentPreview() {
             onNavigateToLocation = {},
             onOpenCalendar = {},
             onOpenReminders = {},
+            onOpenKundali = {},
             onSetReminder = {},
             onComingSoon = {},
         )
