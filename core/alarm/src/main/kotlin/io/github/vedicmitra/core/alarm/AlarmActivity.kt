@@ -54,6 +54,9 @@ class AlarmActivity : ComponentActivity() {
         val body = intent.getStringExtra(EXTRA_BODY).orEmpty()
 
         AlarmRinger.ensureRinging(applicationContext)
+        // Close this lock-screen page whenever the alarm is stopped elsewhere (the notification's
+        // Dismiss action or the service's auto-stop), so it never lingers silently over the app.
+        AlarmRinger.setOnDismiss { runOnUiThread { if (!isFinishing) finish() } }
         autoStop.postDelayed(::dismiss, AUTO_STOP_MILLIS)
 
         setContent {
@@ -65,6 +68,7 @@ class AlarmActivity : ComponentActivity() {
 
     override fun onDestroy() {
         autoStop.removeCallbacksAndMessages(null)
+        AlarmRinger.setOnDismiss(null)
         super.onDestroy()
     }
 
