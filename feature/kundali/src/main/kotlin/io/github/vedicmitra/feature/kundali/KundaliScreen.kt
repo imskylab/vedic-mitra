@@ -10,10 +10,13 @@
 
 package io.github.vedicmitra.feature.kundali
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +33,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -103,6 +109,14 @@ private fun ChartView(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(text = "$name's Kundali", style = MaterialTheme.typography.titleLarge)
+        NorthIndianChart(chart)
+        Text(
+            text =
+                "North-Indian style. House 1 (top centre) is the lagna; numbers are the rashi in each " +
+                    "house. Retrograde grahas are shown in red.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         InfoCard(label = "Lagna (Ascendant)", value = chart.lagna.rasi.name)
         InfoCard(label = "Moon", value = "${chart.moonNakshatra.name} · pada ${chart.moonPada}")
         currentDasha?.let {
@@ -112,6 +126,98 @@ private fun ChartView(
         chart.grahas.forEach { GrahaRow(it) }
     }
 }
+
+/**
+ * A North-Indian style chart: a fixed square divided by both diagonals and the diamond joining the
+ * side midpoints, giving twelve houses. House 1 is the top-centre triangle and the rest run
+ * anticlockwise. Each house shows the number of the rashi that falls in it and the grahas placed
+ * there (retrograde in the error colour).
+ */
+@Composable
+private fun NorthIndianChart(
+    chart: NatalChart,
+    modifier: Modifier = Modifier,
+) {
+    val line = MaterialTheme.colorScheme.outline
+    Box(modifier = modifier.fillMaxWidth().aspectRatio(1f)) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            val s = 1.5.dp.toPx()
+            drawRect(color = line, style = Stroke(width = s))
+            drawLine(line, Offset(0f, 0f), Offset(w, h), s)
+            drawLine(line, Offset(w, 0f), Offset(0f, h), s)
+            drawLine(line, Offset(w / 2f, 0f), Offset(w, h / 2f), s)
+            drawLine(line, Offset(w, h / 2f), Offset(w / 2f, h), s)
+            drawLine(line, Offset(w / 2f, h), Offset(0f, h / 2f), s)
+            drawLine(line, Offset(0f, h / 2f), Offset(w / 2f, 0f), s)
+        }
+        HOUSE_ANCHORS.forEachIndexed { index, anchor ->
+            HouseCell(
+                rasi = chart.houses.getOrNull(index),
+                grahas = chart.grahas.filter { it.house == index + 1 },
+                modifier = Modifier.align(BiasAlignment(anchor.first, anchor.second)),
+            )
+        }
+    }
+}
+
+/** One house of the chart: the rashi number above the grahas placed in that house. */
+@Composable
+private fun HouseCell(
+    rasi: Rasi?,
+    grahas: List<NatalGraha>,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        if (rasi != null) {
+            Text(
+                text = "${rasi.index + 1}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        grahas.forEach { graha ->
+            Text(
+                text = graha.graha.shortLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (graha.retrograde) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+/** Horizontal/vertical bias (each in -1..1) that centres each house's label at its centroid. */
+private val HOUSE_ANCHORS: List<Pair<Float, Float>> =
+    listOf(
+        0.0f to -0.40f, // 1 — top centre (lagna)
+        -0.50f to -0.76f, // 2 — top left
+        -0.76f to -0.50f, // 3 — left upper
+        -0.44f to 0.0f, // 4 — left centre
+        -0.76f to 0.50f, // 5 — left lower
+        -0.50f to 0.76f, // 6 — bottom left
+        0.0f to 0.40f, // 7 — bottom centre
+        0.50f to 0.76f, // 8 — bottom right
+        0.76f to 0.50f, // 9 — right lower
+        0.44f to 0.0f, // 10 — right centre
+        0.76f to -0.50f, // 11 — right upper
+        0.50f to -0.76f, // 12 — top right
+    )
+
+/** Two-letter code used inside the chart cells. */
+private val Graha.shortLabel: String
+    get() =
+        when (this) {
+            Graha.SUN -> "Su"
+            Graha.MOON -> "Mo"
+            Graha.MANGALA -> "Ma"
+            Graha.BUDHA -> "Me"
+            Graha.GURU -> "Ju"
+            Graha.SHUKRA -> "Ve"
+            Graha.SHANI -> "Sa"
+            Graha.RAHU -> "Ra"
+            Graha.KETU -> "Ke"
+        }
 
 @Composable
 private fun InfoCard(
