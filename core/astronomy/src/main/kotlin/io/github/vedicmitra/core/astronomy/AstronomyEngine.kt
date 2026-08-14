@@ -97,6 +97,16 @@ interface AstronomyEngine {
         AppResult.Success(PlanetaryPositions(emptyList()))
 
     /**
+     * The birth [NatalChart] for [instant] at [location] — the nine grahas (with house and
+     * retrograde state), the ascendant, whole-sign houses, the Moon's nakshatra/pada, and the
+     * Vimshottari mahadasha timeline. The default returns `null` so test doubles can ignore it.
+     */
+    suspend fun natalChartAt(
+        instant: Instant,
+        location: GeoCoordinates,
+    ): AppResult<NatalChart?> = AppResult.Success<NatalChart?>(null)
+
+    /**
      * The sunrise instant of the civil day containing [instant] at [location], or `null` when the
      * sun does not rise that day (polar). Callers use this to anchor a day's panchanga identity
      * (tithi, nakshatra, …) to sunrise — the convention by which panchangas name the day — rather

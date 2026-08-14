@@ -149,6 +149,15 @@ class DefaultAstronomyEngine
                 AppResult.Success(planetaryPositions(instant.toEpochMilliseconds()))
             }
 
+        override suspend fun natalChartAt(
+            instant: Instant,
+            location: GeoCoordinates,
+        ): AppResult<NatalChart?> =
+            withContext(dispatchers.default) {
+                val chart = natalChart(instant.toEpochMilliseconds(), location.latitude, location.longitude)
+                AppResult.Success<NatalChart?>(chart)
+            }
+
         override suspend fun sunriseAt(
             instant: Instant,
             location: GeoCoordinates,
