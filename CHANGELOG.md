@@ -153,6 +153,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stdlib `kotlin.time.Instant`.
 
 ### Fixed
+- **The Reminders permission banners no longer stick around after they're granted.** The "Allow exact
+  alarms" and "Allow full-screen alarms" prompts were read once (the exact-alarm grant when the screen
+  loaded, the full-screen grant during composition), so after the user granted a permission — or came
+  back to the screen once an alarm had fired — the banner could still be showing a stale "not granted"
+  state. Both are now re-checked on every screen resume, so a banner disappears the moment its
+  permission is granted and never lingers.
+- **The bottom-nav Home tab works after opening a shortcut.** After tapping a Home-hub tile (Panchang,
+  Reminders, Kundali, …) and then switching tabs, tapping Home did nothing: because the shortcut
+  screens are pushed at the graph root, Home's saved back stack included the shortcut, and the tab
+  jump *restored* it instead of showing the Home landing. Tab navigation no longer saves/restores that
+  state — it pops to the start destination — so every tab always lands on its own root.
+- **The full-screen alarm no longer lingers after the ring stops.** When an alarm-mode reminder was
+  stopped through the notification's Dismiss action or the two-minute auto-stop, the ringing service
+  stopped but the lock-screen `AlarmActivity` was never told to close, so its full-screen page (with
+  the Dismiss button) could stay on top of the app until its own timeout. Stopping the alarm now
+  routes through the shared `AlarmRinger`, which fires a one-shot callback the activity uses to finish
+  itself — so the alarm screen closes on every dismiss path, not just its own Dismiss button.
 - **Returning Home from a hub tile no longer gets stuck.** Opening Panchang or Reminders from a Home
   tile and then tapping Home could freeze on a blank screen: the tiles pushed onto destinations that
   were also bottom tabs, so the save/restore state of the two navigation paths collided. Those

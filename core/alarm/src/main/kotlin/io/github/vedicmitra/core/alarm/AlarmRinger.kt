@@ -34,6 +34,7 @@ import android.os.VibratorManager
 object AlarmRinger {
     private var player: MediaPlayer? = null
     private var vibrator: Vibrator? = null
+    private var onDismiss: (() -> Unit)? = null
 
     /** Starts the ringtone and vibration if not already ringing; a no-op if they already are. */
     @Synchronized
@@ -43,7 +44,18 @@ object AlarmRinger {
         startVibration(context)
     }
 
-    /** Stops and releases the ringtone and vibration if ringing. */
+    /**
+     * Registers a one-shot callback fired when the alarm is [stop]ped from *any* path — the service's
+     * Dismiss action or auto-stop as well as the activity itself. The lock-screen [AlarmActivity]
+     * registers it so it closes itself when the ring is stopped elsewhere, instead of lingering as a
+     * silent full-screen page until its own timeout.
+     */
+    @Synchronized
+    fun setOnDismiss(listener: (() -> Unit)?) {
+        onDismiss = listener
+    }
+
+    /** Stops and releases the ringtone and vibration if ringing, and fires any dismiss callback. */
     @Synchronized
     fun stop() {
         player?.let { p ->
@@ -53,6 +65,9 @@ object AlarmRinger {
         player = null
         vibrator?.cancel()
         vibrator = null
+        val listener = onDismiss
+        onDismiss = null
+        listener?.invoke()
     }
 
     private fun startSound(context: Context) {

@@ -230,15 +230,19 @@ private fun VedicMitraApp() {
 }
 
 /**
- * Navigates to a bottom-bar [route] with the standard single-instance-per-tab behaviour: each tab
- * keeps its own back stack, and re-selecting a tab restores that saved state instead of stacking a
- * fresh copy. Used both by the bottom bar and by in-app shortcuts that jump to a tab.
+ * Navigates to a bottom-bar [route], clearing any pushed sub-route (Panchang, Reminders, Kundali, …)
+ * back to the tab's root. Used by the bottom bar and by in-app shortcuts that jump to a tab.
+ *
+ * Deliberately does **not** save/restore per-tab state: the tabs are single screens and the
+ * sub-routes are pushed on top of Home at the graph root, so restoring Home's saved stack would bring
+ * a sub-route back instead of showing the Home landing — i.e. the Home tab would appear to do nothing.
+ * Popping to the start destination and launching single-top always lands on the tab's root.
  */
 private fun NavHostController.navigateToTab(route: String) {
     navigate(route) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
+        popUpTo(graph.findStartDestination().id) { saveState = false }
         launchSingleTop = true
-        restoreState = true
+        restoreState = false
     }
 }
 

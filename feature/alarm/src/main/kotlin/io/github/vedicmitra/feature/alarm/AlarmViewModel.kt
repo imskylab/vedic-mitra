@@ -147,6 +147,19 @@ class AlarmViewModel
             }
         }
 
+        /**
+         * Re-checks the exact-alarm permission and updates the banner state in place — without a full
+         * reload — so the "Allow exact alarms" banner disappears as soon as the user grants it (e.g. on
+         * returning from the system settings screen the banner links to) and never shows once granted.
+         */
+        fun refreshPermissions() {
+            val ready = loadState.value as? AlarmLoad.Ready ?: return
+            val canSchedule = taskScheduler.canScheduleExactAlarms()
+            if (canSchedule != ready.canScheduleExactAlarms) {
+                loadState.value = ready.copy(canScheduleExactAlarms = canSchedule)
+            }
+        }
+
         /** Adds a reminder for the period [key], scheduling its next occurrence with saved settings. */
         fun addReminder(key: String) {
             viewModelScope.launch { rescheduleFor(key) }
@@ -175,7 +188,7 @@ class AlarmViewModel
         ) {
             viewModelScope.launch {
                 reminderRepository.setOffsetMinutes(key, minutes)
-                if (isAdded(key)) rescheduleFor(key)
+                if (reminderRepository.reminders.first().any { it.id == key }) rescheduleFor(key)
             }
         }
 
@@ -186,11 +199,9 @@ class AlarmViewModel
         ) {
             viewModelScope.launch {
                 reminderRepository.setAlertType(key, alert)
-                if (isAdded(key)) rescheduleFor(key)
+                if (reminderRepository.reminders.first().any { it.id == key }) rescheduleFor(key)
             }
         }
-
-        private suspend fun isAdded(key: String): Boolean = reminderRepository.reminders.first().any { it.id == key }
 
         /** Renews every added reminder onto its next occurrence (periods and tithi events alike). */
         private suspend fun renewAddedReminders(

@@ -59,6 +59,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +73,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.common.model.AlertStyle
@@ -108,8 +112,26 @@ fun AlarmScreen(
         }
     }
 
+    // Both permission banners must reflect the *live* grant, not a one-time snapshot: re-check on
+    // every resume so they disappear the moment the user returns from granting (and never show once
+    // granted). The full-screen-intent grant is read here; the exact-alarm grant lives in the VM.
+    var canUseFullScreenIntent by remember { mutableStateOf(context.canUseFullScreenIntent()) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    canUseFullScreenIntent = context.canUseFullScreenIntent()
+                    viewModel.refreshPermissions()
+                }
+            }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     AlarmContent(
         uiState = uiState,
+        needsFullScreenIntent = !canUseFullScreenIntent,
         onAdd = viewModel::addReminder,
         onAddTithi = viewModel::addTithiReminder,
         onRemove = viewModel::removeReminder,
@@ -117,6 +139,7 @@ fun AlarmScreen(
         onOffsetChange = viewModel::setOffsetMinutes,
         onAlertChange = viewModel::setAlertType,
         onRequestExactAlarm = context::openExactAlarmSettings,
+        onRequestFullScreenIntent = context::openFullScreenIntentSettings,
         modifier = modifier,
     )
 }
@@ -124,6 +147,7 @@ fun AlarmScreen(
 @Composable
 private fun AlarmContent(
     uiState: AlarmUiState,
+    needsFullScreenIntent: Boolean,
     onAdd: (String) -> Unit,
     onAddTithi: (TithiTarget) -> Unit,
     onRemove: (String) -> Unit,
@@ -131,6 +155,7 @@ private fun AlarmContent(
     onOffsetChange: (String, Int) -> Unit,
     onAlertChange: (String, AlertStyle) -> Unit,
     onRequestExactAlarm: () -> Unit,
+    onRequestFullScreenIntent: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -141,8 +166,6 @@ private fun AlarmContent(
             }
 
         is AlarmUiState.Ready -> {
-            val fullScreenContext = LocalContext.current
-            val needsFullScreenIntent = !fullScreenContext.canUseFullScreenIntent()
             LazyColumn(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
@@ -152,11 +175,7 @@ private fun AlarmContent(
                     item { ExactAlarmBanner(onRequestExactAlarm = onRequestExactAlarm) }
                 }
                 if (needsFullScreenIntent) {
-                    item {
-                        FullScreenIntentBanner(
-                            onRequestFullScreenIntent = fullScreenContext::openFullScreenIntentSettings,
-                        )
-                    }
+                    item { FullScreenIntentBanner(onRequestFullScreenIntent = onRequestFullScreenIntent) }
                 }
                 if (uiState.usingDefaultLocation) {
                     item {
@@ -692,6 +711,7 @@ private fun AlarmContentPreview() {
                     canScheduleExactAlarms = false,
                     usingDefaultLocation = true,
                 ),
+            needsFullScreenIntent = true,
             onAdd = {},
             onAddTithi = {},
             onRemove = {},
@@ -699,6 +719,7 @@ private fun AlarmContentPreview() {
             onOffsetChange = { _, _ -> },
             onAlertChange = { _, _ -> },
             onRequestExactAlarm = {},
+            onRequestFullScreenIntent = {},
         )
     }
 }
