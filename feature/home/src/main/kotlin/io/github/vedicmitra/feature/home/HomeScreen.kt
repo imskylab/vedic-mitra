@@ -257,6 +257,14 @@ private fun HubView(
     ) {
         Header(uiState.locationLabel, onNavigateToLocation)
         HeroCard(snapshot, onClick = onOpenPanchang)
+        if (uiState.festivals.isNotEmpty()) {
+            ExpandableSection(
+                title = "UPCOMING FESTIVALS",
+                accent = MaterialTheme.colorScheme.primary,
+                rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                onRowClick = { selectedRow = it },
+            )
+        }
         uiState.auspicious?.let { AuspiciousCard(it) }
         ShortcutGrid(
             onOpenPanchang = onOpenPanchang,
@@ -268,14 +276,6 @@ private fun HubView(
             onOpenEvents = onOpenEvents,
             onComingSoon = onComingSoon,
         )
-        if (uiState.festivals.isNotEmpty()) {
-            ExpandableSection(
-                title = "UPCOMING FESTIVALS",
-                accent = MaterialTheme.colorScheme.primary,
-                rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
-                onRowClick = { selectedRow = it },
-            )
-        }
         if (uiState.usingDefaultLocation) {
             Text(
                 text = "Showing New Delhi — grant location access for your area.",
