@@ -28,15 +28,29 @@ data class RankedMuhurtaDay(
  * Scores each of the given [days] (their sunrise snapshots) for [activity] and returns them ordered
  * best-first — by descending [DayMuhurtaScore.score], ties broken by the earlier date. Pure: the
  * caller supplies the already-computed snapshots, so the ranking is independent of the ephemeris.
+ *
+ * When [person] is given the ranking is personalised — each day also gets that person's Tarabala and
+ * Chandrabala (the latter from the day's [AstronomySnapshot.moonRasi]) — otherwise it's the general
+ * panchanga ranking.
  */
 internal fun rankMuhurtaDays(
     activity: MuhurtaActivity,
     days: List<AstronomySnapshot>,
+    person: PersonalMuhurtaContext? = null,
 ): List<RankedMuhurtaDay> =
     days
         .map {
             RankedMuhurtaDay(
                 atSunrise = it.instant,
-                score = scoreMuhurta(activity, it.tithi, it.nakshatra, it.vara, it.yoga, it.karana),
+                score =
+                    scoreMuhurta(
+                        activity = activity,
+                        tithi = it.tithi,
+                        nakshatra = it.nakshatra,
+                        vara = it.vara,
+                        yoga = it.yoga,
+                        karana = it.karana,
+                        personal = person?.let { p -> DayPersonalisation(p, it.moonRasi?.index) },
+                    ),
             )
         }.sortedWith(compareByDescending<RankedMuhurtaDay> { it.score.score }.thenBy { it.atSunrise })

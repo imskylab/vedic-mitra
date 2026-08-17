@@ -181,6 +181,7 @@ class DefaultAstronomyEngine
             instant: Instant,
             days: Int,
             location: GeoCoordinates,
+            person: PersonalMuhurtaContext?,
         ): AppResult<List<RankedMuhurtaDay>> {
             if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
                 return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
@@ -200,7 +201,7 @@ class DefaultAstronomyEngine
                                 ?: Instant.fromEpochMilliseconds(dayMillis)
                         (snapshotAt(sunrise, location) as? AppResult.Success)?.data
                     }
-                AppResult.Success(rankMuhurtaDays(activity, snapshots))
+                AppResult.Success(rankMuhurtaDays(activity, snapshots, person))
             }
         }
 
