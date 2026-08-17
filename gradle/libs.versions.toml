@@ -17,8 +17,8 @@
 # Kotlin 2.3.x's android plugin supports AGP 9 (2.1.x used the removed BaseExtension API).
 # KSP 2.3+ is Kotlin-aligned (matches the Kotlin version exactly), so keep these in lockstep.
 agp = "9.3.1"
-kotlin = "2.3.21"
-ksp = "2.3.10"
+kotlin = "2.4.10"
+ksp = "2.3.11"
 
 # --- AndroidX / Jetpack ------------------------------------------------------
 # Held at the last versions that compile against stable compileSdk 36. The newer line
