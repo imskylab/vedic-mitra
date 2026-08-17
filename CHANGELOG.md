@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat scoring engine (foundation).** `:core:astronomy` gains an electional-muhurta layer: a
+  catalog of activities grouped into eight categories (Bal Sanskar, Vivah, Vastu, Purchases, Medical,
+  Business, Agriculture, Ceremonies — including Gardening), a per-activity rules table (starting with
+  Griha Pravesh, Vivah, Namkaran, Vehicle and Bhoomi Poojan, the rest on a sensible default), and a
+  `scoreMuhurta` that rates a day's panchanga 0–100 with reasons — nakshatra weighted most, then
+  weekday and tithi, with the Rikta/Amavasya tithis, Vyatipata/Vaidhriti yogas and Vishti (Bhadra)
+  karana penalised. Not yet wired to a screen; the ranked "best days" finder builds on it next.
 - **About Vedic Mitra.** Settings now has an About screen with the app's version (read from the
   installed build), a short description, the author (Jayvardhan Potabatti), copyright, and the
   licensing (GNU AGPL-3.0-or-later, with a commercial license also available).
