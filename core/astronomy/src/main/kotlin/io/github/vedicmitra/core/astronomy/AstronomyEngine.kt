@@ -153,6 +153,8 @@ data class PanchangaDaySummary(
  * @property moonTimes moonrise/moonset for the location and local date.
  * @property tithi the current lunar day.
  * @property nakshatra the Moon's current lunar mansion.
+ * @property moonRasi the Moon's sidereal sign (Chandra rashi), or `null` for lightweight/synthetic
+ *   snapshots that don't provide it — the real engine always populates it.
  * @property yoga the current Sun–Moon yoga.
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
@@ -174,6 +176,7 @@ data class AstronomySnapshot(
     val moonTimes: MoonTimes,
     val tithi: Tithi,
     val nakshatra: Nakshatra,
+    val moonRasi: Rasi? = null,
     val yoga: Yoga,
     val karana: Karana,
     val vara: Vara,

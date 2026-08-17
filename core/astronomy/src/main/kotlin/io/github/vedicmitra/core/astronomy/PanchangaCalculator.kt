@@ -150,6 +150,12 @@ internal fun nakshatraOf(moonSiderealDeg: Double): Nakshatra {
     return Nakshatra(number = number, name = NAKSHATRA_NAMES[number - 1])
 }
 
+/** Derives the [Rasi] (0 = Mesha .. 11 = Meena) from a sidereal ecliptic longitude (degrees, 0..360). */
+internal fun rasiOf(siderealDeg: Double): Rasi {
+    val index = (siderealDeg / 30.0).toInt() % RASHI_NAMES.size
+    return Rasi(index = index, name = RASHI_NAMES[index])
+}
+
 /** Derives the [Yoga] from the combined sidereal longitudes of the Sun and Moon (degrees, 0..360). */
 internal fun yogaOf(yogaSumDeg: Double): Yoga {
     val span = 360.0 / 27.0
