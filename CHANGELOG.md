@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat — day detail with time windows.** Tapping a ranked day in the Muhurat results now opens
+  that day's detail: its weekday/tithi/nakshatra and the day's time windows split into the auspicious
+  ones to prefer and the inauspicious ones to avoid (the muhurtas — Abhijit, Brahma, Rahu Kalam,
+  Yamaganda, … — plus the Choghadiya), each with its start–end time.
 - **Muhurat — find your best days.** The Home hub's Muhurat tile now opens a working flow
   (`:feature:muhurat`): pick a category (Bal Sanskar, Vivah, Vastu, Purchases, Medical, Business,
   Agriculture, Ceremonies), then an activity, and see the most auspicious upcoming days ranked — each

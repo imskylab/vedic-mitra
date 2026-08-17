@@ -77,6 +77,7 @@ import io.github.vedicmitra.feature.location.AddCoordinatesScreen
 import io.github.vedicmitra.feature.location.LocationScreen
 import io.github.vedicmitra.feature.muhurat.MuhuratActivitiesScreen
 import io.github.vedicmitra.feature.muhurat.MuhuratCategoriesScreen
+import io.github.vedicmitra.feature.muhurat.MuhuratDayScreen
 import io.github.vedicmitra.feature.muhurat.MuhuratResultsScreen
 import io.github.vedicmitra.feature.profile.ProfileEditScreen
 import io.github.vedicmitra.feature.profile.ProfileListScreen
@@ -107,8 +108,10 @@ private const val PROFILE_ID_ARG = "profileId"
 private const val MUHURAT_ROUTE = "muhurat"
 private const val MUHURAT_ACTIVITIES_ROUTE = "muhurat/activities"
 private const val MUHURAT_RESULTS_ROUTE = "muhurat/results"
+private const val MUHURAT_DAY_ROUTE = "muhurat/day"
 private const val MUHURAT_CATEGORY_ARG = "category"
 private const val MUHURAT_ACTIVITY_ARG = "activity"
+private const val MUHURAT_DAY_ARG = "day"
 private const val ABOUT_ROUTE = "settings/about"
 
 /**
@@ -348,5 +351,13 @@ private fun NavGraphBuilder.muhuratDestinations(navController: NavHostController
     composable(
         route = "$MUHURAT_RESULTS_ROUTE/{$MUHURAT_ACTIVITY_ARG}",
         arguments = listOf(navArgument(MUHURAT_ACTIVITY_ARG) { type = NavType.StringType }),
-    ) { MuhuratResultsScreen() }
+    ) {
+        MuhuratResultsScreen(
+            onOpenDay = { millis -> navController.navigate("$MUHURAT_DAY_ROUTE/$millis") },
+        )
+    }
+    composable(
+        route = "$MUHURAT_DAY_ROUTE/{$MUHURAT_DAY_ARG}",
+        arguments = listOf(navArgument(MUHURAT_DAY_ARG) { type = NavType.LongType }),
+    ) { MuhuratDayScreen() }
 }
