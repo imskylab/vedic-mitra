@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.muhurat
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,6 +57,7 @@ fun MuhuratResultsScreen(
         uiState = uiState,
         onOpenDay = onOpenDay,
         onSetWindow = viewModel::setWindow,
+        onSelectProfile = viewModel::selectProfile,
         modifier = modifier,
     )
 }
@@ -65,6 +67,7 @@ private fun MuhuratResultsContent(
     uiState: MuhuratResultsUiState,
     onOpenDay: (String, Long) -> Unit,
     onSetWindow: (Int) -> Unit,
+    onSelectProfile: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -84,6 +87,13 @@ private fun MuhuratResultsContent(
                     text = "Best days for ${uiState.activity.displayName}",
                     style = MaterialTheme.typography.titleLarge,
                 )
+                if (uiState.profiles.isNotEmpty()) {
+                    ProfileSelector(
+                        profiles = uiState.profiles,
+                        selectedId = uiState.selectedProfileId,
+                        onSelect = onSelectProfile,
+                    )
+                }
                 WindowSelector(selected = uiState.windowDays, onSelect = onSetWindow)
                 if (uiState.usingDefaultLocation) {
                     Text(
@@ -103,11 +113,47 @@ private fun MuhuratResultsContent(
                     }
                 }
                 Text(
-                    text = "General guidance from the day's panchanga; not personalised to a birth chart.",
+                    text = personalisationNote(uiState),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+    }
+}
+
+/** The selected profile's name, or a general-guidance note when ranking without a birth chart. */
+private fun personalisationNote(uiState: MuhuratResultsUiState.Ready): String {
+    val selected = uiState.profiles.firstOrNull { it.id == uiState.selectedProfileId }
+    return if (selected != null) {
+        "Personalised for ${selected.name} with their Tarabala and Chandrabala."
+    } else {
+        "General guidance from the day's panchanga; pick a profile to personalise it."
+    }
+}
+
+/** Chips to pick whose birth chart the ranking is personalised for, or General for none. */
+@Composable
+private fun ProfileSelector(
+    profiles: List<MuhuratProfileOption>,
+    selectedId: String?,
+    onSelect: (String?) -> Unit,
+) {
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilterChip(
+            selected = selectedId == null,
+            onClick = { onSelect(null) },
+            label = { Text(text = "General") },
+        )
+        profiles.forEach { profile ->
+            FilterChip(
+                selected = profile.id == selectedId,
+                onClick = { onSelect(profile.id) },
+                label = { Text(text = profile.name) },
+            )
+        }
     }
 }
 

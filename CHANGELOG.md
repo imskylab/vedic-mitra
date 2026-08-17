@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat — personalised to a birth chart.** The best-days results now have a profile selector
+  ("General" plus each chart-ready profile, defaulting to your primary). Picking a profile re-ranks
+  the days for that person by layering their Tarabala (the day's nakshatra counted from their birth
+  star) and Chandrabala (the day's Moon sign counted from their birth Moon sign) onto the general
+  panchanga score, with the reasons shown on each day. "General" gives the non-personalised ranking.
 - **Kundali — pick which profile to view.** When you keep more than one chart-ready profile, the
   Kundali screen now shows a chip picker to switch between them (defaulting to your primary profile)
   instead of only ever showing the primary.
