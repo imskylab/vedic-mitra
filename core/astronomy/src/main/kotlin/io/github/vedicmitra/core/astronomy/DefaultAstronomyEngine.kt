@@ -80,6 +80,7 @@ class DefaultAstronomyEngine
                         moonTimes = moonTimes,
                         tithi = tithiOf(elongation),
                         nakshatra = nakshatraOf(moonSidereal),
+                        moonRasi = rasiOf(moonSidereal),
                         yoga = yogaOf(yogaSum),
                         karana = karanaOf(elongation),
                         vara = vara,

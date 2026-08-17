@@ -53,13 +53,37 @@ data class DayMuhurtaScore(
     val reasons: List<MuhurtaReason>,
 )
 
+/**
+ * The personalisation key for muhurta scoring, taken from a person's natal chart. When supplied, the
+ * scorer layers Tarabala (the day's nakshatra counted from the birth star) and Chandrabala (the day's
+ * Moon sign counted from the birth Moon sign) on top of the general day score.
+ *
+ * @property birthNakshatraNumber the birth nakshatra, 1..27.
+ * @property birthMoonRasiIndex the birth Moon sign, 0..11 (0 = Mesha).
+ */
+data class PersonalMuhurtaContext(
+    val birthNakshatraNumber: Int,
+    val birthMoonRasiIndex: Int,
+)
+
+/**
+ * The day-plus-person inputs the scorer needs to add Tarabala and Chandrabala: the [person]'s birth
+ * chart key and the day's Moon sign ([dayMoonRasiIndex], 0..11) — the latter needed for Chandrabala,
+ * and `null` when the day's Moon sign isn't known (Chandrabala is then skipped).
+ */
+data class DayPersonalisation(
+    val person: PersonalMuhurtaContext,
+    val dayMoonRasiIndex: Int?,
+)
+
 private const val BASE_SCORE = 50
 
 /**
- * Scores a day's panchanga for [activity] from the general (non-personalised) rules. The nakshatra
- * is weighted most heavily, then the weekday and tithi, with universal doshas (Rikta/Amavasya tithi,
- * the Vyatipata/Vaidhriti yogas, and the Vishti/Bhadra karana) penalised regardless of activity.
- * The result is clamped to 0..100 and mapped to a [MuhurtaRating], with the contributing [reasons].
+ * Scores a day's panchanga for [activity] from the general rules, then — when [personal] is supplied —
+ * layers that person's Tarabala and Chandrabala on top. The nakshatra is weighted most heavily, then
+ * the weekday and tithi, with universal doshas (Rikta/Amavasya tithi, the Vyatipata/Vaidhriti yogas,
+ * and the Vishti/Bhadra karana) penalised regardless of activity. The result is clamped to 0..100 and
+ * mapped to a [MuhurtaRating], with the contributing [reasons].
  */
 internal fun scoreMuhurta(
     activity: MuhurtaActivity,
@@ -68,6 +92,7 @@ internal fun scoreMuhurta(
     vara: Vara,
     yoga: Yoga,
     karana: Karana,
+    personal: DayPersonalisation? = null,
 ): DayMuhurtaScore {
     val rules = muhurtaRulesFor(activity)
     val reasons = mutableListOf<MuhurtaReason>()
@@ -125,6 +150,11 @@ internal fun scoreMuhurta(
         reasons += MuhurtaReason(false, "Vishti (Bhadra) karana")
     }
 
+    personalContributions(nakshatra.number, personal).forEach {
+        score += it.delta
+        reasons += it.reason
+    }
+
     val clamped = score.coerceIn(0, 100)
     return DayMuhurtaScore(score = clamped, rating = ratingFor(clamped), reasons = reasons)
 }
@@ -138,3 +168,62 @@ private fun ratingFor(score: Int): MuhurtaRating =
         score >= 35 -> MuhurtaRating.WEAK
         else -> MuhurtaRating.AVOID
     }
+
+/** One personal (Tarabala/Chandrabala) adjustment to the day score, with its explanation. */
+private data class ScoreContribution(
+    val delta: Int,
+    val reason: MuhurtaReason,
+)
+
+/** The Tarabala and Chandrabala adjustments for [personal], or empty when no personalisation is given. */
+private fun personalContributions(
+    dayNakshatraNumber: Int,
+    personal: DayPersonalisation?,
+): List<ScoreContribution> {
+    if (personal == null) return emptyList()
+    val person = personal.person
+    return listOfNotNull(
+        tarabalaContribution(dayNakshatraNumber, person.birthNakshatraNumber),
+        personal.dayMoonRasiIndex?.let { chandrabalaContribution(it, person.birthMoonRasiIndex) },
+    )
+}
+
+// The nine taras, in order, counted from the birth star. Favourable: Sampat, Kshema, Sadhaka, Mitra,
+// Ati-Mitra; unfavourable: Vipat, Pratyari, Vadha; Janma (the birth star itself) is neutral.
+private val TARA_NAMES =
+    listOf("Janma", "Sampat", "Vipat", "Kshema", "Pratyari", "Sadhaka", "Vadha", "Mitra", "Ati-Mitra")
+private val FAVOURABLE_TARAS = setOf(2, 4, 6, 8, 9)
+private val UNFAVOURABLE_TARAS = setOf(3, 5, 7)
+
+/** Tarabala: which of the nine taras the [dayNakshatra] is, counted from [birthNakshatra] (both 1..27). */
+private fun tarabalaContribution(
+    dayNakshatra: Int,
+    birthNakshatra: Int,
+): ScoreContribution? {
+    val count = ((dayNakshatra - birthNakshatra + 27) % 27) + 1
+    val tara = ((count - 1) % 9) + 1
+    val name = TARA_NAMES[tara - 1]
+    return when (tara) {
+        in FAVOURABLE_TARAS -> ScoreContribution(15, MuhurtaReason(true, "Favourable tara ($name)"))
+        in UNFAVOURABLE_TARAS -> ScoreContribution(-20, MuhurtaReason(false, "Weak tara ($name)"))
+        else -> null
+    }
+}
+
+// Chandrabala positions (1..12) of the day's Moon sign counted from the birth Moon sign. The 1, 3, 6,
+// 7, 10 and 11 positions are strong; 4, 8 and 12 are weak; the rest are neutral.
+private val FAVOURABLE_CHANDRA = setOf(1, 3, 6, 7, 10, 11)
+private val WEAK_CHANDRA = setOf(4, 8, 12)
+
+/** Chandrabala: the day's Moon sign [dayMoonRasi] counted from the birth Moon sign [birthMoonRasi] (0..11). */
+private fun chandrabalaContribution(
+    dayMoonRasi: Int,
+    birthMoonRasi: Int,
+): ScoreContribution? {
+    val position = ((dayMoonRasi - birthMoonRasi + 12) % 12) + 1
+    return when (position) {
+        in FAVOURABLE_CHANDRA -> ScoreContribution(10, MuhurtaReason(true, "Strong Chandrabala (position $position)"))
+        in WEAK_CHANDRA -> ScoreContribution(-12, MuhurtaReason(false, "Weak Chandrabala (position $position)"))
+        else -> null
+    }
+}
