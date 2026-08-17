@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat — choose the search window.** The best-days results now have a 30 / 60 / 90-day selector,
+  so you can widen or narrow how far ahead the ranking looks (default 60 days) instead of a fixed
+  window.
 - **Muhurat — day detail with time windows.** Tapping a ranked day in the Muhurat results now opens
   that day's detail: its weekday/tithi/nakshatra and the day's time windows split into the auspicious
   ones to prefer and the inauspicious ones to avoid (the muhurtas — Abhijit, Brahma, Rahu Kalam,

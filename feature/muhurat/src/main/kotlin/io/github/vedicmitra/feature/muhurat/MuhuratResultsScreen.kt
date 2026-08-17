@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,13 +52,19 @@ fun MuhuratResultsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.load() }
-    MuhuratResultsContent(uiState = uiState, onOpenDay = onOpenDay, modifier = modifier)
+    MuhuratResultsContent(
+        uiState = uiState,
+        onOpenDay = onOpenDay,
+        onSetWindow = viewModel::setWindow,
+        modifier = modifier,
+    )
 }
 
 @Composable
 private fun MuhuratResultsContent(
     uiState: MuhuratResultsUiState,
     onOpenDay: (Long) -> Unit,
+    onSetWindow: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -77,6 +84,7 @@ private fun MuhuratResultsContent(
                     text = "Best days for ${uiState.activity.displayName}",
                     style = MaterialTheme.typography.titleLarge,
                 )
+                WindowSelector(selected = uiState.windowDays, onSelect = onSetWindow)
                 if (uiState.usingDefaultLocation) {
                     Text(
                         text = "Showing ${uiState.locationLabel} — set your location for local timings.",
@@ -98,6 +106,22 @@ private fun MuhuratResultsContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+    }
+}
+
+@Composable
+private fun WindowSelector(
+    selected: Int,
+    onSelect: (Int) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        MUHURAT_WINDOW_OPTIONS.forEach { days ->
+            FilterChip(
+                selected = days == selected,
+                onClick = { onSelect(days) },
+                label = { Text(text = "$days days") },
+            )
+        }
     }
 }
 

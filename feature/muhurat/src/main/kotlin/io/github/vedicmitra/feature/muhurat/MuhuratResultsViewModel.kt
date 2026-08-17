@@ -29,6 +29,9 @@ import kotlin.time.Instant
 /** The `activity` nav argument — the [MuhurtaActivity] name whose best days are shown. */
 internal const val MUHURAT_ACTIVITY_ARG = "activity"
 
+/** The search windows (days ahead) the results screen offers. */
+val MUHURAT_WINDOW_OPTIONS: List<Int> = listOf(30, 60, 90)
+
 /**
  * Presentation logic for the muhurta results screen: resolves the location and asks the engine for
  * the best upcoming days for the activity named in the [SavedStateHandle], keeping the top few.
@@ -47,6 +50,8 @@ class MuhuratResultsViewModel
                 ?.let { name -> runCatching { MuhurtaActivity.valueOf(name) }.getOrNull() }
                 ?: MuhurtaActivity.GRIHA_PRAVESH
 
+        private var windowDays: Int = DEFAULT_WINDOW_DAYS
+
         private val _uiState = MutableStateFlow<MuhuratResultsUiState>(MuhuratResultsUiState.Loading)
 
         /** Observable UI state consumed by the results screen. */
@@ -58,20 +63,28 @@ class MuhuratResultsViewModel
                 _uiState.value = MuhuratResultsUiState.Loading
                 val resolved = resolveLocation()
                 val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-                val result = astronomyEngine.bestMuhurtasFor(activity, now, WINDOW_DAYS, resolved.coordinates)
+                val result = astronomyEngine.bestMuhurtasFor(activity, now, windowDays, resolved.coordinates)
                 val days = (result as? AppResult.Success)?.data.orEmpty().take(RESULTS_LIMIT)
                 _uiState.value =
                     MuhuratResultsUiState.Ready(
                         activity = activity,
                         days = days,
+                        windowDays = windowDays,
                         usingDefaultLocation = resolved.isDefault,
                         locationLabel = resolved.label,
                     )
             }
         }
 
+        /** Re-runs the search over a different number of [days] ahead (one of [MUHURAT_WINDOW_OPTIONS]). */
+        fun setWindow(days: Int) {
+            if (days == windowDays) return
+            windowDays = days
+            load()
+        }
+
         private companion object {
-            const val WINDOW_DAYS = 45
+            const val DEFAULT_WINDOW_DAYS = 60
             const val RESULTS_LIMIT = 10
         }
     }
@@ -86,12 +99,14 @@ sealed interface MuhuratResultsUiState {
      *
      * @property activity the activity the days were ranked for.
      * @property days the best upcoming days, best-first (may be empty).
+     * @property windowDays the number of days ahead currently searched.
      * @property usingDefaultLocation whether a built-in default location was used.
      * @property locationLabel human-readable name of the location used.
      */
     data class Ready(
         val activity: MuhurtaActivity,
         val days: List<RankedMuhurtaDay>,
+        val windowDays: Int,
         val usingDefaultLocation: Boolean,
         val locationLabel: String,
     ) : MuhuratResultsUiState

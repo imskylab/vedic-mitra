@@ -22,6 +22,7 @@ import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -106,5 +107,32 @@ class MuhuratResultsViewModelTest {
             val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
             assertThat(state.activity).isEqualTo(MuhurtaActivity.GRIHA_PRAVESH)
             assertThat(state.days).isEmpty()
+        }
+
+    @Test
+    fun `setWindow reloads over the chosen number of days`() =
+        runTest {
+            coEvery { resolveLocation() } returns
+                ResolvedLocation(
+                    coordinates = GeoCoordinates(latitude = 28.6139, longitude = 77.2090),
+                    zoneId = "Asia/Kolkata",
+                    label = "New Delhi",
+                    isDefault = false,
+                )
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any()) } returns
+                AppResult.Success(emptyList())
+
+            val viewModel =
+                MuhuratResultsViewModel(
+                    astronomyEngine = astronomyEngine,
+                    resolveLocation = resolveLocation,
+                    savedStateHandle = SavedStateHandle(mapOf(MUHURAT_ACTIVITY_ARG to "VIVAH")),
+                )
+            viewModel.load()
+            viewModel.setWindow(90)
+
+            val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
+            assertThat(state.windowDays).isEqualTo(90)
+            coVerify { astronomyEngine.bestMuhurtasFor(MuhurtaActivity.VIVAH, any(), 90, any()) }
         }
 }
