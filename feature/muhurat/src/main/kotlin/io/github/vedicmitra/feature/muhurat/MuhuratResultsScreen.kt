@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.feature.muhurat
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,17 +45,19 @@ import kotlin.time.Instant
  */
 @Composable
 fun MuhuratResultsScreen(
+    onOpenDay: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MuhuratResultsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.load() }
-    MuhuratResultsContent(uiState = uiState, modifier = modifier)
+    MuhuratResultsContent(uiState = uiState, onOpenDay = onOpenDay, modifier = modifier)
 }
 
 @Composable
 private fun MuhuratResultsContent(
     uiState: MuhuratResultsUiState,
+    onOpenDay: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -87,7 +90,7 @@ private fun MuhuratResultsContent(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 } else {
-                    uiState.days.forEach { day -> DayCard(day) }
+                    uiState.days.forEach { day -> DayCard(day, onOpenDay) }
                 }
                 Text(
                     text = "General guidance from the day's panchanga; not personalised to a birth chart.",
@@ -99,8 +102,13 @@ private fun MuhuratResultsContent(
 }
 
 @Composable
-private fun DayCard(day: RankedMuhurtaDay) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+private fun DayCard(
+    day: RankedMuhurtaDay,
+    onOpenDay: (Long) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { onOpenDay(day.atSunrise.toEpochMilliseconds()) },
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
