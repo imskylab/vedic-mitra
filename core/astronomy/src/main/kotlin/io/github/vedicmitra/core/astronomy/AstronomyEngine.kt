@@ -116,6 +116,19 @@ interface AstronomyEngine {
         instant: Instant,
         location: GeoCoordinates,
     ): AppResult<Instant?> = AppResult.Success<Instant?>(null)
+
+    /**
+     * The candidate days for [activity] over the [days] civil days starting at [instant], for
+     * [location], each scored from that day's sunrise panchanga and returned best-first (see
+     * `scoreMuhurta`). Used by the "find best dates" muhurta finder. The default returns an empty
+     * list so test doubles can ignore it.
+     */
+    suspend fun bestMuhurtasFor(
+        activity: MuhurtaActivity,
+        instant: Instant,
+        days: Int,
+        location: GeoCoordinates,
+    ): AppResult<List<RankedMuhurtaDay>> = AppResult.Success(emptyList<RankedMuhurtaDay>())
 }
 
 /**

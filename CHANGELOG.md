@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat: ranked best-days finder (engine).** `AstronomyEngine.bestMuhurtasFor(activity, days,
+  location)` walks a date range, samples each day at its own sunrise, scores the panchanga with the
+  muhurta scorer, and returns the days best-first (ties broken by the earlier date) — the data the
+  upcoming "find best dates" screen will show. Still engine-only.
 - **Muhurat scoring engine (foundation).** `:core:astronomy` gains an electional-muhurta layer: a
   catalog of activities grouped into eight categories (Bal Sanskar, Vivah, Vastu, Purchases, Medical,
   Business, Agriculture, Ceremonies — including Gardening), a per-activity rules table (starting with
