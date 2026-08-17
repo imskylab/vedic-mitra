@@ -60,6 +60,7 @@ dependencies {
     implementation(projects.feature.location)
     implementation(projects.feature.profile)
     implementation(projects.feature.kundali)
+    implementation(projects.feature.muhurat)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)

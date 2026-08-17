@@ -56,6 +56,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -74,6 +75,9 @@ import io.github.vedicmitra.feature.kundali.KundaliScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
 import io.github.vedicmitra.feature.location.AddCoordinatesScreen
 import io.github.vedicmitra.feature.location.LocationScreen
+import io.github.vedicmitra.feature.muhurat.MuhuratActivitiesScreen
+import io.github.vedicmitra.feature.muhurat.MuhuratCategoriesScreen
+import io.github.vedicmitra.feature.muhurat.MuhuratResultsScreen
 import io.github.vedicmitra.feature.profile.ProfileEditScreen
 import io.github.vedicmitra.feature.profile.ProfileListScreen
 import io.github.vedicmitra.feature.settings.AboutScreen
@@ -100,6 +104,11 @@ private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
 private const val PROFILE_EDIT_ROUTE = "profile/edit"
 private const val PROFILE_ID_ARG = "profileId"
+private const val MUHURAT_ROUTE = "muhurat"
+private const val MUHURAT_ACTIVITIES_ROUTE = "muhurat/activities"
+private const val MUHURAT_RESULTS_ROUTE = "muhurat/results"
+private const val MUHURAT_CATEGORY_ARG = "category"
+private const val MUHURAT_ACTIVITY_ARG = "activity"
 private const val ABOUT_ROUTE = "settings/about"
 
 /**
@@ -271,6 +280,7 @@ private fun AppNavHost(
                 onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
                 onOpenReminders = { navController.navigate(ALARM_ROUTE) },
                 onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
+                onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
             )
         }
         composable(TopDestination.SETTINGS.route) {
@@ -311,5 +321,32 @@ private fun AppNavHost(
         composable(KUNDALI_ROUTE) {
             KundaliScreen(onSetUpProfile = { navController.navigateToTab(TopDestination.PROFILE.route) })
         }
+        muhuratDestinations(navController)
     }
+}
+
+/** The muhurta "find best dates" flow: category grid → activity list → ranked results. */
+private fun NavGraphBuilder.muhuratDestinations(navController: NavHostController) {
+    composable(MUHURAT_ROUTE) {
+        MuhuratCategoriesScreen(
+            onOpenCategory = { categoryName ->
+                navController.navigate("$MUHURAT_ACTIVITIES_ROUTE/$categoryName")
+            },
+        )
+    }
+    composable(
+        route = "$MUHURAT_ACTIVITIES_ROUTE/{$MUHURAT_CATEGORY_ARG}",
+        arguments = listOf(navArgument(MUHURAT_CATEGORY_ARG) { type = NavType.StringType }),
+    ) { entry ->
+        MuhuratActivitiesScreen(
+            categoryName = entry.arguments?.getString(MUHURAT_CATEGORY_ARG).orEmpty(),
+            onOpenActivity = { activityName ->
+                navController.navigate("$MUHURAT_RESULTS_ROUTE/$activityName")
+            },
+        )
+    }
+    composable(
+        route = "$MUHURAT_RESULTS_ROUTE/{$MUHURAT_ACTIVITY_ARG}",
+        arguments = listOf(navArgument(MUHURAT_ACTIVITY_ARG) { type = NavType.StringType }),
+    ) { MuhuratResultsScreen() }
 }
