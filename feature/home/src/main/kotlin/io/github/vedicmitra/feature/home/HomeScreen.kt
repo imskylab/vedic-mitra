@@ -113,6 +113,7 @@ fun HomeScreen(
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
+    onOpenMuhurat: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -142,6 +143,7 @@ fun HomeScreen(
         onOpenCalendar = onOpenCalendar,
         onOpenReminders = onOpenReminders,
         onOpenKundali = onOpenKundali,
+        onOpenMuhurat = onOpenMuhurat,
         onSetReminder = viewModel::setReminder,
         onComingSoon = { name -> Toast.makeText(context, "$name is coming soon", Toast.LENGTH_SHORT).show() },
         modifier = modifier,
@@ -155,6 +157,7 @@ private fun HomeContent(
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
+    onOpenMuhurat: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -178,6 +181,7 @@ private fun HomeContent(
                         onOpenCalendar = onOpenCalendar,
                         onOpenReminders = onOpenReminders,
                         onOpenKundali = onOpenKundali,
+                        onOpenMuhurat = onOpenMuhurat,
                         onOpenFestivals = { view = HomeView.FESTIVALS },
                         onOpenEvents = { view = HomeView.EVENTS },
                         onSetReminder = onSetReminder,
@@ -235,6 +239,7 @@ private fun HubView(
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
+    onOpenMuhurat: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
@@ -254,6 +259,7 @@ private fun HubView(
             onOpenCalendar = onOpenCalendar,
             onOpenReminders = onOpenReminders,
             onOpenKundali = onOpenKundali,
+            onOpenMuhurat = onOpenMuhurat,
             onOpenFestivals = onOpenFestivals,
             onOpenEvents = onOpenEvents,
             onComingSoon = onComingSoon,
@@ -284,6 +290,7 @@ private fun ShortcutGrid(
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
+    onOpenMuhurat: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onComingSoon: (String) -> Unit,
@@ -292,11 +299,7 @@ private fun ShortcutGrid(
         listOf(
             { GlyphTile("Today's Panchang", VedicIcons.panchang, HubCategory.DAILY, onClick = onOpenPanchang) },
             { VectorTile("Calendar", Icons.Filled.DateRange, HubCategory.DAILY, onClick = onOpenCalendar) },
-            {
-                GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, enabled = false) {
-                    onComingSoon("Muhurat")
-                }
-            },
+            { GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, onClick = onOpenMuhurat) },
             { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenFestivals) },
             { VectorTile("Events", Icons.Filled.Event, HubCategory.DAILY, onClick = onOpenEvents) },
             { VectorTile("Reminders", Icons.Filled.Notifications, HubCategory.DAILY, onClick = onOpenReminders) },
@@ -855,6 +858,7 @@ private fun HomeContentPreview() {
             onOpenCalendar = {},
             onOpenReminders = {},
             onOpenKundali = {},
+            onOpenMuhurat = {},
             onSetReminder = {},
             onComingSoon = {},
         )

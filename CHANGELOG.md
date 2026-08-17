@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat — find your best days.** The Home hub's Muhurat tile now opens a working flow
+  (`:feature:muhurat`): pick a category (Bal Sanskar, Vivah, Vastu, Purchases, Medical, Business,
+  Agriculture, Ceremonies), then an activity, and see the most auspicious upcoming days ranked — each
+  with a star rating, a 0–100 score and the panchanga reasons that earned it. General
+  (panchanga-based) guidance for now; personalisation to a birth chart comes later.
 - **Muhurat: ranked best-days finder (engine).** `AstronomyEngine.bestMuhurtasFor(activity, days,
   location)` walks a date range, samples each day at its own sunrise, scores the panchanga with the
   muhurta scorer, and returns the days best-first (ties broken by the earlier date) — the data the
