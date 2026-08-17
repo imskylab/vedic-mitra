@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.BirthProfile
+import io.github.vedicmitra.core.datastore.Gender
 import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.location.GeocodeResult
@@ -77,6 +78,10 @@ class ProfileEditViewModel
         fun onNameChange(value: String) = _uiState.update { it.copy(name = value) }
 
         fun onRelationChange(relation: ProfileRelation) = _uiState.update { it.copy(relation = relation) }
+
+        /** Toggles the gender; tapping the selected one clears it back to unset. */
+        fun onGenderChange(gender: Gender) =
+            _uiState.update { it.copy(gender = if (it.gender == gender) null else gender) }
 
         fun onDateOfBirthChange(value: String) = _uiState.update { it.copy(dateOfBirth = value) }
 
@@ -162,6 +167,7 @@ class ProfileEditViewModel
                                 id = profileId ?: UUID.randomUUID().toString(),
                                 name = state.name.trim(),
                                 relation = state.relation,
+                                gender = state.gender,
                                 dateOfBirth = date,
                                 timeOfBirth = time,
                                 placeOfBirth = state.placeOfBirth.trim(),
@@ -187,6 +193,7 @@ class ProfileEditViewModel
 data class ProfileEditUiState(
     val name: String = "",
     val relation: ProfileRelation = ProfileRelation.SELF,
+    val gender: Gender? = null,
     val dateOfBirth: String = "",
     val timeOfBirth: String = "",
     val placeOfBirth: String = "",
@@ -202,6 +209,7 @@ private fun ProfileEditUiState.fromProfile(profile: BirthProfile): ProfileEditUi
     copy(
         name = profile.name,
         relation = profile.relation,
+        gender = profile.gender,
         dateOfBirth = profile.dateOfBirth?.toString().orEmpty(),
         timeOfBirth = profile.timeOfBirth?.toString().orEmpty(),
         placeOfBirth = profile.placeOfBirth,

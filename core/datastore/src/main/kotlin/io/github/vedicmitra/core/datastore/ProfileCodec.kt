@@ -19,6 +19,9 @@ import java.time.LocalTime
  * DataStore. Fields are joined with the ASCII unit-separator (0x1F), which cannot be typed on a
  * keyboard; the free-text [BirthProfile.placeOfBirth] is placed last so any stray separators are
  * absorbed on decode, and [BirthProfile.name] is sanitised of the separator on encode.
+ *
+ * [gender][BirthProfile.gender] was added after the first release: it sits just before the place, and
+ * [decode] still accepts the earlier field layout (no gender) so saved profiles survive an upgrade.
  */
 internal object ProfileCodec {
     private const val SEPARATOR_CODE = 0x1F
@@ -30,8 +33,14 @@ internal object ProfileCodec {
     private const val INDEX_LONGITUDE = 5
     private const val INDEX_ZONE = 6
     private const val INDEX_NAME = 7
-    private const val INDEX_PLACE = 8
-    private const val FIELD_COUNT = 9
+    private const val INDEX_GENDER = 8
+    private const val INDEX_PLACE = 9
+    private const val FIELD_COUNT = 10
+
+    // The original layout, before gender was added: same order, with place at index 8 and no gender.
+    private const val LEGACY_FIELD_COUNT = 9
+    private const val LEGACY_INDEX_PLACE = 8
+
     private val separator = Char(SEPARATOR_CODE).toString()
 
     fun encode(profile: BirthProfile): String =
@@ -50,21 +59,30 @@ internal object ProfileCodec {
                 .orEmpty(),
             profile.birthZoneId.orEmpty(),
             profile.name.replace(separator, " "),
+            profile.gender?.name.orEmpty(),
             profile.placeOfBirth,
         ).joinToString(separator)
 
-    /** Decodes a value produced by [encode], or `null` if it is malformed. */
+    /** Decodes a value produced by [encode] (current or legacy layout), or `null` if it is malformed. */
     fun decode(value: String): BirthProfile? {
         val parts = value.split(separator, limit = FIELD_COUNT)
-        if (parts.size != FIELD_COUNT) return null
+        val isCurrent = parts.size == FIELD_COUNT
+        val placeIndex =
+            when (parts.size) {
+                FIELD_COUNT -> INDEX_PLACE
+                LEGACY_FIELD_COUNT -> LEGACY_INDEX_PLACE
+                else -> return null
+            }
         val relation = ProfileRelation.entries.firstOrNull { it.name == parts[INDEX_RELATION] } ?: return null
+        val gender = if (isCurrent) Gender.entries.firstOrNull { it.name == parts[INDEX_GENDER] } else null
         return BirthProfile(
             id = parts[INDEX_ID],
             name = parts[INDEX_NAME],
             relation = relation,
+            gender = gender,
             dateOfBirth = parts[INDEX_DATE].toLocalDateOrNull(),
             timeOfBirth = parts[INDEX_TIME].toLocalTimeOrNull(),
-            placeOfBirth = parts[INDEX_PLACE],
+            placeOfBirth = parts[placeIndex],
             birthCoordinates = coordinatesOf(parts[INDEX_LATITUDE], parts[INDEX_LONGITUDE]),
             birthZoneId = parts[INDEX_ZONE].ifBlank { null },
         )

@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Kundali — pick which profile to view.** When you keep more than one chart-ready profile, the
+  Kundali screen now shows a chip picker to switch between them (defaulting to your primary profile)
+  instead of only ever showing the primary.
+- **Profiles — gender.** A profile can now record a gender (Male / Female / Other), shown on the
+  profile list. It's optional for a chart and groundwork for kundali matching, which pairs one male
+  and one female profile.
 - **Muhurat — set a reminder for a chosen day.** The muhurta day detail now has a "Set reminder for
   this day" button: it schedules a one-shot notification for that day's sunrise (named for the
   activity) and persists it, so it survives a reboot. A day already begun is declined with a message.
@@ -182,6 +188,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stdlib `kotlin.time.Instant`.
 
 ### Fixed
+- **System back now returns to the hub from the Festivals, Events and Panchang views.** These open
+  inside the Home tab (not as pushed routes), so the app-level back handler couldn't act on them and
+  the device back button exited the app. Back from any of them now returns to the Home hub.
 - **System back now navigates within the app instead of exiting.** Pressing the device back button
   from any screen other than the Home landing could close the app straight to the Android home screen
   (the platform's predictive-back path bypassing the in-app navigation). Back is now handled

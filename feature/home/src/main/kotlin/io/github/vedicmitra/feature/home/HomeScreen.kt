@@ -13,6 +13,7 @@ package io.github.vedicmitra.feature.home
 import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -171,6 +172,9 @@ private fun HomeContent(
         snapshot != null -> {
             var view by rememberSaveable { mutableStateOf(HomeView.HUB) }
             val toHub = { view = HomeView.HUB }
+            // The sub-views live inside the Home tab, so the app-level back handler (which only acts on
+            // pushed routes) can't return from them — handle it here so system back goes to the hub.
+            BackHandler(enabled = view != HomeView.HUB) { view = HomeView.HUB }
             when (view) {
                 HomeView.HUB ->
                     HubView(

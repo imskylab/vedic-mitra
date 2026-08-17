@@ -27,12 +27,25 @@ enum class ProfileRelation(
 }
 
 /**
+ * A profile's gender. Optional for a chart, but kundali matching (Guna Milan) pairs one [MALE] and
+ * one [FEMALE] profile, so it's captured here.
+ */
+enum class Gender(
+    val displayName: String,
+) {
+    MALE("Male"),
+    FEMALE("Female"),
+    OTHER("Other"),
+}
+
+/**
  * One person's birth details — a chart the app can cast. The user keeps several (their own plus
  * family/friends); exactly one is the primary "Self" profile the personalised experiences key off.
  *
  * @property id stable unique id (assigned once, on creation).
  * @property name the person's name.
  * @property relation how they relate to the user.
+ * @property gender the person's gender, or `null` if not set; used by kundali matching.
  * @property dateOfBirth date of birth, or `null` if not yet set.
  * @property timeOfBirth exact local time of birth, or `null` if not yet set.
  * @property placeOfBirth free-text place of birth (city, country).
@@ -45,6 +58,7 @@ data class BirthProfile(
     val id: String,
     val name: String = "",
     val relation: ProfileRelation = ProfileRelation.SELF,
+    val gender: Gender? = null,
     val dateOfBirth: LocalDate? = null,
     val timeOfBirth: LocalTime? = null,
     val placeOfBirth: String = "",

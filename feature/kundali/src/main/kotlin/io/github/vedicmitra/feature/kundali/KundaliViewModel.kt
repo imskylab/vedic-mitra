@@ -28,9 +28,9 @@ import javax.inject.Inject
 import kotlin.time.Instant
 
 /**
- * Presentation logic for the kundali screen. Resolves the primary profile, turns its birth details
- * into a chart via [AstronomyEngine.natalChartAt], and exposes it — or prompts for a profile when
- * one isn't set up with everything a chart needs (date, time and a located place of birth).
+ * Presentation logic for the kundali screen. Casts the chart for the selected chart-ready profile
+ * (defaulting to the primary), and lets the user switch between profiles when they keep more than
+ * one. Prompts to set up a profile when none has everything a chart needs (date, time, located place).
  */
 @HiltViewModel
 class KundaliViewModel
@@ -44,18 +44,27 @@ class KundaliViewModel
         /** Observable UI state consumed by the kundali screen. */
         val uiState: StateFlow<KundaliUiState> = _uiState.asStateFlow()
 
-        /** (Re)loads the primary profile's chart. */
+        // The chart-ready profiles currently offered, so [select] can recast without reloading.
+        private var chartReady: List<BirthProfile> = emptyList()
+
+        /** (Re)loads the chart-ready profiles and casts the primary's chart (or the first, if none is primary). */
         fun load() {
             viewModelScope.launch {
                 val profiles = profileRepository.profiles.first()
                 val primaryId = profileRepository.primaryProfileId.first()
-                val primary = profiles.firstOrNull { it.id == primaryId } ?: profiles.firstOrNull()
-                _uiState.value = chartStateFor(primary)
+                chartReady = profiles.filter { it.isChartReady }
+                val selected = chartReady.firstOrNull { it.id == primaryId } ?: chartReady.firstOrNull()
+                _uiState.value = if (selected == null) KundaliUiState.NeedsProfile else chartStateFor(selected)
             }
         }
 
-        private suspend fun chartStateFor(profile: BirthProfile?): KundaliUiState {
-            if (profile == null) return KundaliUiState.NeedsProfile
+        /** Switches the displayed chart to the chart-ready profile with [profileId]. */
+        fun select(profileId: String) {
+            val profile = chartReady.firstOrNull { it.id == profileId } ?: return
+            viewModelScope.launch { _uiState.value = chartStateFor(profile) }
+        }
+
+        private suspend fun chartStateFor(profile: BirthProfile): KundaliUiState {
             val date = profile.dateOfBirth
             val time = profile.timeOfBirth
             val zone = profile.birthZoneId
@@ -72,20 +81,37 @@ class KundaliViewModel
             return when (val result = astronomyEngine.natalChartAt(instant, coordinates)) {
                 is AppResult.Success -> {
                     val chart = result.data
-                    if (chart != null) KundaliUiState.Ready(profile.name, chart) else KundaliUiState.NeedsProfile
+                    if (chart != null) readyState(profile, chart) else KundaliUiState.NeedsProfile
                 }
 
                 is AppResult.Failure -> KundaliUiState.NeedsProfile
             }
         }
+
+        private fun readyState(
+            profile: BirthProfile,
+            chart: NatalChart,
+        ): KundaliUiState.Ready =
+            KundaliUiState.Ready(
+                name = profile.name,
+                chart = chart,
+                selectedId = profile.id,
+                options = chartReady.map { KundaliProfileOption(id = it.id, name = it.name.ifBlank { "Unnamed" }) },
+            )
     }
+
+/** A selectable chart-ready profile for the kundali picker. */
+data class KundaliProfileOption(
+    val id: String,
+    val name: String,
+)
 
 /** UI state for the kundali screen. */
 sealed interface KundaliUiState {
     /** The chart is being computed. */
     data object Loading : KundaliUiState
 
-    /** No primary profile is set up with the details a chart needs; prompt the user to add them. */
+    /** No profile is set up with the details a chart needs; prompt the user to add them. */
     data object NeedsProfile : KundaliUiState
 
     /**
@@ -93,9 +119,13 @@ sealed interface KundaliUiState {
      *
      * @property name the profile's name.
      * @property chart the computed natal chart.
+     * @property selectedId the id of the profile the chart is for.
+     * @property options every chart-ready profile, offered as a picker when there's more than one.
      */
     data class Ready(
         val name: String,
         val chart: NatalChart,
+        val selectedId: String,
+        val options: List<KundaliProfileOption>,
     ) : KundaliUiState
 }

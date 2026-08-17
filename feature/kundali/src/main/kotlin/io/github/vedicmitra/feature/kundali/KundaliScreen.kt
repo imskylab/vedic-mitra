@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.kundali
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,19 +67,25 @@ fun KundaliScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.load() }
-    KundaliContent(uiState = uiState, onSetUpProfile = onSetUpProfile, modifier = modifier)
+    KundaliContent(
+        uiState = uiState,
+        onSetUpProfile = onSetUpProfile,
+        onSelectProfile = viewModel::select,
+        modifier = modifier,
+    )
 }
 
 @Composable
 private fun KundaliContent(
     uiState: KundaliUiState,
     onSetUpProfile: () -> Unit,
+    onSelectProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
         KundaliUiState.Loading -> Centered(modifier) { CircularProgressIndicator() }
         KundaliUiState.NeedsProfile -> NeedsProfile(onSetUpProfile, modifier)
-        is KundaliUiState.Ready -> ChartView(uiState.name, uiState.chart, modifier)
+        is KundaliUiState.Ready -> ChartView(uiState, onSelectProfile, modifier)
     }
 }
 
@@ -98,17 +106,21 @@ private fun NeedsProfile(
 
 @Composable
 private fun ChartView(
-    name: String,
-    chart: NatalChart,
+    uiState: KundaliUiState.Ready,
+    onSelectProfile: (String) -> Unit,
     modifier: Modifier,
 ) {
+    val chart = uiState.chart
     val now = remember { System.currentTimeMillis() }
     val currentDasha = currentDashaOf(chart, now)
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(text = "$name's Kundali", style = MaterialTheme.typography.titleLarge)
+        if (uiState.options.size > 1) {
+            ProfilePicker(options = uiState.options, selectedId = uiState.selectedId, onSelect = onSelectProfile)
+        }
+        Text(text = "${uiState.name}'s Kundali", style = MaterialTheme.typography.titleLarge)
         NorthIndianChart(chart)
         Text(
             text =
@@ -124,6 +136,27 @@ private fun ChartView(
         }
         Text(text = "Grahas", style = MaterialTheme.typography.titleMedium)
         chart.grahas.forEach { GrahaRow(it) }
+    }
+}
+
+/** A horizontally scrolling row of chips to pick which chart-ready profile's kundali to show. */
+@Composable
+private fun ProfilePicker(
+    options: List<KundaliProfileOption>,
+    selectedId: String,
+    onSelect: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEach { option ->
+            FilterChip(
+                selected = option.id == selectedId,
+                onClick = { onSelect(option.id) },
+                label = { Text(text = option.name) },
+            )
+        }
     }
 }
 
@@ -284,7 +317,21 @@ private fun formatMonthYear(instant: Instant): String =
 @Composable
 private fun KundaliContentPreview() {
     VedicMitraTheme {
-        KundaliContent(uiState = KundaliUiState.Ready(name = "Leo", chart = sampleChart()), onSetUpProfile = {})
+        KundaliContent(
+            uiState =
+                KundaliUiState.Ready(
+                    name = "Leo",
+                    chart = sampleChart(),
+                    selectedId = "a",
+                    options =
+                        listOf(
+                            KundaliProfileOption(id = "a", name = "Leo"),
+                            KundaliProfileOption(id = "b", name = "Mia"),
+                        ),
+                ),
+            onSetUpProfile = {},
+            onSelectProfile = {},
+        )
     }
 }
 

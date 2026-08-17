@@ -85,26 +85,51 @@ class KundaliViewModelTest {
     @Test
     fun `computes the chart for a chart-ready primary profile`() =
         runTest {
-            val primary =
-                BirthProfile(
-                    id = "a",
-                    name = "Leo",
-                    dateOfBirth = LocalDate.of(1995, 3, 14),
-                    timeOfBirth = LocalTime.of(9, 30),
-                    placeOfBirth = "Hyderabad, India",
-                    birthCoordinates = GeoCoordinates(17.385, 78.4867),
-                    birthZoneId = "Asia/Kolkata",
-                )
             val viewModel =
-                KundaliViewModel(FakeProfileRepository(listOf(primary), "a"), FakeAstronomyEngine(sampleChart()))
+                KundaliViewModel(
+                    FakeProfileRepository(listOf(chartReady("a", "Leo")), "a"),
+                    FakeAstronomyEngine(sampleChart()),
+                )
 
             viewModel.load()
 
             val state = viewModel.uiState.value
             assertThat(state).isInstanceOf(KundaliUiState.Ready::class.java)
             assertThat((state as KundaliUiState.Ready).name).isEqualTo("Leo")
+            assertThat(state.selectedId).isEqualTo("a")
+        }
+
+    @Test
+    fun `offers every chart-ready profile and switches when one is selected`() =
+        runTest {
+            val profiles = listOf(chartReady("a", "Leo"), chartReady("b", "Mia"))
+            val viewModel = KundaliViewModel(FakeProfileRepository(profiles, "a"), FakeAstronomyEngine(sampleChart()))
+
+            viewModel.load()
+            val ready = viewModel.uiState.value as KundaliUiState.Ready
+            assertThat(ready.options.map { it.id }).containsExactly("a", "b").inOrder()
+            assertThat(ready.selectedId).isEqualTo("a")
+
+            viewModel.select("b")
+            val switched = viewModel.uiState.value as KundaliUiState.Ready
+            assertThat(switched.selectedId).isEqualTo("b")
+            assertThat(switched.name).isEqualTo("Mia")
         }
 }
+
+private fun chartReady(
+    id: String,
+    name: String,
+): BirthProfile =
+    BirthProfile(
+        id = id,
+        name = name,
+        dateOfBirth = LocalDate.of(1995, 3, 14),
+        timeOfBirth = LocalTime.of(9, 30),
+        placeOfBirth = "Hyderabad, India",
+        birthCoordinates = GeoCoordinates(17.385, 78.4867),
+        birthZoneId = "Asia/Kolkata",
+    )
 
 private fun sampleChart(): NatalChart =
     NatalChart(
