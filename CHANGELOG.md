@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **About Vedic Mitra.** Settings now has an About screen with the app's version (read from the
+  installed build), a short description, the author (Jayvardhan Potabatti), copyright, and the
+  licensing (GNU AGPL-3.0-or-later, with a commercial license also available).
 - **Kundali (birth chart).** The Kundali tile on the Home hub now opens your birth chart, computed
   from your primary profile: the lagna, the nine grahas by rashi and house (with retrograde), the
   Moon's nakshatra and pada, and your current Vimshottari mahadasha. Drawn as a **North-Indian diamond
@@ -153,6 +156,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   stdlib `kotlin.time.Instant`.
 
 ### Fixed
+- **System back now navigates within the app instead of exiting.** Pressing the device back button
+  from any screen other than the Home landing could close the app straight to the Android home screen
+  (the platform's predictive-back path bypassing the in-app navigation). Back is now handled
+  explicitly: it retraces the in-app journey and only leaves the app when you're already on the Home
+  landing.
 - **The Reminders permission banners no longer stick around after they're granted.** The "Allow exact
   alarms" and "Allow full-screen alarms" prompts were read once (the exact-alarm grant when the screen
   loaded, the full-screen grant during composition), so after the user granted a permission — or came
