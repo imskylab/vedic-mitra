@@ -175,6 +175,34 @@ class DefaultAstronomyEngine
             }
         }
 
+        override suspend fun bestMuhurtasFor(
+            activity: MuhurtaActivity,
+            instant: Instant,
+            days: Int,
+            location: GeoCoordinates,
+        ): AppResult<List<RankedMuhurtaDay>> {
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            return withContext(dispatchers.default) {
+                val startMillis = instant.toEpochMilliseconds()
+                // Sample each day's identity at its own sunrise — the convention by which panchangas
+                // name the day — then score the full snapshot there.
+                val snapshots =
+                    (0 until days).mapNotNull { offset ->
+                        val dayMillis = startMillis + offset * 86_400_000L
+                        val sunrise =
+                            SolarDay
+                                .sunTimes(dayMillis, location.latitude, location.longitude)
+                                .sunrise
+                                ?: Instant.fromEpochMilliseconds(dayMillis)
+                        (snapshotAt(sunrise, location) as? AppResult.Success)?.data
+                    }
+                AppResult.Success(rankMuhurtaDays(activity, snapshots))
+            }
+        }
+
         private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
             object : FestivalPanchangaSource {
                 override fun sunrise(dayEpochMillis: Long): Long? =
