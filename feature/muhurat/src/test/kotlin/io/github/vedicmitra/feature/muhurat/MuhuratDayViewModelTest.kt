@@ -32,9 +32,14 @@ import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.PersistedReminder
+import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
+import io.github.vedicmitra.core.scheduler.ScheduledTask
+import io.github.vedicmitra.core.scheduler.TaskScheduler
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,6 +56,8 @@ import kotlin.time.Instant
 class MuhuratDayViewModelTest {
     private val astronomyEngine = mockk<AstronomyEngine>()
     private val resolveLocation = mockk<ResolveLocationUseCase>()
+    private val taskScheduler = mockk<TaskScheduler>(relaxed = true)
+    private val reminderRepository = mockk<ReminderRepository>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -82,20 +89,59 @@ class MuhuratDayViewModelTest {
                 )
             coEvery { astronomyEngine.snapshotAt(any(), any()) } returns AppResult.Success(snapshot)
 
-            val viewModel =
-                MuhuratDayViewModel(
-                    astronomyEngine = astronomyEngine,
-                    resolveLocation = resolveLocation,
-                    savedStateHandle = SavedStateHandle(mapOf(MUHURAT_DAY_ARG to 1_705_320_000_000L)),
-                )
+            val viewModel = dayViewModel(activityName = "VIVAH", dayMillis = 1_705_320_000_000L)
             viewModel.load()
 
             val state = viewModel.uiState.value as MuhuratDayUiState.Ready
+            assertThat(state.activityLabel).isEqualTo("Vivah")
             assertThat(state.auspicious.map { it.label }).containsExactly("Abhijit Muhurta")
             assertThat(state.inauspicious.map { it.label }).containsExactly("Rahu Kalam")
             assertThat(state.summary).contains("Rohini")
         }
+
+    @Test
+    fun `setReminder schedules and persists a one-shot for a future day`() =
+        runTest {
+            coEvery { taskScheduler.schedule(any()) } returns AppResult.Success(Unit)
+            val futureDay = System.currentTimeMillis() + WEEK_MILLIS
+
+            val viewModel = dayViewModel(activityName = "VIVAH", dayMillis = futureDay)
+            viewModel.setReminder()
+
+            coVerify {
+                taskScheduler.schedule(
+                    match<ScheduledTask> {
+                        it.id == "muhurat:$futureDay" && it.triggerAt == Instant.fromEpochMilliseconds(futureDay)
+                    },
+                )
+            }
+            coVerify { reminderRepository.upsert(match<PersistedReminder> { it.id == "muhurat:$futureDay" }) }
+        }
+
+    @Test
+    fun `setReminder does not schedule a day that has already begun`() =
+        runTest {
+            val viewModel = dayViewModel(activityName = "VIVAH", dayMillis = 0L)
+            viewModel.setReminder()
+
+            coVerify(exactly = 0) { taskScheduler.schedule(any()) }
+        }
+
+    private fun dayViewModel(
+        activityName: String,
+        dayMillis: Long,
+    ): MuhuratDayViewModel =
+        MuhuratDayViewModel(
+            astronomyEngine = astronomyEngine,
+            resolveLocation = resolveLocation,
+            taskScheduler = taskScheduler,
+            reminderRepository = reminderRepository,
+            savedStateHandle =
+                SavedStateHandle(mapOf(MUHURAT_ACTIVITY_ARG to activityName, MUHURAT_DAY_ARG to dayMillis)),
+        )
 }
+
+private const val WEEK_MILLIS = 7L * 24 * 60 * 60 * 1000
 
 private fun muhurta(
     name: String,

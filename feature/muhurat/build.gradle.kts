@@ -16,4 +16,8 @@ android {
 dependencies {
     implementation(projects.core.astronomy)
     implementation(projects.core.domain)
+    // Scheduling + persisting a one-shot reminder for a chosen auspicious day.
+    implementation(projects.core.datastore)
+    implementation(projects.core.scheduler)
+    implementation(projects.core.notifications)
 }

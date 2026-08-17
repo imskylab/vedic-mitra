@@ -46,7 +46,7 @@ import kotlin.time.Instant
  */
 @Composable
 fun MuhuratResultsScreen(
-    onOpenDay: (Long) -> Unit,
+    onOpenDay: (String, Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MuhuratResultsViewModel = hiltViewModel(),
 ) {
@@ -63,7 +63,7 @@ fun MuhuratResultsScreen(
 @Composable
 private fun MuhuratResultsContent(
     uiState: MuhuratResultsUiState,
-    onOpenDay: (Long) -> Unit,
+    onOpenDay: (String, Long) -> Unit,
     onSetWindow: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,7 +98,9 @@ private fun MuhuratResultsContent(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 } else {
-                    uiState.days.forEach { day -> DayCard(day, onOpenDay) }
+                    uiState.days.forEach { day ->
+                        DayCard(day) { onOpenDay(uiState.activity.name, day.atSunrise.toEpochMilliseconds()) }
+                    }
                 }
                 Text(
                     text = "General guidance from the day's panchanga; not personalised to a birth chart.",
@@ -128,11 +130,9 @@ private fun WindowSelector(
 @Composable
 private fun DayCard(
     day: RankedMuhurtaDay,
-    onOpenDay: (Long) -> Unit,
+    onClick: () -> Unit,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable { onOpenDay(day.atSunrise.toEpochMilliseconds()) },
-    ) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
