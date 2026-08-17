@@ -147,7 +147,8 @@ private fun ProfileRow(
 
 private fun BirthProfile.subtitle(isPrimary: Boolean): String {
     val relationLabel = if (isPrimary) "Primary · ${relation.displayName}" else relation.displayName
-    return if (isComplete) relationLabel else "$relationLabel · incomplete"
+    val withGender = gender?.let { "$relationLabel · ${it.displayName}" } ?: relationLabel
+    return if (isComplete) withGender else "$withGender · incomplete"
 }
 
 @Preview

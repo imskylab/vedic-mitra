@@ -16,6 +16,7 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.BirthProfile
+import io.github.vedicmitra.core.datastore.Gender
 import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.location.GeocodeResult
@@ -71,6 +72,32 @@ class ProfileEditViewModelTest {
             assertThat(saved.relation).isEqualTo(ProfileRelation.SELF)
             assertThat(saved.dateOfBirth).isEqualTo(LocalDate.of(1995, 3, 14))
             assertThat(saved.timeOfBirth).isEqualTo(LocalTime.of(9, 30))
+        }
+
+    @Test
+    fun `saves the chosen gender and clears it when tapped again`() =
+        runTest {
+            val repository = FakeProfileRepository()
+            val viewModel = viewModel(repository)
+            viewModel.onNameChange("Mia")
+
+            viewModel.onGenderChange(Gender.FEMALE)
+            assertThat(viewModel.uiState.value.gender).isEqualTo(Gender.FEMALE)
+            viewModel.onGenderChange(Gender.FEMALE)
+            assertThat(viewModel.uiState.value.gender).isNull()
+
+            viewModel.onGenderChange(Gender.MALE)
+            viewModel.saved.test {
+                viewModel.save()
+                awaitItem()
+                cancelAndIgnoreRemainingEvents()
+            }
+            assertThat(
+                repository.profiles
+                    .first()
+                    .single()
+                    .gender,
+            ).isEqualTo(Gender.MALE)
         }
 
     @Test

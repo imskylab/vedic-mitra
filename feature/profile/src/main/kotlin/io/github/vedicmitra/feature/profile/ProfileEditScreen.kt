@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.datastore.Gender
 import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.core.location.GeocodeResult
@@ -76,6 +77,7 @@ fun ProfileEditScreen(
         uiState = uiState,
         onNameChange = viewModel::onNameChange,
         onRelationChange = viewModel::onRelationChange,
+        onGenderChange = viewModel::onGenderChange,
         onDateOfBirthChange = viewModel::onDateOfBirthChange,
         onTimeOfBirthChange = viewModel::onTimeOfBirthChange,
         onPlaceOfBirthChange = viewModel::onPlaceOfBirthChange,
@@ -91,6 +93,7 @@ private fun ProfileEditContent(
     uiState: ProfileEditUiState,
     onNameChange: (String) -> Unit,
     onRelationChange: (ProfileRelation) -> Unit,
+    onGenderChange: (Gender) -> Unit,
     onDateOfBirthChange: (String) -> Unit,
     onTimeOfBirthChange: (String) -> Unit,
     onPlaceOfBirthChange: (String) -> Unit,
@@ -120,6 +123,12 @@ private fun ProfileEditContent(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
+        Text(
+            text = "Gender",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        GenderSelector(selected = uiState.gender, onSelect = onGenderChange)
         OutlinedTextField(
             value = uiState.dateOfBirth,
             onValueChange = onDateOfBirthChange,
@@ -221,30 +230,54 @@ private fun RelationSelector(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         ProfileRelation.entries.forEach { relation ->
-            val active = relation == selected
-            Text(
-                text = relation.displayName,
-                style = MaterialTheme.typography.labelLarge,
-                color =
-                    if (active) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                modifier =
-                    Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .clickable { onSelect(relation) }
-                        .background(
-                            if (active) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                        ).padding(horizontal = 14.dp, vertical = 8.dp),
+            SelectableChip(
+                label = relation.displayName,
+                active = relation == selected,
+                onClick = { onSelect(relation) },
             )
         }
     }
+}
+
+/** Chips for choosing the profile's [Gender]; tapping the active one clears it (kundali matching only). */
+@Composable
+private fun GenderSelector(
+    selected: Gender?,
+    onSelect: (Gender) -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Gender.entries.forEach { gender ->
+            SelectableChip(
+                label = gender.displayName,
+                active = gender == selected,
+                onClick = { onSelect(gender) },
+            )
+        }
+    }
+}
+
+/** A pill-shaped selectable chip, filled when [active]. */
+@Composable
+private fun SelectableChip(
+    label: String,
+    active: Boolean,
+    onClick: () -> Unit,
+) {
+    val container =
+        if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+    val content =
+        if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelLarge,
+        color = content,
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .clickable(onClick = onClick)
+                .background(container)
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+    )
 }
 
 @Preview
@@ -252,9 +285,10 @@ private fun RelationSelector(
 private fun ProfileEditContentPreview() {
     VedicMitraTheme {
         ProfileEditContent(
-            uiState = ProfileEditUiState(name = "Mia", relation = ProfileRelation.SPOUSE),
+            uiState = ProfileEditUiState(name = "Mia", relation = ProfileRelation.SPOUSE, gender = Gender.FEMALE),
             onNameChange = {},
             onRelationChange = {},
+            onGenderChange = {},
             onDateOfBirthChange = {},
             onTimeOfBirthChange = {},
             onPlaceOfBirthChange = {},
