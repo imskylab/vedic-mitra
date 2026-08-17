@@ -67,7 +67,8 @@ class MuhuratResultsViewModelTest {
                         score = DayMuhurtaScore(score = 92, rating = MuhurtaRating.EXCELLENT, reasons = emptyList()),
                     ),
                 )
-            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any()) } returns AppResult.Success(ranked)
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
+                AppResult.Success(ranked)
 
             val viewModel =
                 MuhuratResultsViewModel(
@@ -93,7 +94,7 @@ class MuhuratResultsViewModelTest {
                     label = "New Delhi",
                     isDefault = false,
                 )
-            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any()) } returns
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
                 AppResult.Success(emptyList())
 
             val viewModel =
@@ -119,7 +120,7 @@ class MuhuratResultsViewModelTest {
                     label = "New Delhi",
                     isDefault = false,
                 )
-            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any()) } returns
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
                 AppResult.Success(emptyList())
 
             val viewModel =
@@ -133,6 +134,6 @@ class MuhuratResultsViewModelTest {
 
             val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
             assertThat(state.windowDays).isEqualTo(90)
-            coVerify { astronomyEngine.bestMuhurtasFor(MuhurtaActivity.VIVAH, any(), 90, any()) }
+            coVerify { astronomyEngine.bestMuhurtasFor(MuhurtaActivity.VIVAH, any(), 90, any(), any()) }
         }
 }

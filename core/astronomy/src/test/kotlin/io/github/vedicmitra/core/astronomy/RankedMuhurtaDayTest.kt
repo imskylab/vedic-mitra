@@ -60,6 +60,53 @@ class RankedMuhurtaDayTest {
         assertThat(ranked.first().score.score).isEqualTo(ranked.last().score.score)
         assertThat(ranked.first().atSunrise).isEqualTo(earlier.instant)
     }
+
+    @Test
+    fun `a person's tarabala reorders otherwise-tied days`() {
+        // Neither Bharani (2) nor Krittika (3) is a Griha Pravesh favourable nakshatra, so the two days
+        // score the same generally. For birth star Ashwini (1): Bharani is the Sampat tara (favourable),
+        // Krittika the Vipat tara (unfavourable) — which should flip their order once personalised.
+        val krittikaEarlier =
+            plainDaySnapshot(SAMPLE_BASE_MILLIS, Nakshatra(number = 3, name = "Krittika"))
+        val bharaniLater =
+            plainDaySnapshot(SAMPLE_BASE_MILLIS + DAY_OFFSET_MILLIS, Nakshatra(number = 2, name = "Bharani"))
+        val days = listOf(krittikaEarlier, bharaniLater)
+        val person = PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0)
+
+        val general = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, days)
+        val personal = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, days, person)
+
+        // Generally tied, so the earlier day (Krittika) leads; personalised, Bharani's favourable tara wins.
+        assertThat(general.first().atSunrise).isEqualTo(krittikaEarlier.instant)
+        assertThat(personal.first().atSunrise).isEqualTo(bharaniLater.instant)
+        assertThat(
+            personal
+                .first()
+                .score.reasons
+                .any { it.favourable && it.text.contains("tara") },
+        ).isTrue()
+    }
+
+    @Test
+    fun `a person's chandrabala adds a reason from the day's moon sign`() {
+        // Birth Moon Mesha (0); the day's Moon in Kanya (5) is the 6th position — a strong Chandrabala.
+        val day =
+            plainDaySnapshot(
+                SAMPLE_BASE_MILLIS,
+                Nakshatra(number = 2, name = "Bharani"),
+                moonRasi = Rasi(index = 5, name = "Kanya"),
+            )
+        val person = PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0)
+
+        val personal = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, listOf(day), person)
+
+        assertThat(
+            personal
+                .first()
+                .score.reasons
+                .any { it.favourable && it.text.contains("Chandrabala") },
+        ).isTrue()
+    }
 }
 
 private const val SAMPLE_BASE_MILLIS = 1_705_320_000_000L
@@ -75,6 +122,23 @@ private fun idealDaySnapshot(dayMillis: Long): AstronomySnapshot =
         karana = Karana(number = 2, name = "Bava"),
     )
 
+// A middling day (Shukla Panchami, benefic weekday, no doshas) with a chosen nakshatra and optional
+// Moon sign — for isolating the personal Tarabala/Chandrabala effects on the ranking.
+private fun plainDaySnapshot(
+    dayMillis: Long,
+    nakshatra: Nakshatra,
+    moonRasi: Rasi? = null,
+): AstronomySnapshot =
+    daySnapshot(
+        dayMillis = dayMillis,
+        tithi = Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
+        nakshatra = nakshatra,
+        vara = Vara.GURUVARA,
+        yoga = Yoga(number = 1, name = "Vishkambha"),
+        karana = Karana(number = 2, name = "Bava"),
+        moonRasi = moonRasi,
+    )
+
 private fun daySnapshot(
     dayMillis: Long,
     tithi: Tithi,
@@ -82,6 +146,7 @@ private fun daySnapshot(
     vara: Vara,
     yoga: Yoga,
     karana: Karana,
+    moonRasi: Rasi? = null,
 ): AstronomySnapshot =
     AstronomySnapshot(
         instant = Instant.fromEpochMilliseconds(dayMillis),
@@ -90,6 +155,7 @@ private fun daySnapshot(
         moonTimes = MoonTimes(moonrise = null, moonset = null),
         tithi = tithi,
         nakshatra = nakshatra,
+        moonRasi = moonRasi,
         yoga = yoga,
         karana = karana,
         vara = vara,
