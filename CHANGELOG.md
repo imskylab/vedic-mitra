@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Muhurat — set a reminder for a chosen day.** The muhurta day detail now has a "Set reminder for
+  this day" button: it schedules a one-shot notification for that day's sunrise (named for the
+  activity) and persists it, so it survives a reboot. A day already begun is declined with a message.
 - **Muhurat — choose the search window.** The best-days results now have a 30 / 60 / 90-day selector,
   so you can widen or narrow how far ahead the ranking looks (default 60 days) instead of a fixed
   window.

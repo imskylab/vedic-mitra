@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.feature.muhurat
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,13 +48,20 @@ fun MuhuratDayScreen(
     viewModel: MuhuratDayViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.load() }
-    MuhuratDayContent(uiState = uiState, modifier = modifier)
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+    MuhuratDayContent(uiState = uiState, onSetReminder = viewModel::setReminder, modifier = modifier)
 }
 
 @Composable
 private fun MuhuratDayContent(
     uiState: MuhuratDayUiState,
+    onSetReminder: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -67,12 +77,18 @@ private fun MuhuratDayContent(
                 modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                Text(
+                    text = uiState.activityLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
                 Text(text = formatDate(uiState.dateMillis), style = MaterialTheme.typography.titleLarge)
                 Text(
                     text = uiState.summary,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Button(onClick = onSetReminder) { Text(text = "Set reminder for this day") }
                 WindowSection(
                     title = "Auspicious periods",
                     windows = uiState.auspicious,

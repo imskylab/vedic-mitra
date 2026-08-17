@@ -353,11 +353,17 @@ private fun NavGraphBuilder.muhuratDestinations(navController: NavHostController
         arguments = listOf(navArgument(MUHURAT_ACTIVITY_ARG) { type = NavType.StringType }),
     ) {
         MuhuratResultsScreen(
-            onOpenDay = { millis -> navController.navigate("$MUHURAT_DAY_ROUTE/$millis") },
+            onOpenDay = { activityName, millis ->
+                navController.navigate("$MUHURAT_DAY_ROUTE/$activityName/$millis")
+            },
         )
     }
     composable(
-        route = "$MUHURAT_DAY_ROUTE/{$MUHURAT_DAY_ARG}",
-        arguments = listOf(navArgument(MUHURAT_DAY_ARG) { type = NavType.LongType }),
+        route = "$MUHURAT_DAY_ROUTE/{$MUHURAT_ACTIVITY_ARG}/{$MUHURAT_DAY_ARG}",
+        arguments =
+            listOf(
+                navArgument(MUHURAT_ACTIVITY_ARG) { type = NavType.StringType },
+                navArgument(MUHURAT_DAY_ARG) { type = NavType.LongType },
+            ),
     ) { MuhuratDayScreen() }
 }
