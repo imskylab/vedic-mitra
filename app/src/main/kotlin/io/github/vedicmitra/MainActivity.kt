@@ -76,6 +76,7 @@ import io.github.vedicmitra.feature.location.AddCoordinatesScreen
 import io.github.vedicmitra.feature.location.LocationScreen
 import io.github.vedicmitra.feature.profile.ProfileEditScreen
 import io.github.vedicmitra.feature.profile.ProfileListScreen
+import io.github.vedicmitra.feature.settings.AboutScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
 
 /** The app's top-level destinations, shown in the bottom navigation bar in this order. */
@@ -99,6 +100,7 @@ private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
 private const val PROFILE_EDIT_ROUTE = "profile/edit"
 private const val PROFILE_ID_ARG = "profileId"
+private const val ABOUT_ROUTE = "settings/about"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -198,6 +200,12 @@ private fun VedicMitraApp() {
     val currentRoute = backStackEntry?.destination?.route
     val current = TopDestination.entries.firstOrNull { it.route == currentRoute }
 
+    // System back should retrace the in-app journey and only leave the app from the Home landing.
+    // Handled explicitly so it is reliable regardless of the platform's predictive-back path.
+    BackHandler(enabled = currentRoute != TopDestination.HOME.route) {
+        if (!navController.popBackStack()) navController.navigateToTab(TopDestination.HOME.route)
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -269,8 +277,10 @@ private fun AppNavHost(
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 onNavigateToProfile = { navController.navigateToTab(TopDestination.PROFILE.route) },
+                onNavigateToAbout = { navController.navigate(ABOUT_ROUTE) },
             )
         }
+        composable(ABOUT_ROUTE) { AboutScreen() }
         composable(TopDestination.PROFILE.route) {
             ProfileListScreen(
                 onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },
