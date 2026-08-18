@@ -113,6 +113,7 @@ fun HomeScreen(
     onOpenMuhurat: () -> Unit,
     onOpenMatch: () -> Unit,
     onOpenRashifal: () -> Unit,
+    onOpenJapa: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -145,6 +146,7 @@ fun HomeScreen(
         onOpenMuhurat = onOpenMuhurat,
         onOpenMatch = onOpenMatch,
         onOpenRashifal = onOpenRashifal,
+        onOpenJapa = onOpenJapa,
         onSetReminder = viewModel::setReminder,
         onComingSoon = { name -> Toast.makeText(context, "$name is coming soon", Toast.LENGTH_SHORT).show() },
         modifier = modifier,
@@ -161,6 +163,7 @@ private fun HomeContent(
     onOpenMuhurat: () -> Unit,
     onOpenMatch: () -> Unit,
     onOpenRashifal: () -> Unit,
+    onOpenJapa: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -190,6 +193,7 @@ private fun HomeContent(
                         onOpenMuhurat = onOpenMuhurat,
                         onOpenMatch = onOpenMatch,
                         onOpenRashifal = onOpenRashifal,
+                        onOpenJapa = onOpenJapa,
                         onOpenFestivals = { view = HomeView.FESTIVALS },
                         onOpenEvents = { view = HomeView.EVENTS },
                         onSetReminder = onSetReminder,
@@ -250,6 +254,7 @@ private fun HubView(
     onOpenMuhurat: () -> Unit,
     onOpenMatch: () -> Unit,
     onOpenRashifal: () -> Unit,
+    onOpenJapa: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
@@ -280,6 +285,7 @@ private fun HubView(
             onOpenMuhurat = onOpenMuhurat,
             onOpenMatch = onOpenMatch,
             onOpenRashifal = onOpenRashifal,
+            onOpenJapa = onOpenJapa,
             onOpenFestivals = onOpenFestivals,
             onOpenEvents = onOpenEvents,
             onComingSoon = onComingSoon,
@@ -318,6 +324,7 @@ private fun ShortcutGrid(
     onOpenMuhurat: () -> Unit,
     onOpenMatch: () -> Unit,
     onOpenRashifal: () -> Unit,
+    onOpenJapa: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onComingSoon: (String) -> Unit,
@@ -334,7 +341,7 @@ private fun ShortcutGrid(
             { GlyphTile("Rashifal", VedicIcons.rashifal, HubCategory.ASTROLOGY, onClick = onOpenRashifal) },
             { GlyphTile("Match", VedicIcons.matchmaking, HubCategory.ASTROLOGY, onClick = onOpenMatch) },
             { OmTile("Stotra", enabled = false) { onComingSoon("Stotra") } },
-            { GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, enabled = false) { onComingSoon("Japa") } },
+            { GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, onClick = onOpenJapa) },
             {
                 GlyphTile("Meditate", VedicIcons.meditate, HubCategory.DEVOTION, enabled = false) {
                     onComingSoon("Meditation")
@@ -880,6 +887,7 @@ private fun HomeContentPreview() {
             onOpenMuhurat = {},
             onOpenMatch = {},
             onOpenRashifal = {},
+            onOpenJapa = {},
             onSetReminder = {},
             onComingSoon = {},
         )

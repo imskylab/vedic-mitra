@@ -39,7 +39,12 @@ android {
 
     buildTypes {
         getByName("release") {
-            // Wired only if the keystore was present above; otherwise null → unsigned release.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             signingConfig = signingConfigs.findByName("release")
         }
     }
@@ -63,6 +68,7 @@ dependencies {
     implementation(projects.feature.muhurat)
     implementation(projects.feature.matchmaking)
     implementation(projects.feature.rashifal)
+    implementation(projects.feature.japa)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)
