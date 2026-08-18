@@ -174,6 +174,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
 
 ### Changed
+- **Matchmaking — more accurate Gana koota and dosha cancellations.** The Gana koota now uses the
+  standard asymmetric groom/bride table (same 6; Deva–Manushya 5; groom-Manushya + bride-Rakshasa 1;
+  other Rakshasa pairings 0) instead of a symmetric one. Nadi and Bhakoot doshas now apply their
+  classical cancellation (parihara) rules — Bhakoot cancels under a shared or friendly sign lord;
+  Nadi cancels for same-nakshatra-different-pada, same-rashi-different-nakshatra, or
+  same-nakshatra-different-rashi — so a cancelled clash keeps its lost points but drops the warning.
+  (Yoni and Vashya keep their documented simplified tables; their full classical matrices vary by
+  lineage and are only published as images.)
 - **Bottom navigation is now Home · Settings · Profile.** Panchang and Reminders left the bottom bar
   (they're already tiles on the Home hub) and Profile joined it as a first-class tab. The Home hub's
   Daily / Astrology / Devotion tabs were removed too — every shortcut now sits on one screen, each

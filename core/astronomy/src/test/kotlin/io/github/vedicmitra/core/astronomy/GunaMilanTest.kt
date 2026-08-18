@@ -81,6 +81,52 @@ class GunaMilanTest {
     }
 
     @Test
+    fun `the Nadi dosha is cancelled by the same nakshatra in a different pada`() {
+        // Same Rohini (4) in Vrishabha (1) as the identical case, but a different Moon pada.
+        val result =
+            gunaMilan(
+                groom = GunaMilanProfile(nakshatraNumber = 4, moonRasiIndex = 1, moonPada = 1),
+                bride = GunaMilanProfile(nakshatraNumber = 4, moonRasiIndex = 1, moonPada = 3),
+            )
+
+        assertThat(points(result, Koota.NADI)).isEqualTo(0.0) // still zero points…
+        assertThat(result.doshas).isEmpty() // …but the dosha is cancelled
+        assertThat(result.total).isEqualTo(25.0)
+    }
+
+    @Test
+    fun `a 6-8 axis under a shared sign lord cancels the Bhakoot dosha`() {
+        // Ashwini (1) in Mesha (0) with Anuradha (17) in Vrishchika (7): a 6/8 axis, but both signs
+        // are ruled by Mars, so the Bhakoot dosha does not apply.
+        val result =
+            gunaMilan(
+                groom = GunaMilanProfile(nakshatraNumber = 1, moonRasiIndex = 0),
+                bride = GunaMilanProfile(nakshatraNumber = 17, moonRasiIndex = 7),
+            )
+
+        assertThat(points(result, Koota.BHAKOOT)).isEqualTo(0.0)
+        assertThat(result.doshas).isEmpty()
+    }
+
+    @Test
+    fun `the Gana koota is asymmetric between groom and bride`() {
+        // Bharani (2, Manushya) groom with Krittika (3, Rakshasa) bride scores 1; the reverse scores 0.
+        val manushyaGroom =
+            gunaMilan(
+                groom = GunaMilanProfile(nakshatraNumber = 2, moonRasiIndex = 1),
+                bride = GunaMilanProfile(nakshatraNumber = 3, moonRasiIndex = 2),
+            )
+        val rakshasaGroom =
+            gunaMilan(
+                groom = GunaMilanProfile(nakshatraNumber = 3, moonRasiIndex = 2),
+                bride = GunaMilanProfile(nakshatraNumber = 2, moonRasiIndex = 1),
+            )
+
+        assertThat(points(manushyaGroom, Koota.GANA)).isEqualTo(1.0)
+        assertThat(points(rakshasaGroom, Koota.GANA)).isEqualTo(0.0)
+    }
+
+    @Test
     fun `every koota stays within its weight and the eight are returned in order`() {
         for (gN in 1..27) {
             for (bN in listOf(1, 7, 14, 21, 27)) {

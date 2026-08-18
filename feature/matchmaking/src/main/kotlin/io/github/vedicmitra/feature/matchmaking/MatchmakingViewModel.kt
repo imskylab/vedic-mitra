@@ -107,7 +107,11 @@ class MatchmakingViewModel
                     .firstOrNull { it.graha == Graha.MOON }
                     ?.rasi
                     ?.index ?: return null
-            return GunaMilanProfile(nakshatraNumber = chart.moonNakshatra.number, moonRasiIndex = moonRasiIndex)
+            return GunaMilanProfile(
+                nakshatraNumber = chart.moonNakshatra.number,
+                moonRasiIndex = moonRasiIndex,
+                moonPada = chart.moonPada,
+            )
         }
 
         // The birth instant + birthplace coordinates for [profile], or null if any are missing.
