@@ -126,7 +126,9 @@ Not a numeric match, but a sanity pass on the personalised ranking:
 Pick a male and a female profile and compare the app's Ashtakoota total to a free calculator (e.g.
 Prokerala or AstroSage "Ashtakoot Guna Milan") for the same two Moon nakshatras/signs.
 
-- **Nadi, Bhakoot, Gana, Tara, Varna, Graha Maitri** should match a standard calculator.
+- **Nadi, Bhakoot, Gana, Tara, Varna, Graha Maitri** should match a standard calculator. Gana uses
+  the standard asymmetric groom/bride table, and Nadi/Bhakoot apply the classical dosha cancellations
+  (parihara) — so a "dosha cancelled" note with the points still at 0 is expected, not a bug.
 - **Yoni** and **Vashya** use documented but simplified tables (Yoni collapses the finer
   friendly/unfriendly gradations to neutral; Vashya omits the Dhanu/Makara half-sign split). Expect
   these two kootas to occasionally differ by a point or two from a full-table calculator — note any

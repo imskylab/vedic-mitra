@@ -13,15 +13,17 @@
 package io.github.vedicmitra.core.astronomy
 
 /**
- * One partner's inputs for Ashtakoota matching: the Moon's birth nakshatra and sign, both read from
- * the natal chart ([NatalChart.moonNakshatra] and the Moon graha's [Rasi]).
+ * One partner's inputs for Ashtakoota matching: the Moon's birth nakshatra, sign and pada, all read
+ * from the natal chart ([NatalChart.moonNakshatra], the Moon graha's [Rasi], and [NatalChart.moonPada]).
  *
  * @property nakshatraNumber the Moon's nakshatra, 1..27 (Ashwini = 1).
  * @property moonRasiIndex the Moon's sign, 0..11 (Mesha = 0).
+ * @property moonPada the Moon's nakshatra quarter, 1..4 — used only for the Nadi-dosha cancellation.
  */
 data class GunaMilanProfile(
     val nakshatraNumber: Int,
     val moonRasiIndex: Int,
+    val moonPada: Int = 1,
 )
 
 /** The eight kootas (koota) of North-Indian Ashtakoota matching, with their maximum guna weights. */
@@ -79,15 +81,22 @@ data class GunaMilanResult(
 }
 
 /**
- * Scores an Ashtakoota (36-guna) match between a [groom] and a [bride] from their Moon nakshatra and
- * sign. Uses the standard classical tables (see the KDoc on each koota's scorer); the well-known
- * regional variations in Yoni, Vashya and Gana are called out where they occur. Empirical refinements
- * are applied outside the app, not here.
+ * Scores an Ashtakoota (36-guna) match between a [groom] and a [bride] from their Moon nakshatra,
+ * sign and pada. Uses the standard classical tables (see the KDoc on each koota's scorer); the Nadi
+ * and Bhakoot doshas carry their classical cancellation (parihara) rules. The well-known regional
+ * variations in Yoni and Vashya are called out where they occur; empirical refinements are applied
+ * outside the app, not here.
  */
 fun gunaMilan(
     groom: GunaMilanProfile,
     bride: GunaMilanProfile,
 ): GunaMilanResult {
+    val bhakoot = bhakootKoota(groom, bride)
+    val nadi = nadiKoota(groom, bride)
+    // A zeroed Bhakoot/Nadi is a dosha only when its cancellation doesn't apply; cancellation removes
+    // the warning but not the lost points (the geometry/nadi clash still costs the koota).
+    val bhakootDosha = bhakoot.points == 0.0 && !bhakootCancelled(groom, bride)
+    val nadiDosha = nadi.points == 0.0 && !nadiCancelled(groom, bride)
     val scores =
         listOf(
             varnaKoota(groom, bride),
@@ -96,16 +105,53 @@ fun gunaMilan(
             yoniKoota(groom, bride),
             grahaMaitriKoota(groom, bride),
             ganaKoota(groom, bride),
-            bhakootKoota(groom, bride),
-            nadiKoota(groom, bride),
+            cancelledNote(bhakoot, cancelled = bhakoot.points == 0.0 && !bhakootDosha),
+            cancelledNote(nadi, cancelled = nadi.points == 0.0 && !nadiDosha),
         )
     val total = scores.sumOf { it.points }
     val doshas =
         buildList {
-            if (scores.first { it.koota == Koota.NADI }.points == 0.0) add("Nadi dosha")
-            if (scores.first { it.koota == Koota.BHAKOOT }.points == 0.0) add("Bhakoot dosha")
+            if (nadiDosha) add("Nadi dosha")
+            if (bhakootDosha) add("Bhakoot dosha")
         }
     return GunaMilanResult(scores = scores, total = total, verdict = verdictFor(total), doshas = doshas)
+}
+
+/** Appends a "dosha cancelled" note to a zeroed Bhakoot/Nadi koota whose parihara applies. */
+private fun cancelledNote(
+    score: KootaScore,
+    cancelled: Boolean,
+): KootaScore = if (cancelled) score.copy(note = "${score.note} — dosha cancelled") else score
+
+/**
+ * Bhakoot-dosha cancellation: the two Moon signs are ruled by the same planet (Mesha/Vrishchika,
+ * Vrishabha/Tula, Makara/Kumbha) or by mutually-friendly planets.
+ */
+private fun bhakootCancelled(
+    groom: GunaMilanProfile,
+    bride: GunaMilanProfile,
+): Boolean {
+    val lg = RASI_LORD[groom.moonRasiIndex]
+    val lb = RASI_LORD[bride.moonRasiIndex]
+    if (lg == lb) return true
+    return relationOf(lg, lb) == Relation.FRIEND && relationOf(lb, lg) == Relation.FRIEND
+}
+
+/**
+ * Nadi-dosha cancellation: same nakshatra but a different pada, same rashi with different nakshatras,
+ * or same nakshatra falling in different rashis.
+ */
+private fun nadiCancelled(
+    groom: GunaMilanProfile,
+    bride: GunaMilanProfile,
+): Boolean {
+    val sameNakshatra = groom.nakshatraNumber == bride.nakshatraNumber
+    val sameRasi = groom.moonRasiIndex == bride.moonRasiIndex
+    val samePada = groom.moonPada == bride.moonPada
+    // A cancellation applies whenever the Moons share a nakshatra or a rashi — unless they are the
+    // exact same Moon (same nakshatra, pada and rashi), where nothing offsets the shared nadi.
+    if (sameNakshatra && sameRasi && samePada) return false
+    return sameNakshatra || sameRasi
 }
 
 private fun verdictFor(total: Double): GunaMilanVerdict =
@@ -368,8 +414,9 @@ private fun pointsForRelations(
     }
 }
 
-// ---- Gana (max 6): temperament (Deva/Manushya/Rakshasa). Symmetric table: same = 6, Deva-Manushya
-// = 5, Manushya-Rakshasa = 3, Deva-Rakshasa = 1. (Some traditions use an asymmetric groom/bride table.)
+// ---- Gana (max 6): temperament (Deva/Manushya/Rakshasa). Standard asymmetric groom/bride table:
+// same = 6; Deva & Manushya (either way) = 5; groom Manushya + bride Rakshasa = 1; every other
+// Rakshasa pairing (Deva-Rakshasa both ways, groom Rakshasa + bride Manushya) = 0.
 
 private enum class Gana { DEVA, MANUSHYA, RAKSHASA }
 
@@ -410,13 +457,12 @@ private fun ganaKoota(
 ): KootaScore {
     val g = GANA_BY_NAKSHATRA[groom.nakshatraNumber - 1]
     val b = GANA_BY_NAKSHATRA[bride.nakshatraNumber - 1]
-    val pair = setOf(g, b)
     val points =
         when {
             g == b -> 6.0
-            pair == setOf(Gana.DEVA, Gana.MANUSHYA) -> 5.0
-            pair == setOf(Gana.MANUSHYA, Gana.RAKSHASA) -> 3.0
-            else -> 1.0 // Deva & Rakshasa
+            setOf(g, b) == setOf(Gana.DEVA, Gana.MANUSHYA) -> 5.0
+            g == Gana.MANUSHYA && b == Gana.RAKSHASA -> 1.0
+            else -> 0.0 // Deva & Rakshasa (either), or groom Rakshasa + bride Manushya
         }
     return KootaScore(Koota.GANA, points, "Gana ${g.name.lowercase()} & ${b.name.lowercase()}")
 }
