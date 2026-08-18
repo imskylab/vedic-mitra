@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Japa — mala chant counter.** The Japa tile now opens a working counter (`:feature:japa`): tap the
+  ring to count beads, with a mala completing every 108 (a haptic buzz marks each round). Pick from a
+  bundled catalog of mantras (Gayatri, Om Namah Shivaya, Mahamrityunjaya, and the nine Navagraha beeja
+  mantras, shown in Devanagari + transliteration). Sittings are logged to a history with a daily total
+  and a streak, and an in-progress mala is saved so it can be resumed. Two panchanga hooks: it suggests
+  the beeja mantra of your current mahadasha lord (from your primary profile's chart), stamps each
+  logged sitting with the day's nakshatra, and surfaces today's Brahma Muhurta as an auspicious time to
+  sit.
 - **Rashifal — daily & weekly Moon-transit outlook.** The Rashifal tile now opens a working reading
   (`:feature:rashifal`): today's verdict for a rashi plus the seven days ahead, computed from real
   astronomy rather than generic text. Each day is graded by Chandrabala (the transit Moon's house from

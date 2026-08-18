@@ -71,6 +71,7 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
 import io.github.vedicmitra.feature.home.HomeScreen
+import io.github.vedicmitra.feature.japa.JapaScreen
 import io.github.vedicmitra.feature.kundali.KundaliScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
 import io.github.vedicmitra.feature.location.AddCoordinatesScreen
@@ -104,6 +105,7 @@ private const val ALARM_ROUTE = "alarm"
 private const val KUNDALI_ROUTE = "kundali"
 private const val MATCHMAKING_ROUTE = "matchmaking"
 private const val RASHIFAL_ROUTE = "rashifal"
+private const val JAPA_ROUTE = "japa"
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
@@ -290,6 +292,7 @@ private fun AppNavHost(
                 onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
                 onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
                 onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
+                onOpenJapa = { navController.navigate(JAPA_ROUTE) },
             )
         }
         composable(TopDestination.SETTINGS.route) {
@@ -336,6 +339,7 @@ private fun AppNavHost(
         composable(RASHIFAL_ROUTE) {
             RashifalScreen(onSetUpProfile = { navController.navigateToTab(TopDestination.PROFILE.route) })
         }
+        composable(JAPA_ROUTE) { JapaScreen() }
         muhuratDestinations(navController)
     }
 }
