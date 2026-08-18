@@ -182,6 +182,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   same-nakshatra-different-rashi — so a cancelled clash keeps its lost points but drops the warning.
   (Yoni and Vashya keep their documented simplified tables; their full classical matrices vary by
   lineage and are only published as images.)
+- **New hub tile artwork and larger tile icons.** The Today's Panchang tile now shows a lotus
+  zodiac-wheel mandala, Muhurat a mangal kalash (sacred pot with mango leaves), Rashifal the twelve
+  rashis in a zodiac wheel, Meditate a seated figure with the chakras, Calendar a mandala-bordered
+  almanac page with Om marks and a turning leaf, Events a woodcut almanac page with a central Om and
+  endless-knot corners, and the Match tile a clasped-hands (hastamelap) motif with a mehndi mandala —
+  replacing the marigold panchang glyph, the kalash-outline muhurat glyph, the simple meditate figure,
+  the plain date-range calendar icon, the plain event icon, and the placeholder Star/heart icons. All
+  hub-tile icons are also enlarged to fill their chip.
 - **Bottom navigation is now Home · Settings · Profile.** Panchang and Reminders left the bottom bar
   (they're already tiles on the Home hub) and Profile joined it as a first-class tab. The Home hub's
   Daily / Astrology / Devotion tabs were removed too — every shortcut now sits on one screen, each
