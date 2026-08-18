@@ -121,6 +121,17 @@ Not a numeric match, but a sanity pass on the personalised ranking:
 3. Confirm the auspicious days avoid the universal doshas (Amavasya, Rikta tithis, Vyatipata/Vaidhriti
    yoga, Vishti/Bhadra karana) — these should show as unfavourable reasons when present.
 
+## E — Matchmaking (Guna Milan)
+
+Pick a male and a female profile and compare the app's Ashtakoota total to a free calculator (e.g.
+Prokerala or AstroSage "Ashtakoot Guna Milan") for the same two Moon nakshatras/signs.
+
+- **Nadi, Bhakoot, Gana, Tara, Varna, Graha Maitri** should match a standard calculator.
+- **Yoni** and **Vashya** use documented but simplified tables (Yoni collapses the finer
+  friendly/unfriendly gradations to neutral; Vashya omits the Dhanu/Makara half-sign split). Expect
+  these two kootas to occasionally differ by a point or two from a full-table calculator — note any
+  gaps so the tables can be refined.
+
 ## Known limitations (expected, not bugs)
 
 - The Lahiri ayanamsa uses a **linear fit** (`23.853 + 1.397·t` centuries); it's accurate to a couple

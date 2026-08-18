@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Matchmaking — kundali matching (Guna Milan).** The Match tile now opens Ashtakoota matching: pick
+  one male and one female chart-ready profile and see the 36-guna breakdown across the eight kootas
+  (Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi), the total, the verdict band, and any
+  Nadi / Bhakoot dosha. Scored from both Moons via the JPL-validated chart engine.
 - **About — maintainer links.** The About screen now shows tappable GitHub (@imskylab) and LinkedIn
   links for the creator, and the same links were added to the README, project site, AUTHORS,
   LICENSING contact, and the issue-template contact links.
