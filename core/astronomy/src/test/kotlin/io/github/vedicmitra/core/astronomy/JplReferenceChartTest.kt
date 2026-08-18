@@ -10,7 +10,6 @@
 
 package io.github.vedicmitra.core.astronomy
 
-import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
 import io.github.vedicmitra.core.common.model.GeoCoordinates
@@ -50,7 +49,10 @@ class JplReferenceChartTest {
                 val chart = requireNotNull(result.data) { "no chart for ${case.label}" }
 
                 case.expectedRasi.forEach { (graha, rasiIndex) ->
-                    val actual = chart.grahas.first { it.graha == graha }.rasi.index
+                    val actual =
+                        chart.grahas
+                            .first { it.graha == graha }
+                            .rasi.index
                     assertWithMessage("${case.label}: ${graha.displayName} rashi").that(actual).isEqualTo(rasiIndex)
                 }
                 case.expectedMoonNakshatra?.let {
