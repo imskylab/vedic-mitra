@@ -205,6 +205,66 @@ class DefaultAstronomyEngine
             }
         }
 
+        override suspend fun rashiOutlook(
+            rasiIndex: Int,
+            instant: Instant,
+            location: GeoCoordinates,
+            person: PersonalMuhurtaContext?,
+            days: Int,
+        ): AppResult<RashiOutlook> {
+            if (rasiIndex !in 0..11) {
+                return AppResult.Failure(IllegalArgumentException("rasiIndex out of range: $rasiIndex"))
+            }
+            if (location.latitude !in -90.0..90.0 || location.longitude !in -180.0..180.0) {
+                return AppResult.Failure(IllegalArgumentException("Coordinates out of range: $location"))
+            }
+
+            val span = days.coerceIn(1, 30)
+            return withContext(dispatchers.default) {
+                val startMillis = instant.toEpochMilliseconds()
+                // Sample each day's Moon at its own sunrise — the convention by which panchangas name
+                // the day — then grade it by Chandrabala (and Tarabala when personalised).
+                val outlookDays =
+                    (0 until span).mapNotNull { offset ->
+                        val dayMillis = startMillis + offset * 86_400_000L
+                        val sunrise =
+                            SolarDay
+                                .sunTimes(dayMillis, location.latitude, location.longitude)
+                                .sunrise
+                                ?: Instant.fromEpochMilliseconds(dayMillis)
+                        val snapshot =
+                            (snapshotAt(sunrise, location) as? AppResult.Success)?.data ?: return@mapNotNull null
+                        val moonRasi = snapshot.moonRasi ?: return@mapNotNull null
+                        val position = chandraPosition(moonRasi.index, rasiIndex)
+                        val chandrabala = chandraStrength(position)
+                        val tara = person?.let { taraBetween(snapshot.nakshatra.number, it.birthNakshatraNumber) }
+                        RashiDay(
+                            atSunrise = snapshot.instant,
+                            moonRasi = moonRasi,
+                            nakshatra = snapshot.nakshatra,
+                            vara = snapshot.vara,
+                            chandraPosition = position,
+                            chandrabala = chandrabala,
+                            tara = tara,
+                            band = outlookBand(chandrabala, tara?.strength),
+                        )
+                    }
+                val today = outlookDays.firstOrNull()
+                if (today == null) {
+                    AppResult.Failure(IllegalStateException("No outlook days could be computed"))
+                } else {
+                    AppResult.Success(
+                        RashiOutlook(
+                            rasi = Rasi(index = rasiIndex, name = RASHI_NAMES[rasiIndex]),
+                            personalized = person != null,
+                            today = today,
+                            week = outlookDays,
+                        ),
+                    )
+                }
+            }
+        }
+
         private fun ephemerisFestivalSource(location: GeoCoordinates): FestivalPanchangaSource =
             object : FestivalPanchangaSource {
                 override fun sunrise(dayEpochMillis: Long): Long? =
