@@ -556,6 +556,9 @@ In short:
 
 **Jayvardhan Potabatti** — Creator, Owner, Designer & Lead Developer.
 
+- GitHub: [@imskylab](https://github.com/imskylab)
+- LinkedIn: [linkedin.com/in/imskylab](https://www.linkedin.com/in/imskylab/)
+
 See [AUTHORS.md](AUTHORS.md) for the full list, and [CONTRIBUTING.md](CONTRIBUTING.md) to get involved.
 
 ## License

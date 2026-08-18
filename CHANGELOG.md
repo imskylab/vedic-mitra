@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **About — maintainer links.** The About screen now shows tappable GitHub (@imskylab) and LinkedIn
+  links for the creator, and the same links were added to the README, project site, AUTHORS,
+  LICENSING contact, and the issue-template contact links.
 - **Muhurat — personalised to a birth chart.** The best-days results now have a profile selector
   ("General" plus each chart-ready profile, defaulting to your primary). Picking a profile re-ranks
   the days for that person by layering their Tarabala (the day's nakshatra counted from their birth

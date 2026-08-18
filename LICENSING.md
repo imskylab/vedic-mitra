@@ -20,7 +20,8 @@ for purchase. It grants use without those obligations.
 
 To obtain a commercial license, contact the maintainer:
 
-- **Jayvardhan Potabatti** — via [GitHub @imskylab](https://github.com/imskylab)
+- **Jayvardhan Potabatti** — via [GitHub @imskylab](https://github.com/imskylab) or
+  [LinkedIn](https://www.linkedin.com/in/imskylab/)
   (open an issue titled "Commercial license enquiry", or reach out directly).
 
 Terms and pricing are provided on request.
