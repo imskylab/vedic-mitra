@@ -44,4 +44,12 @@ enum class AppNotificationChannel(
         description = "Full-screen ringing alarms for upcoming muhurta.",
         importance = NotificationManagerCompat.IMPORTANCE_HIGH,
     ),
+
+    /** A daily nudge to sit for meditation at Brahma Muhurta. */
+    MEDITATION_REMINDERS(
+        id = "meditation_reminders",
+        channelName = "Meditation reminders",
+        description = "A daily reminder to meditate at Brahma Muhurta.",
+        importance = NotificationManagerCompat.IMPORTANCE_DEFAULT,
+    ),
 }
