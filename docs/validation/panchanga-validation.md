@@ -134,6 +134,50 @@ Prokerala or AstroSage "Ashtakoot Guna Milan") for the same two Moon nakshatras/
   these two kootas to occasionally differ by a point or two from a full-table calculator — note any
   gaps so the tables can be refined.
 
+## F — Rashifal (daily & weekly outlook)
+
+The rashifal is **computed, not editorial**: each day is graded by **Chandrabala** (the transit Moon's
+sign counted from the read rashi) and, when you read your own birth sign, **Tarabala** (the day's
+nakshatra counted from your janma nakshatra). So validating it means confirming those two counts and
+their favourable/weak classification against a reference — not matching prose.
+
+Reference: Drik Panchang's **Tarabala & Chandrabala** tool
+(<https://www.drikpanchang.com/panchang/tarabala-chandrabala.html>, or from the Panchang menu → Tarabala
+Chandrabala; set the date and New Delhi), which lists, for a day, the favourable **Chandra Bala** rashis
+and favourable **Tara Bala** nakshatras. Prokerala's **daily rashifal**
+(<https://www.prokerala.com/astrology/rashifal/>) gives a looser per-sign sanity read.
+
+Steps:
+
+1. Open the app → **Rashifal** for your sign (the starred one). Note today's band, the "Moon in
+   … (the Nth from …)" line, and the week strip.
+2. On Drik's Tarabala/Chandrabala tool for the **same sunrise date + New Delhi**:
+   - **Chandrabala** — your rashi should be listed favourable exactly when the app shows a strong
+     position (1, 3, 6, 7, 10, 11) and unfavourable at 4 / 8 / 12. The app's "Nth from *your sign*" is
+     the day's Moon sign counted from yours; confirm it matches the day's Moon rashi.
+   - **Tarabala** (personalised read only) — for your janma nakshatra, the app's tara name and verdict
+     (Sampat / Kshema / Sadhaka / Mitra / Ati-Mitra favourable; Vipat / Pratyari / Vadha weak; Janma
+     neutral) should match Drik's tarabala for the day.
+3. **Week strip** — step Drik forward a day at a time and confirm each pip's colour (green auspicious /
+   amber mixed / red challenging) tracks that day's Chandrabala (plus your Tarabala), i.e. follows the
+   transit Moon moving ~1 sign every 2.25 days.
+4. **Cross-sign sanity** — browse a sign whose Moon-transit position today is 4 / 8 / 12; it should read
+   "a day for care". One at 1 / 3 / 6 / 7 / 10 / 11 should read favourable.
+
+| Field | App | Drik | Match? |
+| --- | --- | --- | --- |
+| Today's Moon rashi | | | |
+| Today's Moon nakshatra | | | |
+| Chandra position (from my sign) | | | |
+| Chandrabala verdict | | | |
+| Tarabala (my janma nakshatra) | | | |
+| Today's band (Auspicious/Mixed/Challenging) | | | |
+
+Notes: the day's Moon sign/nakshatra are sampled at **sunrise** (the app's day-naming convention), so on
+a day the Moon changes sign soon after sunrise the app can differ from a source reading the Moon at a
+different clock time — confirm you're on the same sunrise day. Tarabala shows only on your own (starred)
+sign; every other sign is Chandrabala-only by design, so their reading won't carry a tara line.
+
 ## Known limitations (expected, not bugs)
 
 - The Lahiri ayanamsa uses a **linear fit** (`23.853 + 1.397·t` centuries); it's accurate to a couple
