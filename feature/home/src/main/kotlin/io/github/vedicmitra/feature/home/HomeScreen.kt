@@ -34,14 +34,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -322,18 +318,18 @@ private fun ShortcutGrid(
     val tiles: List<@Composable () -> Unit> =
         listOf(
             { GlyphTile("Today's Panchang", VedicIcons.panchang, HubCategory.DAILY, onClick = onOpenPanchang) },
-            { VectorTile("Calendar", Icons.Filled.DateRange, HubCategory.DAILY, onClick = onOpenCalendar) },
+            { GlyphTile("Calendar", VedicIcons.calendar, HubCategory.DAILY, onClick = onOpenCalendar) },
             { GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, onClick = onOpenMuhurat) },
             { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenFestivals) },
-            { VectorTile("Events", Icons.Filled.Event, HubCategory.DAILY, onClick = onOpenEvents) },
+            { GlyphTile("Events", VedicIcons.events, HubCategory.DAILY, onClick = onOpenEvents) },
             { VectorTile("Reminders", Icons.Filled.Notifications, HubCategory.DAILY, onClick = onOpenReminders) },
             { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
             {
-                VectorTile("Rashifal", Icons.Filled.Star, HubCategory.ASTROLOGY, enabled = false) {
+                GlyphTile("Rashifal", VedicIcons.rashifal, HubCategory.ASTROLOGY, enabled = false) {
                     onComingSoon("Rashifal")
                 }
             },
-            { VectorTile("Match", Icons.Filled.Favorite, HubCategory.ASTROLOGY, onClick = onOpenMatch) },
+            { GlyphTile("Match", VedicIcons.matchmaking, HubCategory.ASTROLOGY, onClick = onOpenMatch) },
             { OmTile("Stotra", enabled = false) { onComingSoon("Stotra") } },
             { GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, enabled = false) { onComingSoon("Japa") } },
             {
@@ -479,7 +475,7 @@ private fun GlyphTile(
             painter = painterResource(glyph),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(26.dp),
+            modifier = Modifier.size(38.dp),
         )
     }
 }
@@ -495,7 +491,7 @@ private fun VectorTile(
 ) {
     val tint = category.onContainer()
     TileButton(label, category, enabled, onClick) {
-        Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(26.dp))
+        Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(42.dp))
     }
 }
 
@@ -508,7 +504,7 @@ private fun OmTile(
 ) {
     val tint = HubCategory.DEVOTION.onContainer()
     TileButton(label, HubCategory.DEVOTION, enabled, onClick) {
-        Text(text = "ॐ", style = MaterialTheme.typography.headlineSmall, color = tint)
+        Text(text = "ॐ", style = MaterialTheme.typography.displayMedium, color = tint)
     }
 }
 

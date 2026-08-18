@@ -47,4 +47,20 @@ object VedicIcons {
     /** A figure seated in padmasana before a rising sun — Meditation. */
     @get:DrawableRes
     val meditate: Int = R.drawable.ic_glyph_meditate
+
+    /** Two clasped hands with a mehndi mandala (wedding hastamelap) — Matchmaking. */
+    @get:DrawableRes
+    val matchmaking: Int = R.drawable.ic_glyph_matchmaking
+
+    /** The twelve rashis arranged in a zodiac wheel — Rashifal (horoscope). */
+    @get:DrawableRes
+    val rashifal: Int = R.drawable.ic_glyph_rashifal
+
+    /** A mandala-bordered almanac page with Om marks and a turning leaf — the Calendar. */
+    @get:DrawableRes
+    val calendar: Int = R.drawable.ic_glyph_calendar
+
+    /** A woodcut almanac page with a central Om and endless-knot corners — Events. */
+    @get:DrawableRes
+    val events: Int = R.drawable.ic_glyph_events
 }
