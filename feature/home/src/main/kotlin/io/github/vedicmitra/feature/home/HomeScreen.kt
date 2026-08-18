@@ -258,6 +258,14 @@ private fun HubView(
         Header(uiState.locationLabel, onNavigateToLocation)
         HeroCard(snapshot, onClick = onOpenPanchang)
         uiState.auspicious?.let { AuspiciousCard(it) }
+        if (uiState.festivals.isNotEmpty()) {
+            ExpandableSection(
+                title = "UPCOMING FESTIVALS",
+                accent = MaterialTheme.colorScheme.primary,
+                rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                onRowClick = { selectedRow = it },
+            )
+        }
         ShortcutGrid(
             onOpenPanchang = onOpenPanchang,
             onOpenCalendar = onOpenCalendar,
@@ -268,14 +276,6 @@ private fun HubView(
             onOpenEvents = onOpenEvents,
             onComingSoon = onComingSoon,
         )
-        if (uiState.festivals.isNotEmpty()) {
-            ExpandableSection(
-                title = "UPCOMING FESTIVALS",
-                accent = MaterialTheme.colorScheme.primary,
-                rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
-                onRowClick = { selectedRow = it },
-            )
-        }
         if (uiState.usingDefaultLocation) {
             Text(
                 text = "Showing New Delhi — grant location access for your area.",
@@ -283,8 +283,21 @@ private fun HubView(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        CopyrightFooter()
     }
     selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
+}
+
+/** A subtle copyright + licence line at the foot of the landing. */
+@Composable
+private fun CopyrightFooter() {
+    Text(
+        text = "© 2026 Jayvardhan Potabatti · GNU AGPL-3.0-or-later",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    )
 }
 
 /** The full shortcut grid — every shortcut on one screen, [GRID_COLUMNS] tiles per row. */

@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.feature.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
@@ -67,6 +69,8 @@ private fun AboutContent(
         AboutRow(label = "Created by", value = "Jayvardhan Potabatti")
         AboutRow(label = "Copyright", value = "© 2026 Jayvardhan Potabatti")
         AboutRow(label = "License", value = "GNU AGPL-3.0-or-later")
+        LinkRow(label = "GitHub", value = "github.com/imskylab", url = "https://github.com/imskylab")
+        LinkRow(label = "LinkedIn", value = "linkedin.com/in/imskylab", url = "https://www.linkedin.com/in/imskylab/")
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text =
@@ -100,6 +104,31 @@ private fun AboutRow(
             modifier = Modifier.weight(1f),
         )
         Text(text = value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** An [AboutRow] whose value is a tappable link that opens [url] in the browser. */
+@Composable
+private fun LinkRow(
+    label: String,
+    value: String,
+    url: String,
+) {
+    val uriHandler = LocalUriHandler.current
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { uriHandler.openUri(url) }
+                .padding(vertical = 4.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        Text(text = value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 

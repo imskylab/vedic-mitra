@@ -7,13 +7,25 @@
 
 A repeatable way to check the app's astronomy against an authoritative reference. Two halves:
 
-- **Automated** — `EngineValidationHarnessTest` in `:core:astronomy` asserts the parts that are fixed
-  by public astronomy (the Sun's sidereal sign by the Sankranti calendar, and the Lahiri ayanamsa for
-  the app's era). It runs in the normal gate. Run it directly with:
+- **Automated** — two tests in `:core:astronomy`, both in the normal gate:
+  - `EngineValidationHarnessTest` asserts the parts fixed by public astronomy (the Sun's sidereal
+    sign by the Sankranti calendar, and the Lahiri ayanamsa for the app's era).
+  - `JplReferenceChartTest` checks the natal-chart engine against **NASA JPL HORIZONS** (DE441) — the
+    authoritative free ephemeris the paid sites use internally. Geocentric apparent longitudes were
+    pulled for a few reference instants (famous birthdays + a synthetic case), converted to
+    Lahiri-sidereal, and baked in as golden rashi / nakshatra / lagna values. Because the app and
+    HORIZONS are compared at the *same* instant, birth-time uncertainty is irrelevant — it validates
+    the engine, not a natal reading.
+
+  Run them directly with:
 
   ```
-  .\gradlew.bat :core:astronomy:testDebugUnitTest --tests *EngineValidationHarnessTest*
+  .\gradlew.bat :core:astronomy:testDebugUnitTest --tests *EngineValidationHarnessTest* --tests *JplReferenceChartTest*
   ```
+
+  If a HORIZONS case fails, that's a genuine finding about the low-precision ephemeris — likely a
+  planet drifting across a rashi edge at an old epoch. Re-derive the golden or relax that case rather
+  than assuming the reference is wrong; HORIZONS is the ground truth here.
 
 - **On-device** — this checklist: enter the reproducible cases below into a reference panchanga and
   into the app, then compare the fast-moving lunar limbs and the Kundali fields by hand.
