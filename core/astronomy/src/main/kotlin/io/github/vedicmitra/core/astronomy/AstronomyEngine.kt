@@ -14,6 +14,9 @@ import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import kotlin.time.Instant
 
+/** The default horizon for a rashifal outlook: today plus the next six days. */
+private const val DEFAULT_OUTLOOK_DAYS = 7
+
 /**
  * Port for astronomical / panchanga calculations.
  *
@@ -131,6 +134,24 @@ interface AstronomyEngine {
         location: GeoCoordinates,
         person: PersonalMuhurtaContext? = null,
     ): AppResult<List<RankedMuhurtaDay>> = AppResult.Success(emptyList<RankedMuhurtaDay>())
+
+    /**
+     * The daily rashifal (Moon-transit outlook) for the sign [rasiIndex] (0 = Mesha .. 11 = Meena),
+     * over [days] civil days starting at [instant] for [location]. Each day is anchored to its sunrise
+     * and graded by Chandrabala — the day's Moon sign counted from [rasiIndex]. When [person] is given
+     * (the read sign is the person's own birth Moon sign), Tarabala from their birth star is layered in
+     * for a fully personalised verdict; otherwise the outlook is the sign-only transit reading.
+     *
+     * The default returns [AppResult.Failure] so test doubles can ignore it; [DefaultAstronomyEngine]
+     * provides the real computation.
+     */
+    suspend fun rashiOutlook(
+        rasiIndex: Int,
+        instant: Instant,
+        location: GeoCoordinates,
+        person: PersonalMuhurtaContext? = null,
+        days: Int = DEFAULT_OUTLOOK_DAYS,
+    ): AppResult<RashiOutlook> = AppResult.Failure(UnsupportedOperationException("rashiOutlook not supported"))
 }
 
 /**

@@ -82,6 +82,7 @@ import io.github.vedicmitra.feature.muhurat.MuhuratDayScreen
 import io.github.vedicmitra.feature.muhurat.MuhuratResultsScreen
 import io.github.vedicmitra.feature.profile.ProfileEditScreen
 import io.github.vedicmitra.feature.profile.ProfileListScreen
+import io.github.vedicmitra.feature.rashifal.RashifalScreen
 import io.github.vedicmitra.feature.settings.AboutScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
 
@@ -102,6 +103,7 @@ private const val CALENDAR_ROUTE = "calendar"
 private const val ALARM_ROUTE = "alarm"
 private const val KUNDALI_ROUTE = "kundali"
 private const val MATCHMAKING_ROUTE = "matchmaking"
+private const val RASHIFAL_ROUTE = "rashifal"
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
@@ -287,6 +289,7 @@ private fun AppNavHost(
                 onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
                 onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
                 onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
+                onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
             )
         }
         composable(TopDestination.SETTINGS.route) {
@@ -329,6 +332,9 @@ private fun AppNavHost(
         }
         composable(MATCHMAKING_ROUTE) {
             MatchmakingScreen(onSetUpProfiles = { navController.navigateToTab(TopDestination.PROFILE.route) })
+        }
+        composable(RASHIFAL_ROUTE) {
+            RashifalScreen(onSetUpProfile = { navController.navigateToTab(TopDestination.PROFILE.route) })
         }
         muhuratDestinations(navController)
     }

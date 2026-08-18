@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Rashifal — daily & weekly Moon-transit outlook.** The Rashifal tile now opens a working reading
+  (`:feature:rashifal`): today's verdict for a rashi plus the seven days ahead, computed from real
+  astronomy rather than generic text. Each day is graded by Chandrabala (the transit Moon's house from
+  the read sign); when you read your own birth Moon sign it's fully personalised with Tarabala from
+  your birth star. Defaults to your primary profile's sign, and you can tap any of the twelve rashis to
+  browse it (a sign-only transit reading) — the profile's own sign is starred.
 - **Matchmaking — kundali matching (Guna Milan).** The Match tile now opens Ashtakoota matching: pick
   one male and one female chart-ready profile and see the 36-guna breakdown across the eight kootas
   (Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi), the total, the verdict band, and any

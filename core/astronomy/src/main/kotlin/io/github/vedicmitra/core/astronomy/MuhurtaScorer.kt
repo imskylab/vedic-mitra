@@ -188,42 +188,35 @@ private fun personalContributions(
     )
 }
 
-// The nine taras, in order, counted from the birth star. Favourable: Sampat, Kshema, Sadhaka, Mitra,
-// Ati-Mitra; unfavourable: Vipat, Pratyari, Vadha; Janma (the birth star itself) is neutral.
-private val TARA_NAMES =
-    listOf("Janma", "Sampat", "Vipat", "Kshema", "Pratyari", "Sadhaka", "Vadha", "Mitra", "Ati-Mitra")
-private val FAVOURABLE_TARAS = setOf(2, 4, 6, 8, 9)
-private val UNFAVOURABLE_TARAS = setOf(3, 5, 7)
-
-/** Tarabala: which of the nine taras the [dayNakshatra] is, counted from [birthNakshatra] (both 1..27). */
+/**
+ * Tarabala: which of the nine taras the [dayNakshatra] is, counted from [birthNakshatra] (both 1..27).
+ * The tara counting and grading live in [taraBetween]; this maps the grade to a muhurta score delta.
+ */
 private fun tarabalaContribution(
     dayNakshatra: Int,
     birthNakshatra: Int,
 ): ScoreContribution? {
-    val count = ((dayNakshatra - birthNakshatra + 27) % 27) + 1
-    val tara = ((count - 1) % 9) + 1
-    val name = TARA_NAMES[tara - 1]
-    return when (tara) {
-        in FAVOURABLE_TARAS -> ScoreContribution(15, MuhurtaReason(true, "Favourable tara ($name)"))
-        in UNFAVOURABLE_TARAS -> ScoreContribution(-20, MuhurtaReason(false, "Weak tara ($name)"))
-        else -> null
+    val tara = taraBetween(dayNakshatra, birthNakshatra)
+    return when (tara.strength) {
+        Bala.STRONG -> ScoreContribution(15, MuhurtaReason(true, "Favourable tara (${tara.name})"))
+        Bala.WEAK -> ScoreContribution(-20, MuhurtaReason(false, "Weak tara (${tara.name})"))
+        Bala.NEUTRAL -> null
     }
 }
 
-// Chandrabala positions (1..12) of the day's Moon sign counted from the birth Moon sign. The 1, 3, 6,
-// 7, 10 and 11 positions are strong; 4, 8 and 12 are weak; the rest are neutral.
-private val FAVOURABLE_CHANDRA = setOf(1, 3, 6, 7, 10, 11)
-private val WEAK_CHANDRA = setOf(4, 8, 12)
-
-/** Chandrabala: the day's Moon sign [dayMoonRasi] counted from the birth Moon sign [birthMoonRasi] (0..11). */
+/**
+ * Chandrabala: the day's Moon sign [dayMoonRasi] counted from the birth Moon sign [birthMoonRasi]
+ * (both 0..11). The position counting and grading live in [chandraPosition]/[chandraStrength]; this
+ * maps the grade to a muhurta score delta.
+ */
 private fun chandrabalaContribution(
     dayMoonRasi: Int,
     birthMoonRasi: Int,
 ): ScoreContribution? {
-    val position = ((dayMoonRasi - birthMoonRasi + 12) % 12) + 1
-    return when (position) {
-        in FAVOURABLE_CHANDRA -> ScoreContribution(10, MuhurtaReason(true, "Strong Chandrabala (position $position)"))
-        in WEAK_CHANDRA -> ScoreContribution(-12, MuhurtaReason(false, "Weak Chandrabala (position $position)"))
-        else -> null
+    val position = chandraPosition(dayMoonRasi, birthMoonRasi)
+    return when (chandraStrength(position)) {
+        Bala.STRONG -> ScoreContribution(10, MuhurtaReason(true, "Strong Chandrabala (position $position)"))
+        Bala.WEAK -> ScoreContribution(-12, MuhurtaReason(false, "Weak Chandrabala (position $position)"))
+        Bala.NEUTRAL -> null
     }
 }

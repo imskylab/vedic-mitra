@@ -62,6 +62,7 @@ dependencies {
     implementation(projects.feature.kundali)
     implementation(projects.feature.muhurat)
     implementation(projects.feature.matchmaking)
+    implementation(projects.feature.rashifal)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)
