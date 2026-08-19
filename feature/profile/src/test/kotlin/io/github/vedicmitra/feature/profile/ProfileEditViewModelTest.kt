@@ -75,7 +75,7 @@ class ProfileEditViewModelTest {
         }
 
     @Test
-    fun `saves the chosen gender and clears it when tapped again`() =
+    fun `saves the chosen gender and clears it when set to null`() =
         runTest {
             val repository = FakeProfileRepository()
             val viewModel = viewModel(repository)
@@ -83,7 +83,7 @@ class ProfileEditViewModelTest {
 
             viewModel.onGenderChange(Gender.FEMALE)
             assertThat(viewModel.uiState.value.gender).isEqualTo(Gender.FEMALE)
-            viewModel.onGenderChange(Gender.FEMALE)
+            viewModel.onGenderChange(null)
             assertThat(viewModel.uiState.value.gender).isNull()
 
             viewModel.onGenderChange(Gender.MALE)

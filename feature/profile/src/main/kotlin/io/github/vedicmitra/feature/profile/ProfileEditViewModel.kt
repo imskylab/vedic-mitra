@@ -79,9 +79,8 @@ class ProfileEditViewModel
 
         fun onRelationChange(relation: ProfileRelation) = _uiState.update { it.copy(relation = relation) }
 
-        /** Toggles the gender; tapping the selected one clears it back to unset. */
-        fun onGenderChange(gender: Gender) =
-            _uiState.update { it.copy(gender = if (it.gender == gender) null else gender) }
+        /** Sets the gender, or clears it back to unset when `null` ("Not specified"). */
+        fun onGenderChange(gender: Gender?) = _uiState.update { it.copy(gender = gender) }
 
         fun onDateOfBirthChange(value: String) = _uiState.update { it.copy(dateOfBirth = value) }
 

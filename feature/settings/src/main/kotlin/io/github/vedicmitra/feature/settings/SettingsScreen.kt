@@ -18,10 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
 import io.github.vedicmitra.core.datastore.ThemeSettings
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 
 /**
@@ -80,23 +78,13 @@ private fun SettingsContent(
                 .fillMaxSize()
                 .padding(16.dp),
     ) {
-        Text(text = "Theme", style = MaterialTheme.typography.titleMedium)
-        DarkThemeConfig.entries.forEach { config ->
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = settings.darkThemeConfig == config,
-                            onClick = { onDarkThemeConfigChange(config) },
-                        ).padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                RadioButton(selected = settings.darkThemeConfig == config, onClick = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = config.label)
-            }
-        }
+        VedicSelectField(
+            label = "Theme",
+            options = DarkThemeConfig.entries,
+            selected = settings.darkThemeConfig,
+            optionLabel = { it.label },
+            onSelect = onDarkThemeConfigChange,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

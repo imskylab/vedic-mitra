@@ -201,6 +201,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
 
 ### Changed
+- **Selectors are now dropdowns.** The single-choice pickers throughout the app — the Muhurat profile
+  and search-window selectors, the Kundali/Rashifal/Matchmaking profile pickers, the Rashifal rashi
+  picker, the Japa mantra picker, the Meditation duration, the Profile relation/gender fields, and the
+  Settings theme — are now a shared expandable dropdown (`VedicSelectField`) instead of hand-rolled
+  chip/segmented rows. This reads consistently and scales to long lists. (The Location and
+  profile-primary lists stay as inline radio lists, since those screens manage the items in place.)
 - **Smaller release builds.** Release builds now run R8 code shrinking/obfuscation and resource
   shrinking (`isMinifyEnabled` + `isShrinkResources`, with an app `proguard-rules.pro`), and ship only
   English resources (`resourceConfigurations`), dropping the dozens of translations AndroidX/Material

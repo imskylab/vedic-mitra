@@ -11,7 +11,6 @@
 package io.github.vedicmitra.feature.muhurat
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.DayMuhurtaScore
 import io.github.vedicmitra.core.astronomy.MuhurtaRating
 import io.github.vedicmitra.core.astronomy.RankedMuhurtaDay
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
@@ -131,30 +130,20 @@ private fun personalisationNote(uiState: MuhuratResultsUiState.Ready): String {
     }
 }
 
-/** Chips to pick whose birth chart the ranking is personalised for, or General for none. */
+/** A dropdown to pick whose birth chart the ranking is personalised for, or General for none. */
 @Composable
 private fun ProfileSelector(
     profiles: List<MuhuratProfileOption>,
     selectedId: String?,
     onSelect: (String?) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        FilterChip(
-            selected = selectedId == null,
-            onClick = { onSelect(null) },
-            label = { Text(text = "General") },
-        )
-        profiles.forEach { profile ->
-            FilterChip(
-                selected = profile.id == selectedId,
-                onClick = { onSelect(profile.id) },
-                label = { Text(text = profile.name) },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Personalise for",
+        options = listOf<String?>(null) + profiles.map { it.id },
+        selected = selectedId,
+        optionLabel = { id -> id?.let { pid -> profiles.firstOrNull { it.id == pid }?.name } ?: "General" },
+        onSelect = onSelect,
+    )
 }
 
 @Composable
@@ -162,15 +151,13 @@ private fun WindowSelector(
     selected: Int,
     onSelect: (Int) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        MUHURAT_WINDOW_OPTIONS.forEach { days ->
-            FilterChip(
-                selected = days == selected,
-                onClick = { onSelect(days) },
-                label = { Text(text = "$days days") },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Search window",
+        options = MUHURAT_WINDOW_OPTIONS,
+        selected = selected,
+        optionLabel = { "$it days" },
+        onSelect = onSelect,
+    )
 }
 
 @Composable

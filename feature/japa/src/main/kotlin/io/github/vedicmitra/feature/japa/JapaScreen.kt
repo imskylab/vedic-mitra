@@ -13,7 +13,6 @@
 package io.github.vedicmitra.feature.japa
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -49,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.Graha
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 
 /**
@@ -160,18 +159,13 @@ private fun MantraPicker(
     selectedId: String,
     onSelect: (String) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        mantras.forEach { mantra ->
-            FilterChip(
-                selected = mantra.id == selectedId,
-                onClick = { onSelect(mantra.id) },
-                label = { Text(mantra.name) },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Mantra",
+        options = mantras,
+        selected = mantras.firstOrNull { it.id == selectedId } ?: mantras.first(),
+        optionLabel = { it.name },
+        onSelect = { onSelect(it.id) },
+    )
 }
 
 @Composable
