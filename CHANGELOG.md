@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-19
+
 ### Fixed
 - **Muhurat reminders now actually notify.** Setting a reminder for an auspicious day scheduled it but
   the notification never appeared, because the Muhurat day screen never requested the runtime
@@ -221,9 +223,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Smaller release builds.** Release builds now run R8 code shrinking/obfuscation and resource
   shrinking (`isMinifyEnabled` + `isShrinkResources`, with an app `proguard-rules.pro`), and ship only
   English resources (`resourceConfigurations`), dropping the dozens of translations AndroidX/Material
-  bundle. Debug builds are unchanged, so the CI gate (which builds `assembleDebug`) is unaffected — the
-  size win applies to `assembleRelease`/`bundleRelease`. Publish the App Bundle (`bundleRelease`) so
-  Play delivers per-device (ABI/density/language) splits and users download only their slice.
+  bundle. The `material-icons-extended` dependency was also dropped — the app only uses a handful of
+  common icons, all of which live in `material-icons-core` (supplied via material3) — removing a large
+  icon library from the graph. Debug builds are otherwise unchanged, so the CI gate (which builds
+  `assembleDebug`) is unaffected — the size win applies to `assembleRelease`/`bundleRelease`. Publish
+  the App Bundle (`bundleRelease`) so Play delivers per-device (ABI/density/language) splits and users
+  download only their slice.
 - **Matchmaking — more accurate Gana koota and dosha cancellations.** The Gana koota now uses the
   standard asymmetric groom/bride table (same 6; Deva–Manushya 5; groom-Manushya + bride-Rakshasa 1;
   other Rakshasa pairings 0) instead of a symmetric one. Nadi and Bhakoot doshas now apply their

@@ -12,7 +12,6 @@ plugins {
 android {
     namespace = "io.github.vedicmitra.core.designsystem"
 }
-
-dependencies {
-    implementation(libs.androidx.compose.material.icons.extended)
-}
+// No extra dependencies: the theme + components build on the Compose bundle (incl. material3, which
+// supplies material-icons-core) already provided by the convention plugin. The full
+// material-icons-extended set was dropped — the app only uses common icons that live in the core set.
