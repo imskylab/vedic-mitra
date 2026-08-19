@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Meditation — timed sit with a breath guide.** The Meditate tile now opens a working timer
+  (`:feature:meditation`): pick a length (5–30 min), and a countdown runs with a breath-pacing circle
+  that expands and contracts, plus a soft start/end bell (a generated tone — no bundled audio). Each
+  finished sit is logged to a history with a daily total and a streak, stamped with the day's nakshatra.
+  Panchanga hook: it surfaces today's Brahma Muhurta window with a "sit now" shortcut and an optional
+  daily pre-dawn reminder (scheduled through the existing reminder pipeline and rolled forward on each
+  visit).
 - **Japa — mala chant counter.** The Japa tile now opens a working counter (`:feature:japa`): tap the
   ring to count beads, with a mala completing every 108 (a haptic buzz marks each round). Pick from a
   bundled catalog of mantras (Gayatri, Om Namah Shivaya, Mahamrityunjaya, and the nine Navagraha beeja
@@ -188,6 +195,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   [docs/adr/0002-per-event-muhurta-reminder-offsets.md](docs/adr/0002-per-event-muhurta-reminder-offsets.md).
 
 ### Changed
+- **Smaller release builds.** Release builds now run R8 code shrinking/obfuscation and resource
+  shrinking (`isMinifyEnabled` + `isShrinkResources`, with an app `proguard-rules.pro`), and ship only
+  English resources (`resourceConfigurations`), dropping the dozens of translations AndroidX/Material
+  bundle. Debug builds are unchanged, so the CI gate (which builds `assembleDebug`) is unaffected — the
+  size win applies to `assembleRelease`/`bundleRelease`. Publish the App Bundle (`bundleRelease`) so
+  Play delivers per-device (ABI/density/language) splits and users download only their slice.
 - **Matchmaking — more accurate Gana koota and dosha cancellations.** The Gana koota now uses the
   standard asymmetric groom/bride table (same 6; Deva–Manushya 5; groom-Manushya + bride-Rakshasa 1;
   other Rakshasa pairings 0) instead of a symmetric one. Nadi and Bhakoot doshas now apply their

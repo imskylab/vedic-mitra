@@ -34,7 +34,8 @@ private val TITHI_NAMES =
         "Chaturdashi",
     )
 
-private val NAKSHATRA_NAMES =
+/** The twenty-seven nakshatras (lunar mansions), index 0 = Ashwini .. 26 = Revati. */
+val NAKSHATRA_NAMES =
     listOf(
         "Ashwini",
         "Bharani",

@@ -24,11 +24,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.vedicmitra.core.datastore.DefaultJapaRepository
 import io.github.vedicmitra.core.datastore.DefaultLocationRepository
+import io.github.vedicmitra.core.datastore.DefaultMeditationRepository
 import io.github.vedicmitra.core.datastore.DefaultProfileRepository
 import io.github.vedicmitra.core.datastore.DefaultReminderRepository
 import io.github.vedicmitra.core.datastore.DefaultUserPreferencesRepository
 import io.github.vedicmitra.core.datastore.JapaRepository
 import io.github.vedicmitra.core.datastore.LocationRepository
+import io.github.vedicmitra.core.datastore.MeditationRepository
 import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.datastore.UserPreferencesRepository
@@ -60,6 +62,9 @@ internal abstract class DataStoreModule {
 
     @Binds
     abstract fun bindJapaRepository(impl: DefaultJapaRepository): JapaRepository
+
+    @Binds
+    abstract fun bindMeditationRepository(impl: DefaultMeditationRepository): MeditationRepository
 
     companion object {
         @Provides

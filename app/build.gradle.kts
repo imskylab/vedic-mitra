@@ -15,6 +15,12 @@ plugins {
 android {
     namespace = "io.github.vedicmitra"
 
+    defaultConfig {
+        // AndroidX/Material bundle dozens of translations; this app's UI is English-only, so ship only
+        // English resources and drop the rest. Revisit when adding UI localisation.
+        resourceConfigurations += "en"
+    }
+
     // Release signing is driven by a gitignored keystore.properties (see keystore.properties.example
     // and docs/RELEASING.md). It is read only when present, so CI and contributors without the
     // keystore can still build/test/assembleDebug — release builds are simply left unsigned there.
@@ -69,6 +75,7 @@ dependencies {
     implementation(projects.feature.matchmaking)
     implementation(projects.feature.rashifal)
     implementation(projects.feature.japa)
+    implementation(projects.feature.meditation)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)
