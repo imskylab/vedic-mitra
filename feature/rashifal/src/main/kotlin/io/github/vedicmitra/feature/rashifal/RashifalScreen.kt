@@ -31,8 +31,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -58,6 +56,7 @@ import io.github.vedicmitra.core.astronomy.RashiOutlook
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Tara
 import io.github.vedicmitra.core.astronomy.Vara
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -166,28 +165,23 @@ private fun AddProfileHint(onSetUpProfile: () -> Unit) {
     }
 }
 
-/** A horizontally scrolling row of chips to pick which profile's sign is read. */
+/** A dropdown to pick which profile's sign is read. */
 @Composable
 private fun ProfilePicker(
     profiles: List<RashifalProfileOption>,
     selectedId: String?,
     onSelect: (String) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        profiles.forEach { profile ->
-            FilterChip(
-                selected = profile.id == selectedId,
-                onClick = { onSelect(profile.id) },
-                label = { Text(text = profile.name) },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Profile",
+        options = profiles,
+        selected = profiles.firstOrNull { it.id == selectedId } ?: profiles.first(),
+        optionLabel = { it.name },
+        onSelect = { onSelect(it.id) },
+    )
 }
 
-/** The twelve rashis as chips; the profile's own sign is marked with a star. */
+/** The twelve rashis as a dropdown; the profile's own sign is marked with a star. */
 @Composable
 private fun SignPicker(
     signs: List<RashiOption>,
@@ -195,30 +189,22 @@ private fun SignPicker(
     yourIndex: Int?,
     onSelect: (Int) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        signs.forEach { sign ->
-            FilterChip(
-                selected = sign.index == selectedIndex,
-                onClick = { onSelect(sign.index) },
-                label = { Text(text = sign.name) },
-                leadingIcon =
-                    if (sign.index == yourIndex) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Star,
-                                contentDescription = "Your sign",
-                                modifier = Modifier.size(FilterChipDefaults.IconSize),
-                            )
-                        }
-                    } else {
-                        null
-                    },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Rashi",
+        options = signs,
+        selected = signs.firstOrNull { it.index == selectedIndex } ?: signs.first(),
+        optionLabel = { it.name },
+        onSelect = { onSelect(it.index) },
+        leadingContent = { sign ->
+            if (sign.index == yourIndex) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = "Your sign",
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        },
+    )
 }
 
 @Composable

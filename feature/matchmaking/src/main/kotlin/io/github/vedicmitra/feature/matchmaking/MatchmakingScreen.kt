@@ -10,7 +10,6 @@
 
 package io.github.vedicmitra.feature.matchmaking
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.GunaMilanResult
 import io.github.vedicmitra.core.astronomy.GunaMilanVerdict
 import io.github.vedicmitra.core.astronomy.KootaScore
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 
 /**
  * Kundali matching screen. Picks one male (groom) and one female (bride) chart-ready profile and
@@ -112,18 +111,21 @@ private fun PickerRow(
     selectedId: String?,
     onSelect: (String) -> Unit,
 ) {
-    Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        options.forEach { option ->
-            FilterChip(
-                selected = option.id == selectedId,
-                onClick = { onSelect(option.id) },
-                label = { Text(text = option.name) },
-            )
-        }
+    val selected = options.firstOrNull { it.id == selectedId } ?: options.firstOrNull()
+    if (selected == null) {
+        Text(
+            text = "No $label profile available.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        VedicSelectField(
+            label = label,
+            options = options,
+            selected = selected,
+            optionLabel = { it.name },
+            onSelect = { onSelect(it.id) },
+        )
     }
 }
 

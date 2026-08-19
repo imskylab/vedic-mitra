@@ -11,7 +11,6 @@
 package io.github.vedicmitra.feature.kundali
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +48,7 @@ import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
 import io.github.vedicmitra.core.astronomy.NatalGraha
 import io.github.vedicmitra.core.astronomy.Rasi
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -139,25 +138,20 @@ private fun ChartView(
     }
 }
 
-/** A horizontally scrolling row of chips to pick which chart-ready profile's kundali to show. */
+/** A dropdown to pick which chart-ready profile's kundali to show. */
 @Composable
 private fun ProfilePicker(
     options: List<KundaliProfileOption>,
     selectedId: String,
     onSelect: (String) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        options.forEach { option ->
-            FilterChip(
-                selected = option.id == selectedId,
-                onClick = { onSelect(option.id) },
-                label = { Text(text = option.name) },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Profile",
+        options = options,
+        selected = options.firstOrNull { it.id == selectedId } ?: options.first(),
+        optionLabel = { it.name },
+        onSelect = { onSelect(it.id) },
+    )
 }
 
 /**

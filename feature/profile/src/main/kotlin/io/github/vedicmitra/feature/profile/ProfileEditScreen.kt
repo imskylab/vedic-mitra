@@ -11,9 +11,7 @@
 package io.github.vedicmitra.feature.profile
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -40,7 +37,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.datastore.Gender
 import io.github.vedicmitra.core.datastore.ProfileRelation
+import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.core.location.GeocodeResult
 
@@ -93,7 +90,7 @@ private fun ProfileEditContent(
     uiState: ProfileEditUiState,
     onNameChange: (String) -> Unit,
     onRelationChange: (ProfileRelation) -> Unit,
-    onGenderChange: (Gender) -> Unit,
+    onGenderChange: (Gender?) -> Unit,
     onDateOfBirthChange: (String) -> Unit,
     onTimeOfBirthChange: (String) -> Unit,
     onPlaceOfBirthChange: (String) -> Unit,
@@ -219,64 +216,33 @@ private fun birthplaceHint(uiState: ProfileEditUiState): String =
         "Type a place, then tap search to locate it"
     }
 
-/** A horizontal row of selectable chips for choosing the profile's [ProfileRelation]. */
+/** A dropdown for choosing the profile's [ProfileRelation]. */
 @Composable
 private fun RelationSelector(
     selected: ProfileRelation,
     onSelect: (ProfileRelation) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        ProfileRelation.entries.forEach { relation ->
-            SelectableChip(
-                label = relation.displayName,
-                active = relation == selected,
-                onClick = { onSelect(relation) },
-            )
-        }
-    }
+    VedicSelectField(
+        label = "Relation",
+        options = ProfileRelation.entries,
+        selected = selected,
+        optionLabel = { it.displayName },
+        onSelect = onSelect,
+    )
 }
 
-/** Chips for choosing the profile's [Gender]; tapping the active one clears it (kundali matching only). */
+/** A dropdown for the profile's [Gender]; "Not specified" clears it (used for kundali matching). */
 @Composable
 private fun GenderSelector(
     selected: Gender?,
-    onSelect: (Gender) -> Unit,
+    onSelect: (Gender?) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Gender.entries.forEach { gender ->
-            SelectableChip(
-                label = gender.displayName,
-                active = gender == selected,
-                onClick = { onSelect(gender) },
-            )
-        }
-    }
-}
-
-/** A pill-shaped selectable chip, filled when [active]. */
-@Composable
-private fun SelectableChip(
-    label: String,
-    active: Boolean,
-    onClick: () -> Unit,
-) {
-    val container =
-        if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-    val content =
-        if (active) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelLarge,
-        color = content,
-        modifier =
-            Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .clickable(onClick = onClick)
-                .background(container)
-                .padding(horizontal = 14.dp, vertical = 8.dp),
+    VedicSelectField(
+        label = "Gender (optional)",
+        options = listOf<Gender?>(null) + Gender.entries,
+        selected = selected,
+        optionLabel = { it?.displayName ?: "Not specified" },
+        onSelect = onSelect,
     )
 }
 
