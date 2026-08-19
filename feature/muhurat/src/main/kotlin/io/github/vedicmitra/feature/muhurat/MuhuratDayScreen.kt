@@ -10,7 +10,13 @@
 
 package io.github.vedicmitra.feature.muhurat
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,7 +55,16 @@ fun MuhuratDayScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // Reminders post a notification, so ask for POST_NOTIFICATIONS (Android 13+) up front — otherwise
+    // a scheduled reminder is silently dropped when it fires.
+    val notificationPermission =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) { viewModel.load() }
+    LaunchedEffect(Unit) {
+        if (needsNotificationPermission(context)) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
     LaunchedEffect(Unit) {
         viewModel.messages.collect { message ->
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -57,6 +72,11 @@ fun MuhuratDayScreen(
     }
     MuhuratDayContent(uiState = uiState, onSetReminder = viewModel::setReminder, modifier = modifier)
 }
+
+/** Whether the app still needs the runtime notification permission (Android 13+). */
+private fun needsNotificationPermission(context: Context): Boolean =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
 
 @Composable
 private fun MuhuratDayContent(

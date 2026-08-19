@@ -7,7 +7,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- **Muhurat reminders now actually notify.** Setting a reminder for an auspicious day scheduled it but
+  the notification never appeared, because the Muhurat day screen never requested the runtime
+  notification permission (default-denied on Android 13+). It (and the Meditation screen) now request
+  `POST_NOTIFICATIONS` up front, so scheduled reminders are delivered.
+
 ### Added
+- **Tap placements to learn what they mean.** Several screens now reveal a plain-language significance
+  when you tap: each Kundali card and graha row (the ascendant sign, the Moon's nakshatra, the running
+  mahadasha, and each graha's sign/house), each Rashifal week-day (its full reading), and each Guna
+  Milan koota row in Kundali Matching (what that koota measures). Kundali Matching also shows the groom
+  and bride pickers side by side.
 - **Stotra — a library of hymns and shlokas.** The Stotra tile now opens a browsable library
   (`:feature:stotra`) of 20+ traditional stotras — Ganesha, Shiva, Vishnu, Devi, the Navagraha stotra,
   the peace mantras and more — each shown in Devanagari with a roman transliteration and a short note.

@@ -13,6 +13,7 @@
 package io.github.vedicmitra.feature.rashifal
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,12 +26,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,6 +41,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -139,7 +145,7 @@ private fun ReadyView(
             )
         } else {
             TodayCard(outlook, state.personalized)
-            WeekCard(outlook)
+            WeekCard(outlook, state.personalized)
         }
 
         if (state.usingDefaultLocation) {
@@ -254,7 +260,11 @@ private fun TodayCard(
 }
 
 @Composable
-private fun WeekCard(outlook: RashiOutlook) {
+private fun WeekCard(
+    outlook: RashiOutlook,
+    personalized: Boolean,
+) {
+    var selectedDay by remember { mutableStateOf<RashiDay?>(null) }
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(text = "The week ahead", style = MaterialTheme.typography.titleMedium)
@@ -263,27 +273,87 @@ private fun WeekCard(outlook: RashiOutlook) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                text = "Tap a day for its reading.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                outlook.week.forEach { WeekDayPip(it) }
+                outlook.week.forEach { day ->
+                    WeekDayPip(
+                        day = day,
+                        selected = day == selectedDay,
+                        onClick = { selectedDay = if (selectedDay == day) null else day },
+                    )
+                }
+            }
+            selectedDay?.let { day ->
+                HorizontalDivider()
+                DayReading(day = day, personalized = personalized)
             }
         }
     }
 }
 
 @Composable
-private fun WeekDayPip(day: RashiDay) {
+private fun WeekDayPip(
+    day: RashiDay,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     Column(
-        modifier = Modifier.width(44.dp),
+        modifier =
+            Modifier
+                .width(44.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(onClick = onClick)
+                .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(text = weekdayOf(day.atSunrise), style = MaterialTheme.typography.labelSmall)
+        Text(
+            text = weekdayOf(day.atSunrise),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+        )
         Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(bandColor(day.band)))
         Text(
             text = dayOfMonthOf(day.atSunrise),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The reading for a single day — used for a tapped week day (mirrors the Today card's body). */
+@Composable
+private fun DayReading(
+    day: RashiDay,
+    personalized: Boolean,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${weekdayOf(day.atSunrise)} · ${dayOfMonthOf(day.atSunrise)}",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.weight(1f),
+            )
+            BandBadge(day.band)
+        }
+        Text(
+            text = RashifalText.headline(day.band),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(text = RashifalText.chandraNarrative(day.chandraPosition), style = MaterialTheme.typography.bodySmall)
+        day.tara?.takeIf { personalized }?.let {
+            Text(text = RashifalText.taraNarrative(it), style = MaterialTheme.typography.bodySmall)
+        }
+        Text(
+            text = "Moon in ${day.nakshatra.name} · ${day.moonRasi.name}",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

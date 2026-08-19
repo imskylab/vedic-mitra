@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.kundali
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -128,12 +131,29 @@ private fun ChartView(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        InfoCard(label = "Lagna (Ascendant)", value = chart.lagna.rasi.name)
-        InfoCard(label = "Moon", value = "${chart.moonNakshatra.name} · pada ${chart.moonPada}")
+        InfoCard(
+            label = "Lagna (Ascendant)",
+            value = chart.lagna.rasi.name,
+            detail = KundaliSignificance.lagna(chart.lagna.rasi.index),
+        )
+        InfoCard(
+            label = "Moon",
+            value = "${chart.moonNakshatra.name} · pada ${chart.moonPada}",
+            detail = KundaliSignificance.moon(chart.moonNakshatra.number),
+        )
         currentDasha?.let {
-            InfoCard(label = "Current dasha", value = "${it.lord.displayName} · until ${formatMonthYear(it.end)}")
+            InfoCard(
+                label = "Current dasha",
+                value = "${it.lord.displayName} · until ${formatMonthYear(it.end)}",
+                detail = KundaliSignificance.dasha(it.lord),
+            )
         }
         Text(text = "Grahas", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "Tap a placement for its significance.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         chart.grahas.forEach { GrahaRow(it) }
     }
 }
@@ -250,32 +270,61 @@ private val Graha.shortLabel: String
 private fun InfoCard(
     label: String,
     value: String,
+    detail: String? = null,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
+    var expanded by remember { mutableStateOf(false) }
+    Card(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .then(if (detail != null) Modifier.clickable { expanded = !expanded } else Modifier),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(text = value, style = MaterialTheme.typography.titleMedium)
+            if (detail != null && expanded) {
+                Text(text = detail, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }
 
 @Composable
 private fun GrahaRow(graha: NatalGraha) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(text = graha.graha.displayName, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Text(text = graha.rasi.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        Text(
-            text = "House ${graha.house}" + if (graha.retrograde) " · R" else "",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = graha.graha.displayName,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Text(text = graha.rasi.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text(
+                text = "House ${graha.house}" + if (graha.retrograde) " · R" else "",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (expanded) {
+            Text(
+                text =
+                    KundaliSignificance.grahaInHouse(
+                        graha = graha.graha,
+                        rasiName = graha.rasi.name,
+                        house = graha.house,
+                        retrograde = graha.retrograde,
+                    ),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
