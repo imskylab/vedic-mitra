@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Stotra — a library of hymns and shlokas.** The Stotra tile now opens a browsable library
+  (`:feature:stotra`) of 20+ traditional stotras — Ganesha, Shiva, Vishnu, Devi, the Navagraha stotra,
+  the peace mantras and more — each shown in Devanagari with a roman transliteration and a short note.
+  A "today's stotra" is suggested by the weekday's ruling graha (e.g. Gayatri on Sunday, Hanuman on
+  Tuesday, Guru on Thursday). Tapping one opens a reader with an adjustable font size for chanting. All
+  text is public-domain Sanskrit. This lights up the last of the hub tiles.
 - **Meditation — timed sit with a breath guide.** The Meditate tile now opens a working timer
   (`:feature:meditation`): pick a length (5–30 min), and a countdown runs with a breath-pacing circle
   that expands and contracts, plus a soft start/end bell (a generated tone — no bundled audio). Each
