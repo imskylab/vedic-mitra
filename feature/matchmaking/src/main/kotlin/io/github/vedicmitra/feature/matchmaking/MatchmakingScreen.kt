@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.feature.matchmaking
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -93,8 +97,10 @@ private fun MatchReady(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(text = "Kundali Matching", style = MaterialTheme.typography.titleLarge)
-        PickerRow("Groom", uiState.males, uiState.selectedGroomId, onSelectGroom)
-        PickerRow("Bride", uiState.females, uiState.selectedBrideId, onSelectBride)
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            PickerRow("Groom", uiState.males, uiState.selectedGroomId, onSelectGroom, Modifier.weight(1f))
+            PickerRow("Bride", uiState.females, uiState.selectedBrideId, onSelectBride, Modifier.weight(1f))
+        }
         uiState.result?.let { ResultCard(it) }
         Text(
             text = "Ashtakoota (Guna Milan) from both Moons; general classical guidance, not a ruling.",
@@ -110,13 +116,15 @@ private fun PickerRow(
     options: List<MatchProfileOption>,
     selectedId: String?,
     onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val selected = options.firstOrNull { it.id == selectedId } ?: options.firstOrNull()
     if (selected == null) {
         Text(
-            text = "No $label profile available.",
-            style = MaterialTheme.typography.bodyMedium,
+            text = "No $label profile.",
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier,
         )
     } else {
         VedicSelectField(
@@ -125,6 +133,7 @@ private fun PickerRow(
             selected = selected,
             optionLabel = { it.name },
             onSelect = { onSelect(it.id) },
+            modifier = modifier,
         )
     }
 }
@@ -160,7 +169,11 @@ private fun ResultCard(result: GunaMilanResult) {
 
 @Composable
 private fun KootaRow(score: KootaScore) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = score.koota.displayName,
@@ -178,6 +191,12 @@ private fun KootaRow(score: KootaScore) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (expanded) {
+            Text(
+                text = KootaSignificance.of(score.koota),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
