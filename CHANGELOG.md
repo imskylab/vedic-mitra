@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.6.1] - 2026-08-19
+
+### Fixed
+- **Crash when picking a birthplace.** Choosing a place while adding or editing a profile could crash
+  the app: the offline time-zone lookup (`timezonemap`) ran unguarded, so if it failed at runtime — e.g.
+  on a low-memory device, or when a release build's minifier stripped its bundled data — the exception
+  took the whole app down. The time-zone resolver (and the place search) now degrade gracefully: a
+  failure falls back to a longitude-based estimate, and R8 keep rules preserve the precise lookup in
+  release builds.
+
 ## [0.6.0] - 2026-08-19
 
 ### Fixed

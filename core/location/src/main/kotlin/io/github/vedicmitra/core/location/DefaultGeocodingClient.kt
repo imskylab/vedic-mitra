@@ -16,7 +16,6 @@ import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -43,13 +42,16 @@ class DefaultGeocodingClient
                         IllegalStateException("No geocoder backend is available on this device"),
                     )
                 }
-                try {
+                // runCatching guards against the platform Geocoder throwing anything (IOException on a
+                // network/backend error, or a RuntimeException when the geocoder service is unavailable)
+                // so a place search can never crash the app — it degrades to a Failure the UI reports.
+                runCatching {
                     @Suppress("DEPRECATION")
-                    val addresses = geocoder.getFromLocationName(query, maxResults).orEmpty()
-                    AppResult.Success(addresses.mapNotNull { it.toGeocodeResult() })
-                } catch (e: IOException) {
-                    AppResult.Failure(e)
-                }
+                    geocoder.getFromLocationName(query, maxResults).orEmpty().mapNotNull { it.toGeocodeResult() }
+                }.fold(
+                    onSuccess = { AppResult.Success(it) },
+                    onFailure = { AppResult.Failure(it) },
+                )
             }
     }
 
