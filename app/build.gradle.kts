@@ -76,6 +76,7 @@ dependencies {
     implementation(projects.feature.rashifal)
     implementation(projects.feature.japa)
     implementation(projects.feature.meditation)
+    implementation(projects.feature.stotra)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)

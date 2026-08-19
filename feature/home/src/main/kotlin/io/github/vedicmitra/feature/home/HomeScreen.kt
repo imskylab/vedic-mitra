@@ -115,6 +115,7 @@ fun HomeScreen(
     onOpenRashifal: () -> Unit,
     onOpenJapa: () -> Unit,
     onOpenMeditate: () -> Unit,
+    onOpenStotra: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -149,8 +150,8 @@ fun HomeScreen(
         onOpenRashifal = onOpenRashifal,
         onOpenJapa = onOpenJapa,
         onOpenMeditate = onOpenMeditate,
+        onOpenStotra = onOpenStotra,
         onSetReminder = viewModel::setReminder,
-        onComingSoon = { name -> Toast.makeText(context, "$name is coming soon", Toast.LENGTH_SHORT).show() },
         modifier = modifier,
     )
 }
@@ -167,8 +168,8 @@ private fun HomeContent(
     onOpenRashifal: () -> Unit,
     onOpenJapa: () -> Unit,
     onOpenMeditate: () -> Unit,
+    onOpenStotra: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
-    onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snapshot = uiState.snapshot
@@ -198,10 +199,10 @@ private fun HomeContent(
                         onOpenRashifal = onOpenRashifal,
                         onOpenJapa = onOpenJapa,
                         onOpenMeditate = onOpenMeditate,
+                        onOpenStotra = onOpenStotra,
                         onOpenFestivals = { view = HomeView.FESTIVALS },
                         onOpenEvents = { view = HomeView.EVENTS },
                         onSetReminder = onSetReminder,
-                        onComingSoon = onComingSoon,
                         modifier = modifier,
                     )
 
@@ -260,10 +261,10 @@ private fun HubView(
     onOpenRashifal: () -> Unit,
     onOpenJapa: () -> Unit,
     onOpenMeditate: () -> Unit,
+    onOpenStotra: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
-    onComingSoon: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var selectedRow by remember { mutableStateOf<SectionRow?>(null) }
@@ -292,9 +293,9 @@ private fun HubView(
             onOpenRashifal = onOpenRashifal,
             onOpenJapa = onOpenJapa,
             onOpenMeditate = onOpenMeditate,
+            onOpenStotra = onOpenStotra,
             onOpenFestivals = onOpenFestivals,
             onOpenEvents = onOpenEvents,
-            onComingSoon = onComingSoon,
         )
         if (uiState.usingDefaultLocation) {
             Text(
@@ -332,9 +333,9 @@ private fun ShortcutGrid(
     onOpenRashifal: () -> Unit,
     onOpenJapa: () -> Unit,
     onOpenMeditate: () -> Unit,
+    onOpenStotra: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
-    onComingSoon: (String) -> Unit,
 ) {
     val tiles: List<@Composable () -> Unit> =
         listOf(
@@ -347,7 +348,7 @@ private fun ShortcutGrid(
             { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
             { GlyphTile("Rashifal", VedicIcons.rashifal, HubCategory.ASTROLOGY, onClick = onOpenRashifal) },
             { GlyphTile("Match", VedicIcons.matchmaking, HubCategory.ASTROLOGY, onClick = onOpenMatch) },
-            { OmTile("Stotra", enabled = false) { onComingSoon("Stotra") } },
+            { OmTile("Stotra", onClick = onOpenStotra) },
             { GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, onClick = onOpenJapa) },
             { GlyphTile("Meditate", VedicIcons.meditate, HubCategory.DEVOTION, onClick = onOpenMeditate) },
         )
@@ -892,8 +893,8 @@ private fun HomeContentPreview() {
             onOpenRashifal = {},
             onOpenJapa = {},
             onOpenMeditate = {},
+            onOpenStotra = {},
             onSetReminder = {},
-            onComingSoon = {},
         )
     }
 }

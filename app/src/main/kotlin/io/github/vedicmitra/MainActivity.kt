@@ -87,6 +87,7 @@ import io.github.vedicmitra.feature.profile.ProfileListScreen
 import io.github.vedicmitra.feature.rashifal.RashifalScreen
 import io.github.vedicmitra.feature.settings.AboutScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
+import io.github.vedicmitra.feature.stotra.StotraScreen
 
 /** The app's top-level destinations, shown in the bottom navigation bar in this order. */
 private enum class TopDestination(
@@ -108,6 +109,7 @@ private const val MATCHMAKING_ROUTE = "matchmaking"
 private const val RASHIFAL_ROUTE = "rashifal"
 private const val JAPA_ROUTE = "japa"
 private const val MEDITATION_ROUTE = "meditation"
+private const val STOTRA_ROUTE = "stotra"
 private const val LOCATION_ROUTE = "settings/location"
 private const val ADD_CITY_ROUTE = "settings/location/add-city"
 private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
@@ -296,6 +298,7 @@ private fun AppNavHost(
                 onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
                 onOpenJapa = { navController.navigate(JAPA_ROUTE) },
                 onOpenMeditate = { navController.navigate(MEDITATION_ROUTE) },
+                onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
             )
         }
         composable(TopDestination.SETTINGS.route) {
@@ -344,6 +347,7 @@ private fun AppNavHost(
         }
         composable(JAPA_ROUTE) { JapaScreen() }
         composable(MEDITATION_ROUTE) { MeditationScreen() }
+        composable(STOTRA_ROUTE) { StotraScreen() }
         muhuratDestinations(navController)
     }
 }
