@@ -9,14 +9,25 @@
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
-# Offline time-zone lookup (us.dustinj.timezonemap): it loads bundled polygon data and uses
-# reflection/serialization (flatbuffers). Without these keeps, R8 obfuscates/strips it and the
-# birthplace time-zone lookup throws at runtime. (The resolver also falls back to a coarse estimate on
-# failure, so a crash is impossible either way — these keeps restore the *precise* lookup in release.)
+# Offline time-zone lookup (us.dustinj.timezonemap): it loads bundled polygon data, parses it with
+# flatbuffers, and decompresses it with zstd-jni.
+#
+# zstd-jni is the critical one: its native library (libzstd-jni.so) reaches back into the JVM and
+# looks up instance fields — ZstdInputStreamNoFinalizer.srcPos / .dstPos — *by name* via JNI
+# GetFieldID. R8 renames those fields by default (proguard-android-optimize keeps native *method*
+# names but not the fields native code reads), so in a minified build the lookup fails with
+# `NoSuchFieldError: no "J" field "srcPos"`. That error surfaces on a native thread and the native
+# code immediately throws again, so ART aborts the whole process (SIGABRT) — an *uncatchable* crash
+# that a Kotlin try/catch or runCatching around the lookup cannot stop. Keeping the classes AND their
+# members (names included) is what makes the JNI field lookup resolve. Manifested as a crash when
+# picking a birthplace, which is the only screen that triggers a time-zone lookup.
 -keep class us.dustinj.timezonemap.** { *; }
 -keep class com.google.flatbuffers.** { *; }
+-keep class com.github.luben.zstd.** { *; }
+-keepclassmembers class com.github.luben.zstd.** { *; }
 -dontwarn us.dustinj.timezonemap.**
 -dontwarn com.google.flatbuffers.**
+-dontwarn com.github.luben.zstd.**
 
 # Persisted data (profiles, reminders, japa sittings) is encoded with hand-rolled codecs that read
 # each enum's constant name (e.g. ProfileRelation.SELF -> "SELF"). The default enum rule in

@@ -7,19 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.6.1] - 2026-08-19
+## [0.6.0] - 2026-08-20
 
 ### Fixed
-- **Crash when picking a birthplace.** Choosing a place while adding or editing a profile could crash
-  the app: the offline time-zone lookup (`timezonemap`) ran unguarded, so if it failed at runtime — e.g.
-  on a low-memory device, or when a release build's minifier stripped its bundled data — the exception
-  took the whole app down. The time-zone resolver (and the place search) now degrade gracefully: a
-  failure falls back to a longitude-based estimate, and R8 keep rules preserve the precise lookup in
-  release builds.
-
-## [0.6.0] - 2026-08-19
-
-### Fixed
+- **Crash when picking a birthplace (release builds).** Choosing a place while adding or editing a
+  profile aborted the app in release (R8-minified) builds only. The offline time-zone lookup
+  decompresses its bundled data with `zstd-jni`, whose native library reads two JVM fields
+  (`ZstdInputStreamNoFinalizer.srcPos`/`dstPos`) by name over JNI; R8 was renaming those fields, so the
+  native lookup failed with `NoSuchFieldError` and aborted the process (an uncatchable native crash — no
+  Kotlin `try/catch` could stop it). Added R8 keep rules for `com.github.luben.zstd.**` (alongside the
+  existing `timezonemap`/`flatbuffers` keeps) so the fields keep their names and the lookup resolves.
 - **Muhurat reminders now actually notify.** Setting a reminder for an auspicious day scheduled it but
   the notification never appeared, because the Muhurat day screen never requested the runtime
   notification permission (default-denied on Android 13+). It (and the Meditation screen) now request
