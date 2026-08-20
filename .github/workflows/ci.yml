@@ -1,11 +1,13 @@
 name: CI
 
-# Runs the full quality gate on every push to main and on every pull request.
+# Runs the full quality gate on every push to main, on every pull request, and on demand
+# (workflow_dispatch) so any branch can be checked without opening a PR.
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:

@@ -28,18 +28,26 @@ class DefaultTimeZoneResolver
     ) : TimeZoneResolver {
         override suspend fun resolve(coordinates: GeoCoordinates): String =
             withContext(dispatchers.default) {
-                val latitude = coordinates.latitude
-                val longitude = coordinates.longitude
-                val map =
-                    TimeZoneMap.forRegion(
-                        (latitude - PADDING_DEGREES).coerceAtLeast(MIN_LATITUDE),
-                        (longitude - PADDING_DEGREES).coerceAtLeast(MIN_LONGITUDE),
-                        (latitude + PADDING_DEGREES).coerceAtMost(MAX_LATITUDE),
-                        (longitude + PADDING_DEGREES).coerceAtMost(MAX_LONGITUDE),
-                    )
-                val timeZone = map.getOverlappingTimeZone(latitude, longitude)
-                timeZone?.zoneId ?: TimeZoneEstimator.estimate(coordinates)
+                // The `timezonemap` lookup loads bundled polygon data and can fail at runtime (e.g. on a
+                // low-memory device, or if the data is stripped by a release build's minifier). Any
+                // failure must never crash the app — fall back to the longitude-based estimate.
+                runCatching { lookupZoneId(coordinates) }.getOrNull()
+                    ?: TimeZoneEstimator.estimate(coordinates)
             }
+
+        // The precise time-zone id from the offline polygon map, or `null` if the point isn't covered.
+        private fun lookupZoneId(coordinates: GeoCoordinates): String? {
+            val latitude = coordinates.latitude
+            val longitude = coordinates.longitude
+            val map =
+                TimeZoneMap.forRegion(
+                    (latitude - PADDING_DEGREES).coerceAtLeast(MIN_LATITUDE),
+                    (longitude - PADDING_DEGREES).coerceAtLeast(MIN_LONGITUDE),
+                    (latitude + PADDING_DEGREES).coerceAtMost(MAX_LATITUDE),
+                    (longitude + PADDING_DEGREES).coerceAtMost(MAX_LONGITUDE),
+                )
+            return map.getOverlappingTimeZone(latitude, longitude)?.zoneId
+        }
 
         private companion object {
             // A small bounding box around the point is enough for a point-in-polygon test and keeps

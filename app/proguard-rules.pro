@@ -9,6 +9,15 @@
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
+# Offline time-zone lookup (us.dustinj.timezonemap): it loads bundled polygon data and uses
+# reflection/serialization (flatbuffers). Without these keeps, R8 obfuscates/strips it and the
+# birthplace time-zone lookup throws at runtime. (The resolver also falls back to a coarse estimate on
+# failure, so a crash is impossible either way — these keeps restore the *precise* lookup in release.)
+-keep class us.dustinj.timezonemap.** { *; }
+-keep class com.google.flatbuffers.** { *; }
+-dontwarn us.dustinj.timezonemap.**
+-dontwarn com.google.flatbuffers.**
+
 # Persisted data (profiles, reminders, japa sittings) is encoded with hand-rolled codecs that read
 # each enum's constant name (e.g. ProfileRelation.SELF -> "SELF"). The default enum rule in
 # proguard-android-optimize.txt keeps values()/valueOf() and the constant fields, so those stored
