@@ -7,6 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Expanded the Stotra library.** Added the **Hanuman Chalisa** (Tulsidas's full forty verses with the
+  opening and closing dohas) plus the **Lingashtakam** and **Nirvana Shatkam** (Shiva), the
+  **Madhurashtakam** (Krishna), and the **Gajananam** dhyana (Ganesha) — each in Devanagari with a
+  line-for-line transliteration and a short note. The reader already scrolls, so the longer texts read
+  cleanly. Tuesday's "today's stotra" now suggests the Hanuman Chalisa.
+
 ## [0.6.0] - 2026-08-20
 
 ### Fixed
