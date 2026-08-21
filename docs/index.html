@@ -110,6 +110,12 @@
     .feature p { font-size: .95rem; color: var(--muted); }
     .feature .ic { font-size: 1.6rem; }
 
+    /* Support band */
+    .support .feature code {
+      background: #f6ecd9; border: 1px solid #ecdfca; border-radius: 6px;
+      padding: 1px 6px; font-size: .9em;
+    }
+
     /* Why band */
     .why { background: #fff; border-top: 1px solid #ecdfca; border-bottom: 1px solid #ecdfca; }
     .why .grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
@@ -174,13 +180,48 @@
     </div>
   </section>
 
+  <section class="support">
+    <div class="wrap">
+      <h2>Support Vedic Mitra</h2>
+      <p class="tag">Free, complete, and ad-free for everyone &mdash; nothing here unlocks anything.</p>
+      <div class="grid">
+        <div class="feature">
+          <h3>Donate</h3>
+          <p>
+            <a href="https://github.com/sponsors/imskylab">GitHub Sponsors</a> for one-off or monthly support,
+            <a href="https://ko-fi.com/your-kofi-slug">Ko-fi</a> for a one-off tip, or UPI to
+            <code>your-vpa@bank</code> in India.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>For businesses</h3>
+          <p>
+            The AGPL asks anything built on Vedic Mitra &mdash; hosted services included &mdash; to share its
+            source. A <a href="https://github.com/imskylab/vedic-mitra/blob/main/docs/COMMERCIAL_LICENSE.md">commercial
+            license</a> lifts that for proprietary products. The offline panchanga engine is licensable on its own.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Costs nothing</h3>
+          <p>
+            Star the <a href="https://github.com/imskylab/vedic-mitra">repository</a>,
+            <a href="https://github.com/imskylab/vedic-mitra/issues/new?template=bug_report.md">report a bug</a>
+            or a timing that disagrees with your almanac, or contribute a translation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="wrap">
       <p><strong>Vedic Mitra</strong> — under active development (pre-1.0). Feedback and contributions welcome.</p>
       <p style="margin-top:10px;">
         <a href="https://github.com/imskylab/vedic-mitra">GitHub</a> ·
         <a href="https://github.com/imskylab/vedic-mitra/releases">Releases</a> ·
-        <a href="https://github.com/imskylab/vedic-mitra/blob/main/LICENSING.md">License</a>
+        <a href="https://github.com/imskylab/vedic-mitra/blob/main/LICENSING.md">License</a> ·
+        <a href="https://github.com/imskylab/vedic-mitra/blob/main/docs/PRIVACY.md">Privacy</a> ·
+        <a href="https://github.com/sponsors/imskylab">Sponsor</a>
       </p>
       <p class="note">
         Created by Jayvardhan Potabatti —

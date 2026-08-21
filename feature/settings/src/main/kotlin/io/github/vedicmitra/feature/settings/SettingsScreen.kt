@@ -10,7 +10,6 @@
 
 package io.github.vedicmitra.feature.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +42,7 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 fun SettingsScreen(
     onNavigateToLocation: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToSupport: () -> Unit,
     onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
@@ -56,6 +57,7 @@ fun SettingsScreen(
                 onDynamicColorChange = viewModel::setDynamicColor,
                 onNavigateToLocation = onNavigateToLocation,
                 onNavigateToProfile = onNavigateToProfile,
+                onNavigateToSupport = onNavigateToSupport,
                 onNavigateToAbout = onNavigateToAbout,
                 modifier = modifier,
             )
@@ -69,6 +71,7 @@ private fun SettingsContent(
     onDynamicColorChange: (Boolean) -> Unit,
     onNavigateToLocation: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToSupport: () -> Unit,
     onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -76,6 +79,7 @@ private fun SettingsContent(
         modifier =
             modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
     ) {
         VedicSelectField(
@@ -101,48 +105,40 @@ private fun SettingsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Location", style = MaterialTheme.typography.titleMedium)
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onNavigateToLocation)
-                    .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(text = "Panchanga location", modifier = Modifier.weight(1f))
-            Text(text = "Change", color = MaterialTheme.colorScheme.primary)
-        }
+        SettingsSectionHeader(text = "Location")
+        SettingsActionRow(
+            label = "Panchanga location",
+            action = "Change",
+            onClick = onNavigateToLocation,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Profile", style = MaterialTheme.typography.titleMedium)
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onNavigateToProfile)
-                    .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(text = "Your birth profile", modifier = Modifier.weight(1f))
-            Text(text = "Set up", color = MaterialTheme.colorScheme.primary)
-        }
+        SettingsSectionHeader(text = "Profile")
+        SettingsActionRow(
+            label = "Your birth profile",
+            action = "Set up",
+            onClick = onNavigateToProfile,
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "About", style = MaterialTheme.typography.titleMedium)
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onNavigateToAbout)
-                    .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(text = "About Vedic Mitra", modifier = Modifier.weight(1f))
-            Text(text = "View", color = MaterialTheme.colorScheme.primary)
-        }
+        SettingsSectionHeader(text = "Support")
+        SettingsActionRow(
+            label = "Support Vedic Mitra",
+            action = "Open",
+            onClick = onNavigateToSupport,
+            supportingText = "Donate, or license the project commercially",
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SettingsSectionHeader(text = "About")
+        SettingsActionRow(
+            label = "About Vedic Mitra",
+            action = "View",
+            onClick = onNavigateToAbout,
+        )
     }
 }
 
@@ -164,6 +160,7 @@ private fun SettingsContentPreview() {
             onDynamicColorChange = {},
             onNavigateToLocation = {},
             onNavigateToProfile = {},
+            onNavigateToSupport = {},
             onNavigateToAbout = {},
         )
     }

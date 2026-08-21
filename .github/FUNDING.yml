@@ -1,0 +1,10 @@
+# Funding rails for Vedic Mitra.
+#
+# These values are duplicated in two other places that must move with them:
+#   - feature/settings/.../SupportLinks.kt — the in-app Support screen.
+#   - README.md → "Support the project".
+#
+# `ko_fi` is a placeholder until the account exists; see docs/MONETIZATION_SETUP.md.
+github: [imskylab]
+ko_fi: your-kofi-slug
+custom: ["https://github.com/imskylab/vedic-mitra/blob/main/docs/COMMERCIAL_LICENSE.md"]

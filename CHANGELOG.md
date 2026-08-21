@@ -8,11 +8,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Support the project.** A new **Settings → Support** screen (also reachable from About) gathers
+  the ways to keep Vedic Mitra going: GitHub Sponsors, Ko-fi, and a copyable UPI ID for donations; a
+  commercial-licensing route for businesses that cannot accept the AGPL; and the free ways to help —
+  starring the repo, reporting a bug, contributing a translation. Every feature in the app stays free
+  and nothing on the screen unlocks anything. The screen makes no network calls: links open in the
+  browser and the UPI ID is copied to the clipboard rather than launched as a `upi://` intent, which
+  would crash on devices without a UPI app.
+- **Commercial licensing is now a real offer** — published tiers and pricing
+  ([docs/COMMERCIAL_LICENSE.md](docs/COMMERCIAL_LICENSE.md)), a template agreement
+  ([LICENSE-COMMERCIAL.md](LICENSE-COMMERCIAL.md)), and a dedicated contact address, replacing
+  "terms and pricing on request".
+- **Privacy policy** ([docs/PRIVACY.md](docs/PRIVACY.md)) documenting what the app stores on device,
+  why each permission exists, and the single network call (Android's own `Geocoder` for city search).
+- **AGPL section 7 linking exception** ([LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md)) permitting
+  Vedic Mitra to be linked with proprietary platform libraries — needed because the app already uses
+  Google Play services Location for optional fused location.
 - **Expanded the Stotra library.** Added the **Hanuman Chalisa** (Tulsidas's full forty verses with the
   opening and closing dohas) plus the **Lingashtakam** and **Nirvana Shatkam** (Shiva), the
   **Madhurashtakam** (Krishna), and the **Gajananam** dhyana (Ganesha) — each in Devanagari with a
   line-for-line transliteration and a short note. The reader already scrolls, so the longer texts read
   cleanly. Tuesday's "today's stotra" now suggests the Hanuman Chalisa.
+
+### Changed
+- Settings, About, and Support now share one set of row composables instead of each hand-rolling its
+  own, so the sections stay consistent as they accumulate. Settings scrolls on short screens.
+
+### Fixed
+- The "Question / discussion" link in the issue templates pointed at a non-existent `vedicmitra` org.
 
 ## [0.6.0] - 2026-08-20
 

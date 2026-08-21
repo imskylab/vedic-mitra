@@ -11,6 +11,12 @@ make it available to users over a network** (for example, as a hosted service),
 you also make your complete corresponding source code available to those users
 under the AGPL.
 
+One **additional permission under AGPL section 7** is granted, permitting Vedic
+Mitra to be linked with proprietary platform libraries such as Google Play
+services — which the app already uses for optional fused location. See
+[LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md) for the exact wording and why it
+is needed.
+
 ## 2. Commercial license
 
 If you want to use Vedic Mitra (in whole or in part) in a **proprietary or
@@ -18,13 +24,18 @@ closed-source** product, or you otherwise cannot or do not wish to comply with
 the AGPL's copyleft obligations, a separate **commercial license** is available
 for purchase. It grants use without those obligations.
 
-To obtain a commercial license, contact the maintainer:
+- **Pricing and tiers** — [docs/COMMERCIAL_LICENSE.md](docs/COMMERCIAL_LICENSE.md)
+  (Indie, Business, and OEM/Embedded, plus an engine-only option for
+  `:core:astronomy`).
+- **Agreement terms** — [LICENSE-COMMERCIAL.md](LICENSE-COMMERCIAL.md) (template).
+- **To buy, or to ask whether you need one** — email **licensing@example.com**,
+  or contact **Jayvardhan Potabatti** via
+  [GitHub @imskylab](https://github.com/imskylab) or
+  [LinkedIn](https://www.linkedin.com/in/imskylab/).
 
-- **Jayvardhan Potabatti** — via [GitHub @imskylab](https://github.com/imskylab) or
-  [LinkedIn](https://www.linkedin.com/in/imskylab/)
-  (open an issue titled "Commercial license enquiry", or reach out directly).
-
-Terms and pricing are provided on request.
+Using the app — including professionally — never requires a commercial license.
+It is needed only to ship Vedic Mitra code inside a product you keep closed, or
+to host it as a service without offering your source under the AGPL.
 
 ## Contributions
 
@@ -32,6 +43,11 @@ By contributing, you agree that your contribution is licensed under the
 AGPL-3.0-or-later **and** that the maintainer may also distribute it under the
 commercial license above. This is what keeps the project both open source and
 sustainable. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Privacy
+
+Vedic Mitra collects no data and has no servers; see
+[docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Third-party components
 

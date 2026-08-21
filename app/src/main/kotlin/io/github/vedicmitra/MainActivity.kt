@@ -87,6 +87,7 @@ import io.github.vedicmitra.feature.profile.ProfileListScreen
 import io.github.vedicmitra.feature.rashifal.RashifalScreen
 import io.github.vedicmitra.feature.settings.AboutScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
+import io.github.vedicmitra.feature.settings.SupportScreen
 import io.github.vedicmitra.feature.stotra.StotraScreen
 
 /** The app's top-level destinations, shown in the bottom navigation bar in this order. */
@@ -123,6 +124,7 @@ private const val MUHURAT_CATEGORY_ARG = "category"
 private const val MUHURAT_ACTIVITY_ARG = "activity"
 private const val MUHURAT_DAY_ARG = "day"
 private const val ABOUT_ROUTE = "settings/about"
+private const val SUPPORT_ROUTE = "settings/support"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -305,10 +307,14 @@ private fun AppNavHost(
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 onNavigateToProfile = { navController.navigateToTab(TopDestination.PROFILE.route) },
+                onNavigateToSupport = { navController.navigate(SUPPORT_ROUTE) },
                 onNavigateToAbout = { navController.navigate(ABOUT_ROUTE) },
             )
         }
-        composable(ABOUT_ROUTE) { AboutScreen() }
+        composable(ABOUT_ROUTE) {
+            AboutScreen(onNavigateToSupport = { navController.navigate(SUPPORT_ROUTE) })
+        }
+        composable(SUPPORT_ROUTE) { SupportScreen() }
         composable(TopDestination.PROFILE.route) {
             ProfileListScreen(
                 onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },
