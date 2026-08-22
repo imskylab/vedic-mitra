@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
-[![Commercial license](https://img.shields.io/badge/Commercial-available-brightgreen.svg)](LICENSING.md)
+[![Commercial license](https://img.shields.io/badge/Commercial-available-brightgreen.svg)](docs/COMMERCIAL_LICENSE.md)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
@@ -552,6 +552,33 @@ In short:
 4. Use [Conventional Commits](https://www.conventionalcommits.org/).
 5. Open a PR using the template.
 
+## Support the project
+
+Vedic Mitra is free and always will be — every feature, for everyone, with no ads, no tracking, and
+no account. Nothing is paywalled, and nothing here unlocks anything. If it's useful to you, this is
+how you can keep it going.
+
+**Donate**
+
+- **[GitHub Sponsors](https://github.com/sponsors/imskylab)** — one-off or monthly.
+- **[Ko-fi](https://ko-fi.com/imskylab)** — a one-off tip by card or PayPal.
+- **UPI** — `skylab@upi` (India).
+
+**For businesses**
+
+The AGPL requires anything built on Vedic Mitra — including hosted services — to share its source
+under the same terms. If that doesn't work for your product, a **commercial license** lifts the
+obligation: see **[pricing and tiers](docs/COMMERCIAL_LICENSE.md)**, or email `skylabs.in@gmail.com`.
+The `:core:astronomy` engine is licensable on its own.
+
+**Costs nothing**
+
+- ⭐ Star the repo — it's the single biggest help for discovery.
+- 🐛 [Report a bug](https://github.com/imskylab/vedic-mitra/issues/new?template=bug_report.md), or a
+  panchanga timing that disagrees with your almanac.
+- 🌐 Contribute a translation, or regional festival data — see [CONTRIBUTING.md](CONTRIBUTING.md).
+- 💬 Tell someone who'd find it useful.
+
 ## Author
 
 **Jayvardhan Potabatti** — Creator, Owner, Designer & Lead Developer.
@@ -566,9 +593,13 @@ See [AUTHORS.md](AUTHORS.md) for the full list, and [CONTRIBUTING.md](CONTRIBUTI
 Vedic Mitra is **dual-licensed** — see **[LICENSING.md](LICENSING.md)**:
 
 - **[GNU AGPL-3.0-or-later](LICENSE)** for open-source use (note: the AGPL requires
-  network/SaaS deployments to offer their source to users).
-- A **commercial license** for proprietary/closed-source use, without the AGPL's
-  copyleft obligations.
+  network/SaaS deployments to offer their source to users), with one
+  [additional permission](LICENSE-EXCEPTIONS.md) under AGPL section 7 for linking against
+  proprietary platform libraries such as Google Play services.
+- A **[commercial license](docs/COMMERCIAL_LICENSE.md)** for proprietary/closed-source use, without
+  the AGPL's copyleft obligations — see [LICENSE-COMMERCIAL.md](LICENSE-COMMERCIAL.md) for terms.
+
+Vedic Mitra collects no data and has no servers; see the [Privacy Policy](docs/PRIVACY.md).
 
 Third-party components are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 

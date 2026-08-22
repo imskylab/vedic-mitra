@@ -31,6 +31,10 @@ Licensed under the Apache License, Version 2.0
   — © Google LLC, used under the Google APIs Terms of Service
   (<https://developers.google.com/terms>).
 
+This library is proprietary. Vedic Mitra is AGPL-licensed, so linking against it
+is permitted by an **additional permission under AGPL section 7** granted by the
+copyright holder — see [LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md).
+
 ## MIT License
 
 Licensed under the MIT License:

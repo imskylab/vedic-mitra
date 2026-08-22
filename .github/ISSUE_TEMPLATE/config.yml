@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Question / discussion
-    url: https://github.com/vedicmitra/vedic-mitra/discussions
+    url: https://github.com/imskylab/vedic-mitra/discussions
     about: Ask questions and discuss ideas with the community here.
+  - name: Commercial license enquiry
+    url: https://github.com/imskylab/vedic-mitra/blob/main/docs/COMMERCIAL_LICENSE.md
+    about: Pricing and terms for using Vedic Mitra in a proprietary product.
   - name: Maintainer on GitHub
     url: https://github.com/imskylab
     about: Jayvardhan Potabatti — creator & maintainer.

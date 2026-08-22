@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -87,6 +88,7 @@ import io.github.vedicmitra.feature.profile.ProfileListScreen
 import io.github.vedicmitra.feature.rashifal.RashifalScreen
 import io.github.vedicmitra.feature.settings.AboutScreen
 import io.github.vedicmitra.feature.settings.SettingsScreen
+import io.github.vedicmitra.feature.settings.SupportScreen
 import io.github.vedicmitra.feature.stotra.StotraScreen
 
 /** The app's top-level destinations, shown in the bottom navigation bar in this order. */
@@ -98,6 +100,7 @@ private enum class TopDestination(
     HOME("home", "Home", Icons.Filled.Home),
     SETTINGS("settings", "Settings", Icons.Filled.Settings),
     PROFILE("profile", "Profile", Icons.Filled.Person),
+    SUPPORT("support", "Support", Icons.Filled.Favorite),
 }
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
@@ -308,7 +311,12 @@ private fun AppNavHost(
                 onNavigateToAbout = { navController.navigate(ABOUT_ROUTE) },
             )
         }
-        composable(ABOUT_ROUTE) { AboutScreen() }
+        composable(ABOUT_ROUTE) {
+            AboutScreen(
+                onNavigateToSupport = { navController.navigateToTab(TopDestination.SUPPORT.route) },
+            )
+        }
+        composable(TopDestination.SUPPORT.route) { SupportScreen() }
         composable(TopDestination.PROFILE.route) {
             ProfileListScreen(
                 onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },

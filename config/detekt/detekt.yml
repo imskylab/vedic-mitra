@@ -53,7 +53,9 @@ style:
   ReturnCount:
     max: 4
   UnusedPrivateMember:
-    ignoreAnnotated: ['Preview']
+    # `@ThemePreviews` (core/ui) is meta-annotated with `@Preview`, but detekt matches annotation
+    # names directly rather than transitively, so it must be listed explicitly.
+    ignoreAnnotated: ['Preview', 'ThemePreviews']
   ForbiddenComment:
     active: true
     comments:

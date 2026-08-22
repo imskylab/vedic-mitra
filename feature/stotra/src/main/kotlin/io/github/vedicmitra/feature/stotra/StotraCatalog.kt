@@ -35,7 +35,11 @@ data class Stotra(
  * The bundled catalog of stotras — all traditional (public-domain) Sanskrit. Grouped by deity, with a
  * weekday-graha suggestion for "today's stotra". Only the verse text and a short original note are
  * bundled (no full modern translation), keeping the content free of third-party translation rights.
+ *
+ * `LargeClass` is suppressed here: this is a bundled data catalog whose length is verse content,
+ * not logic complexity. Splitting the hymn list across objects/files would only scatter the data.
  */
+@Suppress("LargeClass")
 object StotraCatalog {
     /** Every stotra, clustered by deity in a sensible worship order. */
     val all: List<Stotra> =
@@ -79,6 +83,26 @@ object StotraCatalog {
                     sarva-vighnopashantaye
                     """.trimIndent(),
                 significance = "A meditation on Ganesha for the calming of all obstacles, recited to open prayers.",
+            ),
+            Stotra(
+                id = "ganesha_gajananam",
+                title = "Gajananam Bhutaganadi",
+                deity = "Ganesha",
+                devanagari =
+                    """
+                    गजाननं भूतगणादिसेवितं
+                    कपित्थजम्बूफलचारुभक्षणम् ।
+                    उमासुतं शोकविनाशकारणं
+                    नमामि विघ्नेश्वरपादपङ्कजम् ॥
+                    """.trimIndent(),
+                transliteration =
+                    """
+                    gajananam bhuta-ganadi-sevitam
+                    kapittha-jambu-phala-charu-bhakshanam
+                    uma-sutam shoka-vinasha-karanam
+                    namami vighneshvara-pada-pankajam
+                    """.trimIndent(),
+                significance = "The dhyana verse to elephant-faced Ganesha; recited to begin any worship.",
             ),
             Stotra(
                 id = "mahamrityunjaya",
@@ -142,6 +166,142 @@ object StotraCatalog {
                 significance = "The opening verse of the Shiva Panchakshara Stotra, glorifying \"Namah Shivaya\".",
             ),
             Stotra(
+                id = "shiva_lingashtakam",
+                title = "Lingashtakam",
+                deity = "Shiva",
+                devanagari =
+                    """
+                    ब्रह्ममुरारिसुरार्चितलिङ्गं
+                    निर्मलभासितशोभितलिङ्गम् ।
+                    जन्मजदुःखविनाशकलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    देवमुनिप्रवरार्चितलिङ्गं
+                    कामदहनकरुणाकरलिङ्गम् ।
+                    रावणदर्पविनाशनलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    सर्वसुगन्धसुलेपितलिङ्गं
+                    बुद्धिविवर्धनकारणलिङ्गम् ।
+                    सिद्धसुरासुरवन्दितलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    कनकमहामणिभूषितलिङ्गं
+                    फणिपतिवेष्टितशोभितलिङ्गम् ।
+                    दक्षसुयज्ञविनाशनलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    कुङ्कुमचन्दनलेपितलिङ्गं
+                    पङ्कजहारसुशोभितलिङ्गम् ।
+                    सञ्चितपापविनाशनलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    देवगणार्चितसेवितलिङ्गं
+                    भावैर्भक्तिभिरेव च लिङ्गम् ।
+                    दिनकरकोटिप्रभाकरलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    अष्टदलोपरिवेष्टितलिङ्गं
+                    सर्वसमुद्भवकारणलिङ्गम् ।
+                    अष्टदरिद्रविनाशनलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    सुरगुरुसुरवरपूजितलिङ्गं
+                    सुरवनपुष्पसदार्चितलिङ्गम् ।
+                    परात्परं परमात्मकलिङ्गं
+                    तत्प्रणमामि सदाशिवलिङ्गम् ॥
+                    """.trimIndent(),
+                transliteration =
+                    """
+                    brahma-murari-surarchita-lingam
+                    nirmala-bhasita-shobhita-lingam
+                    janmaja-duhkha-vinashaka-lingam
+                    tat pranamami sadashiva-lingam
+                    deva-muni-pravararchita-lingam
+                    kama-dahana-karunakara-lingam
+                    ravana-darpa-vinashana-lingam
+                    tat pranamami sadashiva-lingam
+                    sarva-sugandha-sulepita-lingam
+                    buddhi-vivardhana-karana-lingam
+                    siddha-surasura-vandita-lingam
+                    tat pranamami sadashiva-lingam
+                    kanaka-mahamani-bhushita-lingam
+                    phanipati-veshtita-shobhita-lingam
+                    daksha-suyajna-vinashana-lingam
+                    tat pranamami sadashiva-lingam
+                    kunkuma-chandana-lepita-lingam
+                    pankaja-hara-sushobhita-lingam
+                    sanchita-papa-vinashana-lingam
+                    tat pranamami sadashiva-lingam
+                    deva-ganarchita-sevita-lingam
+                    bhavair-bhaktibhir-eva cha lingam
+                    dinakara-koti-prabhakara-lingam
+                    tat pranamami sadashiva-lingam
+                    ashtadalopari-veshtita-lingam
+                    sarva-samudbhava-karana-lingam
+                    ashta-daridra-vinashana-lingam
+                    tat pranamami sadashiva-lingam
+                    sura-guru-suravara-pujita-lingam
+                    suravana-pushpa-sadarchita-lingam
+                    paratparam paramatmaka-lingam
+                    tat pranamami sadashiva-lingam
+                    """.trimIndent(),
+                significance = "Eight verses to the Shiva-linga as the formless Absolute; sung on Shivaratri.",
+            ),
+            Stotra(
+                id = "shiva_nirvana_shatkam",
+                title = "Nirvana Shatkam",
+                deity = "Shiva",
+                devanagari =
+                    """
+                    मनोबुद्ध्यहङ्कारचित्तानि नाहं
+                    न च श्रोत्रजिह्वे न च घ्राणनेत्रे ।
+                    न च व्योम भूमिर्न तेजो न वायुः
+                    चिदानन्दरूपः शिवोऽहं शिवोऽहम् ॥
+                    न च प्राणसंज्ञो न वै पञ्चवायुः
+                    न वा सप्तधातुर्न वा पञ्चकोशः ।
+                    न वाक्पाणिपादौ न चोपस्थपायू
+                    चिदानन्दरूपः शिवोऽहं शिवोऽहम् ॥
+                    न मे द्वेषरागौ न मे लोभमोहौ
+                    मदो नैव मे नैव मात्सर्यभावः ।
+                    न धर्मो न चार्थो न कामो न मोक्षः
+                    चिदानन्दरूपः शिवोऽहं शिवोऽहम् ॥
+                    न पुण्यं न पापं न सौख्यं न दुःखं
+                    न मन्त्रो न तीर्थं न वेदा न यज्ञाः ।
+                    अहं भोजनं नैव भोज्यं न भोक्ता
+                    चिदानन्दरूपः शिवोऽहं शिवोऽहम् ॥
+                    न मृत्युर्न शङ्का न मे जातिभेदः
+                    पिता नैव मे नैव माता न जन्म ।
+                    न बन्धुर्न मित्रं गुरुर्नैव शिष्यः
+                    चिदानन्दरूपः शिवोऽहं शिवोऽहम् ॥
+                    अहं निर्विकल्पो निराकाररूपो
+                    विभुत्वाच्च सर्वत्र सर्वेन्द्रियाणाम् ।
+                    न चासङ्गतं नैव मुक्तिर्न मेयः
+                    चिदानन्दरूपः शिवोऽहं शिवोऽहम् ॥
+                    """.trimIndent(),
+                transliteration =
+                    """
+                    mano-buddhy-ahankara-chittani naham
+                    na cha shrotra-jihve na cha ghrana-netre
+                    na cha vyoma bhumir na tejo na vayuh
+                    chidananda-rupah shivo'ham shivo'ham
+                    na cha prana-sanjno na vai pancha-vayuh
+                    na va sapta-dhatur na va pancha-koshah
+                    na vak-pani-padau na chopastha-payu
+                    chidananda-rupah shivo'ham shivo'ham
+                    na me dvesha-ragau na me lobha-mohau
+                    mado naiva me naiva matsarya-bhavah
+                    na dharmo na chartho na kamo na mokshah
+                    chidananda-rupah shivo'ham shivo'ham
+                    na punyam na papam na saukhyam na duhkham
+                    na mantro na tirtham na veda na yajnah
+                    aham bhojanam naiva bhojyam na bhokta
+                    chidananda-rupah shivo'ham shivo'ham
+                    na mrityur na shanka na me jati-bhedah
+                    pita naiva me naiva mata na janma
+                    na bandhur na mitram gurur naiva shishyah
+                    chidananda-rupah shivo'ham shivo'ham
+                    aham nirvikalpo nirakara-rupo
+                    vibhutvach cha sarvatra sarvendriyanam
+                    na chasangatam naiva muktir na meyah
+                    chidananda-rupah shivo'ham shivo'ham
+                    """.trimIndent(),
+                significance = "Adi Shankara's Advaita hymn on the true Self: I am consciousness and bliss.",
+            ),
+            Stotra(
                 id = "vishnu_shantakaram",
                 title = "Shantakaram",
                 deity = "Vishnu",
@@ -180,6 +340,82 @@ object StotraCatalog {
                     krishnam vande jagad-gurum
                     """.trimIndent(),
                 significance = "A vandana to Krishna, teacher of the world and joy of Devaki.",
+            ),
+            Stotra(
+                id = "krishna_madhurashtakam",
+                title = "Madhurashtakam",
+                deity = "Krishna",
+                devanagari =
+                    """
+                    अधरं मधुरं वदनं मधुरं
+                    नयनं मधुरं हसितं मधुरम् ।
+                    हृदयं मधुरं गमनं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    वचनं मधुरं चरितं मधुरं
+                    वसनं मधुरं वलितं मधुरम् ।
+                    चलितं मधुरं भ्रमितं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    वेणुर्मधुरो रेणुर्मधुरः
+                    पाणिर्मधुरः पादौ मधुरौ ।
+                    नृत्यं मधुरं सख्यं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    गीतं मधुरं पीतं मधुरं
+                    भुक्तं मधुरं सुप्तं मधुरम् ।
+                    रूपं मधुरं तिलकं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    करणं मधुरं तरणं मधुरं
+                    हरणं मधुरं रमणं मधुरम् ।
+                    वमितं मधुरं शमितं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    गुञ्जा मधुरा माला मधुरा
+                    यमुना मधुरा वीची मधुरा ।
+                    सलिलं मधुरं कमलं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    गोपी मधुरा लीला मधुरा
+                    युक्तं मधुरं मुक्तं मधुरम् ।
+                    दृष्टं मधुरं शिष्टं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    गोपा मधुरा गावो मधुरा
+                    यष्टिर्मधुरा सृष्टिर्मधुरा ।
+                    दलितं मधुरं फलितं मधुरं
+                    मधुराधिपतेरखिलं मधुरम् ॥
+                    """.trimIndent(),
+                transliteration =
+                    """
+                    adharam madhuram vadanam madhuram
+                    nayanam madhuram hasitam madhuram
+                    hridayam madhuram gamanam madhuram
+                    madhuradhipater akhilam madhuram
+                    vachanam madhuram charitam madhuram
+                    vasanam madhuram valitam madhuram
+                    chalitam madhuram bhramitam madhuram
+                    madhuradhipater akhilam madhuram
+                    venur madhuro renur madhurah
+                    panir madhurah padau madhurau
+                    nrityam madhuram sakhyam madhuram
+                    madhuradhipater akhilam madhuram
+                    gitam madhuram pitam madhuram
+                    bhuktam madhuram suptam madhuram
+                    rupam madhuram tilakam madhuram
+                    madhuradhipater akhilam madhuram
+                    karanam madhuram taranam madhuram
+                    haranam madhuram ramanam madhuram
+                    vamitam madhuram shamitam madhuram
+                    madhuradhipater akhilam madhuram
+                    gunja madhura mala madhura
+                    yamuna madhura vichi madhura
+                    salilam madhuram kamalam madhuram
+                    madhuradhipater akhilam madhuram
+                    gopi madhura lila madhura
+                    yuktam madhuram muktam madhuram
+                    drishtam madhuram shishtam madhuram
+                    madhuradhipater akhilam madhuram
+                    gopa madhura gavo madhura
+                    yashtir madhura srishtir madhura
+                    dalitam madhuram phalitam madhuram
+                    madhuradhipater akhilam madhuram
+                    """.trimIndent(),
+                significance = "Adi Shankara's eight verses on the sweetness of Krishna, Lord of Mathura.",
             ),
             Stotra(
                 id = "rama_nama",
@@ -340,6 +576,110 @@ object StotraCatalog {
                     shri-rama-dutam sharanam prapadye
                     """.trimIndent(),
                 significance = "A dhyana on Hanuman — swift, wise, and devoted; recited on Tuesdays and Saturdays.",
+            ),
+            Stotra(
+                id = "hanuman_chalisa",
+                title = "Hanuman Chalisa",
+                deity = "Hanuman",
+                devanagari =
+                    """
+                    श्रीगुरु चरन सरोज रज, निज मनु मुकुरु सुधारि ।
+                    बरनउँ रघुबर बिमल जसु, जो दायकु फल चारि ॥
+                    बुद्धिहीन तनु जानिके, सुमिरौं पवन-कुमार ।
+                    बल बुधि बिद्या देहु मोहिं, हरहु कलेस बिकार ॥
+                    जय हनुमान ज्ञान गुन सागर, जय कपीस तिहुँ लोक उजागर ॥
+                    राम दूत अतुलित बल धामा, अंजनि-पुत्र पवनसुत नामा ॥
+                    महाबीर बिक्रम बजरंगी, कुमति निवार सुमति के संगी ॥
+                    कंचन बरन बिराज सुबेसा, कानन कुंडल कुंचित केसा ॥
+                    हाथ बज्र औ ध्वजा बिराजै, काँधे मूँज जनेऊ साजै ॥
+                    संकर सुवन केसरीनंदन, तेज प्रताप महा जग बंदन ॥
+                    बिद्यावान गुनी अति चातुर, राम काज करिबे को आतुर ॥
+                    प्रभु चरित्र सुनिबे को रसिया, राम लखन सीता मन बसिया ॥
+                    सूक्ष्म रूप धरि सियहिं दिखावा, बिकट रूप धरि लंक जरावा ॥
+                    भीम रूप धरि असुर सँहारे, रामचंद्र के काज सँवारे ॥
+                    लाय सजीवन लखन जियाये, श्रीरघुबीर हरषि उर लाये ॥
+                    रघुपति कीन्ही बहुत बड़ाई, तुम मम प्रिय भरतहि सम भाई ॥
+                    सहस बदन तुम्हरो जस गावैं, अस कहि श्रीपति कंठ लगावैं ॥
+                    सनकादिक ब्रह्मादि मुनीसा, नारद सारद सहित अहीसा ॥
+                    जम कुबेर दिगपाल जहाँ ते, कबि कोबिद कहि सके कहाँ ते ॥
+                    तुम उपकार सुग्रीवहिं कीन्हा, राम मिलाय राज पद दीन्हा ॥
+                    तुम्हरो मंत्र बिभीषन माना, लंकेश्वर भए सब जग जाना ॥
+                    जुग सहस्र जोजन पर भानू, लील्यो ताहि मधुर फल जानू ॥
+                    प्रभु मुद्रिका मेलि मुख माहीं, जलधि लाँघि गये अचरज नाहीं ॥
+                    दुर्गम काज जगत के जेते, सुगम अनुग्रह तुम्हरे तेते ॥
+                    राम दुआरे तुम रखवारे, होत न आज्ञा बिनु पैसारे ॥
+                    सब सुख लहै तुम्हारी सरना, तुम रच्छक काहू को डर ना ॥
+                    आपन तेज सम्हारो आपै, तीनों लोक हाँक तें काँपै ॥
+                    भूत पिसाच निकट नहिं आवै, महाबीर जब नाम सुनावै ॥
+                    नासै रोग हरै सब पीरा, जपत निरंतर हनुमत बीरा ॥
+                    संकट तें हनुमान छुड़ावै, मन क्रम बचन ध्यान जो लावै ॥
+                    सब पर राम तपस्वी राजा, तिन के काज सकल तुम साजा ॥
+                    और मनोरथ जो कोई लावै, सोइ अमित जीवन फल पावै ॥
+                    चारों जुग परताप तुम्हारा, है परसिद्ध जगत उजियारा ॥
+                    साधु संत के तुम रखवारे, असुर निकंदन राम दुलारे ॥
+                    अष्ट सिद्धि नौ निधि के दाता, अस बर दीन्ह जानकी माता ॥
+                    राम रसायन तुम्हरे पासा, सदा रहो रघुपति के दासा ॥
+                    तुम्हरे भजन राम को पावै, जनम जनम के दुख बिसरावै ॥
+                    अंत काल रघुबर पुर जाई, जहाँ जन्म हरिभक्त कहाई ॥
+                    और देवता चित्त न धरई, हनुमत सेइ सर्ब सुख करई ॥
+                    संकट कटै मिटै सब पीरा, जो सुमिरै हनुमत बलबीरा ॥
+                    जै जै जै हनुमान गोसाईं, कृपा करहु गुरुदेव की नाईं ॥
+                    जो सत बार पाठ कर कोई, छूटहि बंदि महा सुख होई ॥
+                    जो यह पढ़ै हनुमान चालीसा, होय सिद्धि साखी गौरीसा ॥
+                    तुलसीदास सदा हरि चेरा, कीजै नाथ हृदय महँ डेरा ॥
+                    पवनतनय संकट हरन, मंगल मूरति रूप ।
+                    राम लखन सीता सहित, हृदय बसहु सुर भूप ॥
+                    """.trimIndent(),
+                transliteration =
+                    """
+                    shri guru charan saroj raj, nija manu mukuru sudhari
+                    baranau raghubar bimal jasu, jo dayaku phal chari
+                    buddhihin tanu janike, sumirau pavan-kumar
+                    bal budhi bidya dehu mohi, harahu kales bikar
+                    jai hanuman gyan gun sagar, jai kapis tihu lok ujagar
+                    ram dut atulit bal dhama, anjani-putra pavanasut nama
+                    mahabir bikram bajrangi, kumati nivar sumati ke sangi
+                    kanchan baran biraj subesa, kanan kundal kunchit kesa
+                    hath bajra au dhvaja birajai, kandhe munj janeu sajai
+                    sankar suvan kesari-nandan, tej pratap maha jag bandan
+                    bidyavan guni ati chatur, ram kaj karibe ko atur
+                    prabhu charitra sunibe ko rasiya, ram lakhan sita man basiya
+                    sukshma rup dhari siyahi dikhava, bikat rup dhari lank jarava
+                    bhim rup dhari asur sanhare, ramchandra ke kaj sanvare
+                    lay sajivan lakhan jiyaye, shri raghubir harashi ur laye
+                    raghupati kinhi bahut badai, tum mam priya bharatahi sam bhai
+                    sahas badan tumharo jas gavai, as kahi shripati kanth lagavai
+                    sanakadik brahmadi munisa, narad sarad sahit ahisa
+                    jam kuber digpal jaha te, kabi kobid kahi sake kaha te
+                    tum upkar sugrivahi kinha, ram milay raj pad dinha
+                    tumharo mantra bibhishan mana, lankeshvar bhae sab jag jana
+                    jug sahasra jojan par bhanu, lilyo tahi madhur phal janu
+                    prabhu mudrika meli mukh mahi, jaladhi langhi gaye achraj nahi
+                    durgam kaj jagat ke jete, sugam anugrah tumhre tete
+                    ram duare tum rakhvare, hot na agya binu paisare
+                    sab sukh lahai tumhari sarna, tum rachchhak kahu ko dar na
+                    apan tej samharo apai, tinon lok hank te kanpai
+                    bhut pisach nikat nahi avai, mahabir jab nam sunavai
+                    nasai rog harai sab pira, japat nirantar hanumat bira
+                    sankat te hanuman chhudavai, man kram bachan dhyan jo lavai
+                    sab par ram tapasvi raja, tin ke kaj sakal tum saja
+                    aur manorath jo koi lavai, soi amit jivan phal pavai
+                    charon jug partap tumhara, hai parsiddh jagat ujiyara
+                    sadhu sant ke tum rakhvare, asur nikandan ram dulare
+                    asht siddhi nau nidhi ke data, as bar dinh janaki mata
+                    ram rasayan tumhre pasa, sada raho raghupati ke dasa
+                    tumhre bhajan ram ko pavai, janam janam ke dukh bisravai
+                    ant kal raghubar pur jai, jaha janm haribhakt kahai
+                    aur devta chitt na dharai, hanumat sei sarb sukh karai
+                    sankat katai mitai sab pira, jo sumirai hanumat balbira
+                    jai jai jai hanuman gosai, kripa karahu gurudev ki nai
+                    jo sat bar path kar koi, chhutahi bandi maha sukh hoi
+                    jo yah padhai hanuman chalisa, hoy siddhi sakhi gaurisa
+                    tulsidas sada hari chera, kijai nath hriday mahan dera
+                    pavan-tanay sankat haran, mangal murati rup
+                    ram lakhan sita sahit, hriday basahu sur bhup
+                    """.trimIndent(),
+                significance = "Tulsidas's forty-verse hymn to Hanuman; chanted on Tuesdays and Saturdays.",
             ),
             Stotra(
                 id = "navagraha",
@@ -508,7 +848,7 @@ object StotraCatalog {
             when (day) {
                 DayOfWeek.SUNDAY -> "gayatri"
                 DayOfWeek.MONDAY -> "shiva_karpura"
-                DayOfWeek.TUESDAY -> "hanuman"
+                DayOfWeek.TUESDAY -> "hanuman_chalisa"
                 DayOfWeek.WEDNESDAY -> "vishnu_shantakaram"
                 DayOfWeek.THURSDAY -> "guru"
                 DayOfWeek.FRIDAY -> "lakshmi"
