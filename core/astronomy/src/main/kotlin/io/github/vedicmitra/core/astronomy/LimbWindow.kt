@@ -10,8 +10,8 @@
 
 package io.github.vedicmitra.core.astronomy
 
-import kotlinx.datetime.Instant
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 /**
  * The stretch of time over which one panchanga limb keeps its current value — when this tithi,

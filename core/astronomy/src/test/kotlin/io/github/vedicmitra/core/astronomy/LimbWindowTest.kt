@@ -11,10 +11,10 @@
 package io.github.vedicmitra.core.astronomy
 
 import com.google.common.truth.Truth.assertThat
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 class LimbWindowTest {
     // An arbitrary instant; every assertion below holds for any instant, not just this one.
