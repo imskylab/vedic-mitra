@@ -19,7 +19,6 @@ import kotlin.math.sin
 import kotlin.math.tan
 
 private const val DEG2RAD = PI / 180.0
-private const val RASHI_SPAN_DEGREES = 30.0
 private const val HOUSE_COUNT = 12
 
 /**
@@ -36,7 +35,7 @@ internal fun lagnaAt(
     val localSiderealTime = Ephemeris.norm360(Ephemeris.greenwichMeanSiderealTimeDeg(epochMillis) + longitude)
     val tropical = ascendantTropical(localSiderealTime, latitude, Ephemeris.obliquity(t))
     val sidereal = Ephemeris.norm360(tropical - Ephemeris.lahiriAyanamsa(t))
-    val index = (sidereal / RASHI_SPAN_DEGREES).toInt()
+    val index = AngularBuckets.rashiIndex(sidereal)
     return Lagna(siderealLongitude = sidereal, rasi = Rasi(index, RASHI_NAMES[index]))
 }
 

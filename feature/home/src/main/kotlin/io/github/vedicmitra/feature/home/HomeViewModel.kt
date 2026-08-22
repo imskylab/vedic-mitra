@@ -19,6 +19,7 @@ import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GrahaPosition
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
+import io.github.vedicmitra.core.astronomy.PanchangaNow
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.domain.AddReminderUseCase
@@ -85,10 +86,14 @@ class HomeViewModel
                         val planets =
                             (astronomyEngine.planetaryPositionsAt(now) as? AppResult.Success)?.data?.positions
                                 ?: emptyList()
+                        // The day is named for its sunrise tithi; this is what is actually running
+                        // now, which differs for part of most days.
+                        val nowPanchanga = (astronomyEngine.panchangaNowAt(now) as? AppResult.Success)?.data
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
                                 snapshot = snapshot.data,
+                                nowPanchanga = nowPanchanga,
                                 auspicious = auspiciousWindow(snapshot.data, now),
                                 festivals = festivals,
                                 events = events,
@@ -229,6 +234,7 @@ sealed interface ReminderTarget {
 data class HomeUiState(
     val isLoading: Boolean = true,
     val snapshot: AstronomySnapshot? = null,
+    val nowPanchanga: PanchangaNow? = null,
     val auspicious: AuspiciousWindow? = null,
     val festivals: List<Festival> = emptyList(),
     val events: List<Festival> = emptyList(),

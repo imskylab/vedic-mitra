@@ -97,13 +97,20 @@ private val YOGA_NAMES =
         "Vaidhriti",
     )
 
+// Moon phase divides the synodic cycle into eight 45deg bands centred on the quarters; ritu divides
+// the sidereal year into six 60deg seasons from the Meena/Mesha boundary. Both are exact in arcsec.
+private const val MOON_PHASE_ARCSEC = 162_000L
+private const val HALF_PHASE_DEG = 22.5
+private const val RITU_ARCSEC = 216_000L
+private const val VASANTA_START_DEG = 330.0
+
 // The seven movable (chara) karanas, which repeat eight times through the lunar month.
 private val KARANA_MOVABLE =
     listOf("Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti")
 
 /** Derives the [Tithi] from the Moon's elongation from the Sun (degrees, 0..360). */
 internal fun tithiOf(elongationDeg: Double): Tithi {
-    val number = (elongationDeg / 12.0).toInt() + 1
+    val number = AngularBuckets.tithiIndex(elongationDeg) + 1
     val paksha = if (number <= 15) Paksha.SHUKLA else Paksha.KRISHNA
     val inPaksha = if (number <= 15) number else number - 15
     val name =
@@ -121,8 +128,7 @@ internal fun tithiOf(elongationDeg: Double): Tithi {
  * and Last Quarter (270°).
  */
 internal fun moonPhaseOf(elongationDeg: Double): MoonPhase {
-    val phaseSpan = 45.0
-    val index = ((elongationDeg + phaseSpan / 2) / phaseSpan).toInt() % MoonPhase.entries.size
+    val index = AngularBuckets.index(elongationDeg + HALF_PHASE_DEG, MOON_PHASE_ARCSEC) % MoonPhase.entries.size
     return MoonPhase.entries[index]
 }
 
@@ -138,29 +144,25 @@ internal fun ayanaOf(sunSiderealDeg: Double): Ayana =
  * year into six 60°-wide seasons starting at the Meena/Mesha boundary (330°) for Vasanta.
  */
 internal fun rituOf(sunSiderealDeg: Double): Ritu {
-    val rituSpan = 60.0
-    val vasantaStart = 330.0
-    val index = (Ephemeris.norm360(sunSiderealDeg - vasantaStart) / rituSpan).toInt() % Ritu.entries.size
+    val index = AngularBuckets.index(sunSiderealDeg - VASANTA_START_DEG, RITU_ARCSEC) % Ritu.entries.size
     return Ritu.entries[index]
 }
 
 /** Derives the [Nakshatra] from the Moon's sidereal ecliptic longitude (degrees, 0..360). */
 internal fun nakshatraOf(moonSiderealDeg: Double): Nakshatra {
-    val span = 360.0 / 27.0
-    val number = (moonSiderealDeg / span).toInt() + 1
+    val number = AngularBuckets.nakshatraIndex(moonSiderealDeg) + 1
     return Nakshatra(number = number, name = NAKSHATRA_NAMES[number - 1])
 }
 
 /** Derives the [Rasi] (0 = Mesha .. 11 = Meena) from a sidereal ecliptic longitude (degrees, 0..360). */
 internal fun rasiOf(siderealDeg: Double): Rasi {
-    val index = (siderealDeg / 30.0).toInt() % RASHI_NAMES.size
+    val index = AngularBuckets.rashiIndex(siderealDeg)
     return Rasi(index = index, name = RASHI_NAMES[index])
 }
 
 /** Derives the [Yoga] from the combined sidereal longitudes of the Sun and Moon (degrees, 0..360). */
 internal fun yogaOf(yogaSumDeg: Double): Yoga {
-    val span = 360.0 / 27.0
-    val number = (yogaSumDeg / span).toInt() + 1
+    val number = AngularBuckets.yogaIndex(yogaSumDeg) + 1
     return Yoga(number = number, name = YOGA_NAMES[number - 1])
 }
 
@@ -170,7 +172,7 @@ internal fun yogaOf(yogaSumDeg: Double): Yoga {
  * karanas Shakuni, Chatushpada, and Naga.
  */
 internal fun karanaOf(elongationDeg: Double): Karana {
-    val index = (elongationDeg / 6.0).toInt() // 0..59
+    val index = AngularBuckets.karanaIndex(elongationDeg) // 0..59
     val name =
         when {
             index == 0 -> "Kimstughna"

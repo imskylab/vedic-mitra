@@ -27,6 +27,9 @@ complexity:
     # Matches thresholdInClasses; a cohesive math/utility `object` (e.g. Ephemeris) legitimately
     # holds many small pure functions without becoming a "God Object".
     thresholdInObjects: 20
+    # AstronomyEngine is a single cohesive port over one subsystem; splitting it to satisfy a count
+    # would scatter the astronomy API across interfaces with no other reason to be separate.
+    thresholdInInterfaces: 20
     ignoreAnnotatedFunctions: ['Composable']
   CyclomaticComplexMethod:
     threshold: 15

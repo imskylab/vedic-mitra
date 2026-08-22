@@ -15,7 +15,6 @@ package io.github.vedicmitra.core.astronomy
 import kotlin.time.Instant
 
 private const val DAY_MILLIS = 86_400_000L
-private const val RASHI_SPAN_DEGREES = 30.0
 private const val BISECT_ITERATIONS = 30
 
 /**
@@ -38,7 +37,7 @@ internal fun planetaryPositions(epochMillis: Long): PlanetaryPositions =
 private fun rashiIndexAt(
     graha: Graha,
     epochMillis: Long,
-): Int = (siderealLongitude(graha, Ephemeris.julianCenturies(epochMillis)) / RASHI_SPAN_DEGREES).toInt()
+): Int = AngularBuckets.rashiIndex(siderealLongitude(graha, Ephemeris.julianCenturies(epochMillis)))
 
 /** The next instant [graha] leaves [currentRashi], or `null` if none within its search horizon. */
 private fun nextPravesh(

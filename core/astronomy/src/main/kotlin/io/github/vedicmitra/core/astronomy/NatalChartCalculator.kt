@@ -12,10 +12,7 @@
 
 package io.github.vedicmitra.core.astronomy
 
-private const val RASHI_SPAN_DEGREES = 30.0
 private const val HOUSE_COUNT = 12
-private const val NAKSHATRA_SPAN_DEGREES = 360.0 / 27.0
-private const val PADA_COUNT = 4
 private const val DAY_MILLIS = 86_400_000L
 private const val HALF_TURN_DEGREES = 180.0
 private const val WRAP_OFFSET_DEGREES = 540.0
@@ -50,7 +47,7 @@ private fun natalGraha(
     ascendantRasiIndex: Int,
 ): NatalGraha {
     val longitude = siderealLongitude(graha, t)
-    val rasiIndex = (longitude / RASHI_SPAN_DEGREES).toInt()
+    val rasiIndex = AngularBuckets.rashiIndex(longitude)
     return NatalGraha(
         graha = graha,
         siderealLongitude = longitude,
@@ -77,8 +74,10 @@ private fun isRetrograde(
         }
     }
 
-/** The Moon's pada — which quarter (1..4) of its nakshatra it occupies. */
-private fun padaOf(moonSiderealDeg: Double): Int {
-    val within = moonSiderealDeg % NAKSHATRA_SPAN_DEGREES
-    return (within / (NAKSHATRA_SPAN_DEGREES / PADA_COUNT)).toInt() + 1
-}
+/**
+ * The Moon's pada — which quarter (1..4) of its nakshatra it occupies.
+ *
+ * Delegates to [AngularBuckets] rather than taking `longitude % nakshatraSpan` and dividing again:
+ * that rounds twice, and 40 of the 108 pada boundaries land in the wrong quarter as a result.
+ */
+private fun padaOf(moonSiderealDeg: Double): Int = AngularBuckets.pada(moonSiderealDeg)

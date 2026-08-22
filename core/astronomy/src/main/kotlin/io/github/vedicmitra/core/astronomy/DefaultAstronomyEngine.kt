@@ -81,6 +81,8 @@ class DefaultAstronomyEngine
                         tithi = tithiOf(elongation),
                         nakshatra = nakshatraOf(moonSidereal),
                         moonRasi = rasiOf(moonSidereal),
+                        moonPada = AngularBuckets.pada(moonSidereal),
+                        sunRasi = rasiOf(sunSidereal),
                         yoga = yogaOf(yogaSum),
                         karana = karanaOf(elongation),
                         vara = vara,
@@ -92,10 +94,34 @@ class DefaultAstronomyEngine
                         goldenHour = goldenHour,
                         muhurtas = muhurtasOf(sunTimes, vara.ordinal) + varjyam,
                         choghadiya = choghadiyaOf(sunTimes, nextSunrise, vara.ordinal),
+                        limbs = limbWindowsAt(epochMillis, sunTimes.sunrise, nextSunrise),
                     ),
                 )
             }
         }
+
+        override suspend fun panchangaNowAt(instant: Instant): AppResult<PanchangaNow> =
+            withContext(dispatchers.default) {
+                val epochMillis = instant.toEpochMilliseconds()
+                val t = Ephemeris.julianCenturies(epochMillis)
+                val sunLongitude = Ephemeris.sunApparentLongitude(t)
+                val moonLongitude = Ephemeris.moonLongitude(t)
+                val ayanamsa = Ephemeris.lahiriAyanamsa(t)
+                val elongation = Ephemeris.norm360(moonLongitude - sunLongitude)
+                val sunSidereal = Ephemeris.norm360(sunLongitude - ayanamsa)
+                val moonSidereal = Ephemeris.norm360(moonLongitude - ayanamsa)
+
+                AppResult.Success(
+                    PanchangaNow(
+                        instant = instant,
+                        tithi = tithiOf(elongation),
+                        nakshatra = nakshatraOf(moonSidereal),
+                        yoga = yogaOf(Ephemeris.norm360(sunSidereal + moonSidereal)),
+                        karana = karanaOf(elongation),
+                        limbs = limbWindowsAt(epochMillis, sunrise = null, nextSunrise = null),
+                    ),
+                )
+            }
 
         override suspend fun upcomingFestivals(
             instant: Instant,
