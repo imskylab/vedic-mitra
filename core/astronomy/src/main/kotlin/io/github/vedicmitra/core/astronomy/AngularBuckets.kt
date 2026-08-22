@@ -51,9 +51,21 @@ internal object AngularBuckets {
      *
      * [floor] rather than truncation so negative inputs wrap correctly rather than folding toward
      * zero, and the modulo is taken after flooring so the result is never the full turn itself.
+     *
+     * [BOUNDARY_SNAP_ARCSEC] absorbs the error in *expressing* a boundary, which is a separate
+     * thing from the error in bucketing one. A caller writing `k * (360.0 / 27.0)` cannot land on
+     * the true boundary, because 13°20′ is not representable; the product lands a fraction of an
+     * ulp below it, and a bare [floor] would then report the division that is ending. Nudging up by
+     * a ten-millionth of an arcsecond makes such a value read as the boundary it was meant to be,
+     * while a longitude genuinely below one — even by a nanodegree, 360 times this snap — still
+     * reads as the earlier division. The same nudge keeps a longitude a whisker below zero from
+     * flooring to -1 and wrapping to the far end of the zodiac.
+     *
+     * For scale: this is 18 nanoseconds of the Moon's motion, against an ephemeris good to some
+     * tens of seconds.
      */
     fun arcseconds(degrees: Double): Long {
-        val arcsec = floor(degrees * ARCSEC_PER_DEGREE).toLong()
+        val arcsec = floor(degrees * ARCSEC_PER_DEGREE + BOUNDARY_SNAP_ARCSEC).toLong()
         return ((arcsec % FULL_TURN_ARCSEC) + FULL_TURN_ARCSEC) % FULL_TURN_ARCSEC
     }
 
@@ -95,3 +107,6 @@ internal object AngularBuckets {
 }
 
 private const val ARCSEC_PER_DEGREE = 3600.0
+
+/** See [AngularBuckets.arcseconds]: large enough to absorb double rounding, far below ephemeris error. */
+private const val BOUNDARY_SNAP_ARCSEC = 1e-8
