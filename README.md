@@ -561,14 +561,14 @@ how you can keep it going.
 **Donate**
 
 - **[GitHub Sponsors](https://github.com/sponsors/imskylab)** — one-off or monthly.
-- **[Ko-fi](https://ko-fi.com/your-kofi-slug)** — a one-off tip, no account needed.
-- **UPI** — `your-vpa@bank` (India).
+- **[Ko-fi](https://ko-fi.com/imskylab)** — a one-off tip by card or PayPal.
+- **UPI** — `skylab@upi` (India).
 
 **For businesses**
 
 The AGPL requires anything built on Vedic Mitra — including hosted services — to share its source
 under the same terms. If that doesn't work for your product, a **commercial license** lifts the
-obligation: see **[pricing and tiers](docs/COMMERCIAL_LICENSE.md)**, or email `licensing@example.com`.
+obligation: see **[pricing and tiers](docs/COMMERCIAL_LICENSE.md)**, or email `skylabs.in@gmail.com`.
 The `:core:astronomy` engine is licensable on its own.
 
 **Costs nothing**

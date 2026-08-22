@@ -28,7 +28,7 @@ for purchase. It grants use without those obligations.
   (Indie, Business, and OEM/Embedded, plus an engine-only option for
   `:core:astronomy`).
 - **Agreement terms** — [LICENSE-COMMERCIAL.md](LICENSE-COMMERCIAL.md) (template).
-- **To buy, or to ask whether you need one** — email **licensing@example.com**,
+- **To buy, or to ask whether you need one** — email **skylabs.in@gmail.com**,
   or contact **Jayvardhan Potabatti** via
   [GitHub @imskylab](https://github.com/imskylab) or
   [LinkedIn](https://www.linkedin.com/in/imskylab/).

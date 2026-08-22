@@ -1,63 +1,62 @@
-# Monetization setup checklist
+# Monetization setup — what's live, what's left
 
-The funding and licensing rails are in place in code and docs, but four values are **placeholders**
-and every one of them is a dead link until you replace it. Work through this list before the next
-release, and delete a rail entirely rather than shipping it broken — an absent Ko-fi row is fine, a
-404 is not.
+The funding and licensing rails are wired. Ko-fi, UPI, and the licensing address are real; one
+donation rail is still dead, and a few commercial decisions are still open.
 
-## 1. Accounts to create
+## 1. Rails and their status
 
-| Rail | Action | Then |
+| Rail | Destination | Status |
 |---|---|---|
-| **GitHub Sponsors** | Enable Sponsors on `@imskylab` (Settings → Sponsors; needs Stripe/bank onboarding, can take a few days to approve). | `https://github.com/sponsors/imskylab` already used everywhere — no edit needed once live. |
-| **Ko-fi** | Create the page and note the slug. | Replace `your-kofi-slug` (4 places, below). |
-| **UPI** | Decide which VPA receives donations — ideally one separate from your personal banking. | Replace `your-vpa@bank` (3 places, below). |
-| **Licensing email** | Create a dedicated alias, e.g. `licensing@` on a domain you control, or a purpose-made mailbox. Do **not** use your employer address. | Replace `licensing@example.com` (4 places, below). |
+| **Ko-fi** | [ko-fi.com/imskylab](https://ko-fi.com/imskylab) | Live. Accepts card and PayPal, so it doubles as the PayPal route — there is deliberately no separate PayPal row. |
+| **UPI** | `skylab@upi` | Live. Shown as a copyable string; **never** a `upi://` link (see ADR 0014). |
+| **Commercial licensing** | `skylabs.in@gmail.com` + [pricing page](COMMERCIAL_LICENSE.md) | Live. |
+| **GitHub Sponsors** | [github.com/sponsors/imskylab](https://github.com/sponsors/imskylab) | ⚠️ **Not live — 404s today.** Enable Sponsors on `@imskylab` (Settings → Sponsors; needs Stripe/bank onboarding, approval can take days). |
 
-## 2. Placeholders, and every file they appear in
+**The Sponsors link is the one release blocker.** Either finish onboarding before the next release,
+or strip the rail: remove `GITHUB_SPONSORS` from `SupportLinks.kt`, its row in `SupportScreen.kt`,
+the `github:` line in `.github/FUNDING.yml`, and the bullets in `README.md` and `docs/index.html`.
+An absent row is fine; a 404 in a donation list is not.
 
-Replace all occurrences — `git grep` each token to confirm none are left:
+## 2. Verify before asking anyone for money
 
-```bash
-git grep -n "your-kofi-slug\|your-vpa@bank\|licensing@example.com"
-```
+These cannot be checked from CI, and one of them silently misroutes strangers' money if wrong:
 
-| Placeholder | Files |
-|---|---|
-| `your-kofi-slug` | `feature/settings/.../SupportLinks.kt`, `.github/FUNDING.yml`, `README.md`, `docs/index.html` |
-| `your-vpa@bank` | `feature/settings/.../SupportLinks.kt`, `README.md`, `docs/index.html` |
-| `licensing@example.com` | `feature/settings/.../SupportLinks.kt`, `LICENSING.md`, `README.md`, `docs/COMMERCIAL_LICENSE.md` |
-
-`SupportLinksTest` asserts the *shape* of these values, not their contents, so it will keep passing
-after you substitute real ones. It fails if someone turns the UPI entry into a `upi://` URI — that
-guard is deliberate; see ADR 0014.
+- [ ] **Paste `skylab@upi` into a UPI app** and confirm it resolves to the payee you expect. A typo
+      here sends other people's donations to a stranger.
+- [ ] **Click [ko-fi.com/imskylab](https://ko-fi.com/imskylab)** — Ko-fi returns HTTP 403 to
+      automated checks, so no tool has confirmed this page exists.
+- [ ] **Mail `skylabs.in@gmail.com`** from the app's licensing row and confirm it arrives.
+- [ ] Note that this address is now published in the app, `README.md`, `LICENSING.md` and the
+      pricing page. Expect scraping; a dedicated alias is still the cleaner long-term answer.
 
 ## 3. Decisions still open
 
-- **Pricing.** `docs/COMMERCIAL_LICENSE.md` carries a first proposal (₹24,999 Indie / ₹99,999
-  Business / from ₹4,99,000 per year OEM). These are starting points, not researched market rates —
-  set them where you're comfortable before publishing, and remember that raising a published price
-  later is harder than lowering one.
-- **The agreement.** `LICENSE-COMMERCIAL.md` is a template, not lawyer-reviewed. Have it looked at
-  before you sign the first deal, and fill in `[CITY]` for jurisdiction.
-- **GST.** Selling licenses commercially in India has registration and invoicing implications past a
-  turnover threshold. Worth an accountant's opinion before the first invoice, not after.
-- **Donations vs income.** Sponsor and Ko-fi income is taxable. Keep it separate from the licensing
+- **Pricing.** [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) carries a first proposal (₹24,999
+  Indie / ₹99,999 Business / from ₹4,99,000 per year OEM). These are starting points, not researched
+  market rates — set them where you're comfortable before publicising, and remember that raising a
+  published price later is harder than lowering one.
+- **The agreement.** [LICENSE-COMMERCIAL.md](../LICENSE-COMMERCIAL.md) is a template and has not been
+  lawyer-reviewed. Have it looked at before the first signature, and fill in `[CITY]` for
+  jurisdiction.
+- **GST.** Selling licenses in India has registration and invoicing implications past a turnover
+  threshold. Worth an accountant's opinion before the first invoice, not after.
+- **Donations vs income.** Ko-fi and Sponsors income is taxable. Keep it separate from the licensing
   rail in your records from day one.
 
-## 4. After merge
+## 4. When links change
 
-- [ ] Confirm GitHub renders the **Sponsor** button on the repo (Insights → Community Standards).
-- [ ] Click every link in the app's Support screen on a real device.
-- [ ] Click every link in `README.md`, `docs/index.html`, and `docs/COMMERCIAL_LICENSE.md`.
-- [ ] Confirm `docs/PRIVACY.md` renders at
-      `https://imskylab.github.io/vedic-mitra/` — or link it explicitly if Pages only serves
-      `index.html`.
-- [ ] Add "commercial licensing" and "sponsor" to the repo's About topics for discovery.
+Donation destinations live in three places that must move together — there is no single source,
+because `buildConfig` is disabled and there is no codegen:
+
+1. `feature/settings/.../SupportLinks.kt` — the in-app Support tab.
+2. `.github/FUNDING.yml` — GitHub's Sponsor button.
+3. `README.md` → "Support the project", and `docs/index.html` → Support section.
+
+`SupportLinksTest` pins the shape of each constant and fails if a setup placeholder is ever
+reintroduced, but it cannot tell a valid-looking wrong address from a right one — hence §2.
 
 ## 5. Deliberately not done
 
 Play Store publishing, in-app purchases, ads, feature gating, and F-Droid submission are all out of
-scope — see ADR 0014 for why, and the plan of record for what a Play milestone would involve.
-Revisit once you can see real donation and enquiry volume; deciding then costs nothing, and
-deciding now costs a Play Console account, a Data Safety form, and a permanent listing obligation.
+scope — see [ADR 0014](adr/0014-donations-and-commercial-licensing-funnel.md) for why. Revisit once
+there is real donation and enquiry volume to judge by.

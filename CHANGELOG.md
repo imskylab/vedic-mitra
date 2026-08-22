@@ -8,7 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- **Support the project.** A new **Settings → Support** screen (also reachable from About) gathers
+- **Support the project.** A new **Support** tab in the bottom bar (also reachable from About) gathers
   the ways to keep Vedic Mitra going: GitHub Sponsors, Ko-fi, and a copyable UPI ID for donations; a
   commercial-licensing route for businesses that cannot accept the AGPL; and the free ways to help —
   starring the repo, reporting a bug, contributing a translation. Every feature in the app stays free
@@ -31,6 +31,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   cleanly. Tuesday's "today's stotra" now suggests the Hanuman Chalisa.
 
 ### Changed
+- The bottom navigation bar gains a fourth destination, **Support**, alongside Home, Settings and
+  Profile. No new dependency — the icon ships with Material 3.
 - Settings, About, and Support now share one set of row composables instead of each hand-rolling its
   own, so the sections stay consistent as they accumulate. Settings scrolls on short screens.
 

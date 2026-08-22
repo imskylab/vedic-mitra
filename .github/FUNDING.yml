@@ -4,7 +4,7 @@
 #   - feature/settings/.../SupportLinks.kt — the in-app Support screen.
 #   - README.md → "Support the project".
 #
-# `ko_fi` is a placeholder until the account exists; see docs/MONETIZATION_SETUP.md.
+# `github` stays listed ahead of Sponsors onboarding completing; see docs/MONETIZATION_SETUP.md.
 github: [imskylab]
-ko_fi: your-kofi-slug
+ko_fi: imskylab
 custom: ["https://github.com/imskylab/vedic-mitra/blob/main/docs/COMMERCIAL_LICENSE.md"]

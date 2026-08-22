@@ -58,6 +58,18 @@ class SupportLinksTest {
     }
 
     @Test
+    fun `no destination still carries a setup placeholder`() {
+        // The rails shipped with deliberate placeholders before the accounts existed. This fails
+        // loudly if one is ever reintroduced, rather than quietly publishing a dead link.
+        val placeholders = listOf("example.com", "your-kofi-slug", "your-vpa", "REPLACE")
+        (webLinks + SupportLinks.LICENSING_EMAIL + SupportLinks.UPI_ID).forEach { value ->
+            placeholders.forEach { placeholder ->
+                assertThat(value).doesNotContain(placeholder)
+            }
+        }
+    }
+
+    @Test
     fun `links point at the maintainer's own repository`() {
         assertThat(SupportLinks.REPOSITORY).isEqualTo("https://github.com/imskylab/vedic-mitra")
         assertThat(SupportLinks.COMMERCIAL_LICENSE).contains("COMMERCIAL_LICENSE.md")

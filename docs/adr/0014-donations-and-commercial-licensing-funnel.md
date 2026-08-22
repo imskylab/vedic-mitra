@@ -53,7 +53,11 @@ use. Specifically:
    `play-services-location`. It is written broadly enough to cover future Google or OEM libraries.
 6. **A privacy policy is published** (`docs/PRIVACY.md`), because the landing page's "no tracking"
    claims had nothing behind them and asking for money raises the bar on that.
-7. **Stay off the Play Store for now.** Distribution remains GitHub Releases.
+7. **Support is a top-level bottom-bar destination**, not a buried Settings row — the ask is
+   visible, and the screen's own copy ("nothing here unlocks anything") is what keeps it honest.
+   Accepted tension: this is the most prominent placement in an app whose pitch is "your practice
+   isn't the product". Moving it back to a sub-route is a small change if it ever reads as too much.
+8. **Stay off the Play Store for now.** Distribution remains GitHub Releases.
 
 ## Consequences
 

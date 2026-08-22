@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -99,6 +100,7 @@ private enum class TopDestination(
     HOME("home", "Home", Icons.Filled.Home),
     SETTINGS("settings", "Settings", Icons.Filled.Settings),
     PROFILE("profile", "Profile", Icons.Filled.Person),
+    SUPPORT("support", "Support", Icons.Filled.Favorite),
 }
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
@@ -124,7 +126,6 @@ private const val MUHURAT_CATEGORY_ARG = "category"
 private const val MUHURAT_ACTIVITY_ARG = "activity"
 private const val MUHURAT_DAY_ARG = "day"
 private const val ABOUT_ROUTE = "settings/about"
-private const val SUPPORT_ROUTE = "settings/support"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
@@ -307,14 +308,15 @@ private fun AppNavHost(
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 onNavigateToProfile = { navController.navigateToTab(TopDestination.PROFILE.route) },
-                onNavigateToSupport = { navController.navigate(SUPPORT_ROUTE) },
                 onNavigateToAbout = { navController.navigate(ABOUT_ROUTE) },
             )
         }
         composable(ABOUT_ROUTE) {
-            AboutScreen(onNavigateToSupport = { navController.navigate(SUPPORT_ROUTE) })
+            AboutScreen(
+                onNavigateToSupport = { navController.navigateToTab(TopDestination.SUPPORT.route) },
+            )
         }
-        composable(SUPPORT_ROUTE) { SupportScreen() }
+        composable(TopDestination.SUPPORT.route) { SupportScreen() }
         composable(TopDestination.PROFILE.route) {
             ProfileListScreen(
                 onAddProfile = { navController.navigate(PROFILE_EDIT_ROUTE) },

@@ -20,10 +20,10 @@ package io.github.vedicmitra.feature.settings
  *  - `.github/FUNDING.yml` — drives GitHub's "Sponsor" button on the repository.
  *  - `README.md` → "Support the project" — the web-facing copy of the same asks.
  *
- * Some values below are **placeholders** that must be replaced before a release ships; the
- * checklist in `docs/MONETIZATION_SETUP.md` names each one. `SupportLinksTest` pins the shape of
- * every constant so a malformed link cannot ship silently — in particular, the UPI entry is a bare
- * VPA to copy, never a `upi://` URI (see [SupportScreen] for why that distinction matters).
+ * `SupportLinksTest` pins the shape of every constant so a malformed link cannot ship silently —
+ * in particular, the UPI entry is a bare VPA to copy, never a `upi://` URI (see [SupportScreen] for
+ * why that distinction matters), and no constant may carry a leftover placeholder. Remaining setup
+ * is tracked in `docs/MONETIZATION_SETUP.md`.
  */
 internal object SupportLinks {
     /** Canonical repository — also the "share" payload and the star-the-repo destination. */
@@ -32,20 +32,20 @@ internal object SupportLinks {
     /** GitHub Sponsors profile. Live only once Sponsors is enabled for the account. */
     const val GITHUB_SPONSORS = "https://github.com/sponsors/imskylab"
 
-    /** Ko-fi page for one-off tips. Placeholder slug — see `docs/MONETIZATION_SETUP.md`. */
-    const val KO_FI = "https://ko-fi.com/your-kofi-slug"
+    /** Ko-fi page for one-off tips; accepts card and PayPal. */
+    const val KO_FI = "https://ko-fi.com/imskylab"
 
     /**
      * UPI virtual payment address, shown for the user to copy into their own UPI app.
-     * Deliberately a plain VPA and not a `upi://pay?pa=…` URI. Placeholder — replace before release.
+     * Deliberately a plain VPA and not a `upi://pay?pa=…` URI — see [SupportScreen] for why.
      */
-    const val UPI_ID = "your-vpa@bank"
+    const val UPI_ID = "skylab@upi"
 
     /** Commercial-licensing pricing and terms, for businesses that cannot accept the AGPL. */
     const val COMMERCIAL_LICENSE = "$REPOSITORY/blob/main/docs/COMMERCIAL_LICENSE.md"
 
-    /** Primary channel for commercial-licence enquiries. Placeholder — replace before release. */
-    const val LICENSING_EMAIL = "mailto:licensing@example.com"
+    /** Primary channel for commercial-licence enquiries. */
+    const val LICENSING_EMAIL = "mailto:skylabs.in@gmail.com"
 
     /** Privacy policy — what the app does and does not collect. */
     const val PRIVACY_POLICY = "$REPOSITORY/blob/main/docs/PRIVACY.md"

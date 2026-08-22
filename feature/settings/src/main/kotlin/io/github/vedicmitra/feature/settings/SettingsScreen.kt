@@ -42,7 +42,6 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 fun SettingsScreen(
     onNavigateToLocation: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToSupport: () -> Unit,
     onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
@@ -57,7 +56,6 @@ fun SettingsScreen(
                 onDynamicColorChange = viewModel::setDynamicColor,
                 onNavigateToLocation = onNavigateToLocation,
                 onNavigateToProfile = onNavigateToProfile,
-                onNavigateToSupport = onNavigateToSupport,
                 onNavigateToAbout = onNavigateToAbout,
                 modifier = modifier,
             )
@@ -71,7 +69,6 @@ private fun SettingsContent(
     onDynamicColorChange: (Boolean) -> Unit,
     onNavigateToLocation: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToSupport: () -> Unit,
     onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -123,16 +120,6 @@ private fun SettingsContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        SettingsSectionHeader(text = "Support")
-        SettingsActionRow(
-            label = "Support Vedic Mitra",
-            action = "Open",
-            onClick = onNavigateToSupport,
-            supportingText = "Donate, or license the project commercially",
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         SettingsSectionHeader(text = "About")
         SettingsActionRow(
             label = "About Vedic Mitra",
@@ -160,7 +147,6 @@ private fun SettingsContentPreview() {
             onDynamicColorChange = {},
             onNavigateToLocation = {},
             onNavigateToProfile = {},
-            onNavigateToSupport = {},
             onNavigateToAbout = {},
         )
     }

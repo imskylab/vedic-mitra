@@ -93,7 +93,7 @@ private fun DonateSection(onCopy: (String, String) -> Unit) {
         label = "Ko-fi",
         value = "Open",
         url = SupportLinks.KO_FI,
-        supportingText = "A one-off tip, no account needed",
+        supportingText = "A one-off tip by card or PayPal",
     )
     CopyRow(
         label = "UPI",

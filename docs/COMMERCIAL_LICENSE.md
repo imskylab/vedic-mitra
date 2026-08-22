@@ -6,8 +6,8 @@ you owe nothing and need nothing from this page — use it, fork it, ship it.
 This page is for everyone the AGPL does *not* work for: teams who want to build on Vedic Mitra
 inside a **proprietary, closed-source product** and cannot publish their own source in return.
 
-> **Placeholders:** the contact address and prices below are drafts pending setup — see
-> [MONETIZATION_SETUP.md](MONETIZATION_SETUP.md).
+> **Pricing below is a starting proposal, not a researched market rate.** See
+> [MONETIZATION_SETUP.md](MONETIZATION_SETUP.md) for what remains to be settled.
 
 ---
 
@@ -78,7 +78,7 @@ separately agreed, or exclusivity. Vedic Mitra remains AGPL for everyone else.
 
 ## How to buy
 
-Email **licensing@example.com** with:
+Email **skylabs.in@gmail.com** with:
 
 1. Your company name, country, and website.
 2. The application(s) you intend to ship, and roughly what they do.
