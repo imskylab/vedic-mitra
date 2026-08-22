@@ -92,6 +92,17 @@ interface AstronomyEngine {
     ): AppResult<String?> = AppResult.Success<String?>(null)
 
     /**
+     * The panchanga limbs **as of [instant]**, with the window each one is in.
+     *
+     * Distinct from [snapshotAt], which a caller anchors to sunrise to get the day's *name*. For
+     * much of most days those disagree: the day is named for the tithi running at sunrise, while
+     * the tithi actually running now may already be the next one. Cheaper than a full snapshot —
+     * it skips the rise/set solvers — so a screen can afford both.
+     */
+    suspend fun panchangaNowAt(instant: Instant): AppResult<PanchangaNow> =
+        AppResult.Failure(UnsupportedOperationException("Not implemented"))
+
+    /**
      * The rashi of each tracked graha (Sun, Moon, Guru, Shukra) at [instant], each with its next
      * rashi ingress (pravesh). Geocentric, so it does not depend on the observer's location. The
      * default returns no positions so test doubles can ignore it.
@@ -168,6 +179,21 @@ data class PanchangaDaySummary(
 )
 
 /**
+ * The panchanga limbs in force at one instant, each with the window it occupies.
+ *
+ * @property instant the instant these were computed for.
+ * @property limbs when each limb began and when it next changes.
+ */
+data class PanchangaNow(
+    val instant: Instant,
+    val tithi: Tithi,
+    val nakshatra: Nakshatra,
+    val yoga: Yoga,
+    val karana: Karana,
+    val limbs: PanchangaLimbWindows,
+)
+
+/**
  * Immutable result of an astronomy computation for a single instant and location.
  *
  * @property instant the instant the snapshot was computed for.
@@ -178,6 +204,10 @@ data class PanchangaDaySummary(
  * @property nakshatra the Moon's current lunar mansion.
  * @property moonRasi the Moon's sidereal sign (Chandra rashi), or `null` for lightweight/synthetic
  *   snapshots that don't provide it — the real engine always populates it.
+ * @property moonPada the quarter (1..4) of [nakshatra] the Moon occupies, or `null` for
+ *   lightweight/synthetic snapshots.
+ * @property sunRasi the Sun's sidereal sign, whose change is the sankranti, or `null` for
+ *   lightweight/synthetic snapshots.
  * @property yoga the current Sun–Moon yoga.
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
@@ -191,6 +221,10 @@ data class PanchangaDaySummary(
  * @property choghadiya the day's sixteen Choghadiya windows (eight day, eight night); empty when
  *   the sun does not rise/set. Defaults to empty so lightweight/synthetic snapshots need not
  *   provide it — the real engine always populates it.
+ * @property limbs when each limb began and when it next changes, for "ends in …" readouts, or
+ *   `null` for lightweight/synthetic snapshots — the real engine always populates it. Note the
+ *   limbs here are the values at [instant]; a screen naming the *day* reads its identity at
+ *   sunrise instead, which is a different tithi for part of most days.
  */
 data class AstronomySnapshot(
     val instant: Instant,
@@ -200,6 +234,8 @@ data class AstronomySnapshot(
     val tithi: Tithi,
     val nakshatra: Nakshatra,
     val moonRasi: Rasi? = null,
+    val moonPada: Int? = null,
+    val sunRasi: Rasi? = null,
     val yoga: Yoga,
     val karana: Karana,
     val vara: Vara,
@@ -211,4 +247,5 @@ data class AstronomySnapshot(
     val goldenHour: GoldenHour,
     val muhurtas: List<Muhurta>,
     val choghadiya: List<Choghadiya> = emptyList(),
+    val limbs: PanchangaLimbWindows? = null,
 )

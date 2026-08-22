@@ -52,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -82,6 +83,7 @@ import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.PanchangaGlossary
+import io.github.vedicmitra.core.astronomy.PanchangaNow
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
@@ -93,10 +95,12 @@ import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration
 import kotlin.time.Instant
 
 /**
@@ -273,7 +277,7 @@ private fun HubView(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Header(uiState.locationLabel, onNavigateToLocation)
-        HeroCard(snapshot, onClick = onOpenPanchang)
+        HeroCard(snapshot, uiState.nowPanchanga, onClick = onOpenPanchang)
         uiState.auspicious?.let { AuspiciousCard(it) }
         if (uiState.festivals.isNotEmpty()) {
             ExpandableSection(
@@ -585,6 +589,7 @@ private fun Header(
 @Composable
 private fun HeroCard(
     snapshot: AstronomySnapshot,
+    nowPanchanga: PanchangaNow?,
     onClick: () -> Unit,
 ) {
     Card(
@@ -610,6 +615,9 @@ private fun HeroCard(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(top = 4.dp),
                 )
+                if (nowPanchanga != null) {
+                    NowLine(nowPanchanga)
+                }
                 Text(
                     text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name} · tap for full panchang ›",
                     style = MaterialTheme.typography.bodySmall,
@@ -626,6 +634,45 @@ private fun HeroCard(
         }
     }
 }
+
+/**
+ * What is running *right now*, as against the day's name above it, which is fixed at sunrise.
+ *
+ * The countdown re-reads the clock once a minute rather than every frame: the Moon opens the
+ * elongation by about half an arcsecond a second, so a faster tick would redraw the same minute
+ * over and over.
+ */
+@Composable
+private fun NowLine(now: PanchangaNow) {
+    val remaining by produceState(initialValue = now.limbs.tithi.remainingFrom(systemNow()), now) {
+        while (true) {
+            value = now.limbs.tithi.remainingFrom(systemNow())
+            delay(MINUTE_MILLIS)
+        }
+    }
+    Text(
+        text = "Now ${now.tithi.name} · ends in ${formatRemaining(remaining)}",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = Modifier.padding(top = 4.dp),
+    )
+}
+
+private fun systemNow(): Instant = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+
+/** A coarse "4h 12m" / "12m" countdown; seconds would churn without telling the reader anything. */
+private fun formatRemaining(remaining: Duration): String {
+    val hours = remaining.inWholeHours
+    val minutes = remaining.inWholeMinutes % MINUTES_PER_HOUR
+    return when {
+        remaining <= Duration.ZERO -> "moments"
+        hours > 0 -> "${hours}h ${minutes}m"
+        else -> "${minutes}m"
+    }
+}
+
+private const val MINUTE_MILLIS = 60_000L
+private const val MINUTES_PER_HOUR = 60L
 
 @Composable
 private fun AuspiciousCard(window: AuspiciousWindow) {

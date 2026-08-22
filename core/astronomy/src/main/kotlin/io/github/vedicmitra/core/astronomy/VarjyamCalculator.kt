@@ -75,7 +75,7 @@ internal fun varjyamOf(
     moonSiderealDeg: Double,
     moonSiderealDegAt: (Long) -> Double,
 ): Muhurta {
-    val nakshatraIndex = (moonSiderealDeg / NAKSHATRA_SPAN_DEG).toInt() // 0..26
+    val nakshatraIndex = AngularBuckets.nakshatraIndex(moonSiderealDeg) // 0..26
     val boundaryDeg = nakshatraIndex * NAKSHATRA_SPAN_DEG
     val nakshatraStartMs = findNakshatraStart(atEpochMillis, boundaryDeg, moonSiderealDegAt)
 

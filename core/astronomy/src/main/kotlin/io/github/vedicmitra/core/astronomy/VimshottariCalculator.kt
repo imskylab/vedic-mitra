@@ -48,7 +48,7 @@ internal fun vimshottariFromMoon(
     moonLongitude: Double,
     epochMillis: Long,
 ): List<MahadashaPeriod> {
-    val nakshatraIndex = (moonLongitude / NAKSHATRA_SPAN_DEGREES).toInt()
+    val nakshatraIndex = AngularBuckets.nakshatraIndex(moonLongitude)
     val fractionElapsed = (moonLongitude - nakshatraIndex * NAKSHATRA_SPAN_DEGREES) / NAKSHATRA_SPAN_DEGREES
     val startOrdinal = nakshatraIndex % VIMSHOTTARI_ORDER.size
     val firstLordYears = VIMSHOTTARI_ORDER[startOrdinal].second

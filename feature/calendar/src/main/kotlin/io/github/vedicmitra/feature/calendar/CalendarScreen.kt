@@ -57,6 +57,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
+import io.github.vedicmitra.core.astronomy.LimbWindow
 import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
@@ -353,10 +354,25 @@ private fun DetailCard(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            DetailRow(label = "Tithi", value = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}")
-            DetailRow(label = "Nakshatra", value = snapshot.nakshatra.name)
-            DetailRow(label = "Yoga", value = snapshot.yoga.name)
-            DetailRow(label = "Karana", value = snapshot.karana.name)
+            val limbs = snapshot.limbs
+            DetailRow(
+                label = "Tithi",
+                value = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
+                note = untilLabel(limbs?.tithi),
+            )
+            DetailRow(label = "Nakshatra", value = snapshot.nakshatra.name, note = untilLabel(limbs?.nakshatra))
+            snapshot.moonPada?.let { pada ->
+                DetailRow(label = "Pada", value = "Pada $pada", note = untilLabel(limbs?.moonPada))
+            }
+            DetailRow(label = "Yoga", value = snapshot.yoga.name, note = untilLabel(limbs?.yoga))
+            DetailRow(label = "Karana", value = snapshot.karana.name, note = untilLabel(limbs?.karana))
+            snapshot.moonRasi?.let { rasi ->
+                DetailRow(label = "Chandra Rashi", value = rasi.name, note = untilLabel(limbs?.moonRashi))
+            }
+            snapshot.sunRasi?.let { rasi ->
+                // The Sun's sign change is the sankranti, so its window end is the next ingress.
+                DetailRow(label = "Surya Rashi", value = rasi.name, note = untilLabel(limbs?.sunRashi))
+            }
             DetailRow(label = "Maasa", value = snapshot.maasa.displayName)
             DetailRow(
                 label = "Samvatsara",
@@ -364,7 +380,11 @@ private fun DetailCard(
             )
             DetailRow(label = "Ayana", value = snapshot.ayana.displayName)
             DetailRow(label = "Ritu", value = snapshot.ritu.displayName)
-            DetailRow(label = "Moon Phase", value = snapshot.moonPhase.displayName)
+            DetailRow(
+                label = "Moon Phase",
+                value = snapshot.moonPhase.displayName,
+                note = untilLabel(limbs?.moonPhase),
+            )
             DetailRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
             DetailRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
             DetailRow(label = "Moonrise", value = formatTime(snapshot.moonTimes.moonrise))
@@ -383,6 +403,7 @@ private fun DetailCard(
 private fun DetailRow(
     label: String,
     value: String,
+    note: String? = null,
 ) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Text(
@@ -391,13 +412,30 @@ private fun DetailRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+            )
+            if (note != null) {
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
+
+/**
+ * When a limb gives way to the next, as an absolute clock time.
+ *
+ * Absolute rather than a countdown on purpose: this card describes a chosen day, computed at that
+ * day's sunrise, so "ends in 4h" would be meaningless for any day but today.
+ */
+private fun untilLabel(window: LimbWindow?): String? = window?.let { "till ${formatTime(it.end)}" }
 
 private val Tithi.shortLabel: String
     get() {

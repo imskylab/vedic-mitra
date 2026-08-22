@@ -5,6 +5,30 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Pada was computed wrongly at its boundaries.** Deriving the Moon's pada by taking its longitude
+  modulo the nakshatra span and dividing again rounds twice, which put **40 of the 108 pada
+  boundaries in the wrong quarter**. Pada feeds the Navamsha and the Nadi-dosha cancellation in
+  Kundali Matching, so the fix reaches beyond the panchang itself.
+
+### Changed
+- **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
+  is a whole number of arcseconds (a nakshatra is 48,000, a pada 12,000, a tithi 43,200) while most
+  are non-terminating in degrees, so dividing in degrees left boundary cases to the mercy of
+  floating-point rounding. Divisions are documented as half-open — a longitude exactly on a boundary
+  belongs to the division beginning, so 26°40′00″ is Krittika rather than Bharani.
+
+### Added
+- **"Ends in" for every limb of the panchanga.** The panchang detail now shows when each limb gives
+  way to the next — tithi, nakshatra, pada, yoga, karana, chandra rashi, surya rashi (the sankranti)
+  and moon phase — solved by bisection rather than extrapolated from a mean rate, which is wrong by
+  up to 30% as the Moon's speed varies between apogee and perigee.
+- **Home now distinguishes the day's tithi from the current one.** The card is still named for the
+  tithi running at sunrise, as panchangas name the day, with a live line beneath showing what is
+  actually running now and how long it lasts.
+
 ## [0.7.0] - 2026-08-22
 
 ### Added
