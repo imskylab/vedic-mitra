@@ -17,6 +17,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
@@ -68,6 +69,7 @@ import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vedicmitra.R
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
+import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
@@ -91,16 +93,41 @@ import io.github.vedicmitra.feature.settings.SettingsScreen
 import io.github.vedicmitra.feature.settings.SupportScreen
 import io.github.vedicmitra.feature.stotra.StotraScreen
 
-/** The app's top-level destinations, shown in the bottom navigation bar in this order. */
+/**
+ * The app's top-level destinations, shown in the bottom navigation bar in this order.
+ *
+ * Most tabs are navigation chrome and use Material symbols, per the rule in [VedicIcons] that keeps
+ * the ornate brand glyphs for signature features. Support is the exception: giving away money is a
+ * cultural act (daana), so it carries the brand glyph.
+ */
 private enum class TopDestination(
     val route: String,
     val label: String,
-    val icon: ImageVector,
+    val icon: ImageVector? = null,
+    @param:DrawableRes val glyph: Int? = null,
 ) {
-    HOME("home", "Home", Icons.Filled.Home),
-    SETTINGS("settings", "Settings", Icons.Filled.Settings),
-    PROFILE("profile", "Profile", Icons.Filled.Person),
-    SUPPORT("support", "Support", Icons.Filled.Favorite),
+    HOME("home", "Home", icon = Icons.Filled.Home),
+    SETTINGS("settings", "Settings", icon = Icons.Filled.Settings),
+    PROFILE("profile", "Profile", icon = Icons.Filled.Person),
+    SUPPORT("support", "Support", glyph = VedicIcons.support),
+}
+
+/**
+ * A tab's icon, from either a Material symbol or a brand glyph.
+ *
+ * The glyph is drawn through [Icon] rather than [androidx.compose.foundation.Image], so the bar
+ * tints it like every other tab and the selected/unselected states still read. Its duotone is
+ * deliberately given up here — a fixed maroon would sit badly on a dark theme and would not show
+ * selection. The full-colour version is what the Home hub tiles use.
+ */
+@Composable
+private fun DestinationIcon(destination: TopDestination) {
+    val glyph = destination.glyph
+    if (glyph != null) {
+        Icon(painter = painterResource(glyph), contentDescription = destination.label)
+    } else {
+        Icon(imageVector = checkNotNull(destination.icon), contentDescription = destination.label)
+    }
 }
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
@@ -251,7 +278,7 @@ private fun VedicMitraApp() {
                     NavigationBarItem(
                         selected = currentRoute == destination.route,
                         onClick = { navController.navigateToTab(destination.route) },
-                        icon = { Icon(destination.icon, contentDescription = destination.label) },
+                        icon = { DestinationIcon(destination) },
                         label = { Text(destination.label) },
                     )
                 }

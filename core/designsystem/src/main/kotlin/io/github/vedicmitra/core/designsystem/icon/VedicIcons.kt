@@ -63,4 +63,8 @@ object VedicIcons {
     /** A woodcut almanac page with a central Om and endless-knot corners — Events. */
     @get:DrawableRes
     val events: Int = R.drawable.ic_glyph_events
+
+    /** A coin dropping into a carved donation box (daana-patra) — Support. */
+    @get:DrawableRes
+    val support: Int = R.drawable.ic_glyph_support
 }
