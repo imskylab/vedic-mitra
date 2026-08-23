@@ -135,6 +135,7 @@ private fun sampleChart(): NatalChart =
     NatalChart(
         lagna = Lagna(siderealLongitude = 0.0, rasi = Rasi(0, "Mesha")),
         houses = emptyList(),
+        moonHouses = emptyList(),
         grahas = emptyList(),
         moonNakshatra = Nakshatra(number = 1, name = "Ashwini"),
         moonPada = 1,

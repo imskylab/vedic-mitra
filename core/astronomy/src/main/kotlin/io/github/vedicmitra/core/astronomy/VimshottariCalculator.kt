@@ -35,6 +35,41 @@ private val VIMSHOTTARI_ORDER: List<Pair<Graha, Int>> =
         Graha.BUDHA to 17,
     )
 
+/** The whole cycle, in years — the denominator every antardasha share is taken against. */
+private const val VIMSHOTTARI_TOTAL_YEARS = 120.0
+
+/**
+ * The nine antardashas of [mahadasha], in order.
+ *
+ * The sub-periods run through the same lord sequence starting from the mahadasha's own lord, each
+ * taking a share of the parent proportional to its own dasha years: `parentYears × lordYears / 120`.
+ * Those shares sum to the parent exactly, so the last one is clamped to the parent's end rather than
+ * left a few milliseconds short by integer truncation — the same clamping the Choghadiya windows use
+ * so the divisions tile without a visible gap.
+ */
+internal fun antardashasOf(mahadasha: MahadashaPeriod): List<AntardashaPeriod> {
+    val startOrdinal = VIMSHOTTARI_ORDER.indexOfFirst { it.first == mahadasha.lord }
+    val parentYears = VIMSHOTTARI_ORDER[startOrdinal].second
+    val periods = mutableListOf<AntardashaPeriod>()
+    var start = mahadasha.start.toEpochMilliseconds()
+    val parentEnd = mahadasha.end.toEpochMilliseconds()
+
+    for (offset in VIMSHOTTARI_ORDER.indices) {
+        val (lord, lordYears) = VIMSHOTTARI_ORDER[(startOrdinal + offset) % VIMSHOTTARI_ORDER.size]
+        val span = (parentYears.toDouble() * lordYears / VIMSHOTTARI_TOTAL_YEARS * DASHA_YEAR_MILLIS).toLong()
+        val last = offset == VIMSHOTTARI_ORDER.lastIndex
+        val end = if (last) parentEnd else start + span
+        periods +=
+            AntardashaPeriod(
+                lord = lord,
+                start = Instant.fromEpochMilliseconds(start),
+                end = Instant.fromEpochMilliseconds(end),
+            )
+        start = end
+    }
+    return periods
+}
+
 /**
  * The Vimshottari mahadasha timeline for a birth at [epochMillis]: the nine major periods over the
  * 120-year cycle, in order, the first of which contains the birth. Derived from the Moon's sidereal

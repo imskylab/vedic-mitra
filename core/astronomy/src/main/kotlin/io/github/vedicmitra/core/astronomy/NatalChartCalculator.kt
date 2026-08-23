@@ -21,6 +21,10 @@ private const val WRAP_OFFSET_DEGREES = 540.0
  * The full birth [NatalChart] for a birth at [epochMillis] at [latitude]/[longitude] (degrees, east
  * longitude positive): the nine grahas (with house and retrograde state), the ascendant, whole-sign
  * houses, the Moon's nakshatra/pada, and the Vimshottari mahadasha timeline. Pure and offline.
+ *
+ * The chart carries **two framings of the same placements**: houses counted from the lagna, and
+ * houses counted from the Moon's rashi (the Chandra or Rashi kundali). One chart with two framings
+ * rather than two charts, so they cannot drift apart.
  */
 internal fun natalChart(
     epochMillis: Long,
@@ -30,12 +34,18 @@ internal fun natalChart(
     val t = Ephemeris.julianCenturies(epochMillis)
     val lagna = lagnaAt(epochMillis, latitude, longitude)
     val moonLongitude = siderealLongitude(Graha.MOON, t)
+    val moonRasiIndex = AngularBuckets.rashiIndex(moonLongitude)
+    val grahas = Graha.entries.map { natalGraha(it, epochMillis, t, lagna.rasi.index, moonRasiIndex) }
+    val moonNakshatra = nakshatraOf(moonLongitude)
+    val moonPada = padaOf(moonLongitude)
     return NatalChart(
         lagna = lagna,
         houses = wholeSignHouses(lagna.rasi.index),
-        grahas = Graha.entries.map { natalGraha(it, epochMillis, t, lagna.rasi.index) },
-        moonNakshatra = nakshatraOf(moonLongitude),
-        moonPada = padaOf(moonLongitude),
+        moonHouses = wholeSignHouses(moonRasiIndex),
+        grahas = grahas,
+        moonNakshatra = moonNakshatra,
+        moonPada = moonPada,
+        jataka = jatakaProfileOf(grahas, lagna, moonNakshatra, moonPada, epochMillis),
         vimshottari = vimshottariFromMoon(moonLongitude, epochMillis),
     )
 }
@@ -45,6 +55,7 @@ private fun natalGraha(
     epochMillis: Long,
     t: Double,
     ascendantRasiIndex: Int,
+    moonRasiIndex: Int,
 ): NatalGraha {
     val longitude = siderealLongitude(graha, t)
     val rasiIndex = AngularBuckets.rashiIndex(longitude)
@@ -52,10 +63,17 @@ private fun natalGraha(
         graha = graha,
         siderealLongitude = longitude,
         rasi = Rasi(rasiIndex, RASHI_NAMES[rasiIndex]),
-        house = ((rasiIndex - ascendantRasiIndex + HOUSE_COUNT) % HOUSE_COUNT) + 1,
+        house = houseOf(rasiIndex, ascendantRasiIndex),
+        houseFromMoon = houseOf(rasiIndex, moonRasiIndex),
         retrograde = isRetrograde(graha, epochMillis),
     )
 }
+
+/** Which whole-sign house [rasiIndex] falls in when house 1 is [firstHouseRasiIndex]. 1..12. */
+private fun houseOf(
+    rasiIndex: Int,
+    firstHouseRasiIndex: Int,
+): Int = ((rasiIndex - firstHouseRasiIndex + HOUSE_COUNT) % HOUSE_COUNT) + 1
 
 /** Whether [graha] is retrograde: the Sun/Moon never are, the nodes always are, the rest by motion. */
 private fun isRetrograde(

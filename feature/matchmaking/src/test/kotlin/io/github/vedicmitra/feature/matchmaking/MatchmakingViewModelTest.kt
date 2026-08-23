@@ -125,6 +125,7 @@ class MatchmakingViewModelTest {
         NatalChart(
             lagna = Lagna(siderealLongitude = 0.0, rasi = Rasi(index = 0, name = "Mesha")),
             houses = emptyList(),
+            moonHouses = emptyList(),
             grahas =
                 listOf(
                     NatalGraha(
@@ -132,6 +133,7 @@ class MatchmakingViewModelTest {
                         siderealLongitude = 0.0,
                         rasi = Rasi(index = moonRasiIndex, name = "Sign"),
                         house = 1,
+                        houseFromMoon = 1,
                         retrograde = false,
                     ),
                 ),

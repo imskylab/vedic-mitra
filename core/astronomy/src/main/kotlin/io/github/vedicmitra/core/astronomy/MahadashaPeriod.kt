@@ -24,4 +24,30 @@ data class MahadashaPeriod(
     val lord: Graha,
     val start: Instant,
     val end: Instant,
+) {
+    /**
+     * The nine antardashas (sub-periods) this mahadasha divides into.
+     *
+     * Derived rather than stored, for the same reason the Spashta Graha columns are: they are a pure
+     * function of the lord and the span, and storing them would allow a period whose sub-periods
+     * disagree with it.
+     */
+    val antardashas: List<AntardashaPeriod> get() = antardashasOf(this)
+}
+
+/**
+ * One antardasha: a sub-period within a [MahadashaPeriod], ruled by [lord].
+ *
+ * The nine antardashas of a mahadasha run through the same lord sequence, beginning with the
+ * mahadasha's own lord, each lasting a share of the parent period proportional to its own dasha
+ * years.
+ *
+ * @property lord the graha ruling this sub-period.
+ * @property start when it begins.
+ * @property end when it ends.
+ */
+data class AntardashaPeriod(
+    val lord: Graha,
+    val start: Instant,
+    val end: Instant,
 )

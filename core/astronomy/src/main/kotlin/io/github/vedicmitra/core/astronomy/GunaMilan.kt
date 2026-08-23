@@ -164,7 +164,7 @@ private fun verdictFor(total: Double): GunaMilanVerdict =
 
 // ---- Varna (max 1): spiritual/temperamental order by Moon sign; groom's varna should not be lower.
 
-private enum class Varna(
+internal enum class Varna(
     val rank: Int,
 ) {
     SHUDRA(1),
@@ -174,7 +174,7 @@ private enum class Varna(
 }
 
 // Moon sign -> varna: water signs Brahmin, fire Kshatriya, earth Vaishya, air Shudra (0 = Mesha).
-private val VARNA_BY_RASI =
+internal val VARNA_BY_RASI =
     listOf(
         Varna.KSHATRIYA,
         Varna.VAISHYA,
@@ -219,6 +219,46 @@ private val VASYA_SETS: List<Set<Int>> =
         setOf(9),
     )
 
+/**
+ * The vashya class of a Moon sign — the group a person belongs to, as a panchanga lists it.
+ *
+ * Distinct from [VASYA_SETS] above, which answers a different question: that table says which signs
+ * a sign *controls*, and exists to score the koota. This one names the class itself.
+ */
+internal enum class Vashya {
+    CHATUSHPADA,
+    MANAVA,
+    JALACHARA,
+    VANACHARA,
+    KEETA,
+}
+
+/**
+ * The vashya class for a Moon in [rasiIndex] at [degreesIntoSign] degrees.
+ *
+ * Dhanu and Makara are split at their midpoint — the archer's human half then his equine half, and
+ * the crocodile's land half then its water half — which is why this takes the degree and not just
+ * the sign. The koota scorer above omits that refinement; here the degree is available, so it is
+ * applied rather than approximated.
+ */
+internal fun vashyaOf(
+    rasiIndex: Int,
+    degreesIntoSign: Int,
+): Vashya {
+    val firstHalf = degreesIntoSign < HALF_SIGN_DEGREES
+    return when (rasiIndex) {
+        0, 1 -> Vashya.CHATUSHPADA
+        2, 5, 6, 10 -> Vashya.MANAVA
+        3, 11 -> Vashya.JALACHARA
+        4 -> Vashya.VANACHARA
+        7 -> Vashya.KEETA
+        8 -> if (firstHalf) Vashya.MANAVA else Vashya.CHATUSHPADA
+        else -> if (firstHalf) Vashya.CHATUSHPADA else Vashya.JALACHARA
+    }
+}
+
+private const val HALF_SIGN_DEGREES = 15
+
 private fun vashyaKoota(
     groom: GunaMilanProfile,
     bride: GunaMilanProfile,
@@ -257,7 +297,7 @@ private fun taraKoota(
 // ---- Yoni (max 4): instinctive compatibility by nakshatra animal. Same yoni = 4, sworn enemies = 0,
 // otherwise neutral = 2. (The finer friendly/unfriendly gradations of the full table are approximated.)
 
-private enum class Yoni {
+internal enum class Yoni {
     HORSE,
     ELEPHANT,
     SHEEP,
@@ -274,7 +314,7 @@ private enum class Yoni {
     LION,
 }
 
-private val YONI_BY_NAKSHATRA =
+internal val YONI_BY_NAKSHATRA =
     listOf(
         Yoni.HORSE,
         Yoni.ELEPHANT,
@@ -335,7 +375,7 @@ private fun yoniKoota(
 
 private enum class Relation { FRIEND, NEUTRAL, ENEMY }
 
-private val RASI_LORD =
+internal val RASI_LORD =
     listOf(
         Graha.MANGALA,
         Graha.SHUKRA,
@@ -418,9 +458,9 @@ private fun pointsForRelations(
 // same = 6; Deva & Manushya (either way) = 5; groom Manushya + bride Rakshasa = 1; every other
 // Rakshasa pairing (Deva-Rakshasa both ways, groom Rakshasa + bride Manushya) = 0.
 
-private enum class Gana { DEVA, MANUSHYA, RAKSHASA }
+internal enum class Gana { DEVA, MANUSHYA, RAKSHASA }
 
-private val GANA_BY_NAKSHATRA =
+internal val GANA_BY_NAKSHATRA =
     listOf(
         Gana.DEVA,
         Gana.MANUSHYA,
@@ -482,9 +522,9 @@ private fun bhakootKoota(
 
 // ---- Nadi (max 8): constitutional/genetic. Same nadi is the Nadi dosha (0 points); different = 8.
 
-private enum class Nadi { AADI, MADHYA, ANTYA }
+internal enum class Nadi { AADI, MADHYA, ANTYA }
 
-private val NADI_BY_NAKSHATRA =
+internal val NADI_BY_NAKSHATRA =
     listOf(
         Nadi.AADI,
         Nadi.MADHYA,
