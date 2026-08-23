@@ -177,16 +177,22 @@ private val DESTINATION_LABELS: Map<String, String> =
 /**
  * A tab's icon, from either a Material symbol or a brand glyph.
  *
- * The glyph is drawn through [Icon] rather than [androidx.compose.foundation.Image], so the bar
- * tints it like every other tab and the selected/unselected states still read. Its duotone is
- * deliberately given up here — a fixed maroon would sit badly on a dark theme and would not show
- * selection. The full-colour version is what the Home hub tiles use.
+ * The glyph renders **un-tinted**, unlike the Material symbols beside it. The bar's default tint
+ * flattens everything to one colour, which turns an illustrated glyph into an unreadable silhouette;
+ * `Color.Unspecified` keeps the artwork, the same way the Home hub tiles draw these glyphs.
+ *
+ * The cost is accepted knowingly: Support is then the only coloured tab, and it no longer signals
+ * selection by colour. The bar's selection indicator and the label still do.
  */
 @Composable
 private fun DestinationIcon(destination: TopDestination) {
     val glyph = destination.glyph
     if (glyph != null) {
-        Icon(painter = painterResource(glyph), contentDescription = destination.label)
+        Icon(
+            painter = painterResource(glyph),
+            contentDescription = destination.label,
+            tint = Color.Unspecified,
+        )
     } else {
         Icon(imageVector = checkNotNull(destination.icon), contentDescription = destination.label)
     }

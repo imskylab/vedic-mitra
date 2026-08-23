@@ -64,7 +64,12 @@ object VedicIcons {
     @get:DrawableRes
     val events: Int = R.drawable.ic_glyph_events
 
-    /** A coin dropping into a carved donation box (daana-patra) — Support. */
+    /**
+     * A hand dropping an Om coin into a carved wooden donation box (daana-patra) — Support.
+     *
+     * Illustrated artwork rather than a duotone path, like the other bundled glyphs. Draw it with
+     * `tint = Color.Unspecified`; the default tint flattens it to a silhouette.
+     */
     @get:DrawableRes
     val support: Int = R.drawable.ic_glyph_support
 }
