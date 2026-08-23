@@ -178,12 +178,10 @@ private val DESTINATION_LABELS: Map<String, String> =
 /**
  * A tab's icon, from either a Material symbol or a brand glyph.
  *
- * The glyph renders **un-tinted**, unlike the Material symbols beside it. The bar's default tint
- * flattens everything to one colour, which turns an illustrated glyph into an unreadable silhouette;
- * `Color.Unspecified` keeps the artwork, the same way the Home hub tiles draw these glyphs.
- *
- * The cost is accepted knowingly: Support is then the only coloured tab, and it no longer signals
- * selection by colour. The bar's selection indicator and the label still do.
+ * The glyph is an **alpha stencil**, so it tints exactly like the Material symbols beside it: the
+ * lid, slot and lettering are holes rather than white paint, and the tint shows through them. That
+ * keeps Support consistent with the other tabs — it takes the selected colour, and it stays legible
+ * on a dark theme, where an opaque near-black illustration would have half-disappeared.
  *
  * The size is set explicitly because [Icon] only falls back to its own 24dp default when the painter
  * has **no intrinsic size**. A vector declares one of 24dp and so needs nothing; a 240px bitmap
@@ -196,7 +194,6 @@ private fun DestinationIcon(destination: TopDestination) {
         Icon(
             painter = painterResource(glyph),
             contentDescription = destination.label,
-            tint = Color.Unspecified,
             modifier = Modifier.size(NAV_ICON_SIZE),
         )
     } else {
