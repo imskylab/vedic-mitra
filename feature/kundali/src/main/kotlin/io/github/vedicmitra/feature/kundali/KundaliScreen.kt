@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.kundali
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +23,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -38,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
@@ -112,25 +118,101 @@ private fun ChartView(
     onSelectProfile: (String) -> Unit,
     modifier: Modifier,
 ) {
-    val chart = uiState.chart
-    val now = remember { System.currentTimeMillis() }
-    val currentDasha = currentDashaOf(chart, now)
-    Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        if (uiState.options.size > 1) {
-            ProfilePicker(options = uiState.options, selectedId = uiState.selectedId, onSelect = onSelectProfile)
+    val pages = KundaliPage.entries
+    val pagerState = rememberPagerState(pageCount = { pages.size })
+    Column(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            if (uiState.options.size > 1) {
+                ProfilePicker(options = uiState.options, selectedId = uiState.selectedId, onSelect = onSelectProfile)
+            }
+            Text(text = "${uiState.name}'s Kundali", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = pages[pagerState.currentPage].title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
-        Text(text = "${uiState.name}'s Kundali", style = MaterialTheme.typography.titleLarge)
-        NorthIndianChart(chart)
+        HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+            KundaliPageContent(page = pages[page], uiState = uiState)
+        }
+        PageIndicator(count = pages.size, current = pagerState.currentPage)
+    }
+}
+
+/** The pages of the kundali book, in swipe order. */
+private enum class KundaliPage(
+    val title: String,
+) {
+    LAGNA_CHART("Lagna Kundali"),
+    RASHI_CHART("Rashi (Chandra) Kundali"),
+    DETAILS("Details"),
+}
+
+@Composable
+private fun KundaliPageContent(
+    page: KundaliPage,
+    uiState: KundaliUiState.Ready,
+) {
+    val chart = uiState.chart
+    val scroll = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)
+    when (page) {
+        KundaliPage.LAGNA_CHART ->
+            ChartPage(
+                houses = chart.houses,
+                grahas = chart.grahas,
+                houseOf = { it.house },
+                caption =
+                    "North-Indian style. House 1 (top centre) is the lagna; numbers are the rashi " +
+                        "in each house. Retrograde grahas are shown in red.",
+                modifier = scroll,
+            )
+
+        KundaliPage.RASHI_CHART ->
+            ChartPage(
+                houses = chart.moonHouses,
+                grahas = chart.grahas,
+                houseOf = { it.houseFromMoon },
+                caption =
+                    "The same placements counted from the Moon rather than the lagna, so house 1 is " +
+                        "the Moon's own rashi. Read alongside the lagna chart.",
+                modifier = scroll,
+            )
+
+        KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
+    }
+}
+
+/** One chart page: the diagram, plus a sentence on how to read it. */
+@Composable
+private fun ChartPage(
+    houses: List<Rasi>,
+    grahas: List<NatalGraha>,
+    houseOf: (NatalGraha) -> Int,
+    caption: String,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        NorthIndianChart(houses = houses, grahas = grahas, houseOf = houseOf)
         Text(
-            text =
-                "North-Indian style. House 1 (top centre) is the lagna; numbers are the rashi in each " +
-                    "house. Retrograde grahas are shown in red.",
+            text = caption,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+/** Everything not yet split into a page of its own — lagna, Moon, dasha and the graha list. */
+@Composable
+private fun DetailsPage(
+    uiState: KundaliUiState.Ready,
+    modifier: Modifier,
+) {
+    val chart = uiState.chart
+    val now = remember { System.currentTimeMillis() }
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         InfoCard(
             label = "Lagna (Ascendant)",
             value = chart.lagna.rasi.name,
@@ -141,7 +223,7 @@ private fun ChartView(
             value = "${chart.moonNakshatra.name} · pada ${chart.moonPada}",
             detail = KundaliSignificance.moon(chart.moonNakshatra.number),
         )
-        currentDasha?.let {
+        currentDashaOf(chart, now)?.let {
             InfoCard(
                 label = "Current dasha",
                 value = "${it.lord.displayName} · until ${formatMonthYear(it.end)}",
@@ -157,6 +239,39 @@ private fun ChartView(
         chart.grahas.forEach { GrahaRow(it) }
     }
 }
+
+/** Dots showing which page of the book is open. */
+@Composable
+private fun PageIndicator(
+    count: Int,
+    current: Int,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        repeat(count) { index ->
+            val active = index == current
+            Box(
+                modifier =
+                    Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(if (active) ACTIVE_DOT else INACTIVE_DOT)
+                        .clip(CircleShape)
+                        .background(
+                            if (active) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.outlineVariant
+                            },
+                        ),
+            )
+        }
+    }
+}
+
+private val ACTIVE_DOT = 9.dp
+private val INACTIVE_DOT = 7.dp
 
 /** A dropdown to pick which chart-ready profile's kundali to show. */
 @Composable
@@ -179,10 +294,15 @@ private fun ProfilePicker(
  * side midpoints, giving twelve houses. House 1 is the top-centre triangle and the rest run
  * anticlockwise. Each house shows the number of the rashi that falls in it and the grahas placed
  * there (retrograde in the error colour).
+ *
+ * Takes [houses] and a [houseOf] selector rather than a whole chart, so one diagram draws both the
+ * lagna framing and the Chandra framing without a second copy of the geometry.
  */
 @Composable
 private fun NorthIndianChart(
-    chart: NatalChart,
+    houses: List<Rasi>,
+    grahas: List<NatalGraha>,
+    houseOf: (NatalGraha) -> Int,
     modifier: Modifier = Modifier,
 ) {
     val line = MaterialTheme.colorScheme.outline
@@ -201,8 +321,8 @@ private fun NorthIndianChart(
         }
         HOUSE_ANCHORS.forEachIndexed { index, anchor ->
             HouseCell(
-                rasi = chart.houses.getOrNull(index),
-                grahas = chart.grahas.filter { it.house == index + 1 },
+                rasi = houses.getOrNull(index),
+                grahas = grahas.filter { houseOf(it) == index + 1 },
                 modifier = Modifier.align(BiasAlignment(anchor.first, anchor.second)),
             )
         }
@@ -383,11 +503,13 @@ private fun sampleChart(): NatalChart =
     NatalChart(
         lagna = Lagna(siderealLongitude = 15.0, rasi = Rasi(0, "Mesha")),
         houses = (0 until 12).map { Rasi(it, "Rashi ${it + 1}") },
+        // The Moon sits in Vrishabha, so the Chandra framing starts one sign later.
+        moonHouses = (0 until 12).map { Rasi((it + 1) % 12, "Rashi ${(it + 1) % 12 + 1}") },
         grahas =
             listOf(
-                NatalGraha(Graha.SUN, 10.0, Rasi(0, "Mesha"), house = 1, retrograde = false),
-                NatalGraha(Graha.MOON, 42.0, Rasi(1, "Vrishabha"), house = 2, retrograde = false),
-                NatalGraha(Graha.SHANI, 195.0, Rasi(6, "Tula"), house = 7, retrograde = true),
+                NatalGraha(Graha.SUN, 10.0, Rasi(0, "Mesha"), house = 1, houseFromMoon = 12, retrograde = false),
+                NatalGraha(Graha.MOON, 42.0, Rasi(1, "Vrishabha"), house = 2, houseFromMoon = 1, retrograde = false),
+                NatalGraha(Graha.SHANI, 195.0, Rasi(6, "Tula"), house = 7, houseFromMoon = 6, retrograde = true),
             ),
         moonNakshatra = Nakshatra(number = 3, name = "Krittika"),
         moonPada = 2,

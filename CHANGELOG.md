@@ -29,6 +29,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   tithi running at sunrise, as panchangas name the day, with a live line beneath showing what is
   actually running now and how long it lasts.
 
+## [Unreleased]
+
+### Added
+- **The Kundali screen is now a swipeable book.** The birth chart opens as pages you swipe between,
+  starting with the **Lagna Kundali** and the **Rashi (Chandra) Kundali** — the same placements
+  counted from the Moon instead of the ascendant, which is how the two charts are read side by side
+  in a printed panchang. A header names the open page and dots show where you are.
+
 ## [0.7.0] - 2026-08-22
 
 ### Added

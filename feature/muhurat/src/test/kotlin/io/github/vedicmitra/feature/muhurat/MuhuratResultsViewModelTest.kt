@@ -209,6 +209,7 @@ private fun sampleChart(): NatalChart =
     NatalChart(
         lagna = Lagna(siderealLongitude = 0.0, rasi = Rasi(index = 0, name = "Mesha")),
         houses = emptyList(),
+        moonHouses = emptyList(),
         grahas =
             listOf(
                 NatalGraha(
@@ -216,6 +217,7 @@ private fun sampleChart(): NatalChart =
                     siderealLongitude = 90.0,
                     rasi = Rasi(index = 3, name = "Karka"),
                     house = 4,
+                    houseFromMoon = 1,
                     retrograde = false,
                 ),
             ),
