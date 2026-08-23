@@ -51,13 +51,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.Graha
+import io.github.vedicmitra.core.astronomy.JatakaProfile
 import io.github.vedicmitra.core.astronomy.Lagna
 import io.github.vedicmitra.core.astronomy.MahadashaPeriod
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
 import io.github.vedicmitra.core.astronomy.NatalGraha
 import io.github.vedicmitra.core.astronomy.Rasi
+import io.github.vedicmitra.core.designsystem.component.TableColumn
+import io.github.vedicmitra.core.designsystem.component.VedicPropertyTable
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
+import io.github.vedicmitra.core.designsystem.component.VedicTable
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -148,6 +152,8 @@ private enum class KundaliPage(
 ) {
     LAGNA_CHART("Lagna Kundali"),
     RASHI_CHART("Rashi (Chandra) Kundali"),
+    JATAKA("Jataka"),
+    SPASHTA_GRAHA("Spashta Graha"),
     DETAILS("Details"),
 }
 
@@ -181,9 +187,105 @@ private fun KundaliPageContent(
                 modifier = scroll,
             )
 
+        KundaliPage.JATAKA -> JatakaPage(jataka = chart.jataka, modifier = scroll)
+
+        KundaliPage.SPASHTA_GRAHA -> SpashtaGrahaPage(grahas = chart.grahas, modifier = scroll)
+
         KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
     }
 }
+
+/** The jataka's standing properties — the block a printed panchanga sets beside the charts. */
+@Composable
+private fun JatakaPage(
+    jataka: JatakaProfile?,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (jataka == null) {
+            Text(
+                text = "Birth details are incomplete, so these properties cannot be derived.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            return@Column
+        }
+        VedicPropertyTable(entries = jatakaEntries(jataka))
+        Text(
+            text =
+                "Gana, varna, yoni and nadi are the same classifications used for Ashtakoota " +
+                    "matching. The sun sign is the Western tropical one; every other value here is " +
+                    "sidereal, and the ayanamsa is the difference between the two.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun jatakaEntries(jataka: JatakaProfile): List<Pair<String, String>> =
+    listOf(
+        "Janma Rashi" to jataka.janmaRashi.name,
+        "Rashi lord" to jataka.rashiLord.displayName,
+        "Nakshatra" to "${jataka.nakshatra.name} · pada ${jataka.pada}",
+        "Gana" to jataka.gana,
+        "Varna" to jataka.varna,
+        "Yoni" to jataka.yoni,
+        "Nadi" to jataka.nadi,
+        "Lagna" to jataka.lagna.name,
+        "Surya Rashi" to jataka.sunRashi.name,
+        "Sun sign (Western)" to jataka.sunSign,
+        "Ayanamsa" to formatDegrees(jataka.ayanamsa),
+        "Shaka Samvat" to jataka.shakaSamvat.toString(),
+        "Vikram Samvat" to jataka.vikramSamvat.toString(),
+        "Samvatsara" to jataka.samvatsara,
+    )
+
+/** The Spashta Graha table: where each graha sits, to the arcminute. */
+@Composable
+private fun SpashtaGrahaPage(
+    grahas: List<NatalGraha>,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        VedicTable(
+            columns = SPASHTA_COLUMNS,
+            rows = grahas.map { spashtaRow(it) },
+        )
+        Text(
+            text =
+                "Positions are degrees and minutes into the rashi. Vakri marks retrograde motion. " +
+                    "Navamsha is the graha's sign in the D9 division.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private val SPASHTA_COLUMNS =
+    listOf(
+        TableColumn(header = "Graha", weight = 1.1f),
+        TableColumn(header = "Position", weight = 1.0f),
+        TableColumn(header = "Rashi", weight = 1.1f),
+        TableColumn(header = "Nakshatra–pada", weight = 1.6f),
+        TableColumn(header = "Navamsha", weight = 1.1f),
+    )
+
+private fun spashtaRow(graha: NatalGraha): List<String> =
+    listOf(
+        if (graha.retrograde) "${graha.graha.displayName} (V)" else graha.graha.displayName,
+        "${graha.position.degrees}°${graha.position.minutes.toString().padStart(2, '0')}'",
+        graha.rasi.name,
+        "${graha.nakshatra.name}–${graha.pada}",
+        graha.navamsha.name,
+    )
+
+/** Degrees to a whole-degree-and-minute string, matching the Spashta Graha column. */
+private fun formatDegrees(degrees: Double): String {
+    val totalMinutes = (degrees * MINUTES_PER_DEGREE).toInt()
+    return "${totalMinutes / MINUTES_PER_DEGREE}°${(totalMinutes % MINUTES_PER_DEGREE).toString().padStart(2, '0')}'"
+}
+
+private const val MINUTES_PER_DEGREE = 60
 
 /** One chart page: the diagram, plus a sentence on how to read it. */
 @Composable

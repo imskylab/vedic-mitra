@@ -164,7 +164,7 @@ private fun verdictFor(total: Double): GunaMilanVerdict =
 
 // ---- Varna (max 1): spiritual/temperamental order by Moon sign; groom's varna should not be lower.
 
-private enum class Varna(
+internal enum class Varna(
     val rank: Int,
 ) {
     SHUDRA(1),
@@ -174,7 +174,7 @@ private enum class Varna(
 }
 
 // Moon sign -> varna: water signs Brahmin, fire Kshatriya, earth Vaishya, air Shudra (0 = Mesha).
-private val VARNA_BY_RASI =
+internal val VARNA_BY_RASI =
     listOf(
         Varna.KSHATRIYA,
         Varna.VAISHYA,
@@ -257,7 +257,7 @@ private fun taraKoota(
 // ---- Yoni (max 4): instinctive compatibility by nakshatra animal. Same yoni = 4, sworn enemies = 0,
 // otherwise neutral = 2. (The finer friendly/unfriendly gradations of the full table are approximated.)
 
-private enum class Yoni {
+internal enum class Yoni {
     HORSE,
     ELEPHANT,
     SHEEP,
@@ -274,7 +274,7 @@ private enum class Yoni {
     LION,
 }
 
-private val YONI_BY_NAKSHATRA =
+internal val YONI_BY_NAKSHATRA =
     listOf(
         Yoni.HORSE,
         Yoni.ELEPHANT,
@@ -335,7 +335,7 @@ private fun yoniKoota(
 
 private enum class Relation { FRIEND, NEUTRAL, ENEMY }
 
-private val RASI_LORD =
+internal val RASI_LORD =
     listOf(
         Graha.MANGALA,
         Graha.SHUKRA,
@@ -418,9 +418,9 @@ private fun pointsForRelations(
 // same = 6; Deva & Manushya (either way) = 5; groom Manushya + bride Rakshasa = 1; every other
 // Rakshasa pairing (Deva-Rakshasa both ways, groom Rakshasa + bride Manushya) = 0.
 
-private enum class Gana { DEVA, MANUSHYA, RAKSHASA }
+internal enum class Gana { DEVA, MANUSHYA, RAKSHASA }
 
-private val GANA_BY_NAKSHATRA =
+internal val GANA_BY_NAKSHATRA =
     listOf(
         Gana.DEVA,
         Gana.MANUSHYA,
@@ -482,9 +482,9 @@ private fun bhakootKoota(
 
 // ---- Nadi (max 8): constitutional/genetic. Same nadi is the Nadi dosha (0 points); different = 8.
 
-private enum class Nadi { AADI, MADHYA, ANTYA }
+internal enum class Nadi { AADI, MADHYA, ANTYA }
 
-private val NADI_BY_NAKSHATRA =
+internal val NADI_BY_NAKSHATRA =
     listOf(
         Nadi.AADI,
         Nadi.MADHYA,

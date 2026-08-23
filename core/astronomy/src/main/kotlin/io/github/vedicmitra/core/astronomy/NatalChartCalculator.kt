@@ -35,13 +35,17 @@ internal fun natalChart(
     val lagna = lagnaAt(epochMillis, latitude, longitude)
     val moonLongitude = siderealLongitude(Graha.MOON, t)
     val moonRasiIndex = AngularBuckets.rashiIndex(moonLongitude)
+    val grahas = Graha.entries.map { natalGraha(it, epochMillis, t, lagna.rasi.index, moonRasiIndex) }
+    val moonNakshatra = nakshatraOf(moonLongitude)
+    val moonPada = padaOf(moonLongitude)
     return NatalChart(
         lagna = lagna,
         houses = wholeSignHouses(lagna.rasi.index),
         moonHouses = wholeSignHouses(moonRasiIndex),
-        grahas = Graha.entries.map { natalGraha(it, epochMillis, t, lagna.rasi.index, moonRasiIndex) },
-        moonNakshatra = nakshatraOf(moonLongitude),
-        moonPada = padaOf(moonLongitude),
+        grahas = grahas,
+        moonNakshatra = moonNakshatra,
+        moonPada = moonPada,
+        jataka = jatakaProfileOf(grahas, lagna, moonNakshatra, moonPada, epochMillis),
         vimshottari = vimshottariFromMoon(moonLongitude, epochMillis),
     )
 }

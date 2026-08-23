@@ -23,6 +23,9 @@ package io.github.vedicmitra.core.astronomy
  * @property grahas the nine grahas with their rashi, house and retrograde state.
  * @property moonNakshatra the nakshatra the Moon occupies (drives Vimshottari and muhurta).
  * @property moonPada the Moon's pada (quarter of the nakshatra), 1..4.
+ * @property jataka the standing properties a panchanga lists beside the charts — gana, varna, yoni,
+ *   nadi, the samvats and the ayanamsa at birth. `null` only for the lightweight/synthetic charts
+ *   that test fixtures build; the real engine always populates it.
  * @property vimshottari the nine mahadasha periods over the 120-year cycle, birth inside the first.
  */
 data class NatalChart(
@@ -33,6 +36,7 @@ data class NatalChart(
     val moonNakshatra: Nakshatra,
     val moonPada: Int,
     val vimshottari: List<MahadashaPeriod>,
+    val jataka: JatakaProfile? = null,
 )
 
 /**
@@ -52,4 +56,20 @@ data class NatalGraha(
     val house: Int,
     val houseFromMoon: Int,
     val retrograde: Boolean,
-)
+) {
+    // The Spashta Graha columns are all pure functions of siderealLongitude, so they are derived
+    // rather than stored. Passing them in would let a caller hand over a nakshatra that contradicts
+    // the longitude beside it, and there is nothing a chart could do about that once built.
+
+    /** How far into [rasi] it sits, to the arcminute. */
+    val position: PositionInRashi get() = positionInRashi(siderealLongitude)
+
+    /** The nakshatra it occupies. */
+    val nakshatra: Nakshatra get() = nakshatraOf(siderealLongitude)
+
+    /** The quarter of that nakshatra, 1..4. */
+    val pada: Int get() = AngularBuckets.pada(siderealLongitude)
+
+    /** Its sign in the navamsha (D9) division. */
+    val navamsha: Rasi get() = navamshaOf(siderealLongitude)
+}

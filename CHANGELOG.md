@@ -36,6 +36,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   starting with the **Lagna Kundali** and the **Rashi (Chandra) Kundali** — the same placements
   counted from the Moon instead of the ascendant, which is how the two charts are read side by side
   in a printed panchang. A header names the open page and dots show where you are.
+- **Jataka properties.** A page of the standing details a panchanga lists beside the charts: janma
+  rashi and its lord, nakshatra with pada, gana, varna, yoni, nadi, lagna, the Sun in both zodiacs,
+  the ayanamsa at birth, and the Shaka, Vikram and samvatsara years.
+- **Spashta Graha.** A table of all nine grahas — position to the arcminute within the sign,
+  nakshatra and pada, retrograde marker, and the navamsha (D9) sign.
 
 ## [0.7.0] - 2026-08-22
 
