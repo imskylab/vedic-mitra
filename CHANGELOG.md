@@ -33,6 +33,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the nine sub-periods of whichever mahadasha is running now.
 
 ### Changed
+- **The Support tab now carries a donation-box glyph** — a coin dropping into a daana-patra. Drawn
+  as an alpha stencil, so it takes the navigation bar's colours like every other tab, shows the
+  selected state, and stays legible on a dark theme.
 - **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
   is a whole number of arcseconds (a nakshatra is 48,000, a pada 12,000, a tithi 43,200) while most
   are non-terminating in degrees, so dividing in degrees left boundary cases to the mercy of

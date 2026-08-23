@@ -64,7 +64,14 @@ object VedicIcons {
     @get:DrawableRes
     val events: Int = R.drawable.ic_glyph_events
 
-    /** A coin dropping into a carved donation box (daana-patra) — Support. */
+    /**
+     * A coin dropping into a donation box (daana-patra) — Support.
+     *
+     * Unlike the other bundled glyphs this one is an **alpha stencil**, not coloured artwork: the
+     * lid, slot and lettering are holes, so it tints like a Material symbol and reads on either
+     * theme. It is the one glyph meant for navigation chrome rather than a hub tile, and chrome has
+     * to take the bar's colours.
+     */
     @get:DrawableRes
     val support: Int = R.drawable.ic_glyph_support
 }

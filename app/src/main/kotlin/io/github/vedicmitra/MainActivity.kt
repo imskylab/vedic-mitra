@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -177,20 +178,31 @@ private val DESTINATION_LABELS: Map<String, String> =
 /**
  * A tab's icon, from either a Material symbol or a brand glyph.
  *
- * The glyph is drawn through [Icon] rather than [androidx.compose.foundation.Image], so the bar
- * tints it like every other tab and the selected/unselected states still read. Its duotone is
- * deliberately given up here — a fixed maroon would sit badly on a dark theme and would not show
- * selection. The full-colour version is what the Home hub tiles use.
+ * The glyph is an **alpha stencil**, so it tints exactly like the Material symbols beside it: the
+ * lid, slot and lettering are holes rather than white paint, and the tint shows through them. That
+ * keeps Support consistent with the other tabs — it takes the selected colour, and it stays legible
+ * on a dark theme, where an opaque near-black illustration would have half-disappeared.
+ *
+ * The size is set explicitly because [Icon] only falls back to its own 24dp default when the painter
+ * has **no intrinsic size**. A vector declares one of 24dp and so needs nothing; a 240px bitmap
+ * declares 240px, which Compose honours — 80dp on a 3x screen, three times its neighbours.
  */
 @Composable
 private fun DestinationIcon(destination: TopDestination) {
     val glyph = destination.glyph
     if (glyph != null) {
-        Icon(painter = painterResource(glyph), contentDescription = destination.label)
+        Icon(
+            painter = painterResource(glyph),
+            contentDescription = destination.label,
+            modifier = Modifier.size(NAV_ICON_SIZE),
+        )
     } else {
         Icon(imageVector = checkNotNull(destination.icon), contentDescription = destination.label)
     }
 }
+
+/** What Material 3 sizes a navigation-bar icon at, and what [Icon] defaults vector painters to. */
+private val NAV_ICON_SIZE = 24.dp
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
 // tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
