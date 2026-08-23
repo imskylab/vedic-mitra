@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -183,6 +184,10 @@ private val DESTINATION_LABELS: Map<String, String> =
  *
  * The cost is accepted knowingly: Support is then the only coloured tab, and it no longer signals
  * selection by colour. The bar's selection indicator and the label still do.
+ *
+ * The size is set explicitly because [Icon] only falls back to its own 24dp default when the painter
+ * has **no intrinsic size**. A vector declares one of 24dp and so needs nothing; a 240px bitmap
+ * declares 240px, which Compose honours — 80dp on a 3x screen, three times its neighbours.
  */
 @Composable
 private fun DestinationIcon(destination: TopDestination) {
@@ -192,11 +197,15 @@ private fun DestinationIcon(destination: TopDestination) {
             painter = painterResource(glyph),
             contentDescription = destination.label,
             tint = Color.Unspecified,
+            modifier = Modifier.size(NAV_ICON_SIZE),
         )
     } else {
         Icon(imageVector = checkNotNull(destination.icon), contentDescription = destination.label)
     }
 }
+
+/** What Material 3 sizes a navigation-bar icon at, and what [Icon] defaults vector painters to. */
+private val NAV_ICON_SIZE = 24.dp
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
 // tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
