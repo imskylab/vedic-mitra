@@ -37,7 +37,15 @@ data class NatalChart(
     val moonPada: Int,
     val vimshottari: List<MahadashaPeriod>,
     val jataka: JatakaProfile? = null,
-)
+) {
+    /**
+     * The named combinations present in this chart.
+     *
+     * Derived on demand rather than stored, which also avoids the chart having to contain something
+     * computed from itself.
+     */
+    val yogas: List<ChartYoga> get() = chartYogasOf(this)
+}
 
 /**
  * A graha's placement in a birth chart.

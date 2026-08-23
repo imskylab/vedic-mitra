@@ -27,6 +27,13 @@ import org.junit.Test
 class NavamshaTest {
     private val navamshaSpan = 360.0 / 108.0
 
+    /**
+     * Comfortably above the boundary snap (1e-8 arcsec, or 2.8e-12 degrees) and far below the
+     * arcminute the position is truncated to, so it catches a real regression without failing on
+     * the snap itself. The measured overshoot is about 1.8e-13 degrees.
+     */
+    private val snapTolerance = 1e-9
+
     @Test
     fun `a movable sign's first navamsha is the sign itself`() {
         // Mesha, Karka, Tula, Makara — indices 0, 3, 6, 9.
@@ -114,8 +121,11 @@ class NavamshaTest {
             val position = positionInRashi(degrees)
             val signStart = AngularBuckets.rashiIndex(degrees) * 30.0
             val rebuilt = signStart + position.degrees + position.minutes / 60.0
-            // Truncated to the arcminute, so the rebuilt value trails by less than one minute.
-            assertWithMessage("longitude $degrees").that(degrees - rebuilt).isAtLeast(0.0)
+            // Truncated to the arcminute, so the rebuilt value trails by less than one minute — but
+            // it can also sit a sliver *above* the original. AngularBuckets nudges by 1e-8 arcsec
+            // before flooring so that a boundary expressed in degrees reads as the boundary, and a
+            // longitude a hair below an arcminute mark is carried over it by that same nudge.
+            assertWithMessage("longitude $degrees").that(degrees - rebuilt).isGreaterThan(-snapTolerance)
             assertWithMessage("longitude $degrees").that(degrees - rebuilt).isLessThan(1.0 / 60.0)
             degrees += 0.37
         }

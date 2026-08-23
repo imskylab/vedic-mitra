@@ -41,6 +41,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the ayanamsa at birth, and the Shaka, Vikram and samvatsara years.
 - **Spashta Graha.** A table of all nine grahas — position to the arcminute within the sign,
   nakshatra and pada, retrograde marker, and the navamsha (D9) sign.
+- **Pramukh Yoga.** The named combinations present in the chart — Gajakesari, Budhaditya,
+  Chandra-Mangala, the five Panchamahapurusha, and the Sunapha/Anapha/Durudhara and Vesi/Vasi
+  families — each shown with the placement that produced it, so the claim can be checked against the
+  chart pages rather than taken on trust.
+- **Mahadasha and Antardasha.** The full Vimshottari cycle from birth with the running period marked,
+  and the nine sub-periods of whichever mahadasha is running now.
 
 ## [0.7.0] - 2026-08-22
 

@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.ChartYoga
 import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.JatakaProfile
 import io.github.vedicmitra.core.astronomy.Lagna
@@ -154,6 +155,9 @@ private enum class KundaliPage(
     RASHI_CHART("Rashi (Chandra) Kundali"),
     JATAKA("Jataka"),
     SPASHTA_GRAHA("Spashta Graha"),
+    YOGAS("Pramukh Yoga"),
+    MAHADASHA("Mahadasha"),
+    ANTARDASHA("Antardasha"),
     DETAILS("Details"),
 }
 
@@ -191,9 +195,124 @@ private fun KundaliPageContent(
 
         KundaliPage.SPASHTA_GRAHA -> SpashtaGrahaPage(grahas = chart.grahas, modifier = scroll)
 
+        KundaliPage.YOGAS -> YogasPage(yogas = chart.yogas, modifier = scroll)
+
+        KundaliPage.MAHADASHA -> MahadashaPage(periods = chart.vimshottari, modifier = scroll)
+
+        KundaliPage.ANTARDASHA -> AntardashaPage(periods = chart.vimshottari, modifier = scroll)
+
         KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
     }
 }
+
+/** The named combinations found in the chart, each with the placement that produced it. */
+@Composable
+private fun YogasPage(
+    yogas: List<ChartYoga>,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (yogas.isEmpty()) {
+            Text(
+                text = "None of the combinations this app checks for are present in this chart.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        yogas.forEach { yoga ->
+            InfoCard(label = yoga.name, value = yoga.rule, detail = yoga.summary)
+        }
+        Text(
+            text =
+                "A deliberately short list — only combinations that follow from where the grahas " +
+                    "sit, so each can be checked against the chart pages. Yogas needing aspects or " +
+                    "divisional charts are not computed.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The nine mahadashas of the 120-year cycle, with the running one marked. */
+@Composable
+private fun MahadashaPage(
+    periods: List<MahadashaPeriod>,
+    modifier: Modifier,
+) {
+    val now = remember { System.currentTimeMillis() }
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        VedicTable(
+            columns = DASHA_COLUMNS,
+            rows =
+                periods.map { period ->
+                    listOf(
+                        period.lord.displayName + if (isRunning(period.start, period.end, now)) " ●" else "",
+                        formatMonthYear(period.start),
+                        formatMonthYear(period.end),
+                    )
+                },
+        )
+        Text(
+            text = "The full Vimshottari cycle from birth. ● marks the period running now.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The nine sub-periods of whichever mahadasha is running now. */
+@Composable
+private fun AntardashaPage(
+    periods: List<MahadashaPeriod>,
+    modifier: Modifier,
+) {
+    val now = remember { System.currentTimeMillis() }
+    val running = periods.firstOrNull { isRunning(it.start, it.end, now) }
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (running == null) {
+            Text(
+                text = "No mahadasha covers the present moment, so there are no sub-periods to show.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            return@Column
+        }
+        Text(
+            text = "Within ${running.lord.displayName} mahadasha",
+            style = MaterialTheme.typography.titleSmall,
+        )
+        VedicTable(
+            columns = DASHA_COLUMNS,
+            rows =
+                running.antardashas.map { period ->
+                    listOf(
+                        period.lord.displayName + if (isRunning(period.start, period.end, now)) " ●" else "",
+                        formatMonthYear(period.start),
+                        formatMonthYear(period.end),
+                    )
+                },
+        )
+        Text(
+            text =
+                "Each mahadasha divides into nine antardashas, beginning with its own lord and " +
+                    "sharing the period in proportion to each lord's dasha years.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private val DASHA_COLUMNS =
+    listOf(
+        TableColumn(header = "Lord", weight = 1.2f),
+        TableColumn(header = "From", weight = 1f),
+        TableColumn(header = "To", weight = 1f),
+    )
+
+private fun isRunning(
+    start: Instant,
+    end: Instant,
+    nowMillis: Long,
+): Boolean = nowMillis >= start.toEpochMilliseconds() && nowMillis < end.toEpochMilliseconds()
 
 /** The jataka's standing properties — the block a printed panchanga sets beside the charts. */
 @Composable
