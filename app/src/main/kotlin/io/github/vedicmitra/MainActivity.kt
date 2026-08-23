@@ -23,6 +23,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -111,6 +112,67 @@ private enum class TopDestination(
     PROFILE("profile", "Profile", icon = Icons.Filled.Person),
     SUPPORT("support", "Support", glyph = VedicIcons.support),
 }
+
+/**
+ * The app bar's two-line title: the app's name, with the open destination beneath it.
+ *
+ * Every destination reads the same way — the brand on top, where you are underneath — rather than
+ * some showing a tab label, some the app name, and some nothing at all.
+ */
+@Composable
+private fun AppBarTitle(subtitle: String?) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "Vedic Mitra", style = MaterialTheme.typography.titleMedium)
+        if (subtitle != null) {
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * What to show beneath the app name for [route].
+ *
+ * [homeSubView] wins on the Home tab, which swaps its content in place instead of navigating.
+ *
+ * Routes carrying arguments arrive here as their declared pattern — `profile/edit?profileId={…}`,
+ * `muhurat/day/{activity}/{day}` — so the argument part is trimmed before the lookup.
+ */
+private fun subtitleOf(
+    route: String?,
+    homeSubView: String?,
+): String? {
+    if (route == TopDestination.HOME.route) return homeSubView ?: TopDestination.HOME.label
+    val base = route?.substringBefore('?')?.substringBefore("/{") ?: return null
+    return DESTINATION_LABELS[base]
+}
+
+private val DESTINATION_LABELS: Map<String, String> =
+    mapOf(
+        TopDestination.SETTINGS.route to TopDestination.SETTINGS.label,
+        TopDestination.PROFILE.route to TopDestination.PROFILE.label,
+        TopDestination.SUPPORT.route to TopDestination.SUPPORT.label,
+        ABOUT_ROUTE to "About",
+        LOCATION_ROUTE to "Locations",
+        ADD_CITY_ROUTE to "Add a city",
+        ADD_COORDINATES_ROUTE to "Add coordinates",
+        PROFILE_EDIT_ROUTE to "Birth profile",
+        CALENDAR_ROUTE to "Panchang calendar",
+        ALARM_ROUTE to "Reminders",
+        KUNDALI_ROUTE to "Kundali",
+        MATCHMAKING_ROUTE to "Kundali matching",
+        RASHIFAL_ROUTE to "Rashifal",
+        JAPA_ROUTE to "Japa",
+        MEDITATION_ROUTE to "Meditation",
+        STOTRA_ROUTE to "Stotra",
+        MUHURAT_ROUTE to "Muhurat",
+        MUHURAT_ACTIVITIES_ROUTE to "Muhurat",
+        MUHURAT_RESULTS_ROUTE to "Muhurat",
+        MUHURAT_DAY_ROUTE to "Muhurat",
+    )
 
 /**
  * A tab's icon, from either a Material symbol or a brand glyph.
@@ -251,6 +313,9 @@ private fun VedicMitraApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val current = TopDestination.entries.firstOrNull { it.route == currentRoute }
+    // The Home tab swaps between a hub and several detail views in place rather than by navigating,
+    // so it reports which one is open — otherwise the bar would read "Home" while a detail is shown.
+    var homeSubView by rememberSaveable { mutableStateOf<String?>(null) }
 
     // System back should retrace the in-app journey and only leave the app from the Home landing.
     // Handled explicitly so it is reliable regardless of the platform's predictive-back path.
@@ -261,7 +326,7 @@ private fun VedicMitraApp() {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(current?.label ?: "Vedic Mitra") },
+                title = { AppBarTitle(subtitle = subtitleOf(currentRoute, homeSubView)) },
                 navigationIcon = {
                     // Sub-routes (calendar, reminders, kundali, …) aren't tabs, so offer a back arrow.
                     if (current == null) {
@@ -285,7 +350,11 @@ private fun VedicMitraApp() {
             }
         },
     ) { padding ->
-        AppNavHost(navController = navController, modifier = Modifier.padding(padding))
+        AppNavHost(
+            navController = navController,
+            onHomeSubViewChange = { homeSubView = it },
+            modifier = Modifier.padding(padding),
+        )
     }
 }
 
@@ -310,6 +379,7 @@ private fun NavHostController.navigateToTab(route: String) {
 @Composable
 private fun AppNavHost(
     navController: NavHostController,
+    onHomeSubViewChange: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -319,6 +389,7 @@ private fun AppNavHost(
     ) {
         composable(TopDestination.HOME.route) {
             HomeScreen(
+                onSubViewChange = onHomeSubViewChange,
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
                 onOpenReminders = { navController.navigate(ALARM_ROUTE) },

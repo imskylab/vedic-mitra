@@ -110,6 +110,7 @@ import kotlin.time.Instant
  */
 @Composable
 fun HomeScreen(
+    onSubViewChange: (String?) -> Unit,
     onNavigateToLocation: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
@@ -145,6 +146,7 @@ fun HomeScreen(
 
     HomeContent(
         uiState = uiState,
+        onSubViewChange = onSubViewChange,
         onNavigateToLocation = onNavigateToLocation,
         onOpenCalendar = onOpenCalendar,
         onOpenReminders = onOpenReminders,
@@ -163,6 +165,7 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     uiState: HomeUiState,
+    onSubViewChange: (String?) -> Unit,
     onNavigateToLocation: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
@@ -188,6 +191,7 @@ private fun HomeContent(
             // The sub-views live inside the Home tab, so the app-level back handler (which only acts on
             // pushed routes) can't return from them — handle it here so system back goes to the hub.
             BackHandler(enabled = view != HomeView.HUB) { view = HomeView.HUB }
+            LaunchedEffect(view) { onSubViewChange(view.label) }
             when (view) {
                 HomeView.HUB ->
                     HubView(
@@ -240,12 +244,19 @@ private fun HomeContent(
     }
 }
 
-/** Which sub-view the Home tab is showing: the hub, the full daily panchang, or a full list. */
-private enum class HomeView {
-    HUB,
-    PANCHANG,
-    FESTIVALS,
-    EVENTS,
+/**
+ * Which sub-view the Home tab is showing: the hub, the full daily panchang, or a full list.
+ *
+ * The Home tab swaps between these in place rather than navigating, so each carries the label the
+ * app bar shows beneath the app name. The hub has none — the bar falls back to "Home".
+ */
+private enum class HomeView(
+    val label: String?,
+) {
+    HUB(null),
+    PANCHANG("Today's Panchang"),
+    FESTIVALS("Festivals"),
+    EVENTS("Events"),
 }
 
 /** The hub landing: header, a tappable today's-panchang hero, the auspicious-now strip, the full
@@ -931,6 +942,7 @@ private fun HomeContentPreview() {
     VedicMitraTheme {
         HomeContent(
             uiState = sampleHomeState(),
+            onSubViewChange = {},
             onNavigateToLocation = {},
             onOpenCalendar = {},
             onOpenReminders = {},

@@ -7,19 +7,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Fixed
-- **Pada was computed wrongly at its boundaries.** Deriving the Moon's pada by taking its longitude
-  modulo the nakshatra span and dividing again rounds twice, which put **40 of the 108 pada
-  boundaries in the wrong quarter**. Pada feeds the Navamsha and the Nadi-dosha cancellation in
-  Kundali Matching, so the fix reaches beyond the panchang itself.
-
-### Changed
-- **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
-  is a whole number of arcseconds (a nakshatra is 48,000, a pada 12,000, a tithi 43,200) while most
-  are non-terminating in degrees, so dividing in degrees left boundary cases to the mercy of
-  floating-point rounding. Divisions are documented as half-open — a longitude exactly on a boundary
-  belongs to the division beginning, so 26°40′00″ is Krittika rather than Bharani.
-
 ### Added
 - **"Ends in" for every limb of the panchanga.** The panchang detail now shows when each limb gives
   way to the next — tithi, nakshatra, pada, yoga, karana, chandra rashi, surya rashi (the sankranti)
@@ -28,10 +15,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Home now distinguishes the day's tithi from the current one.** The card is still named for the
   tithi running at sunrise, as panchangas name the day, with a live line beneath showing what is
   actually running now and how long it lasts.
-
-## [Unreleased]
-
-### Added
 - **The Kundali screen is now a swipeable book.** The birth chart opens as pages you swipe between,
   starting with the **Lagna Kundali** and the **Rashi (Chandra) Kundali** — the same placements
   counted from the Moon instead of the ascendant, which is how the two charts are read side by side
@@ -48,6 +31,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   chart pages rather than taken on trust.
 - **Mahadasha and Antardasha.** The full Vimshottari cycle from birth with the running period marked,
   and the nine sub-periods of whichever mahadasha is running now.
+
+### Changed
+- **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
+  is a whole number of arcseconds (a nakshatra is 48,000, a pada 12,000, a tithi 43,200) while most
+  are non-terminating in degrees, so dividing in degrees left boundary cases to the mercy of
+  floating-point rounding. Divisions are documented as half-open — a longitude exactly on a boundary
+  belongs to the division beginning, so 26°40′00″ is Krittika rather than Bharani.
+- **Every screen's title bar now reads the same way** — "Vedic Mitra" with the open destination
+  beneath it. Previously the four tabs showed their own label, pushed screens showed the app name
+  with nothing under it, and the Home tab kept saying "Home" while a detail view was open.
+
+### Fixed
+- **Pada was computed wrongly at its boundaries.** Deriving the Moon's pada by taking its longitude
+  modulo the nakshatra span and dividing again rounds twice, which put **40 of the 108 pada
+  boundaries in the wrong quarter**. Pada feeds the Navamsha and the Nadi-dosha cancellation in
+  Kundali Matching, so the fix reaches beyond the panchang itself.
 
 ## [0.7.0] - 2026-08-22
 
