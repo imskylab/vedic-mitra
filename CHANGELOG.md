@@ -37,8 +37,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   counted from the Moon instead of the ascendant, which is how the two charts are read side by side
   in a printed panchang. A header names the open page and dots show where you are.
 - **Jataka properties.** A page of the standing details a panchanga lists beside the charts: janma
-  rashi and its lord, nakshatra with pada, gana, varna, yoni, nadi, lagna, the Sun in both zodiacs,
-  the ayanamsa at birth, and the Shaka, Vikram and samvatsara years.
+  rashi and its lord, nakshatra with pada, varna, vashya, yoni, gana and nadi in the classical
+  Ashtakoota order, lagna, the Sun in both zodiacs, the ayanamsa at birth, and the Shaka, Vikram and
+  samvatsara years.
 - **Spashta Graha.** A table of all nine grahas — position to the arcminute within the sign,
   nakshatra and pada, retrograde marker, and the navamsha (D9) sign.
 - **Pramukh Yoga.** The named combinations present in the chart — Gajakesari, Budhaditya,

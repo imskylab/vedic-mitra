@@ -23,6 +23,8 @@ package io.github.vedicmitra.core.astronomy
  * @property nakshatra the Moon's nakshatra with its pada.
  * @property gana Deva, Manushya or Rakshasa, from the birth nakshatra.
  * @property varna Brahmin, Kshatriya, Vaishya or Shudra, from the Moon's rashi.
+ * @property vashya the class the Moon's sign belongs to — Chatushpada, Manava, Jalachara,
+ *   Vanachara or Keeta. Dhanu and Makara split at their midpoint, so this depends on the degree.
  * @property yoni the animal symbol of the birth nakshatra.
  * @property nadi Aadi, Madhya or Antya, from the birth nakshatra.
  * @property lagna the ascendant's rashi.
@@ -43,6 +45,7 @@ data class JatakaProfile(
     val pada: Int,
     val gana: String,
     val varna: String,
+    val vashya: String,
     val yoni: String,
     val nadi: String,
     val lagna: Rasi,
@@ -104,6 +107,7 @@ internal fun jatakaProfileOf(
         pada = moonPada,
         gana = GANA_BY_NAKSHATRA[nakshatraIndex].label(),
         varna = VARNA_BY_RASI[moon.rasi.index].label(),
+        vashya = vashyaOf(moon.rasi.index, moon.position.degrees).label(),
         yoni = YONI_BY_NAKSHATRA[nakshatraIndex].label(),
         nadi = NADI_BY_NAKSHATRA[nakshatraIndex].label(),
         lagna = lagna.rasi,
@@ -133,6 +137,8 @@ private fun sunSiderealAt(): (Long) -> Double =
 private fun Gana.label(): String = name.titleCase()
 
 private fun Varna.label(): String = name.titleCase()
+
+private fun Vashya.label(): String = name.titleCase()
 
 private fun Yoni.label(): String = name.titleCase()
 

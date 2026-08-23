@@ -346,9 +346,11 @@ private fun jatakaEntries(jataka: JatakaProfile): List<Pair<String, String>> =
         "Janma Rashi" to jataka.janmaRashi.name,
         "Rashi lord" to jataka.rashiLord.displayName,
         "Nakshatra" to "${jataka.nakshatra.name} · pada ${jataka.pada}",
-        "Gana" to jataka.gana,
+        // In the classical Ashtakoota order, which is how a panchanga lists them.
         "Varna" to jataka.varna,
+        "Vashya" to jataka.vashya,
         "Yoni" to jataka.yoni,
+        "Gana" to jataka.gana,
         "Nadi" to jataka.nadi,
         "Lagna" to jataka.lagna.name,
         "Surya Rashi" to jataka.sunRashi.name,

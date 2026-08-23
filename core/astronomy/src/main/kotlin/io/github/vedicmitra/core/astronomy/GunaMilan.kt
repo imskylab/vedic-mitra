@@ -219,6 +219,46 @@ private val VASYA_SETS: List<Set<Int>> =
         setOf(9),
     )
 
+/**
+ * The vashya class of a Moon sign — the group a person belongs to, as a panchanga lists it.
+ *
+ * Distinct from [VASYA_SETS] above, which answers a different question: that table says which signs
+ * a sign *controls*, and exists to score the koota. This one names the class itself.
+ */
+internal enum class Vashya {
+    CHATUSHPADA,
+    MANAVA,
+    JALACHARA,
+    VANACHARA,
+    KEETA,
+}
+
+/**
+ * The vashya class for a Moon in [rasiIndex] at [degreesIntoSign] degrees.
+ *
+ * Dhanu and Makara are split at their midpoint — the archer's human half then his equine half, and
+ * the crocodile's land half then its water half — which is why this takes the degree and not just
+ * the sign. The koota scorer above omits that refinement; here the degree is available, so it is
+ * applied rather than approximated.
+ */
+internal fun vashyaOf(
+    rasiIndex: Int,
+    degreesIntoSign: Int,
+): Vashya {
+    val firstHalf = degreesIntoSign < HALF_SIGN_DEGREES
+    return when (rasiIndex) {
+        0, 1 -> Vashya.CHATUSHPADA
+        2, 5, 6, 10 -> Vashya.MANAVA
+        3, 11 -> Vashya.JALACHARA
+        4 -> Vashya.VANACHARA
+        7 -> Vashya.KEETA
+        8 -> if (firstHalf) Vashya.MANAVA else Vashya.CHATUSHPADA
+        else -> if (firstHalf) Vashya.CHATUSHPADA else Vashya.JALACHARA
+    }
+}
+
+private const val HALF_SIGN_DEGREES = 15
+
 private fun vashyaKoota(
     groom: GunaMilanProfile,
     bride: GunaMilanProfile,
