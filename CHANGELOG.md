@@ -29,6 +29,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   tithi running at sunrise, as panchangas name the day, with a live line beneath showing what is
   actually running now and how long it lasts.
 
+## [Unreleased]
+
+### Changed
+- **Every screen's title bar now reads the same way** — "Vedic Mitra" with the open destination
+  beneath it. Previously the four tabs showed their own label, pushed screens showed the app name
+  with nothing under it, and the Home tab kept saying "Home" while a detail view was open.
+
 ## [0.7.0] - 2026-08-22
 
 ### Added
