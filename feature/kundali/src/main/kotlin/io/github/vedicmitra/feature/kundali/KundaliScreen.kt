@@ -13,6 +13,7 @@ package io.github.vedicmitra.feature.kundali
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -59,6 +62,8 @@ import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
 import io.github.vedicmitra.core.astronomy.NatalGraha
 import io.github.vedicmitra.core.astronomy.Rasi
+import io.github.vedicmitra.core.astronomy.Varga
+import io.github.vedicmitra.core.astronomy.vargaChart
 import io.github.vedicmitra.core.designsystem.component.TableColumn
 import io.github.vedicmitra.core.designsystem.component.VedicPropertyTable
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
@@ -155,6 +160,7 @@ private enum class KundaliPage(
     RASHI_CHART("Rashi (Chandra) Kundali"),
     JATAKA("Jataka"),
     SPASHTA_GRAHA("Spashta Graha"),
+    VARGA("Varga Kundali"),
     YOGAS("Pramukh Yoga"),
     MAHADASHA("Mahadasha"),
     ANTARDASHA("Antardasha"),
@@ -194,6 +200,8 @@ private fun KundaliPageContent(
         KundaliPage.JATAKA -> JatakaPage(jataka = chart.jataka, modifier = scroll)
 
         KundaliPage.SPASHTA_GRAHA -> SpashtaGrahaPage(grahas = chart.grahas, modifier = scroll)
+
+        KundaliPage.VARGA -> VargaPage(chart = chart, modifier = scroll)
 
         KundaliPage.YOGAS -> YogasPage(yogas = chart.yogas, modifier = scroll)
 
@@ -410,6 +418,80 @@ private fun formatDegrees(degrees: Double): String {
 }
 
 private const val MINUTES_PER_DEGREE = 60
+
+/**
+ * The divisional charts, one figure at a time.
+ *
+ * A chip per varga rather than a page per varga: nine more pages would triple the length of the book
+ * for what is really one page asked nine ways, and swiping between two divisions to compare them is
+ * worse than tapping between them. The pager stays a table of contents; the chips are the dial.
+ *
+ * Defaults to the D-9, which is the varga a reader means when they do not say which.
+ */
+@Composable
+private fun VargaPage(
+    chart: NatalChart,
+    modifier: Modifier,
+) {
+    var selected by rememberSaveable { mutableStateOf(Varga.D9.ordinal) }
+    val varga = Varga.entries[selected]
+    val cast = chart.vargaChart(varga)
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Varga.entries.forEachIndexed { index, entry ->
+                FilterChip(
+                    selected = index == selected,
+                    onClick = { selected = index },
+                    label = { Text(text = entry.name) },
+                )
+            }
+        }
+        Text(
+            text = "${varga.name} · ${varga.displayName} — ${VARGA_PURPOSE[varga].orEmpty()}",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        NorthIndianChart(houses = cast.houses, grahas = chart.grahas, houseOf = cast::houseOf)
+        Text(
+            text = vargaCaption(varga),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** How to read the divisional figure on screen, and what not to read into it. */
+private fun vargaCaption(varga: Varga): String =
+    if (varga == Varga.D1) {
+        "The rashi chart itself — the same figure as the Lagna Kundali, kept here so the divisions " +
+            "can be read against the chart they came from."
+    } else {
+        "Each rashi is cut into ${varga.divisions} equal parts of " +
+            "${formatDegrees(DEGREES_PER_RASHI / varga.divisions)} each, and every graha takes the " +
+            "sign its part belongs to. House 1 is the lagna's own sign in this division, not in " +
+            "the rashi chart, so the houses mean here what they mean anywhere. Positions are good " +
+            "to about an arcminute, so a graha sitting on a division edge may fall either side of " +
+            "it — the finer the varga, the likelier that is."
+    }
+
+private const val DEGREES_PER_RASHI = 30.0
+
+/** What each divisional chart is traditionally read for. */
+private val VARGA_PURPOSE: Map<Varga, String> =
+    mapOf(
+        Varga.D1 to "the birth chart itself; body, life and everything else in outline",
+        Varga.D6 to "illness, debts and the troubles one contends with",
+        Varga.D7 to "children and lineage",
+        Varga.D8 to "sudden difficulty, longevity and what is inherited",
+        Varga.D9 to "marriage, the partner, and the inner strength of every graha",
+        Varga.D11 to "gains, and the undoing of them",
+        Varga.D16 to "vehicles, comforts and happiness of the ordinary kind",
+        Varga.D20 to "worship, practice and spiritual inclination",
+        Varga.D27 to "strength and weakness in the body's own constitution",
+    )
 
 /** One chart page: the diagram, plus a sentence on how to read it. */
 @Composable
