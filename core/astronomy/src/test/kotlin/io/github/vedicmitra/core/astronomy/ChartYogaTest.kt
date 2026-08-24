@@ -21,6 +21,9 @@ import org.junit.Test
  * The charts are synthetic: grahas are placed at chosen longitudes rather than taken from a real
  * birth, so a rule is tested against exactly the placement it claims to detect. A yoga is a claim
  * people repeat about themselves, so a false positive matters more than a miss.
+ *
+ * These check the rules are implemented as written. Whether they are the *right* rules is a separate
+ * question, answered by [JagannathaHoraReferenceTest] against an independent implementation.
  */
 class ChartYogaTest {
     @Test
@@ -53,28 +56,6 @@ class ChartYogaTest {
         assertThat(yogaNames(chartWith(Graha.GURU to 3), lagnaRasi = 3)).contains("Hamsa")
         // A kendra alone is not enough.
         assertThat(yogaNames(chartWith(Graha.SHANI to 2), lagnaRasi = 2)).doesNotContain("Sasa")
-    }
-
-    @Test
-    fun `Sunapha, Anapha and Durudhara depend on what flanks the Moon`() {
-        // Everything parked far away, then one graha in the 2nd from the Moon.
-        val sunapha = yogaNames(chartWith(Graha.MOON to 0, Graha.SHUKRA to 1))
-        assertThat(sunapha).contains("Sunapha")
-        assertThat(sunapha).doesNotContain("Kemadruma")
-
-        val anapha = yogaNames(chartWith(Graha.MOON to 0, Graha.SHUKRA to 11))
-        assertThat(anapha).contains("Anapha")
-
-        val durudhara = yogaNames(chartWith(Graha.MOON to 0, Graha.SHUKRA to 1, Graha.SHANI to 11))
-        assertThat(durudhara).contains("Durudhara")
-        assertThat(durudhara).doesNotContain("Sunapha")
-    }
-
-    @Test
-    fun `Kemadruma is the Moon with nothing beside it`() {
-        // The Sun and the nodes do not count as attendants, so a Moon flanked only by them is bare.
-        val names = yogaNames(chartWith(Graha.MOON to 0, Graha.SUN to 1, Graha.RAHU to 11, farAway = 6))
-        assertThat(names).contains("Kemadruma")
     }
 
     @Test

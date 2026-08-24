@@ -374,7 +374,8 @@ private fun SpashtaGrahaPage(
         )
         Text(
             text =
-                "Positions are degrees and minutes into the rashi. Vakri marks retrograde motion. " +
+                "Positions are degrees and minutes into the rashi. (V) marks retrograde motion and " +
+                    "A marks astangata — combust, lost in the Sun's glare, by the classical orbs. " +
                     "Navamsha is the graha's sign in the D9 division.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -387,8 +388,9 @@ private val SPASHTA_COLUMNS =
         TableColumn(header = "Graha", weight = 1.1f),
         TableColumn(header = "Position", weight = 1.0f),
         TableColumn(header = "Rashi", weight = 1.1f),
-        TableColumn(header = "Nakshatra–pada", weight = 1.6f),
-        TableColumn(header = "Navamsha", weight = 1.1f),
+        TableColumn(header = "Nakshatra–pada", weight = 1.5f),
+        TableColumn(header = "Navamsha", weight = 1.0f),
+        TableColumn(header = "Ast.", weight = 0.5f),
     )
 
 private fun spashtaRow(graha: NatalGraha): List<String> =
@@ -398,6 +400,7 @@ private fun spashtaRow(graha: NatalGraha): List<String> =
         graha.rasi.name,
         "${graha.nakshatra.name}–${graha.pada}",
         graha.navamsha.name,
+        if (graha.combust) "A" else "",
     )
 
 /** Degrees to a whole-degree-and-minute string, matching the Spashta Graha column. */

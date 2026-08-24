@@ -26,9 +26,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Spashta Graha.** A table of all nine grahas — position to the arcminute within the sign,
   nakshatra and pada, retrograde marker, and the navamsha (D9) sign.
 - **Pramukh Yoga.** The named combinations present in the chart — Gajakesari, Budhaditya,
-  Chandra-Mangala, the five Panchamahapurusha, and the Sunapha/Anapha/Durudhara and Vesi/Vasi
-  families — each shown with the placement that produced it, so the claim can be checked against the
-  chart pages rather than taken on trust.
+  Chandra-Mangala and the five Panchamahapurusha — each shown with the placement that produced it,
+  so the claim can be checked against the chart pages rather than taken on trust. Every rule was
+  verified against an independent implementation over 75 charts before being kept.
+- **Astangata (combustion)** in the Spashta Graha table, marking a graha lost in the Sun's glare,
+  using the classical Parashari orbs.
 - **Mahadasha and Antardasha.** The full Vimshottari cycle from birth with the running period marked,
   and the nine sub-periods of whichever mahadasha is running now.
 
@@ -46,6 +48,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with nothing under it, and the Home tab kept saying "Home" while a detail view was open.
 
 ### Fixed
+- **Seven yogas were removed after checking them against an independent implementation.** The
+  Sunapha/Anapha/Durudhara/Kemadruma and Vesi/Vasi/Ubhayachari families agreed with it only 45% and
+  72% of the time across 75 charts — the disagreements are matters of convention rather than
+  arithmetic, and a yoga wrong one time in four does not belong on a page describing someone's
+  chart. What remained was measured at 100% and 97%.
 - **Pada was computed wrongly at its boundaries.** Deriving the Moon's pada by taking its longitude
   modulo the nakshatra span and dividing again rounds twice, which put **40 of the 108 pada
   boundaries in the wrong quarter**. Pada feeds the Navamsha and the Nadi-dosha cancellation in

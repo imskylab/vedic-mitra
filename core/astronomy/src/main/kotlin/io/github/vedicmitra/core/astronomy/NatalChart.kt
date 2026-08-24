@@ -56,6 +56,9 @@ data class NatalChart(
  * @property house the whole-sign house it falls in (1..12, counted from the ascendant).
  * @property houseFromMoon the same, counted from the Moon's rashi — its house in the Rashi Kundali.
  * @property retrograde whether it is moving retrograde (the nodes always are; Sun/Moon never).
+ * @property combust whether it is astangata — within the Sun's glare. Needs the Sun's position as
+ *   well as its own, so unlike the derivations below it cannot be computed from the longitude alone.
+ *   Defaults to `false` for the lightweight charts test fixtures build.
  */
 data class NatalGraha(
     val graha: Graha,
@@ -64,6 +67,7 @@ data class NatalGraha(
     val house: Int,
     val houseFromMoon: Int,
     val retrograde: Boolean,
+    val combust: Boolean = false,
 ) {
     // The Spashta Graha columns are all pure functions of siderealLongitude, so they are derived
     // rather than stored. Passing them in would let a caller hand over a nakshatra that contradicts
