@@ -64,7 +64,7 @@ class MatchmakingViewModelTest {
             coEvery { astronomyEngine.natalChartAt(any(), GeoCoordinates(11.0, 11.0)) } returns
                 AppResult.Success(chart(nakshatra = 8, moonRasiIndex = 3))
             coEvery { astronomyEngine.natalChartAt(any(), GeoCoordinates(22.0, 22.0)) } returns
-                AppResult.Success(chart(nakshatra = 13, moonRasiIndex = 5))
+                AppResult.Success(chart(nakshatra = 13, moonRasiIndex = 5, marsRasiIndex = 2))
 
             val viewModel = MatchmakingViewModel(repository(listOf(groom, bride)), astronomyEngine)
             viewModel.load()
@@ -77,6 +77,54 @@ class MatchmakingViewModelTest {
             assertThat(state.result?.total).isEqualTo(26.5)
             assertThat(state.result?.verdict).isEqualTo(GunaMilanVerdict.GOOD)
             assertThat(state.result?.doshas).isEmpty()
+            // Mars is in the 6th from this groom's lagna and the 3rd from his Moon, and in the 3rd
+            // and 10th for the bride, so neither carries Mangal dosha.
+            assertThat(state.mangal?.standing).isFalse()
+            assertThat(state.mangal?.groom?.afflicted).isFalse()
+            assertThat(state.mangal?.bride?.afflicted).isFalse()
+        }
+
+    @Test
+    fun `when both charts carry Mangal dosha it cancels between them`() =
+        runTest {
+            val groom = profile("g", "Ravi", Gender.MALE, GeoCoordinates(11.0, 11.0))
+            val bride = profile("b", "Sita", Gender.FEMALE, GeoCoordinates(22.0, 22.0))
+            // Mars in Karka is the 4th from a Mesha lagna, and nothing in these charts answers it:
+            // Karka is neither Mars's own sign nor one where it is held harmless, and there is no
+            // Jupiter to aspect it.
+            coEvery { astronomyEngine.natalChartAt(any(), GeoCoordinates(11.0, 11.0)) } returns
+                AppResult.Success(chart(nakshatra = 8, moonRasiIndex = 3, marsRasiIndex = 3))
+            coEvery { astronomyEngine.natalChartAt(any(), GeoCoordinates(22.0, 22.0)) } returns
+                AppResult.Success(chart(nakshatra = 13, moonRasiIndex = 5, marsRasiIndex = 3))
+
+            val viewModel = MatchmakingViewModel(repository(listOf(groom, bride)), astronomyEngine)
+            viewModel.load()
+
+            val state = viewModel.uiState.value as MatchmakingUiState.Ready
+            assertThat(state.mangal?.groom?.present).isTrue()
+            assertThat(state.mangal?.bride?.present).isTrue()
+            assertThat(state.mangal?.mutuallyCancelled).isTrue()
+            assertThat(state.mangal?.standing).isFalse()
+        }
+
+    @Test
+    fun `one afflicted chart against a clear one leaves the dosha standing`() =
+        runTest {
+            val groom = profile("g", "Ravi", Gender.MALE, GeoCoordinates(11.0, 11.0))
+            val bride = profile("b", "Sita", Gender.FEMALE, GeoCoordinates(22.0, 22.0))
+            coEvery { astronomyEngine.natalChartAt(any(), GeoCoordinates(11.0, 11.0)) } returns
+                AppResult.Success(chart(nakshatra = 8, moonRasiIndex = 3, marsRasiIndex = 3))
+            coEvery { astronomyEngine.natalChartAt(any(), GeoCoordinates(22.0, 22.0)) } returns
+                AppResult.Success(chart(nakshatra = 13, moonRasiIndex = 5, marsRasiIndex = 2))
+
+            val viewModel = MatchmakingViewModel(repository(listOf(groom, bride)), astronomyEngine)
+            viewModel.load()
+
+            val state = viewModel.uiState.value as MatchmakingUiState.Ready
+            assertThat(state.mangal?.groom?.present).isTrue()
+            assertThat(state.mangal?.bride?.present).isFalse()
+            assertThat(state.mangal?.mutuallyCancelled).isFalse()
+            assertThat(state.mangal?.standing).isTrue()
         }
 
     @Test
@@ -118,9 +166,15 @@ class MatchmakingViewModelTest {
             birthZoneId = "Asia/Kolkata",
         )
 
+    /**
+     * A chart carrying only what a match reads: the Moon for Ashtakoota, and Mars and Venus for
+     * Mangal dosha. The lagna is always Mesha, so a Mars sign is also its house from the lagna.
+     */
     private fun chart(
         nakshatra: Int,
         moonRasiIndex: Int,
+        marsRasiIndex: Int = 5,
+        venusRasiIndex: Int = 0,
     ): NatalChart =
         NatalChart(
             lagna = Lagna(siderealLongitude = 0.0, rasi = Rasi(index = 0, name = "Mesha")),
@@ -128,15 +182,19 @@ class MatchmakingViewModelTest {
             moonHouses = emptyList(),
             grahas =
                 listOf(
+                    Graha.MOON to moonRasiIndex,
+                    Graha.MANGALA to marsRasiIndex,
+                    Graha.SHUKRA to venusRasiIndex,
+                ).map { (graha, rasiIndex) ->
                     NatalGraha(
-                        graha = Graha.MOON,
-                        siderealLongitude = 0.0,
-                        rasi = Rasi(index = moonRasiIndex, name = "Sign"),
+                        graha = graha,
+                        siderealLongitude = rasiIndex * 30.0,
+                        rasi = Rasi(index = rasiIndex, name = "Sign"),
                         house = 1,
                         houseFromMoon = 1,
                         retrograde = false,
-                    ),
-                ),
+                    )
+                },
             moonNakshatra = Nakshatra(number = nakshatra, name = "Nakshatra"),
             moonPada = 1,
             vimshottari = emptyList(),

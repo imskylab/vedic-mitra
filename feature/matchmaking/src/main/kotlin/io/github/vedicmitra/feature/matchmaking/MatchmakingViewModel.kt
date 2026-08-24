@@ -17,7 +17,10 @@ import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.GunaMilanProfile
 import io.github.vedicmitra.core.astronomy.GunaMilanResult
+import io.github.vedicmitra.core.astronomy.MangalDosha
 import io.github.vedicmitra.core.astronomy.gunaMilan
+import io.github.vedicmitra.core.astronomy.mangalDoshaCancelsBetween
+import io.github.vedicmitra.core.astronomy.mangalDoshaOf
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.BirthProfile
@@ -44,8 +47,8 @@ class MatchmakingViewModel
         private val profileRepository: ProfileRepository,
         private val astronomyEngine: AstronomyEngine,
     ) : ViewModel() {
-        // Moon positions for every matchable profile, keyed by id, cast once on load.
-        private val positions = mutableMapOf<String, GunaMilanProfile>()
+        // What each matchable profile's chart contributes to a match, keyed by id, cast once on load.
+        private val positions = mutableMapOf<String, MatchInputs>()
         private var males: List<MatchProfileOption> = emptyList()
         private var females: List<MatchProfileOption> = emptyList()
         private var groomId: String? = null
@@ -86,7 +89,22 @@ class MatchmakingViewModel
         private fun emitReady() {
             val groom = groomId?.let { positions[it] }
             val bride = brideId?.let { positions[it] }
-            val result = if (groom != null && bride != null) gunaMilan(groom = groom, bride = bride) else null
+            val result =
+                if (groom != null && bride != null) {
+                    gunaMilan(groom = groom.guna, bride = bride.guna)
+                } else {
+                    null
+                }
+            val mangal =
+                if (groom != null && bride != null) {
+                    MangalMatch(
+                        groom = groom.mangal,
+                        bride = bride.mangal,
+                        mutuallyCancelled = mangalDoshaCancelsBetween(groom.mangal, bride.mangal),
+                    )
+                } else {
+                    null
+                }
             _uiState.value =
                 MatchmakingUiState.Ready(
                     males = males,
@@ -94,11 +112,12 @@ class MatchmakingViewModel
                     selectedGroomId = groomId,
                     selectedBrideId = brideId,
                     result = result,
+                    mangal = mangal,
                 )
         }
 
-        /** Casts [profile]'s natal chart and reduces it to the Moon nakshatra + sign, or `null`. */
-        private suspend fun positionOf(profile: BirthProfile): GunaMilanProfile? {
+        /** Casts [profile]'s natal chart and reduces it to what a match needs from it, or `null`. */
+        private suspend fun positionOf(profile: BirthProfile): MatchInputs? {
             val birth = birthMomentOf(profile) ?: return null
             val chart =
                 (astronomyEngine.natalChartAt(birth.first, birth.second) as? AppResult.Success)?.data ?: return null
@@ -107,10 +126,16 @@ class MatchmakingViewModel
                     .firstOrNull { it.graha == Graha.MOON }
                     ?.rasi
                     ?.index ?: return null
-            return GunaMilanProfile(
-                nakshatraNumber = chart.moonNakshatra.number,
-                moonRasiIndex = moonRasiIndex,
-                moonPada = chart.moonPada,
+            return MatchInputs(
+                guna =
+                    GunaMilanProfile(
+                        nakshatraNumber = chart.moonNakshatra.number,
+                        moonRasiIndex = moonRasiIndex,
+                        moonPada = chart.moonPada,
+                    ),
+                // Computed here rather than in the screen because it needs the whole chart, which
+                // this is the only place that has one -- the Moon reduction throws the rest away.
+                mangal = mangalDoshaOf(chart),
             )
         }
 
@@ -135,6 +160,28 @@ class MatchmakingViewModel
             MatchProfileOption(id = id, name = name.ifBlank { "Unnamed" })
     }
 
+/** What one profile's chart contributes to a match. */
+private data class MatchInputs(
+    val guna: GunaMilanProfile,
+    val mangal: MangalDosha,
+)
+
+/**
+ * Mangal dosha across the pair.
+ *
+ * @property groom the groom's dosha, with its working.
+ * @property bride the bride's dosha, with its working.
+ * @property mutuallyCancelled whether both carry it, which classically answers it on both sides.
+ */
+data class MangalMatch(
+    val groom: MangalDosha,
+    val bride: MangalDosha,
+    val mutuallyCancelled: Boolean,
+) {
+    /** Whether the match has an unanswered Mangal dosha on either side. */
+    val standing: Boolean get() = !mutuallyCancelled && (groom.present || bride.present)
+}
+
 /** A chart-ready profile of a given gender, offered for selection. */
 data class MatchProfileOption(
     val id: String,
@@ -154,6 +201,7 @@ sealed interface MatchmakingUiState {
      * @property selectedGroomId the chosen groom, or `null` if none available.
      * @property selectedBrideId the chosen bride, or `null` if none available.
      * @property result the match for the current pairing, or `null` until both are chosen.
+     * @property mangal Mangal dosha across the pair, or `null` until both are chosen.
      */
     data class Ready(
         val males: List<MatchProfileOption>,
@@ -161,5 +209,6 @@ sealed interface MatchmakingUiState {
         val selectedGroomId: String?,
         val selectedBrideId: String?,
         val result: GunaMilanResult?,
+        val mangal: MangalMatch? = null,
     ) : MatchmakingUiState
 }

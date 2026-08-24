@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.GunaMilanResult
 import io.github.vedicmitra.core.astronomy.GunaMilanVerdict
 import io.github.vedicmitra.core.astronomy.KootaScore
+import io.github.vedicmitra.core.astronomy.MangalDosha
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 
 /**
@@ -102,6 +103,7 @@ private fun MatchReady(
             PickerRow("Bride", uiState.females, uiState.selectedBrideId, onSelectBride, Modifier.weight(1f))
         }
         uiState.result?.let { ResultCard(it) }
+        uiState.mangal?.let { MangalCard(it) }
         Text(
             text = "Ashtakoota (Guna Milan) from both Moons; general classical guidance, not a ruling.",
             style = MaterialTheme.typography.bodySmall,
@@ -163,6 +165,97 @@ private fun ResultCard(result: GunaMilanResult) {
             }
             Spacer(modifier = Modifier.height(4.dp))
             result.scores.forEach { KootaRow(it) }
+        }
+    }
+}
+
+/**
+ * Mangal dosha across the pair, with its working shown.
+ *
+ * The working is the point. A bare "Manglik" verdict is the thing this card exists to avoid: most
+ * charts trigger the rule somewhere, so the number that matters to a reader is *which* placement and
+ * whether anything answers it. Every trigger and every parihara is listed.
+ */
+@Composable
+private fun MangalCard(mangal: MangalMatch) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Mangal dosha",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = if (mangal.standing) "Present" else "Not standing",
+                    style = MaterialTheme.typography.titleMedium,
+                    color =
+                        if (mangal.standing) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                )
+            }
+            if (mangal.mutuallyCancelled) {
+                Text(
+                    text =
+                        "Both charts carry it, which classically answers it on both sides — the " +
+                            "objection is that the partner suffers for it, and that does not arise here.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            MangalSide(label = "Groom", dosha = mangal.groom)
+            MangalSide(label = "Bride", dosha = mangal.bride)
+            Text(
+                text =
+                    "Mars in the 1st, 2nd, 4th, 7th, 8th or 12th from the lagna, the Moon or Venus. " +
+                        "Traditions differ on the houses and on what may be counted from, so each " +
+                        "placement is listed separately rather than merged into one verdict.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** One partner's triggers and parihara. */
+@Composable
+private fun MangalSide(
+    label: String,
+    dosha: MangalDosha,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = "$label — ${if (dosha.present) "afflicted" else "clear"}",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+        )
+        if (!dosha.afflicted) {
+            Text(
+                text = "Mars falls in no house that raises the dosha.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        dosha.triggers.forEach { trigger ->
+            Text(
+                text = trigger.description + (trigger.cancellation?.let { " — $it" } ?: ""),
+                style = MaterialTheme.typography.bodySmall,
+                color =
+                    if (trigger.cancelled) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+            )
+        }
+        dosha.cancellations.forEach { cancellation ->
+            Text(
+                text = cancellation,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
