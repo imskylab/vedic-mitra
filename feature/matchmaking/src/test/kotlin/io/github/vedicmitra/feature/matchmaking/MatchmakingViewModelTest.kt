@@ -82,6 +82,15 @@ class MatchmakingViewModelTest {
             assertThat(state.mangal?.standing).isFalse()
             assertThat(state.mangal?.groom?.afflicted).isFalse()
             assertThat(state.mangal?.bride?.afflicted).isFalse()
+            // Pushya (8) and Hasta (13): the inclusive count is 6, so Mahendra fails; 8 + 13 = 21 is
+            // not a vedha sum; Waist against Neck, so Rajju holds; and 23 from her star to his, so
+            // Sthree Dheerga does too.
+            assertThat(state.porutham?.mahendra).isFalse()
+            assertThat(state.porutham?.vedha).isTrue()
+            assertThat(state.porutham?.rajju).isTrue()
+            assertThat(state.porutham?.sthreeDheerga).isTrue()
+            assertThat(state.groomNakshatra).isEqualTo(8)
+            assertThat(state.brideNakshatra).isEqualTo(13)
         }
 
     @Test
