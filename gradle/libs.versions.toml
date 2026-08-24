@@ -47,7 +47,7 @@ playServicesLocation = "21.4.0"
 # Offline coordinate -> IANA time-zone resolution (data is ODbL, from timezone-boundary-builder).
 timezonemap = "4.5"
 # Native compression used by timezonemap; on Android the @aar variant supplies the .so files.
-zstdJni = "1.4.9-5"
+zstdJni = "1.5.7-15"
 
 # --- Serialization -----------------------------------------------------------
 kotlinxSerialization = "1.11.0"
