@@ -22,6 +22,13 @@ package io.github.vedicmitra.core.astronomy
  * rather than needing a table. Checked against an independent implementation across 75 charts —
  * 7,500 placements, no disagreements.
  *
+ * **D-81 is deliberately absent even though the count works for it.** Its divisions are 22 arcminutes
+ * wide, and this engine's planetary positions are only good to arcminutes — 17% of sampled placements
+ * sit within two arcminutes of a division edge, so the sign it reports would be a coin-toss for a
+ * sixth of the chart. A varga is only as trustworthy as the longitude beneath it, and past about D-27
+ * that stops being true here. The same caution applies in lesser degree to D-20 and D-27; they are
+ * kept because the risk is a few percent rather than a sixth.
+ *
  * The vargas left out need more than a count. D-3, D-4, D-10, D-12, D-24, D-40, D-45 and D-60 keep
  * the same shape but start each rashi somewhere the count does not reach, so each needs a twelve-entry
  * table; D-2 (hora), D-5, D-30 (unequal divisions) and D-108/D-144 (compositions of other vargas) are
@@ -44,7 +51,6 @@ enum class Varga(
     D16(16, "Shodashamsa"),
     D20(20, "Vimshamsa"),
     D27(27, "Nakshatramsa"),
-    D81(81, "Nava-navamsa"),
 }
 
 /**

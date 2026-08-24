@@ -21,7 +21,7 @@ import org.junit.Test
  *
  * The point at issue is that one continuous count replaces a per-varga rule. These check both that
  * the collapsed form reproduces the classical statement case by case, and that it agrees with
- * Jagannatha Hora on real charts — 360 placements across five charts and eight vargas, drawn from a
+ * Jagannatha Hora on real charts — 315 placements across five charts and seven vargas, drawn from a
  * wider sample of 7,500 that had no disagreements.
  */
 class VargaTest {
@@ -103,15 +103,33 @@ class VargaTest {
     }
 
     @Test
-    fun `divisions whose span is not a whole arcsecond still land exactly`() {
-        // D-7, D-11 and D-81 span 15428.57, 9818.18 and 1333.33 arcseconds. Multiplying before
-        // dividing keeps these exact; dividing by the span first would not.
-        listOf(Varga.D7, Varga.D11, Varga.D81).forEach { varga ->
+    fun `divisions whose span is not a whole arcsecond still map cleanly`() {
+        // D-7 and D-11 span 15428.57 and 9818.18 arcseconds. Multiplying before dividing keeps the
+        // index exact; the assertion is on division *midpoints* rather than edges, because an edge
+        // like `d * 30.0 / 7` is not representable and lands a hair below the boundary it names —
+        // reporting the earlier division there is correct, not a bug.
+        listOf(Varga.D7, Varga.D11).forEach { varga ->
             val span = 30.0 / varga.divisions
             repeat(12 * varga.divisions) { d ->
-                assertWithMessage("${varga.displayName} boundary $d")
-                    .that(divisionIndex(varga, d * span))
+                assertWithMessage("${varga.displayName} division $d")
+                    .that(divisionIndex(varga, d * span + span / 2))
                     .isEqualTo(d)
+            }
+        }
+    }
+
+    @Test
+    fun `the division index never goes backwards across the zodiac`() {
+        Varga.entries.forEach { varga ->
+            var previous = 0
+            var degrees = 0.0
+            while (degrees < 360.0) {
+                val index = divisionIndex(varga, degrees)
+                assertWithMessage("${varga.displayName} at $degrees")
+                    .that(index)
+                    .isAtLeast(previous)
+                previous = index
+                degrees += 0.11
             }
         }
     }
@@ -195,20 +213,6 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
                     Varga.D27,
                     listOf("Kanya", "Mesha", "Kanya", "Mesha", "Dhanu", "Karka", "Simha", "Tula", "Mesha"),
                 ),
-                VargaGolden(
-                    Varga.D81,
-                    listOf(
-                        "Karka",
-                        "Mithuna",
-                        "Karka",
-                        "Mithuna",
-                        "Vrishabha",
-                        "Meena",
-                        "Vrishabha",
-                        "Dhanu",
-                        "Mithuna",
-                    ),
-                ),
             ),
         "Delhi 1975" to
             listOf(
@@ -250,10 +254,6 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
                     Varga.D27,
                     listOf("Dhanu", "Kanya", "Mithuna", "Tula", "Tula", "Mithuna", "Kanya", "Dhanu", "Mithuna"),
                 ),
-                VargaGolden(
-                    Varga.D81,
-                    listOf("Mesha", "Kanya", "Tula", "Tula", "Tula", "Vrishchika", "Simha", "Mesha", "Tula"),
-                ),
             ),
         "Chennai 2001" to
             listOf(
@@ -284,10 +284,6 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
                 VargaGolden(
                     Varga.D27,
                     listOf("Mithuna", "Kumbha", "Kanya", "Karka", "Vrishabha", "Karka", "Kanya", "Makara", "Karka"),
-                ),
-                VargaGolden(
-                    Varga.D81,
-                    listOf("Dhanu", "Vrishchika", "Karka", "Meena", "Kanya", "Meena", "Simha", "Kanya", "Meena"),
                 ),
             ),
         "Mumbai 1988" to
@@ -339,10 +335,6 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
                 VargaGolden(
                     Varga.D27,
                     listOf("Mithuna", "Meena", "Dhanu", "Kanya", "Kanya", "Tula", "Kumbha", "Tula", "Mesha"),
-                ),
-                VargaGolden(
-                    Varga.D81,
-                    listOf("Dhanu", "Kumbha", "Mithuna", "Kanya", "Kanya", "Vrishchika", "Dhanu", "Dhanu", "Mithuna"),
                 ),
             ),
         "London 1980" to
@@ -404,20 +396,6 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
                 VargaGolden(
                     Varga.D27,
                     listOf("Tula", "Kumbha", "Dhanu", "Simha", "Makara", "Tula", "Mesha", "Meena", "Kanya"),
-                ),
-                VargaGolden(
-                    Varga.D81,
-                    listOf(
-                        "Dhanu",
-                        "Vrishchika",
-                        "Mithuna",
-                        "Mithuna",
-                        "Karka",
-                        "Dhanu",
-                        "Vrishabha",
-                        "Kumbha",
-                        "Simha",
-                    ),
                 ),
             ),
     )

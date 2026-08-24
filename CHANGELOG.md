@@ -10,8 +10,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - **Divisional charts (vargas).** The navamsha rule turned out to be general: counting divisions
   continuously from 0° Mesha reproduces the classical rule for ten of the divisional charts, so the
-  engine now computes D-1, D-6, D-7, D-8, D-9, D-11, D-16, D-20, D-27 and D-81 from one function
-  rather than ten. Verified against an independent implementation — 7,500 placements, no
+  engine now computes D-1, D-6, D-7, D-8, D-9, D-11, D-16, D-20 and D-27 from one function rather
+  than nine. Verified against an independent implementation — 7,500 placements, no
   disagreements.
 - **"Ends in" for every limb of the panchanga.** The panchang detail now shows when each limb gives
   way to the next — tithi, nakshatra, pada, yoga, karana, chandra rashi, surya rashi (the sankranti)
