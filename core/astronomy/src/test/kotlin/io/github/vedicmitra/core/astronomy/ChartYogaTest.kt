@@ -23,7 +23,7 @@ import org.junit.Test
  * people repeat about themselves, so a false positive matters more than a miss.
  *
  * These check the rules are implemented as written. Whether they are the *right* rules is a separate
- * question, answered by [JagannathaHoraReferenceTest] against an independent implementation.
+ * question, answered by [ReferenceImplementationTest] against an independent implementation.
  */
 class ChartYogaTest {
     @Test

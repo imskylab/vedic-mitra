@@ -16,7 +16,7 @@ import org.junit.Test
 import kotlin.math.abs
 
 /**
- * Cross-checked against drikpanchang.com for Delhi over 2026-08-02..08 (see
+ * Cross-checked against published almanacs for Delhi over 2026-08-02..08 (see
  * [[vedic-mitra-panchang-reference-data]] in project memory) — every reference instant below
  * matches within ~5 minutes, well inside the 10-minute margin these tests allow.
  */
@@ -24,7 +24,7 @@ class LunarDayTest {
     private val delhi = GeoCoordinates(latitude = 28.6139, longitude = 77.2090)
 
     @Test
-    fun `moonrise and moonset are within 10 minutes of the drikpanchang reference`() {
+    fun `moonrise and moonset are within 10 minutes of the published almanac reference`() {
         // 2026-08-02 12:00 IST (06:30 UTC): reference moonrise 21:24 IST, moonset 08:52 IST.
         val result = LunarDay.moonTimes(1_785_652_200_000L, delhi.latitude, delhi.longitude)
 
@@ -38,7 +38,7 @@ class LunarDayTest {
     fun `carries the next moonrise forward when the civil day has none`() {
         // 2026-08-07 12:00 IST: the Moon doesn't rise again until 00:37 IST on 2026-08-08 — just
         // outside 2026-08-07's civil day — because the lunar day (~24h50m) is longer than the civil
-        // day. Panchang almanacs (drikpanchang) show that "next" rise on the Aug-07 page, so the app
+        // day. Published almanacs show that "next" rise on the Aug-07 page, so the app
         // carries it forward rather than showing nothing.
         val result = LunarDay.moonTimes(1_786_084_200_000L, delhi.latitude, delhi.longitude)
 

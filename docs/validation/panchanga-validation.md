@@ -32,14 +32,18 @@ A repeatable way to check the app's astronomy against an authoritative reference
 
 ## Reference sources
 
-Use both and note where they disagree (they occasionally differ by a locale/ayanamsa convention):
+Pick **two** independent published panchangas — an established online almanac and a printed one, or
+two online ones from different publishers — and note where they disagree. They occasionally differ by
+a locale or ayanamsa convention, and seeing that disagreement is the point: a limb where two
+references disagree is not a limb the app can be judged wrong on.
 
-- **Drik Panchang** — <https://www.drikpanchang.com/> (Panchang, and "Kundali" for charts)
-- **Prokerala** — <https://www.prokerala.com/astrology/panchang/> and
-  <https://www.prokerala.com/astrology/birth-chart/>
+Whichever you pick, it must expose a **daily panchang** view and a **birth chart / kundali** view, and
+let you set the location and the ayanamsa. Set the location to **New Delhi** and the ayanamsa to
+**Lahiri (Chitrapaksha)** so the comparison is apples-to-apples with the app's built-in default.
 
-Set the location to **New Delhi** and the ayanamsa to **Lahiri (Chitrapaksha)** so the comparison is
-apples-to-apples with the app's built-in default.
+This document deliberately does not name or link particular services. Which almanac you compare
+against is your choice; what matters is that it is independent of this project, that you record which
+one you used in the PR or issue, and that its ayanamsa matches.
 
 ## How to read a match
 
@@ -56,7 +60,7 @@ apples-to-apples with the app's built-in default.
 
 Open the app's Home → Today's Panchang for your location, and the reference for the same date/location.
 
-| Field | App | Drik | Prokerala | Match? |
+| Field | App | Reference A | Reference B | Match? |
 | --- | --- | --- | --- | --- |
 | Vara (weekday) | | | | |
 | Tithi (paksha + name) | | | | |
@@ -78,7 +82,7 @@ build itself is sound. Location: **New Delhi**.
 
 ### 2026-08-05 (worked example — expected values filled in)
 
-| Field | Expected (Drik-cross-checked) | App | Match? |
+| Field | Expected (cross-checked) | App | Match? |
 | --- | --- | --- | --- |
 | Ayana | Dakshinayana | | |
 | Ritu | Varsha (monsoon) | | |
@@ -98,9 +102,9 @@ build itself is sound. Location: **New Delhi**.
 ## C — Kundali (birth chart)
 
 Reproducible synthetic birth so anyone can regenerate it: **1 Jan 2000, 06:00 IST, New Delhi**
-(28.6139° N, 77.2090° E). Enter it in the app (Profile → add) and in Drik/Prokerala's chart generator.
+(28.6139° N, 77.2090° E). Enter it in the app (Profile → add) and in each reference's chart generator.
 
-| Field | App | Drik | Prokerala | Match? |
+| Field | App | Reference A | Reference B | Match? |
 | --- | --- | --- | --- | --- |
 | Lagna (ascendant rashi) | | | | |
 | Moon nakshatra + pada | | | | |
@@ -124,7 +128,7 @@ Not a numeric match, but a sanity pass on the personalised ranking:
 ## E — Matchmaking (Guna Milan)
 
 Pick a male and a female profile and compare the app's Ashtakoota total to a free calculator (e.g.
-Prokerala or AstroSage "Ashtakoot Guna Milan") for the same two Moon nakshatras/signs.
+any published "Ashtakoot Guna Milan" calculator) for the same two Moon nakshatras/signs.
 
 - **Nadi, Bhakoot, Gana, Tara, Varna, Graha Maitri** should match a standard calculator. Gana uses
   the standard asymmetric groom/bride table, and Nadi/Bhakoot apply the classical dosha cancellations
@@ -141,30 +145,29 @@ sign counted from the read rashi) and, when you read your own birth sign, **Tara
 nakshatra counted from your janma nakshatra). So validating it means confirming those two counts and
 their favourable/weak classification against a reference — not matching prose.
 
-Reference: Drik Panchang's **Tarabala & Chandrabala** tool
-(<https://www.drikpanchang.com/panchang/tarabala-chandrabala.html>, or from the Panchang menu → Tarabala
-Chandrabala; set the date and New Delhi), which lists, for a day, the favourable **Chandra Bala** rashis
-and favourable **Tara Bala** nakshatras. Prokerala's **daily rashifal**
-(<https://www.prokerala.com/astrology/rashifal/>) gives a looser per-sign sanity read.
+Reference: any published **Tarabala & Chandrabala** table for the day, set to the same date and to
+New Delhi. Such a table lists the favourable **Chandra Bala** rashis and the favourable **Tara Bala**
+nakshatras — the two counts to check against. A per-sign daily rashifal from the same source gives a
+looser sanity read, but it is editorial prose and cannot settle a disagreement; the two counts can.
 
 Steps:
 
 1. Open the app → **Rashifal** for your sign (the starred one). Note today's band, the "Moon in
    … (the Nth from …)" line, and the week strip.
-2. On Drik's Tarabala/Chandrabala tool for the **same sunrise date + New Delhi**:
+2. On the reference Tarabala/Chandrabala table for the **same sunrise date + New Delhi**:
    - **Chandrabala** — your rashi should be listed favourable exactly when the app shows a strong
      position (1, 3, 6, 7, 10, 11) and unfavourable at 4 / 8 / 12. The app's "Nth from *your sign*" is
      the day's Moon sign counted from yours; confirm it matches the day's Moon rashi.
    - **Tarabala** (personalised read only) — for your janma nakshatra, the app's tara name and verdict
      (Sampat / Kshema / Sadhaka / Mitra / Ati-Mitra favourable; Vipat / Pratyari / Vadha weak; Janma
-     neutral) should match Drik's tarabala for the day.
-3. **Week strip** — step Drik forward a day at a time and confirm each pip's colour (green auspicious /
+     neutral) should match the reference tarabala for the day.
+3. **Week strip** — step the reference forward a day at a time and confirm each pip's colour (green auspicious /
    amber mixed / red challenging) tracks that day's Chandrabala (plus your Tarabala), i.e. follows the
    transit Moon moving ~1 sign every 2.25 days.
 4. **Cross-sign sanity** — browse a sign whose Moon-transit position today is 4 / 8 / 12; it should read
    "a day for care". One at 1 / 3 / 6 / 7 / 10 / 11 should read favourable.
 
-| Field | App | Drik | Match? |
+| Field | App | Reference | Match? |
 | --- | --- | --- | --- |
 | Today's Moon rashi | | | |
 | Today's Moon nakshatra | | | |

@@ -21,7 +21,7 @@ import org.junit.Test
  *
  * The point at issue is that one continuous count replaces a per-varga rule. These check both that
  * the collapsed form reproduces the classical statement case by case, and that it agrees with
- * Jagannatha Hora on real charts — 315 placements across five charts and seven vargas, drawn from a
+ * an independent implementation on real charts — 315 placements across five charts and seven vargas, drawn from a
  * wider sample of 7,500 that had no disagreements.
  */
 class VargaTest {
@@ -135,7 +135,7 @@ class VargaTest {
     }
 
     @Test
-    fun `every varga matches Jagannatha Hora on the reference charts`() {
+    fun `every varga matches the reference implementation on the reference charts`() {
         // Placements sitting within EPHEMERIS_UNCERTAINTY_ARCMIN of a division edge are counted
         // rather than asserted. This engine's longitudes are good to roughly an arcminute, so which
         // side of an edge such a placement falls on is not a question it can answer -- asserting it

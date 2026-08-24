@@ -186,9 +186,9 @@ A task is complete only when **all** hold:
 
 ## 11. Guardrails for AI assistants
 
-- **Astronomy math must be verifiable.** The engine cross-checks against datepanchang.com and
-  drikpanchang.com; any new or changed calculation must cite the convention it follows and be
-  validated against those references before shipping. Don't guess formulas or magic constants.
+- **Astronomy math must be verifiable.** The engine cross-checks against published almanacs and
+  an independent reference implementation; any new or changed calculation must cite the convention
+  it follows and be validated against those references before shipping. Don't guess formulas or magic constants.
 - **Respect the port boundary.** Add capability behaviour behind its `:core` port and bind the
   implementation in that module's `di/` package; don't have features reach past a port to a concrete
   engine, scheduler, notifier, or location provider.

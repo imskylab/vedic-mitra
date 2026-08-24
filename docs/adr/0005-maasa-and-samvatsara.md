@@ -42,7 +42,7 @@ Follow the **amanta** scheme and the **Chandramana** samvatsara throughout, both
   map it: `index = (shakaYear + 11) mod 60`. Because the walk finds the actual Ugadi, the samvatsara
   changes at Ugadi rather than on 1 January or at the solar new year.
 
-Every value was cross-checked against drikpanchang.com and the published Ugadi 2026 almanac
+Every value was cross-checked against published almanacs, including the Ugadi 2026 almanac
 (Parabhava Nama Samvatsara, new year 19 March 2026, Shaka 1948), and reproduced by a standalone port
 of the `Ephemeris` math before the Kotlin was written:
 

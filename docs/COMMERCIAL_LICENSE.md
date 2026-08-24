@@ -42,8 +42,7 @@ If you are unsure, ask. Answering the question costs nothing.
 The engine, not the wrapper. `:core:astronomy` is ~4,500 lines of computed astronomy —
 Meeus ephemeris, Lahiri ayanamsa, sunrise-tithi day naming, muhurta and kalam derivation,
 Vimshottari dasha, Ashtakoota matching — with ~22 test files behind it, cross-checked against
-[drikpanchang.com](https://www.drikpanchang.com) and [datepanchang.com](https://datepanchang.com)
-before each release. It has no network dependency and no ephemeris data files to license.
+published almanacs and an independent reference implementation before each release. It has no network dependency and no ephemeris data files to license.
 
 A commercial license grants you the right to use that work in a product you keep closed.
 

@@ -16,9 +16,9 @@ import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 /**
- * The natal chart against Jagannatha Hora, an independent Vedic astrology implementation.
+ * The natal chart against an independent Vedic astrology implementation.
  *
- * The goldens below were taken from its public API and are **inlined deliberately** — a test that
+ * The goldens below were taken from that implementation and are **inlined deliberately** — a test that
  * called a network service would be neither offline nor reproducible, and this project computes
  * everything on-device precisely so it never depends on someone else's server.
  *
@@ -33,9 +33,9 @@ import org.junit.Test
  * bins. The Sun was separately checked against an independent Meeus computation and agreed to half an
  * arcminute, and the Lahiri ayanamsa to fifteen arcseconds.
  */
-class JagannathaHoraReferenceTest {
+class ReferenceImplementationTest {
     @Test
-    fun `every graha falls in the rashi Jagannatha Hora reports`() {
+    fun `every graha falls in the rashi the reference implementation reports`() {
         forEachPlacement { chart, expected, actual ->
             assertWithMessage("${chart.label}: ${expected.graha.displayName} rashi")
                 .that(actual.rasi.name)
@@ -44,7 +44,7 @@ class JagannathaHoraReferenceTest {
     }
 
     @Test
-    fun `every graha falls in the nakshatra and pada Jagannatha Hora reports`() {
+    fun `every graha falls in the nakshatra and pada the reference implementation reports`() {
         forEachPlacement { chart, expected, actual ->
             assertWithMessage("${chart.label}: ${expected.graha.displayName} nakshatra")
                 .that(actual.nakshatra.number)
@@ -56,7 +56,7 @@ class JagannathaHoraReferenceTest {
     }
 
     @Test
-    fun `every graha falls in the navamsha Jagannatha Hora reports`() {
+    fun `every graha falls in the navamsha the reference implementation reports`() {
         forEachPlacement { chart, expected, actual ->
             assertWithMessage("${chart.label}: ${expected.graha.displayName} navamsha")
                 .that(actual.navamsha.name)
@@ -65,7 +65,7 @@ class JagannathaHoraReferenceTest {
     }
 
     @Test
-    fun `the ascendant falls in the rashi Jagannatha Hora reports`() {
+    fun `the ascendant falls in the rashi the reference implementation reports`() {
         REFERENCE_CHARTS.forEach { chart ->
             assertWithMessage("${chart.label}: lagna")
                 .that(
@@ -86,7 +86,7 @@ class JagannathaHoraReferenceTest {
     }
 }
 
-/** One graha's placement as Jagannatha Hora reports it. */
+/** One graha's placement as the reference implementation reports it. */
 private data class Placement(
     val graha: Graha,
     val rasi: String,

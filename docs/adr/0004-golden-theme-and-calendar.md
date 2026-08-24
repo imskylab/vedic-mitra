@@ -39,8 +39,8 @@ full panchanga. It reuses the existing `AstronomyEngine`, which already accepts 
 the day — and follows the established location-with-default-fallback pattern.
 
 > Superseded detail: earlier revisions sampled each day at local noon. On days where the tithi
-> rolls over between sunrise and midday, noon reads one tithi ahead of published panchangas
-> (Drik/Date Panchang), which name the day by its sunrise tithi. Both Home and Panchang now resolve
+> rolls over between sunrise and midday, noon reads one tithi ahead of published panchangas,
+> which name the day by its sunrise tithi. Both Home and Panchang now resolve
 > the day's sunrise via `AstronomyEngine.sunriseAt(...)` and sample the panchanga identity there, so
 > they agree with each other and with reference panchangas.
 

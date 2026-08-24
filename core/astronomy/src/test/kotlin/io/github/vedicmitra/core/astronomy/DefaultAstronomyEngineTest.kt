@@ -106,10 +106,10 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
-    fun `ayana and ritu match drikpanchang and datepanchang reference for New Delhi`() =
+    fun `ayana and ritu match the published almanac reference for New Delhi`() =
         runTest {
-            // 2026-08-05 12:00 IST (06:30 UTC) — cross-checked against datepanchang.com (Mumbai) and
-            // drikpanchang.com (Delhi): both report Dakshinayana and Varsha (monsoon) Ritu.
+            // 2026-08-05 12:00 IST (06:30 UTC) — cross-checked against two published almanacs, for
+            // Mumbai and Delhi: both report Dakshinayana and Varsha (monsoon) Ritu.
             val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
 
             val snap = snapshot(result)
@@ -118,11 +118,11 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
-    fun `maasa and samvatsara match drikpanchang reference for New Delhi`() =
+    fun `maasa and samvatsara match the published almanac reference for New Delhi`() =
         runTest {
             // 2026-08-05 12:00 IST — amanta Ashadha, Krishna paksha (2026 has an intercalary Adhika
             // Jyeshtha, so early August is Ashadha, not Shravana), in the Parabhava samvatsara
-            // (Shaka 1948). Cross-checked against drikpanchang.com and the published Ugadi 2026
+            // (Shaka 1948). Cross-checked against published almanacs, including the Ugadi 2026
             // almanac (Parabhava Nama Samvatsara, new year 19 March 2026).
             val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
             val snap = snapshot(result)
@@ -135,11 +135,11 @@ class DefaultAstronomyEngineTest {
         }
 
     @Test
-    fun `moonrise and moonset match drikpanchang reference for New Delhi`() =
+    fun `moonrise and moonset match the published almanac reference for New Delhi`() =
         runTest {
-            // 2026-08-05 12:00 IST — cross-checked against drikpanchang.com for Delhi: moonrise
+            // 2026-08-05 12:00 IST — cross-checked against a published almanac for Delhi: moonrise
             // 23:04 IST, moonset 11:52 IST. The engine's low-precision ephemeris + bisection search
-            // lands consistently within ~5 minutes of drikpanchang.com across a full week of
+            // lands consistently within ~5 minutes of the published almanac across a full week of
             // real reference data (see project memory) — allow 10 minutes of margin here.
             val result = engine.snapshotAt(Instant.fromEpochMilliseconds(1_785_911_400_000L), delhi)
             val snap = snapshot(result)
@@ -216,7 +216,7 @@ class DefaultAstronomyEngineTest {
     fun `sunriseAt anchors the day's tithi to sunrise, matching published panchangas`() =
         runTest {
             // 2026-08-09 at New Delhi: the tithi rolls Krishna Ekadashi -> Dwadashi around 11:15 IST.
-            // Published panchangas (Drik / Date Panchang) name the day by its *sunrise* tithi, so the
+            // Published panchangas name the day by its *sunrise* tithi, so the
             // day's identity must be sampled at sunrise, not at noon.
             val noon = Instant.fromEpochMilliseconds(1_786_257_000_000L) // 2026-08-09 12:00 IST
 

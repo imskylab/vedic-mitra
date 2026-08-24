@@ -21,7 +21,7 @@ class MuhurtaCalculatorTest {
     private val sunTimes = SunTimes(sunrise = sunrise, sunset = sunset)
     private val fifteenth = DAY_MILLIS / 15
 
-    // Verified against drikpanchang.com for Delhi, 2026-08-02..08 — see
+    // Verified against published almanacs for Delhi, 2026-08-02..08 — see
     // [[vedic-mitra-panchang-reference-data]] in project memory for the derivation.
     private val expectedDurMuhurtaSegments =
         mapOf(

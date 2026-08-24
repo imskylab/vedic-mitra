@@ -26,9 +26,8 @@
 > events. It shows all of this on a home dashboard and a browsable monthly **Panchang** calendar
 > (tap any day for its full panchang; notable days are highlighted), wrapped in a golden/maroon
 > brand theme drawn from the app emblem, navigated via a bottom bar. Calculations — including the
-> sunrise-tithi convention by which the day is named — are cross-checked against
-> [datepanchang.com](https://datepanchang.com) and [drikpanchang.com](https://www.drikpanchang.com)
-> before shipping. Phases 5–6 and 8–12 remain largely aspirational — see the [Roadmap](#roadmap) for
+> sunrise-tithi convention by which the day is named — are cross-checked against published
+> almanacs and an independent reference implementation before shipping. Phases 5–6 and 8–12 remain largely aspirational — see the [Roadmap](#roadmap) for
 > the full picture and current progress.
 
 ---
