@@ -33,7 +33,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the nine sub-periods of whichever mahadasha is running now.
 
 ### Changed
-- **The Support tab now carries a donation-box glyph** — a coin dropping into a daana-patra. Drawn
+- **The Support tab now carries a donation-box glyph** — an Om coin dropping into a daana-patra. Drawn
   as an alpha stencil, so it takes the navigation bar's colours like every other tab, shows the
   selected state, and stays legible on a dark theme.
 - **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
