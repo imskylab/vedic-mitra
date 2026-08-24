@@ -35,7 +35,9 @@ internal fun natalChart(
     val lagna = lagnaAt(epochMillis, latitude, longitude)
     val moonLongitude = siderealLongitude(Graha.MOON, t)
     val moonRasiIndex = AngularBuckets.rashiIndex(moonLongitude)
-    val grahas = Graha.entries.map { natalGraha(it, epochMillis, t, lagna.rasi.index, moonRasiIndex) }
+    val sunLongitude = siderealLongitude(Graha.SUN, t)
+    val grahas =
+        Graha.entries.map { natalGraha(it, epochMillis, t, lagna.rasi.index, moonRasiIndex, sunLongitude) }
     val moonNakshatra = nakshatraOf(moonLongitude)
     val moonPada = padaOf(moonLongitude)
     return NatalChart(
@@ -56,16 +58,19 @@ private fun natalGraha(
     t: Double,
     ascendantRasiIndex: Int,
     moonRasiIndex: Int,
+    sunLongitude: Double,
 ): NatalGraha {
     val longitude = siderealLongitude(graha, t)
     val rasiIndex = AngularBuckets.rashiIndex(longitude)
+    val retrograde = isRetrograde(graha, epochMillis)
     return NatalGraha(
         graha = graha,
         siderealLongitude = longitude,
         rasi = Rasi(rasiIndex, RASHI_NAMES[rasiIndex]),
         house = houseOf(rasiIndex, ascendantRasiIndex),
         houseFromMoon = houseOf(rasiIndex, moonRasiIndex),
-        retrograde = isRetrograde(graha, epochMillis),
+        retrograde = retrograde,
+        combust = Astangata.isCombust(graha, longitude, sunLongitude, retrograde),
     )
 }
 

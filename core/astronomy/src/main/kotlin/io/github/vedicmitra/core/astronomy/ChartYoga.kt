@@ -30,25 +30,29 @@ data class ChartYoga(
 /**
  * The yogas this engine can decide, from a chart's sign, house and lordship placements.
  *
- * **Deliberately a short list.** Classical texts name hundreds, and most need aspects (drishti),
- * dignity beyond own-sign and exaltation, or divisional charts — none of which this engine has. The
- * rules below are the ones that follow from where the grahas sit, so each is checkable by eye
- * against the chart pages, and each carries the [ChartYoga.rule] that produced it rather than
- * asserting a result the reader cannot verify.
+ * **Deliberately a short list, and shortened further by measurement.** Classical texts name
+ * hundreds, and most need aspects (drishti), dignity beyond own-sign and exaltation, or divisional
+ * charts — none of which this engine has.
  *
- * Yogas are claims people repeat about themselves, so a wrong one is worse than a missing one.
+ * The rules kept here were checked against an independent implementation over 75 charts:
+ * Panchamahapurusha agreed on 75/75 and Gajakesari on 73/75. Budhaditya and Chandra-Mangala are true
+ * by definition — two grahas sharing a rashi — and need no orbs or conventions to decide.
+ *
+ * The Sunapha/Anapha/Durudhara/Kemadruma and Vesi/Vasi/Ubhayachari families were **removed** after
+ * that check: they agreed only 45% and 72% of the time. Most of the gap is convention rather than
+ * arithmetic — whether the nodes count as attendants, and whether a graha lost in the Sun's glare
+ * still attends — and even granting a perfect combustion oracle the lunar family only reached 81%.
+ * A yoga is a claim a person repeats about themselves, so a rule that is wrong one time in four does
+ * not belong on the page. They can return when the conventions are settled deliberately.
  */
 internal fun chartYogasOf(chart: NatalChart): List<ChartYoga> {
     val byGraha = chart.grahas.associateBy { it.graha }
     val moon = byGraha.getValue(Graha.MOON)
-    val sun = byGraha.getValue(Graha.SUN)
     return buildList {
         gajakesari(byGraha, moon)?.let(::add)
         conjunction(byGraha, Graha.SUN, Graha.BUDHA, BUDHADITYA)?.let(::add)
         conjunction(byGraha, Graha.MOON, Graha.MANGALA, CHANDRA_MANGALA)?.let(::add)
         addAll(panchamahapurusha(byGraha, chart.lagna.rasi.index))
-        addAll(lunarAttendants(chart.grahas, moon))
-        addAll(solarAttendants(chart.grahas, sun))
     }
 }
 
@@ -111,68 +115,6 @@ private fun panchamahapurusha(
         }
     }
 
-/**
- * Sunapha, Anapha, Durudhara and Kemadruma — what sits either side of the Moon.
- *
- * The Sun and the nodes are excluded from the count, which is the usual convention: the Sun is never
- * far from the Moon's neighbouring signs, and the nodes are shadows rather than bodies.
- */
-private fun lunarAttendants(
-    grahas: List<NatalGraha>,
-    moon: NatalGraha,
-): List<ChartYoga> {
-    val companions = grahas.filter { it.graha !in NON_ATTENDANTS && it.graha != Graha.MOON }
-    val second = companions.filter { houseFrom(it, moon) == SECOND }
-    val twelfth = companions.filter { houseFrom(it, moon) == TWELFTH }
-    val withMoon = companions.filter { it.rasi.index == moon.rasi.index }
-    return when {
-        second.isNotEmpty() && twelfth.isNotEmpty() ->
-            listOf(attendant("Durudhara", "both the 2nd and the 12th from the Moon", second + twelfth))
-
-        second.isNotEmpty() -> listOf(attendant("Sunapha", "the 2nd from the Moon", second))
-        twelfth.isNotEmpty() -> listOf(attendant("Anapha", "the 12th from the Moon", twelfth))
-        withMoon.isEmpty() ->
-            listOf(
-                ChartYoga(
-                    name = "Kemadruma",
-                    rule = "No graha sits with the Moon, or in the 2nd or 12th from it.",
-                    summary = "The Moon stands unattended — traditionally a caution rather than a promise.",
-                ),
-            )
-
-        else -> emptyList()
-    }
-}
-
-/** Vesi, Vasi and Ubhayachari — the same idea measured from the Sun, with the Moon excluded. */
-private fun solarAttendants(
-    grahas: List<NatalGraha>,
-    sun: NatalGraha,
-): List<ChartYoga> {
-    val companions = grahas.filter { it.graha !in NON_ATTENDANTS && it.graha != Graha.MOON && it.graha != Graha.SUN }
-    val second = companions.filter { houseFrom(it, sun) == SECOND }
-    val twelfth = companions.filter { houseFrom(it, sun) == TWELFTH }
-    return when {
-        second.isNotEmpty() && twelfth.isNotEmpty() ->
-            listOf(attendant("Ubhayachari", "both the 2nd and the 12th from the Sun", second + twelfth))
-
-        second.isNotEmpty() -> listOf(attendant("Vesi", "the 2nd from the Sun", second))
-        twelfth.isNotEmpty() -> listOf(attendant("Vasi", "the 12th from the Sun", twelfth))
-        else -> emptyList()
-    }
-}
-
-private fun attendant(
-    name: String,
-    where: String,
-    grahas: List<NatalGraha>,
-): ChartYoga =
-    ChartYoga(
-        name = name,
-        rule = "${grahas.joinToString { it.graha.displayName }} in $where.",
-        summary = "A graha attending the luminary, read as steadying its significations.",
-    )
-
 /** Which house [graha] falls in, counted from [from]'s rashi. 1..12. */
 private fun houseFrom(
     graha: NatalGraha,
@@ -188,12 +130,7 @@ private fun ordinal(house: Int): String =
     }
 
 private const val RASHI_COUNT = 12
-private const val SECOND = 2
-private const val TWELFTH = 12
 private val KENDRA = setOf(1, 4, 7, 10)
-
-/** The Sun and the nodes do not count as attendants of the Moon. */
-private val NON_ATTENDANTS = setOf(Graha.SUN, Graha.RAHU, Graha.KETU)
 
 /** Exaltation rashi index per graha, classical. */
 private val EXALTATION =
