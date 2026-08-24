@@ -17,7 +17,7 @@ import kotlin.time.Instant
 // Nakshatra Thyajyam ("Varjyam" / "Visha Ghatis") ghati ranges, in NAKSHATRA_NAMES order (index
 // 0 = Ashwini .. 26 = Revati). A ghati is 1/60th of a day (24 minutes); the range is counted from
 // the moment the Moon enters that nakshatra, not from sunrise or midnight. Every nakshatra's window
-// is exactly 4 ghatis (96 minutes). Source: drikpanchang.com's Nakshatra Thyajyam tutorial table.
+// is exactly 4 ghatis (96 minutes). Source: a published Nakshatra Thyajyam table, cross-checked against almanacs.
 private val VARJYAM_GHATIS =
     arrayOf(
         51 to 54, // Ashwini

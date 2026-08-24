@@ -58,7 +58,7 @@ enum class Varga(
  *
  * The division index is `(arcseconds × divisions) / RASHI_ARCSEC`, multiplying **before** dividing
  * on purpose. A varga's division spans `108,000 / divisions` arcseconds, which is not a whole number
- * for D-7, D-11 or D-81 — dividing by it first would reintroduce exactly the rounding that #129
+ * for D-7 or D-11 — dividing by it first would reintroduce exactly the rounding that #129
  * removed from the pada. Multiplying first keeps every step in exact integer arithmetic; the largest
  * product any varga can produce is well inside a `Long`.
  */
