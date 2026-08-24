@@ -98,22 +98,17 @@ private data class Placement(
 /** A birth chart with the placements an independent implementation computed for it. */
 private data class ReferenceChart(
     val label: String,
-    val epochMillis: Long,
-    val latitude: Double,
-    val longitude: Double,
     val lagnaRasi: String,
     val placements: List<Placement>,
 ) {
-    fun compute(): NatalChart = natalChart(epochMillis, latitude, longitude)
+    /** Birth inputs come from [REFERENCE_BIRTHS] so the two reference tests cannot drift apart. */
+    fun compute(): NatalChart = referenceChartFor(label)
 }
 
 private val REFERENCE_CHARTS: List<ReferenceChart> =
     listOf(
         ReferenceChart(
             label = "Hyderabad 1990",
-            epochMillis = 642916200000L,
-            latitude = 17.385,
-            longitude = 78.4867,
             lagnaRasi = "Mithuna",
             placements =
                 listOf(
@@ -130,9 +125,6 @@ private val REFERENCE_CHARTS: List<ReferenceChart> =
         ),
         ReferenceChart(
             label = "Delhi 1975",
-            epochMillis = 184151700000L,
-            latitude = 28.6139,
-            longitude = 77.209,
             lagnaRasi = "Kumbha",
             placements =
                 listOf(
@@ -149,9 +141,6 @@ private val REFERENCE_CHARTS: List<ReferenceChart> =
         ),
         ReferenceChart(
             label = "Chennai 2001",
-            epochMillis = 985134600000L,
-            latitude = 13.0827,
-            longitude = 80.2707,
             lagnaRasi = "Meena",
             placements =
                 listOf(
@@ -168,9 +157,6 @@ private val REFERENCE_CHARTS: List<ReferenceChart> =
         ),
         ReferenceChart(
             label = "Mumbai 1988",
-            epochMillis = 599595600000L,
-            latitude = 19.076,
-            longitude = 72.8777,
             lagnaRasi = "Kanya",
             placements =
                 listOf(
@@ -187,9 +173,6 @@ private val REFERENCE_CHARTS: List<ReferenceChart> =
         ),
         ReferenceChart(
             label = "London 1980",
-            epochMillis = 329902200000L,
-            latitude = 51.5074,
-            longitude = -0.1278,
             lagnaRasi = "Karka",
             placements =
                 listOf(

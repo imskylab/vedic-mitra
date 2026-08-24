@@ -23,7 +23,7 @@ private val GULIKA_SEGMENT = intArrayOf(7, 6, 5, 4, 3, 2, 1)
 // Which of the day's fifteen equal parts (the same granularity as Abhijit Muhurta) is Dur
 // Muhurta, indexed by weekday (0 = Sunday .. 6 = Saturday), 1-based segment number(s). Every day
 // has exactly one, except Saturday which has two consecutive ones. Cross-checked against
-// drikpanchang.com for Delhi over 2026-08-02..08 (source, not folklore — a commonly repeated claim
+// published almanacs for Delhi over 2026-08-02..08 (source, not folklore — a commonly repeated claim
 // that every day but Friday has two Dur Muhurtas does not match this real data).
 private val DUR_MUHURTA_SEGMENTS =
     arrayOf(
