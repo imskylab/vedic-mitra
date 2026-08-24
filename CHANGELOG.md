@@ -9,6 +9,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Eight more divisional charts** — D-3, D-4, D-10, D-12, D-24, D-40, D-45 and D-60 — taking the
+  varga engine from nine to seventeen. D-10 (career) and D-12 (parents) are the two a reader asks for
+  by name after the D-9; D-60 is the most heavily weighted chart in classical practice.
+
+  **All seventeen are now one expression**, `sign = start(rashi) + step × division`, differing only in
+  where each rashi's first division starts and how far each step moves. That was fitted to an
+  independent implementation's output rather than recalled, then checked against **every** observation
+  — 520 placements per chart, **8,320 in all, with no disagreements**. Four vargas needed a
+  twelve-entry start table and those tables were read off the same data; the drekkana and
+  chaturthamsa turned out to need a *step* of four and three rather than a table at all.
+
+  The fit also settled what to leave out. D-2 (hora), D-5, D-30, D-108 and D-144 take two or more
+  different steps within a single sign, so they do not fit the expression at all. They are different
+  rules rather than variations, and approximating them would be inventing answers.
+
+- **A measured precision ladder for the vargas.** `Varga.divisionArcminutes` and
+  `Varga.needsExactBirthTime` replace hand-waving about accuracy with numbers. Measured over the same
+  sample, the share of placements sitting within an arcminute of a division edge — where the sign is
+  effectively a coin toss — runs from 0.0% for D-3 up to **8.3% for D-60**.
+
+  Below roughly D-24 the **birth time**, not the ephemeris, becomes the limit: the ascendant covers a
+  degree in about four minutes, so a birth time known only to the nearest five minutes leaves a D-60
+  ascendant meaningless however exact the arithmetic. The Varga page now says so on the finer charts
+  instead of repeating a generic caveat. D-81 stays out, at 22-arcminute divisions and 17% at risk.
+
+### Added
+
 - **The four additional porutham** — Mahendra, Vedha, Rajju and Sthree Dheerga — read beside the
   thirty-six gunas on Kundali Matching. Ashtakoota answers "how well matched" as a score; these
   answer "is anything wrong" as yes or no. They are **deliberately not folded into the total**,
