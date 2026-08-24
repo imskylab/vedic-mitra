@@ -25,12 +25,12 @@ import kotlin.time.Instant
 /**
  * Reference-grade validation of the engine against publicly-fixed astronomy — the automated half of
  * the panchanga validation pass (see `docs/validation/panchanga-validation.md` for the on-device,
- * against-Drik/Prokerala half).
+ * against-a-published-almanac half).
  *
  * These anchors are chosen because they don't need a third-party panchanga to know the answer: the
  * Sun's sidereal sign on a mid-month day is fixed by the Sankranti calendar, and the Lahiri ayanamsa
  * for the app's era is a published value. Fast-moving lunar limbs (tithi/nakshatra/yoga/karana) are
- * verified on-device against Drik/Prokerala via the checklist doc instead, since pinning exact
+ * verified on-device against a published almanac via the checklist doc instead, since pinning exact
  * reference values here would just hard-code one source's output.
  */
 class EngineValidationHarnessTest {

@@ -59,7 +59,7 @@ Holi/Phalguna Purnima 3 Mar).
 - **Negative — timing-sensitive festivals.** A few festivals are traditionally timed to night rather
   than sunrise — Janmashtami (nishita/midnight), Maha Shivaratri (nishita), Diwali (pradosh/amavasya
   at dusk). They use the same sunrise-tithi rule here and so **may differ by a day** from almanacs
-  that time them to night. This is the same Drik-vs-tradition simplification noted for Ayana/Ritu
+  that time them to night. This is the same drik-ganita-vs-tradition simplification noted for Ayana/Ritu
   (ADR 0005); a per-festival timing rule can refine it later.
 - **Negative — regional variation.** Festival names, dates, and which are observed vary by region
   (amanta vs purnimanta labelling, local customs). The rule set is a mainstream amanta baseline, not

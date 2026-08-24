@@ -28,7 +28,7 @@ for roughly 50-100 (48 coarse samples + up to two ~40-iteration bisections) — 
 irrelevant on a phone, and it sidesteps needing to correctly reproduce Meeus's specific
 interpolation-with-correction procedure.
 
-Supporting decisions, each cross-checked against drikpanchang.com for Delhi across 2026-08-02..08 (7
+Supporting decisions, each cross-checked against published almanacs for Delhi across 2026-08-02..08 (7
 consecutive days, every rise/set matching within ~5 minutes):
 
 - **New `Ephemeris` primitives**: the Moon's ecliptic latitude and distance (Meeus Tables 47.B and
@@ -57,5 +57,5 @@ consecutive days, every rise/set matching within ~5 minutes):
 - **Negative:** ~50-100 ephemeris evaluations per `moonTimes()` call versus Meeus's ~3 — negligible
   on-device, but worth knowing if this pattern is copied somewhere latency-sensitive.
 - **Negative:** the day-boundary attribution (which civil day a rise/set "belongs to") can disagree
-  with sites like drikpanchang.com by exactly one day near the monthly no-crossing gap — confirmed
+  with published almanacs by exactly one day near the monthly no-crossing gap — confirmed
   during cross-checking, not a bug, just a different convention (see `MoonTimes`'s KDoc).

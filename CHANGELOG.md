@@ -7,9 +7,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Third-party services are no longer named anywhere in the repository.** Calculations were
+  described as cross-checked against particular commercial almanac sites, and the varga and natal
+  goldens were labelled with the name of the reference implementation they came from. Naming other
+  people's products as accuracy benchmarks invites trademark and comparative-advertising questions
+  this project has no reason to answer, and the claim reads no differently without them: what makes
+  a calculation trustworthy is that it was checked against something independent, not which thing.
+  Docs, ADRs, KDoc and test names now say "published almanacs" and "an independent reference
+  implementation"; `JagannathaHoraReferenceTest` is now `ReferenceImplementationTest`. The manual
+  validation checklist now tells the reader to pick two independent almanacs and record which they
+  used, rather than linking specific ones.
+
+  Left in place deliberately: **drik ganita**, spelled lowercase, in the Ayana and Ritu
+  documentation. That is the classical Sanskrit name for the observed-position convention, as
+  against saura ganita's mean positions -- it names the maths the app implements, and one of those
+  sites is named after it rather than the other way round. Removing it would have lost real meaning.
+
 ### Added
 - **Divisional charts (vargas).** The navamsha rule turned out to be general: counting divisions
-  continuously from 0° Mesha reproduces the classical rule for ten of the divisional charts, so the
+  continuously from 0° Mesha reproduces the classical rule for nine of the divisional charts, so the
   engine now computes D-1, D-6, D-7, D-8, D-9, D-11, D-16, D-20 and D-27 from one function rather
   than nine. Verified against an independent implementation — 7,500 placements, no
   disagreements.
@@ -265,7 +283,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   as an **Adhika** (leap) month — correctly reporting Adhika Jyeshtha in 2026, so early August
   reads Ashadha rather than Shravana. Samvatsara follows the South-Indian Chandramana convention,
   advancing at Chaitra Shukla Pratipada (Ugadi) from the elapsed Shaka year. Cross-checked against
-  drikpanchang.com and the published Ugadi 2026 almanac (Parabhava Nama Samvatsara, Shaka 1948).
+  published almanacs, including the Ugadi 2026 almanac (Parabhava Nama Samvatsara, Shaka 1948).
   See [docs/adr/0005-maasa-and-samvatsara.md](docs/adr/0005-maasa-and-samvatsara.md).
 - **Hindu calendar screen.** A new `:feature:calendar` module with a monthly panchang grid — each
   day shows its tithi (Shukla/Krishna + number); tap a day for the full panchanga of that date, and
@@ -281,23 +299,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `Ephemeris` with the Moon's ecliptic latitude, distance, equatorial conversion, and Greenwich
   Mean Sidereal Time — none of which existed before) and finds rise/set crossings via a coarse
   scan plus bisection, since the Moon moves too fast and irregularly for the Sun's closed-form
-  hour-angle formula. Cross-checked against drikpanchang.com for Delhi across 7 consecutive days;
+  hour-angle formula. Cross-checked against published almanacs for Delhi across 7 consecutive days;
   every reference matched within ~5 minutes. Because the lunar day (~24h50m) is longer than the
   civil day, a civil day can have two moonrises/moonsets or none of one kind roughly once a month —
   `MoonTimes` follows the same nullable convention as `SunTimes` and reports the first occurrence
   within the civil day.
 - **Dur Muhurta and Varjyam.** `MuhurtaCalculator` now adds Dur Muhurta (one or two of the day's 15
-  equal parts, by a verified per-weekday table cross-checked against drikpanchang.com) and Varjyam
+  equal parts, by a verified per-weekday table cross-checked against published almanacs) and Varjyam
   (Nakshatra Thyajyam — a 4-ghati inauspicious window positioned within the current nakshatra by a
   verified 27-nakshatra ghati table, requiring a new backward search — `VarjyamCalculator` — for the
   exact instant the current nakshatra began, since ghatis are counted from nakshatra-start, not
   sunrise or midnight). Fixed a related correctness bug this surfaced: Abhijit Muhurta is now
   correctly suppressed on Wednesdays, when it would otherwise coincide with that day's Dur Muhurta.
 - **Ayana and Ritu.** `:core:astronomy` now derives Ayana (Uttarayana/Dakshinayana) and Ritu (the
-  six Indian seasons) from the Sun's sidereal longitude — the Drik (observed-position) convention.
+  six Indian seasons) from the Sun's sidereal longitude — the drik ganita (observed-position) convention.
   Both, along with the existing tithi/nakshatra/yoga/karana/vara/sunrise/Rahu Kalam/Brahma Muhurta
-  calculations, were cross-checked against [datepanchang.com](https://datepanchang.com) and
-  [drikpanchang.com](https://www.drikpanchang.com) for Mumbai/Delhi, 5 August 2026, and matched
+  calculations, were cross-checked against published almanacs for Mumbai/Delhi, 5 August 2026, and matched
   within a minute or so throughout.
 - **Moon phase and golden hour.** `:core:astronomy` now derives the Moon's phase (one of the eight
   traditional divisions, from its elongation) and computes the day's golden-hour windows (Sun
@@ -406,7 +423,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   refuses the background foreground-service start.
 - **The day's tithi is now named by its sunrise, not local noon.** On days where the tithi rolls
   over between sunrise and midday, sampling at noon read one tithi ahead of published panchangas —
-  e.g. 9 August 2026 showed Krishna Dwadashi where Drik/Date Panchang show Krishna Ekadashi (the
+  e.g. 9 August 2026 showed Krishna Dwadashi where published almanacs show Krishna Ekadashi (the
   tithi prevailing at sunrise, by which the day is named). Home and Panchang now resolve the day's
   sunrise (`AstronomyEngine.sunriseAt`) and sample the panchanga identity there, so they agree with
   each other and with reference panchangas. (Tithi is Moon−Sun elongation and so ayanamsa-independent;

@@ -16,7 +16,7 @@ import kotlin.math.min
 
 /**
  * Verifies the amanta-month and samvatsara logic against the real [Ephemeris]. Reference values
- * are cross-checked against drikpanchang.com and the published Ugadi 2026 (Parabhava) almanac;
+ * are cross-checked against published almanacs, including the Ugadi 2026 (Parabhava) almanac;
  * 2026 is a thirteen-month year (Adhika Jyeshtha), which the cases below deliberately exercise.
  */
 class MaasaCalculatorTest {
