@@ -136,20 +136,45 @@ class VargaTest {
 
     @Test
     fun `every varga matches Jagannatha Hora on the reference charts`() {
+        // Collected rather than asserted one at a time, so a failure reports the whole picture. Each
+        // mismatch carries how far the longitude sits from the nearest division edge: a placement
+        // that disagrees within an arcminute or two of an edge is this engine's ephemeris precision
+        // showing through, while one that disagrees mid-division would mean the rule itself is wrong.
+        // The two need different fixes, and the first assertion alone cannot tell them apart.
+        val mismatches = mutableListOf<String>()
         VARGA_GOLDENS.forEach { (label, goldens) ->
             val chart = referenceChartFor(label)
             goldens.forEach { golden ->
                 golden.signs.forEachIndexed { index, expected ->
                     val graha = GOLDEN_ORDER[index]
-                    val actual = chart.grahas.first { it.graha == graha }.varga(golden.varga)
-                    assertWithMessage("$label: ${graha.displayName} in ${golden.varga.displayName}")
-                        .that(actual.name)
-                        .isEqualTo(expected)
+                    val natal = chart.grahas.first { it.graha == graha }
+                    val actual = natal.varga(golden.varga)
+                    if (actual.name != expected) {
+                        mismatches +=
+                            "$label ${graha.displayName} in ${golden.varga.displayName}: " +
+                            "expected $expected, got ${actual.name} " +
+                            "(at ${"%.4f".format(natal.siderealLongitude)} deg, " +
+                            "${"%.2f".format(arcminutesFromEdge(golden.varga, natal.siderealLongitude))}" +
+                            " arcmin from the nearest division edge)"
+                    }
                 }
             }
         }
+        assertWithMessage(mismatches.joinToString("\n")).that(mismatches).isEmpty()
     }
 }
+
+/** How far [siderealDeg] sits from the nearest edge of its [varga] division, in arcminutes. */
+private fun arcminutesFromEdge(
+    varga: Varga,
+    siderealDeg: Double,
+): Double {
+    val span = AngularBuckets.RASHI_ARCSEC.toDouble() / varga.divisions
+    val into = (AngularBuckets.arcseconds(siderealDeg).toDouble()) % span
+    return minOf(into, span - into) / ARCSEC_PER_ARCMIN
+}
+
+private const val ARCSEC_PER_ARCMIN = 60.0
 
 /** The grahas the goldens are listed in, in order. */
 private val GOLDEN_ORDER =

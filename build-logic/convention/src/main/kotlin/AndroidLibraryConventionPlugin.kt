@@ -51,6 +51,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
 
             configureDetekt()
+            configureTestLogging()
 
             dependencies {
                 add("testImplementation", libs.findBundle("unit-test").get())
