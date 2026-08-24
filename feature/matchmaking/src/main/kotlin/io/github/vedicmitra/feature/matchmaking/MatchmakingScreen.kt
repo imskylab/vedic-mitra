@@ -40,10 +40,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.AdditionalPorutham
 import io.github.vedicmitra.core.astronomy.GunaMilanResult
 import io.github.vedicmitra.core.astronomy.GunaMilanVerdict
 import io.github.vedicmitra.core.astronomy.KootaScore
 import io.github.vedicmitra.core.astronomy.MangalDosha
+import io.github.vedicmitra.core.astronomy.rajjuOf
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 
 /**
@@ -103,6 +105,13 @@ private fun MatchReady(
             PickerRow("Bride", uiState.females, uiState.selectedBrideId, onSelectBride, Modifier.weight(1f))
         }
         uiState.result?.let { ResultCard(it) }
+        uiState.porutham?.let { poruthamValue ->
+            PoruthamCard(
+                porutham = poruthamValue,
+                groomNakshatra = uiState.groomNakshatra,
+                brideNakshatra = uiState.brideNakshatra,
+            )
+        }
         uiState.mangal?.let { MangalCard(it) }
         Text(
             text = "Ashtakoota (Guna Milan) from both Moons; general classical guidance, not a ruling.",
@@ -166,6 +175,93 @@ private fun ResultCard(result: GunaMilanResult) {
             Spacer(modifier = Modifier.height(4.dp))
             result.scores.forEach { KootaRow(it) }
         }
+    }
+}
+
+/**
+ * The four porutham read beside the thirty-six gunas.
+ *
+ * Kept out of the guna total on purpose. These are pass-or-fail conditions rather than points, and
+ * folding them in would let a strong score bury a failed Rajju — which is the one case a reader most
+ * needs to see. Rajju names the limb both fall on rather than reporting a bare failure, since which
+ * limb is shared is what the rule is held to say.
+ */
+@Composable
+private fun PoruthamCard(
+    porutham: AdditionalPorutham,
+    groomNakshatra: Int?,
+    brideNakshatra: Int?,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Four additional porutham",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = "${porutham.matched} / 4",
+                    style = MaterialTheme.typography.titleMedium,
+                    color =
+                        if (porutham.matched >= 3) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        },
+                )
+            }
+            PoruthamRow("Mahendra", porutham.mahendra, "Progeny and longevity")
+            PoruthamRow("Vedha", porutham.vedha, "Absence of mutual affliction")
+            PoruthamRow(
+                label = "Rajju",
+                held = porutham.rajju,
+                detail =
+                    if (porutham.rajju || groomNakshatra == null || brideNakshatra == null) {
+                        "Different limbs of the body"
+                    } else {
+                        "Both fall on the ${rajjuOf(groomNakshatra).displayName.lowercase()} — " +
+                            "the affliction this rule warns of"
+                    },
+            )
+            PoruthamRow("Sthree Dheerga", porutham.sthreeDheerga, "The bride's welfare and longevity")
+            Text(
+                text =
+                    "Pass-or-fail conditions, deliberately kept out of the 36 — a strong guna score " +
+                        "should not bury a failed Rajju.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** One porutham: whether it holds, and what it is held to govern. */
+@Composable
+private fun PoruthamRow(
+    label: String,
+    held: Boolean,
+    detail: String,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = if (held) "Matched" else "Not matched",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = if (held) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            )
+        }
+        Text(
+            text = detail,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

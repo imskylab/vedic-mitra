@@ -9,6 +9,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The four additional porutham** — Mahendra, Vedha, Rajju and Sthree Dheerga — read beside the
+  thirty-six gunas on Kundali Matching. Ashtakoota answers "how well matched" as a score; these
+  answer "is anything wrong" as yes or no. They are **deliberately not folded into the total**,
+  because a strong guna score should not be able to bury a failed Rajju, which is exactly the case
+  the score alone would hide. Rajju names the limb both partners fall on rather than reporting a bare
+  failure, since which limb is shared is what the rule is held to say.
+
+  **Every table was derived from an independent implementation rather than from memory**, by sweeping
+  one partner's nakshatra across a full lunar month and reading back its verdicts — 186 pairings over
+  six groom nakshatras and all twenty-seven bride nakshatras, all four rules agreeing throughout.
+  That was worth the trouble, because two of the four came out differently from the textbook summary
+  they would otherwise have been written from:
+
+  - **Vedha is not thirteen disjoint pairs.** It is a sum relation — two nakshatra numbers piercing
+    one another when they total 19, 28 or 37 — which gives most nakshatras *two* partners and the
+    nine from Magha to Jyeshtha *three*. Implemented as pairs it would have missed about half of all
+    vedha, and nothing in the app would have looked wrong.
+  - **Sthree Dheerga is directional and Mahendra is not.** Counting between two nakshatras one way
+    and the other always sums to 29; Mahendra's matching set is closed under that, so sources giving
+    opposite directions turn out to agree. Sthree Dheerga's range of 14..27 is not, so counting it
+    backwards inverts nearly every verdict. It is counted from the bride's star to the groom's.
+
+  One consequence that looks like a bug and is not: **Chitra pierces itself**, since 14 + 14 = 28. It
+  falls out of the same arithmetic as every other pairing, and the reference implementation reports
+  it too. A test pins it so it is never "fixed" by mistake.
+
+### Added
+
 - **Mangal dosha (Kuja dosha, Manglik, Chevvai dosham).** Across much of India this is the *first*
   question asked of a proposed match, and the app did not answer it at all — Ashtakoota without it
   was missing the question many users came to ask. Mars in the 1st, 2nd, 4th, 7th, 8th or 12th,
