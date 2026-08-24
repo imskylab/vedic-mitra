@@ -13,21 +13,13 @@ package io.github.vedicmitra.core.astronomy
 /**
  * The navamsha (D9) — each rashi divided into nine parts of 3°20′.
  *
- * The classical rule is stated as three cases: a movable sign's first navamsha is the sign itself, a
- * fixed sign's is the ninth from it, and a dual sign's is the fifth. Counting navamshas from 0° Aries
- * across the whole zodiac collapses all three into one expression — the ninth sign from Taurus and
- * the fifth from Gemini are exactly where a continuous count lands — so the sign is simply the global
- * navamsha ordinal modulo twelve.
- *
- * A navamsha spans 3°20′, the same 12,000 arcseconds as a pada, so [AngularBuckets.PADA_ARCSEC] is
- * reused rather than restating the division. Doing the arithmetic in arcseconds also keeps the
- * boundaries exact: 3°20′ is not representable in degrees, and dividing by `3.3333…` is the
- * double-rounding that put pada boundaries in the wrong quarter before #129.
+ * Kept as a name of its own because the D9 is the varga a reader actually asks for, but the rule now
+ * lives in [vargaSign] alongside every other divisional chart. The classical statement is three
+ * cases — a movable sign's first navamsha is the sign itself, a fixed sign's is the ninth from it,
+ * a dual sign's the fifth — and counting continuously from 0° Mesha collapses all three into one
+ * expression. [VargaTest] checks the collapsed form against each case separately.
  */
-internal fun navamshaOf(siderealDeg: Double): Rasi {
-    val index = AngularBuckets.index(siderealDeg, AngularBuckets.PADA_ARCSEC) % RASHI_NAMES.size
-    return Rasi(index = index, name = RASHI_NAMES[index])
-}
+internal fun navamshaOf(siderealDeg: Double): Rasi = vargaSign(Varga.D9, siderealDeg)
 
 /**
  * How far into its rashi a longitude sits, as whole degrees and whole minutes.

@@ -82,6 +82,9 @@ data class NatalGraha(
     /** The quarter of that nakshatra, 1..4. */
     val pada: Int get() = AngularBuckets.pada(siderealLongitude)
 
-    /** Its sign in the navamsha (D9) division. */
-    val navamsha: Rasi get() = navamshaOf(siderealLongitude)
+    /** Its sign in the navamsha (D9) division — the varga a reader asks for by name. */
+    val navamsha: Rasi get() = varga(Varga.D9)
+
+    /** Its sign in any supported divisional chart. */
+    fun varga(varga: Varga): Rasi = vargaSign(varga, siderealLongitude)
 }

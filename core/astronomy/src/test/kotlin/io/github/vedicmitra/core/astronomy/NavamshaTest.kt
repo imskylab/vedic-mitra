@@ -17,83 +17,18 @@ import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 
 /**
- * The navamsha division and the position-within-rashi columns of the Spashta Graha table.
+ * The position-within-rashi columns of the Spashta Graha table.
  *
- * The navamsha implementation counts navamshas continuously from 0° Aries and takes the result
- * modulo twelve. The tests below check that against the classical three-case rule it replaces —
- * movable signs start from themselves, fixed signs from the ninth, dual signs from the fifth —
- * because the collapse into one expression is the part worth pinning down.
+ * The navamsha rule itself moved to [VargaTest] when it was generalised to every divisional chart;
+ * what remains here is the degree-and-minute arithmetic, which is where the boundary snap bites.
  */
 class NavamshaTest {
-    private val navamshaSpan = 360.0 / 108.0
-
     /**
      * Comfortably above the boundary snap (1e-8 arcsec, or 2.8e-12 degrees) and far below the
      * arcminute the position is truncated to, so it catches a real regression without failing on
      * the snap itself. The measured overshoot is about 1.8e-13 degrees.
      */
     private val snapTolerance = 1e-9
-
-    @Test
-    fun `a movable sign's first navamsha is the sign itself`() {
-        // Mesha, Karka, Tula, Makara — indices 0, 3, 6, 9.
-        listOf(0, 3, 6, 9).forEach { sign ->
-            assertWithMessage("movable sign $sign")
-                .that(navamshaOf(sign * 30.0).index)
-                .isEqualTo(sign)
-        }
-    }
-
-    @Test
-    fun `a fixed sign's first navamsha is the ninth from it`() {
-        // Vrishabha, Simha, Vrishchika, Kumbha — indices 1, 4, 7, 10.
-        listOf(1, 4, 7, 10).forEach { sign ->
-            assertWithMessage("fixed sign $sign")
-                .that(navamshaOf(sign * 30.0).index)
-                .isEqualTo((sign + 8) % 12)
-        }
-    }
-
-    @Test
-    fun `a dual sign's first navamsha is the fifth from it`() {
-        // Mithuna, Kanya, Dhanu, Meena — indices 2, 5, 8, 11.
-        listOf(2, 5, 8, 11).forEach { sign ->
-            assertWithMessage("dual sign $sign")
-                .that(navamshaOf(sign * 30.0).index)
-                .isEqualTo((sign + 4) % 12)
-        }
-    }
-
-    @Test
-    fun `the navamshas of a sign run through nine consecutive signs`() {
-        repeat(12) { sign ->
-            val first = navamshaOf(sign * 30.0).index
-            repeat(9) { part ->
-                val longitude = sign * 30.0 + part * navamshaSpan
-                assertWithMessage("sign $sign navamsha ${part + 1}")
-                    .that(navamshaOf(longitude).index)
-                    .isEqualTo((first + part) % 12)
-            }
-        }
-    }
-
-    @Test
-    fun `every one of the 108 navamsha boundaries opens its own division`() {
-        repeat(108) { ordinal ->
-            assertWithMessage("navamsha boundary $ordinal")
-                .that(navamshaOf(ordinal * navamshaSpan).index)
-                .isEqualTo(ordinal % 12)
-        }
-    }
-
-    @Test
-    fun `the whole zodiac maps to a valid sign`() {
-        var degrees = 0.0
-        while (degrees < 360.0) {
-            assertThat(navamshaOf(degrees).index).isIn(0..11)
-            degrees += 0.37
-        }
-    }
 
     @Test
     fun `position in rashi is measured from the start of the sign`() {
