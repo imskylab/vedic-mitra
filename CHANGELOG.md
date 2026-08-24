@@ -7,6 +7,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Varga Kundali page.** The divisional charts are now drawn as charts. `NatalChart.vargaChart(varga)`
+  casts a whole chart into a division: the *lagna's* longitude is divided too, its divisional sign
+  becomes house 1, and every graha is placed by counting whole signs from there. That framing is the
+  point — the seventh house of the D-9 is what a reader is actually looking for, and a per-graha
+  accessor can never supply it, because a house only exists relative to an ascendant and the lagna is
+  the one longitude such an accessor never sees.
+
+  In the Kundali book it is one page with a chip per varga rather than nine pages. Nine more pages
+  would triple the book for what is one page asked nine ways, and comparing two divisions by swiping
+  between them is worse than tapping. It opens on the D-9, which is the varga a reader means when
+  they do not say which, and each chip carries what that division is traditionally read for.
+
+  The caption states the arcminute caveat on the page rather than only in the KDoc: a graha sitting
+  on a division edge may be shown either side of it, and the finer the varga the likelier that is.
+  A reader deciding something from a D-27 house deserves to know that from the screen.
+
 ### Changed
 
 - **Third-party services are no longer named anywhere in the repository.** Calculations were
