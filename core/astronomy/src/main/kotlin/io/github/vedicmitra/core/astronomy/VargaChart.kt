@@ -49,9 +49,3 @@ fun NatalChart.vargaChart(varga: Varga): VargaChart {
         houses = wholeSignHouses(vargaLagna.index),
     )
 }
-
-/** Whole-sign house count from [lagnaIndex] to [rasiIndex], 1..12. */
-private fun houseFrom(
-    lagnaIndex: Int,
-    rasiIndex: Int,
-): Int = ((rasiIndex - lagnaIndex + RASHI_NAMES.size) % RASHI_NAMES.size) + 1

@@ -9,6 +9,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Mangal dosha (Kuja dosha, Manglik, Chevvai dosham).** Across much of India this is the *first*
+  question asked of a proposed match, and the app did not answer it at all — Ashtakoota without it
+  was missing the question many users came to ask. Mars in the 1st, 2nd, 4th, 7th, 8th or 12th,
+  counted separately from the lagna, the Moon and Venus, with classical parihara.
+
+  **Every trigger and every cancellation is shown.** A dosha computed without its parihara is worse
+  than no dosha at all: most charts trigger the rule somewhere, so a bare "Manglik" verdict would
+  alarm nearly everyone and inform no one. Two kinds of parihara apply and they are not
+  interchangeable — general ones, about Mars's own condition, answer the affliction wherever it
+  arises, while the house-and-sign rules lift *one* house only. Treating the second kind as the
+  first would clear a dosha that still stands, so they are modelled separately and the dosha stands
+  while any trigger is unanswered. Two charts that both carry it cancel each other, which is the
+  most widely applied parihara of all and the reason the question belongs to the pair.
+
+  The houses and the reference points are both convention choices — the classical verse names the
+  lagna, 4th, 7th, 8th and 12th; the 2nd is a South Indian addition — so the app takes the union and
+  reports each placement separately, letting a reader who follows the stricter verse discount a
+  trigger the app cannot discount for them. The one rule deliberately left out is that the dosha
+  lapses with age: widely repeated, no classical basis, and stating it would be inventing
+  reassurance.
+
+  Shown on **Kundali Matching** for a pair and on the Kundali **Pramukh Yoga** page for one chart.
+
+- **Graha drishti.** Whole-sign Parashari aspects — every graha on the 7th from itself, Mars also the
+  4th and 8th, Jupiter the 5th and 9th, Saturn the 3rd and 10th. Added because the "Jupiter aspects
+  Mars" parihara is not optional, and a cancellation rule that silently did nothing would be the
+  worst of both worlds. Rahu and Ketu report no drishti: authorities disagree on whether the nodes
+  aspect and on which houses, and picking one and presenting it as settled would be inventing a
+  convention. Note that this is Vedic drishti and is *asymmetric* — Saturn looks upon the third from
+  itself and nothing there looks back — so it must never be conflated with Western aspects.
+
+### Added
+
 - **Varga Kundali page.** The divisional charts are now drawn as charts. `NatalChart.vargaChart(varga)`
   casts a whole chart into a division: the *lagna's* longitude is divided too, its divisional sign
   becomes house 1, and every graha is placed by counting whole signs from there. That framing is the

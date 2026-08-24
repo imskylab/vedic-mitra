@@ -119,9 +119,10 @@ private fun panchamahapurusha(
 private fun houseFrom(
     graha: NatalGraha,
     from: NatalGraha,
-): Int = ((graha.rasi.index - from.rasi.index + RASHI_COUNT) % RASHI_COUNT) + 1
+): Int = houseFrom(from.rasi.index, graha.rasi.index)
 
-private fun ordinal(house: Int): String =
+/** A house number as an English ordinal — "1st", "4th", "12th". */
+internal fun ordinal(house: Int): String =
     when (house) {
         1 -> "1st"
         2 -> "2nd"

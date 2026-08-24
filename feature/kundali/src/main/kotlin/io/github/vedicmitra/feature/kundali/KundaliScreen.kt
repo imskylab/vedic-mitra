@@ -53,16 +53,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.vedicmitra.core.astronomy.ChartYoga
 import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.JatakaProfile
 import io.github.vedicmitra.core.astronomy.Lagna
 import io.github.vedicmitra.core.astronomy.MahadashaPeriod
+import io.github.vedicmitra.core.astronomy.MangalDosha
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
 import io.github.vedicmitra.core.astronomy.NatalGraha
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Varga
+import io.github.vedicmitra.core.astronomy.mangalDoshaOf
 import io.github.vedicmitra.core.astronomy.vargaChart
 import io.github.vedicmitra.core.designsystem.component.TableColumn
 import io.github.vedicmitra.core.designsystem.component.VedicPropertyTable
@@ -203,7 +204,7 @@ private fun KundaliPageContent(
 
         KundaliPage.VARGA -> VargaPage(chart = chart, modifier = scroll)
 
-        KundaliPage.YOGAS -> YogasPage(yogas = chart.yogas, modifier = scroll)
+        KundaliPage.YOGAS -> YogasPage(chart = chart, modifier = scroll)
 
         KundaliPage.MAHADASHA -> MahadashaPage(periods = chart.vimshottari, modifier = scroll)
 
@@ -213,13 +214,62 @@ private fun KundaliPageContent(
     }
 }
 
+/**
+ * Mangal dosha for this chart, with every trigger and every parihara shown.
+ *
+ * The working is the whole point. Most charts trigger the rule somewhere, so a bare "Manglik" would
+ * alarm almost everyone and inform no one; what a reader needs is which placement raised it and
+ * whether anything answers it. Shown on the yoga page because a dosha is a combination like any
+ * other, and read here for one chart rather than for a pair — Kundali Matching handles the pair.
+ */
+@Composable
+private fun MangalDoshaCard(dosha: MangalDosha) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Mangal dosha",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = if (dosha.present) "Present" else "Not standing",
+                style = MaterialTheme.typography.titleMedium,
+                color =
+                    if (dosha.present) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            )
+        }
+        if (!dosha.afflicted) {
+            Text(
+                text = "Mars falls in no house that raises the dosha, from the lagna, the Moon or Venus.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        dosha.triggers.forEach { trigger ->
+            Text(
+                text = trigger.description + (trigger.cancellation?.let { " — $it" } ?: ""),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        dosha.cancellations.forEach { cancellation ->
+            Text(
+                text = cancellation,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 /** The named combinations found in the chart, each with the placement that produced it. */
 @Composable
 private fun YogasPage(
-    yogas: List<ChartYoga>,
+    chart: NatalChart,
     modifier: Modifier,
 ) {
+    val yogas = chart.yogas
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        MangalDoshaCard(dosha = mangalDoshaOf(chart))
         if (yogas.isEmpty()) {
             Text(
                 text = "None of the combinations this app checks for are present in this chart.",

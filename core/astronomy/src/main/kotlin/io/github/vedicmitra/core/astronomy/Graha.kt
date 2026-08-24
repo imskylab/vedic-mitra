@@ -56,6 +56,19 @@ data class Rasi(
 )
 
 /**
+ * Whole-sign house count from [fromRasiIndex] to [toRasiIndex], 1..12.
+ *
+ * The sign counted from is always house 1, so a graha in the same sign as the reference point is in
+ * the first house, not the twelfth. Shared because every framing in the app — houses from the lagna,
+ * from the Moon, from a varga lagna, from Venus — is this one count with a different starting point,
+ * and three private copies of it had already accumulated.
+ */
+internal fun houseFrom(
+    fromRasiIndex: Int,
+    toRasiIndex: Int,
+): Int = ((toRasiIndex - fromRasiIndex + RASHI_NAMES.size) % RASHI_NAMES.size) + 1
+
+/**
  * A graha's current rashi and its next rashi ingress (pravesh).
  *
  * @property graha which planet.
