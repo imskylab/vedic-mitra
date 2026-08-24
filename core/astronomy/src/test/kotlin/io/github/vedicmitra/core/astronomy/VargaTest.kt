@@ -19,10 +19,10 @@ import org.junit.Test
 /**
  * The divisional charts, against the classical rules and against an independent implementation.
  *
- * The point at issue is that one continuous count replaces a per-varga rule. These check both that
- * the collapsed form reproduces the classical statement case by case, and that it agrees with
- * an independent implementation on real charts — 315 placements across five charts and seven vargas, drawn from a
- * wider sample of 7,500 that had no disagreements.
+ * The point at issue is that one expression — `start(rashi) + step × division` — replaces a per-varga
+ * rule for all sixteen. These check both that it reproduces the classical statement case by case, and
+ * that it agrees with an independent implementation on real charts: 720 placements across five charts
+ * and sixteen vargas, drawn from a wider fit of 8,320 that had no disagreements at all.
  */
 class VargaTest {
     @Test
@@ -88,18 +88,59 @@ class VargaTest {
     }
 
     @Test
-    fun `consecutive divisions advance the sign by one`() {
-        // The count is continuous, so crossing a division boundary always steps one sign on.
+    fun `consecutive divisions advance the sign by the varga's step`() {
+        // Most vargas step one sign per division, but the drekkana steps four and the chaturthamsa
+        // three -- the 5th and 9th from a sign, the 4th, 7th and 10th. Asserting one everywhere was
+        // right only while every varga in the enum happened to have step 1.
         Varga.entries.filter { it != Varga.D1 }.forEach { varga ->
             val span = 30.0 / varga.divisions
-            repeat(11) { d ->
+            repeat(varga.divisions - 1) { d ->
                 val here = vargaSign(varga, d * span + span / 2).index
                 val next = vargaSign(varga, (d + 1) * span + span / 2).index
                 assertWithMessage("${varga.displayName} division $d to ${d + 1}")
                     .that(next)
-                    .isEqualTo((here + 1) % 12)
+                    .isEqualTo((here + varga.step) % 12)
             }
         }
+    }
+
+    @Test
+    fun `each rashi restarts the vargas that begin at their own sign`() {
+        // D-12 and D-60 restart at the sign itself every rashi; D-3 and D-4 do too, before stepping.
+        listOf(Varga.D3, Varga.D4, Varga.D12, Varga.D60).forEach { varga ->
+            (0 until 12).forEach { rashi ->
+                assertWithMessage("${varga.displayName} first division of rashi $rashi")
+                    .that(vargaSign(varga, rashi * 30.0 + 0.01).index)
+                    .isEqualTo(rashi)
+            }
+        }
+    }
+
+    @Test
+    fun `the table-driven vargas start where their tables say`() {
+        mapOf(
+            Varga.D10 to listOf(0, 9, 2, 11, 4, 1, 6, 3, 8, 5, 10, 7),
+            Varga.D24 to listOf(4, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3),
+            Varga.D40 to listOf(0, 6, 0, 6, 0, 6, 0, 6, 0, 6, 0, 6),
+            Varga.D45 to listOf(0, 4, 8, 0, 4, 8, 0, 4, 8, 0, 4, 8),
+        ).forEach { (varga, starts) ->
+            starts.forEachIndexed { rashi, expected ->
+                assertWithMessage("${varga.displayName} start of rashi $rashi")
+                    .that(vargaSign(varga, rashi * 30.0 + 0.01).index)
+                    .isEqualTo(expected)
+            }
+        }
+    }
+
+    @Test
+    fun `division width and the birth-time caution follow from the divisions`() {
+        assertThat(Varga.D9.divisionArcminutes).isWithin(1e-9).of(200.0)
+        assertThat(Varga.D60.divisionArcminutes).isWithin(1e-9).of(30.0)
+        // The ascendant moves a degree in about four minutes, so anything under ~80 arcmin is
+        // decided by the birth time rather than by this engine.
+        assertThat(Varga.D20.needsExactBirthTime).isFalse()
+        assertThat(Varga.D24.needsExactBirthTime).isTrue()
+        assertThat(Varga.D60.needsExactBirthTime).isTrue()
     }
 
     @Test
@@ -140,7 +181,9 @@ class VargaTest {
         // rather than asserted. This engine's longitudes are good to roughly an arcminute, so which
         // side of an edge such a placement falls on is not a question it can answer -- asserting it
         // would be asserting precision we do not have, and a golden that passed would be right by
-        // luck. Three of the 315 land there, at 0.04, 0.17 and 0.75 arcmin.
+        // luck. Around two dozen of the 720 land there, most of them in the finest vargas — D-40
+        // and D-60 contribute five each, which is exactly what their 45- and 30-arcminute divisions
+        // predict.
         //
         // Everything further from an edge *is* asserted, which is what keeps this a test of the rule
         // rather than of the ephemeris: a disagreement mid-division would mean the count is wrong,
@@ -199,8 +242,12 @@ private const val ARCSEC_PER_ARCMIN = 60.0
  */
 private const val EPHEMERIS_UNCERTAINTY_ARCMIN = 1.0
 
-/** Out of 315 placements. Around 2% is what the division widths of D-11 through D-27 predict. */
-private const val MAX_TOO_CLOSE_TO_CALL = 15
+/**
+ * Out of 720 placements. Measured at 23 against the reference longitudes, and our own differ slightly,
+ * so this leaves headroom while still failing if the band roughly doubled — which is what a precision
+ * regression, or a varga too fine for these longitudes, would look like.
+ */
+private const val MAX_TOO_CLOSE_TO_CALL = 35
 
 /** The grahas the goldens are listed in, in order. */
 private val GOLDEN_ORDER =
@@ -226,6 +273,58 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
     mapOf(
         "Hyderabad 1990" to
             listOf(
+                VargaGolden(
+                    Varga.D3,
+                    listOf(
+                        "Vrishabha",
+                        "Kanya",
+                        "Tula",
+                        "Simha",
+                        "Tula",
+                        "Vrishchika",
+                        "Makara",
+                        "Vrishabha",
+                        "Vrishchika",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D4,
+                    listOf("Vrishabha", "Tula", "Vrishchika", "Karka", "Dhanu", "Kanya", "Makara", "Karka", "Makara"),
+                ),
+                VargaGolden(
+                    Varga.D10,
+                    listOf(
+                        "Makara",
+                        "Vrishabha",
+                        "Tula",
+                        "Simha",
+                        "Vrishchika",
+                        "Vrishabha",
+                        "Kanya",
+                        "Kumbha",
+                        "Simha",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D12,
+                    listOf("Vrishabha", "Tula", "Dhanu", "Kanya", "Dhanu", "Vrishchika", "Makara", "Simha", "Kumbha"),
+                ),
+                VargaGolden(
+                    Varga.D24,
+                    listOf("Simha", "Kumbha", "Mesha", "Karka", "Simha", "Vrishchika", "Simha", "Kanya", "Kanya"),
+                ),
+                VargaGolden(
+                    Varga.D40,
+                    listOf("Makara", "Mithuna", "Kumbha", "Tula", "Makara", "Makara", "Vrishchika", "Kanya", "Kanya"),
+                ),
+                VargaGolden(
+                    Varga.D45,
+                    listOf("Vrishchika", "Mesha", "Tula", "Makara", "Dhanu", "Karka", "Mithuna", "Mithuna", "Mithuna"),
+                ),
+                VargaGolden(
+                    Varga.D60,
+                    listOf("Kanya", "Makara", "Vrishabha", "Simha", "Kumbha", "Simha", "Meena", "Dhanu", "Mithuna"),
+                ),
                 VargaGolden(
                     Varga.D6,
                     listOf("Tula", "Kumbha", "Kanya", "Mithuna", "Karka", "Kumbha", "Tula", "Makara", "Makara"),
@@ -268,6 +367,58 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
         "Delhi 1975" to
             listOf(
                 VargaGolden(
+                    Varga.D3,
+                    listOf(
+                        "Kumbha",
+                        "Vrishabha",
+                        "Mithuna",
+                        "Tula",
+                        "Vrishchika",
+                        "Mesha",
+                        "Karka",
+                        "Mithuna",
+                        "Dhanu",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D4,
+                    listOf("Mesha", "Mithuna", "Kanya", "Tula", "Dhanu", "Vrishabha", "Tula", "Karka", "Makara"),
+                ),
+                VargaGolden(
+                    Varga.D10,
+                    listOf("Meena", "Kumbha", "Kanya", "Tula", "Mithuna", "Vrishabha", "Mithuna", "Karka", "Makara"),
+                ),
+                VargaGolden(
+                    Varga.D12,
+                    listOf("Mesha", "Simha", "Kanya", "Tula", "Dhanu", "Karka", "Tula", "Kanya", "Meena"),
+                ),
+                VargaGolden(
+                    Varga.D24,
+                    listOf("Simha", "Mithuna", "Meena", "Simha", "Makara", "Karka", "Kumbha", "Karka", "Karka"),
+                ),
+                VargaGolden(
+                    Varga.D40,
+                    listOf("Makara", "Makara", "Mesha", "Mesha", "Vrishabha", "Karka", "Tula", "Mithuna", "Mithuna"),
+                ),
+                VargaGolden(
+                    Varga.D45,
+                    listOf(
+                        "Meena",
+                        "Simha",
+                        "Makara",
+                        "Mesha",
+                        "Vrishchika",
+                        "Meena",
+                        "Vrishabha",
+                        "Vrishchika",
+                        "Vrishchika",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D60,
+                    listOf("Vrishabha", "Simha", "Dhanu", "Tula", "Kumbha", "Mithuna", "Makara", "Karka", "Makara"),
+                ),
+                VargaGolden(
                     Varga.D6,
                     listOf("Karka", "Meena", "Vrishabha", "Mesha", "Kumbha", "Kanya", "Vrishchika", "Kanya", "Kanya"),
                 ),
@@ -309,6 +460,78 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
         "Chennai 2001" to
             listOf(
                 VargaGolden(
+                    Varga.D3,
+                    listOf("Meena", "Kanya", "Karka", "Mithuna", "Kanya", "Vrishchika", "Vrishabha", "Tula", "Mesha"),
+                ),
+                VargaGolden(
+                    Varga.D4,
+                    listOf(
+                        "Meena",
+                        "Karka",
+                        "Vrishabha",
+                        "Vrishabha",
+                        "Simha",
+                        "Kanya",
+                        "Vrishabha",
+                        "Dhanu",
+                        "Mithuna",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D10,
+                    listOf(
+                        "Makara",
+                        "Mesha",
+                        "Kumbha",
+                        "Vrishabha",
+                        "Mesha",
+                        "Vrishabha",
+                        "Makara",
+                        "Vrishchika",
+                        "Vrishabha",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D12,
+                    listOf(
+                        "Vrishabha",
+                        "Kanya",
+                        "Karka",
+                        "Mithuna",
+                        "Kanya",
+                        "Vrishchika",
+                        "Mithuna",
+                        "Makara",
+                        "Karka",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D24,
+                    listOf("Dhanu", "Dhanu", "Dhanu", "Mesha", "Mesha", "Vrishchika", "Kanya", "Tula", "Tula"),
+                ),
+                VargaGolden(
+                    Varga.D40,
+                    listOf("Mithuna", "Meena", "Meena", "Mithuna", "Makara", "Makara", "Makara", "Meena", "Meena"),
+                ),
+                VargaGolden(
+                    Varga.D45,
+                    listOf("Kanya", "Dhanu", "Vrishabha", "Dhanu", "Makara", "Karka", "Dhanu", "Kumbha", "Kumbha"),
+                ),
+                VargaGolden(
+                    Varga.D60,
+                    listOf(
+                        "Mesha",
+                        "Simha",
+                        "Karka",
+                        "Vrishchika",
+                        "Mesha",
+                        "Simha",
+                        "Tula",
+                        "Vrishabha",
+                        "Vrishchika",
+                    ),
+                ),
+                VargaGolden(
                     Varga.D6,
                     listOf("Vrishchika", "Kumbha", "Kumbha", "Mithuna", "Dhanu", "Kumbha", "Tula", "Karka", "Karka"),
                 ),
@@ -339,6 +562,68 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
             ),
         "Mumbai 1988" to
             listOf(
+                VargaGolden(
+                    Varga.D3,
+                    listOf(
+                        "Mesha",
+                        "Vrishabha",
+                        "Vrishchika",
+                        "Makara",
+                        "Vrishabha",
+                        "Karka",
+                        "Mesha",
+                        "Mithuna",
+                        "Dhanu",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D4,
+                    listOf(
+                        "Mithuna",
+                        "Mithuna",
+                        "Dhanu",
+                        "Makara",
+                        "Vrishabha",
+                        "Simha",
+                        "Meena",
+                        "Vrishabha",
+                        "Vrishchika",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D10,
+                    listOf("Vrishabha", "Dhanu", "Karka", "Tula", "Kumbha", "Kumbha", "Meena", "Mithuna", "Dhanu"),
+                ),
+                VargaGolden(
+                    Varga.D12,
+                    listOf("Mithuna", "Mithuna", "Makara", "Kumbha", "Mithuna", "Simha", "Mesha", "Karka", "Makara"),
+                ),
+                VargaGolden(
+                    Varga.D24,
+                    listOf("Kanya", "Makara", "Mesha", "Kanya", "Kanya", "Kumbha", "Vrishabha", "Karka", "Karka"),
+                ),
+                VargaGolden(
+                    Varga.D40,
+                    listOf("Kumbha", "Mesha", "Kanya", "Kumbha", "Kumbha", "Vrishabha", "Karka", "Tula", "Tula"),
+                ),
+                VargaGolden(
+                    Varga.D45,
+                    listOf("Dhanu", "Kanya", "Meena", "Simha", "Dhanu", "Karka", "Vrishabha", "Vrishabha", "Vrishabha"),
+                ),
+                VargaGolden(
+                    Varga.D60,
+                    listOf(
+                        "Kanya",
+                        "Mithuna",
+                        "Karka",
+                        "Karka",
+                        "Vrishchika",
+                        "Tula",
+                        "Vrishchika",
+                        "Mithuna",
+                        "Dhanu",
+                    ),
+                ),
                 VargaGolden(
                     Varga.D6,
                     listOf("Karka", "Kumbha", "Meena", "Tula", "Tula", "Kumbha", "Mithuna", "Mithuna", "Mithuna"),
@@ -390,6 +675,68 @@ private val VARGA_GOLDENS: Map<String, List<VargaGolden>> =
             ),
         "London 1980" to
             listOf(
+                VargaGolden(
+                    Varga.D3,
+                    listOf("Mithuna", "Karka", "Mesha", "Kumbha", "Dhanu", "Mithuna", "Mesha", "Meena", "Kanya"),
+                ),
+                VargaGolden(
+                    Varga.D4,
+                    listOf(
+                        "Mithuna",
+                        "Karka",
+                        "Vrishabha",
+                        "Meena",
+                        "Vrishchika",
+                        "Mithuna",
+                        "Vrishabha",
+                        "Mesha",
+                        "Tula",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D10,
+                    listOf(
+                        "Mithuna",
+                        "Meena",
+                        "Meena",
+                        "Kumbha",
+                        "Vrishchika",
+                        "Mithuna",
+                        "Vrishabha",
+                        "Dhanu",
+                        "Mithuna",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D12,
+                    listOf("Mithuna", "Karka", "Vrishabha", "Mesha", "Dhanu", "Mithuna", "Mithuna", "Mithuna", "Dhanu"),
+                ),
+                VargaGolden(
+                    Varga.D24,
+                    listOf("Simha", "Simha", "Kumbha", "Mesha", "Mesha", "Simha", "Vrishabha", "Mithuna", "Mithuna"),
+                ),
+                VargaGolden(
+                    Varga.D40,
+                    listOf(
+                        "Vrishabha",
+                        "Dhanu",
+                        "Tula",
+                        "Makara",
+                        "Vrishabha",
+                        "Vrishabha",
+                        "Mesha",
+                        "Makara",
+                        "Makara",
+                    ),
+                ),
+                VargaGolden(
+                    Varga.D45,
+                    listOf("Makara", "Mithuna", "Mithuna", "Makara", "Vrishchika", "Makara", "Dhanu", "Dhanu", "Dhanu"),
+                ),
+                VargaGolden(
+                    Varga.D60,
+                    listOf("Karka", "Tula", "Mithuna", "Simha", "Mesha", "Karka", "Kumbha", "Mithuna", "Dhanu"),
+                ),
                 VargaGolden(
                     Varga.D6,
                     listOf("Mesha", "Tula", "Simha", "Kanya", "Mithuna", "Mesha", "Kanya", "Meena", "Meena"),

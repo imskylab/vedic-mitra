@@ -519,12 +519,25 @@ private fun vargaCaption(varga: Varga): String =
         "The rashi chart itself — the same figure as the Lagna Kundali, kept here so the divisions " +
             "can be read against the chart they came from."
     } else {
+        val stepNote =
+            if (varga.step == 1) {
+                ""
+            } else {
+                " Each successive part moves ${varga.step} signs on, not one."
+            }
+        val precisionNote =
+            if (varga.needsExactBirthTime) {
+                " At this width the birth time matters more than the arithmetic: the ascendant " +
+                    "moves a degree in about four minutes, so a time known only to the nearest five " +
+                    "minutes leaves this chart's houses uncertain."
+            } else {
+                " Positions are good to about an arcminute, so a graha sitting on a division edge " +
+                    "may fall either side of it."
+            }
         "Each rashi is cut into ${varga.divisions} equal parts of " +
             "${formatDegrees(DEGREES_PER_RASHI / varga.divisions)} each, and every graha takes the " +
-            "sign its part belongs to. House 1 is the lagna's own sign in this division, not in " +
-            "the rashi chart, so the houses mean here what they mean anywhere. Positions are good " +
-            "to about an arcminute, so a graha sitting on a division edge may fall either side of " +
-            "it — the finer the varga, the likelier that is."
+            "sign its part belongs to.$stepNote House 1 is the lagna's own sign in this division, " +
+            "not in the rashi chart, so the houses mean here what they mean anywhere.$precisionNote"
     }
 
 private const val DEGREES_PER_RASHI = 30.0
@@ -533,14 +546,23 @@ private const val DEGREES_PER_RASHI = 30.0
 private val VARGA_PURPOSE: Map<Varga, String> =
     mapOf(
         Varga.D1 to "the birth chart itself; body, life and everything else in outline",
+        Varga.D3 to "siblings, courage and one's own initiative",
+        Varga.D4 to "property, fixed assets and the home",
         Varga.D6 to "illness, debts and the troubles one contends with",
         Varga.D7 to "children and lineage",
         Varga.D8 to "sudden difficulty, longevity and what is inherited",
         Varga.D9 to "marriage, the partner, and the inner strength of every graha",
+        Varga.D10 to "career, standing and what one is known for",
         Varga.D11 to "gains, and the undoing of them",
+        Varga.D12 to "parents and what came before",
         Varga.D16 to "vehicles, comforts and happiness of the ordinary kind",
         Varga.D20 to "worship, practice and spiritual inclination",
+        Varga.D24 to "learning, and the fruits of study",
         Varga.D27 to "strength and weakness in the body's own constitution",
+        Varga.D40 to "what is inherited through the mother's line",
+        Varga.D45 to "what is inherited through the father's line",
+        Varga.D60 to
+            "the whole of the chart in miniature — weighted heavily, and the most demanding of an exact birth time",
     )
 
 /** One chart page: the diagram, plus a sentence on how to read it. */
