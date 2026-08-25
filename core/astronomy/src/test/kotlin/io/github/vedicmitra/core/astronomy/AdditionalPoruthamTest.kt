@@ -37,9 +37,12 @@ class AdditionalPoruthamTest {
         val mismatches = mutableListOf<String>()
         GOLDENS.forEach { golden ->
             val actual = additionalPorutham(profile(golden.groomNak), profile(golden.brideNak))
-            val expected = golden.expected
-            if (actual != expected) {
-                mismatches += "groom ${golden.groomNak} / bride ${golden.brideNak}: expected $expected, got $actual"
+            // Verdicts only. The working is prose; pinning it here would make 45 goldens brittle
+            // against a wording change without testing anything the booleans do not already cover.
+            val verdicts = actual.all.map { it.held }
+            if (verdicts != golden.verdicts) {
+                mismatches +=
+                    "groom ${golden.groomNak} / bride ${golden.brideNak}: expected ${golden.verdicts}, got $verdicts"
             }
         }
         assertWithMessage(mismatches.joinToString("\n")).that(mismatches).isEmpty()
@@ -144,16 +147,48 @@ class AdditionalPoruthamTest {
     fun `sharing a nakshatra fails Rajju and Sthree Dheerga`() {
         (1..27).forEach { nak ->
             val p = additionalPorutham(profile(nak), profile(nak))
-            assertWithMessage("nakshatra $nak rajju").that(p.rajju).isFalse()
-            assertWithMessage("nakshatra $nak sthree dheerga").that(p.sthreeDheerga).isFalse()
+            assertWithMessage("nakshatra $nak rajju").that(p.rajju.held).isFalse()
+            assertWithMessage("nakshatra $nak sthree dheerga").that(p.sthreeDheerga.held).isFalse()
         }
     }
 
     @Test
     fun `matched counts what holds`() {
-        assertThat(AdditionalPorutham(true, true, true, true).matched).isEqualTo(4)
-        assertThat(AdditionalPorutham(false, false, false, false).matched).isEqualTo(0)
-        assertThat(AdditionalPorutham(true, false, true, false).matched).isEqualTo(2)
+        // Built through the real entry point rather than by hand, so `matched` is exercised against
+        // results the engine actually produces.
+        assertThat(additionalPorutham(profile(1), profile(1)).matched).isIn(0..4)
+        (1..27).forEach { nak ->
+            val p = additionalPorutham(profile(nak), profile(nak))
+            assertWithMessage("nakshatra $nak")
+                .that(p.matched)
+                .isEqualTo(p.all.count { it.held })
+        }
+    }
+
+    @Test
+    fun `every result names itself and shows its working`() {
+        // The working is the reason these are worth displaying at all: a verdict a reader cannot
+        // check against another almanac is worth very little, and these four are exactly where
+        // almanacs differ.
+        (1..27).forEach { g ->
+            (1..27).forEach { b ->
+                additionalPorutham(profile(g), profile(b)).all.forEach { result ->
+                    assertWithMessage("$g/$b ${result.name} name").that(result.name).isNotEmpty()
+                    assertWithMessage("$g/$b ${result.name} working").that(result.working).isNotEmpty()
+                    assertWithMessage("$g/$b ${result.name} governs").that(result.governs).isNotEmpty()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `the working states the count that produced the verdict`() {
+        // Pushya and Hasta: six apart, both on different limbs.
+        val p = additionalPorutham(profile(8), profile(13))
+        assertThat(p.mahendra.working).startsWith("6 between Pushya and Hasta")
+        assertThat(p.rajju.working).isEqualTo("Waist and Neck — different limbs")
+        assertThat(p.sthreeDheerga.working).startsWith("23 from her star to his")
+        assertThat(p.vedha.working).isEqualTo("Pushya and Hasta do not pierce")
     }
 
     private fun profile(nakshatraNumber: Int) =
@@ -169,8 +204,8 @@ private data class Golden(
     val rajju: Boolean,
     val sthreeDheerga: Boolean,
 ) {
-    val expected: AdditionalPorutham
-        get() = AdditionalPorutham(mahendra = mahendra, vedha = vedha, rajju = rajju, sthreeDheerga = sthreeDheerga)
+    /** In the order [AdditionalPorutham.all] returns them. */
+    val verdicts: List<Boolean> get() = listOf(mahendra, vedha, rajju, sthreeDheerga)
 }
 
 private val GOLDENS =

@@ -10,8 +10,10 @@
 
 package io.github.vedicmitra.feature.matchmaking
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +21,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -35,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,7 +50,7 @@ import io.github.vedicmitra.core.astronomy.GunaMilanResult
 import io.github.vedicmitra.core.astronomy.GunaMilanVerdict
 import io.github.vedicmitra.core.astronomy.KootaScore
 import io.github.vedicmitra.core.astronomy.MangalDosha
-import io.github.vedicmitra.core.astronomy.rajjuOf
+import io.github.vedicmitra.core.astronomy.PoruthamResult
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 
 /**
@@ -105,13 +110,7 @@ private fun MatchReady(
             PickerRow("Bride", uiState.females, uiState.selectedBrideId, onSelectBride, Modifier.weight(1f))
         }
         uiState.result?.let { ResultCard(it) }
-        uiState.porutham?.let { poruthamValue ->
-            PoruthamCard(
-                porutham = poruthamValue,
-                groomNakshatra = uiState.groomNakshatra,
-                brideNakshatra = uiState.brideNakshatra,
-            )
-        }
+        uiState.porutham?.let { PoruthamCard(it) }
         uiState.mangal?.let { MangalCard(it) }
         Text(
             text = "Ashtakoota (Guna Milan) from both Moons; general classical guidance, not a ruling.",
@@ -183,17 +182,16 @@ private fun ResultCard(result: GunaMilanResult) {
  *
  * Kept out of the guna total on purpose. These are pass-or-fail conditions rather than points, and
  * folding them in would let a strong score bury a failed Rajju — which is the one case a reader most
- * needs to see. Rajju names the limb both fall on rather than reporting a bare failure, since which
- * limb is shared is what the rule is held to say.
+ * needs to see.
+ *
+ * Every row shows its working, because these four are exactly where sources disagree: the count
+ * between two nakshatras, or which limbs they fall on, is the thing another almanac would dispute.
+ * A bare "not matched" cannot be checked against anything.
  */
 @Composable
-private fun PoruthamCard(
-    porutham: AdditionalPorutham,
-    groomNakshatra: Int?,
-    brideNakshatra: Int?,
-) {
+private fun PoruthamCard(porutham: AdditionalPorutham) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Four additional porutham",
@@ -203,28 +201,10 @@ private fun PoruthamCard(
                 Text(
                     text = "${porutham.matched} / 4",
                     style = MaterialTheme.typography.titleMedium,
-                    color =
-                        if (porutham.matched >= 3) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.error
-                        },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            PoruthamRow("Mahendra", porutham.mahendra, "Progeny and longevity")
-            PoruthamRow("Vedha", porutham.vedha, "Absence of mutual affliction")
-            PoruthamRow(
-                label = "Rajju",
-                held = porutham.rajju,
-                detail =
-                    if (porutham.rajju || groomNakshatra == null || brideNakshatra == null) {
-                        "Different limbs of the body"
-                    } else {
-                        "Both fall on the ${rajjuOf(groomNakshatra).displayName.lowercase()} — " +
-                            "the affliction this rule warns of"
-                    },
-            )
-            PoruthamRow("Sthree Dheerga", porutham.sthreeDheerga, "The bride's welfare and longevity")
+            porutham.all.forEach { PoruthamRow(it) }
             Text(
                 text =
                     "Pass-or-fail conditions, deliberately kept out of the 36 — a strong guna score " +
@@ -236,32 +216,53 @@ private fun PoruthamCard(
     }
 }
 
-/** One porutham: whether it holds, and what it is held to govern. */
+/**
+ * One porutham: what it is called, whether it holds, what it governs, and the arithmetic behind it.
+ *
+ * The verdict word is deliberately not "Matched"/"Not matched" for all four. Vedha's good outcome is
+ * an *absence* — "matched" reads as though something aligned, when what happened is that nothing
+ * pierced — so each rule says the thing that is actually true of it.
+ */
 @Composable
-private fun PoruthamRow(
-    label: String,
-    held: Boolean,
-    detail: String,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+private fun PoruthamRow(result: PoruthamResult) {
+    val accent = if (result.held) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+    Row(modifier = Modifier.fillMaxWidth()) {
+        // A filled bar rather than a tick: it reads at a glance without relying on colour alone,
+        // which matters for the roughly one reader in twelve who cannot separate red from green.
+        Box(
+            modifier =
+                Modifier
+                    .padding(top = 4.dp, end = 10.dp)
+                    .size(width = 3.dp, height = 34.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(accent),
+        )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = result.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = if (result.held) "Holds" else "Does not hold",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = accent,
+                )
+            }
             Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
+                text = result.working,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = if (held) "Matched" else "Not matched",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = if (held) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                text = result.governs,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Text(
-            text = detail,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

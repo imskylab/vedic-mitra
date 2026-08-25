@@ -7,6 +7,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The four porutham now show their working.** They were the only verdicts in the app given without
+  one: three of the four displayed "Matched / Not matched" and a generic gloss, and Rajju named the
+  shared limb *only when it failed*, so a passing Rajju never said which limbs. Every row now carries
+  the arithmetic — the count between the two nakshatras and which counts qualify, which nakshatra
+  pierces which, both partners' limbs whether they differ or not, and the bride-to-groom count
+  against its threshold.
+
+  That matters more here than elsewhere, because these four are exactly where almanacs disagree.
+  The count and the limbs are the thing another source would dispute, and a bare "not matched"
+  cannot be checked against anything.
+
+  The verdict word changed with it. "Matched" read wrongly for Vedha, whose good outcome is an
+  *absence* — nothing aligned, nothing pierced — so each rule now says "Holds" or "Does not hold".
+  Pass and fail are also marked with a coloured bar rather than colour alone, which the roughly one
+  reader in twelve who cannot separate red from green would otherwise have to infer from the wording.
+
 ### Added
 
 - **Ashtakavarga** — binnashtakavarga per graha and the sarvashtakavarga, on a new Kundali page.
