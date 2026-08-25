@@ -49,6 +49,7 @@ internal fun natalChart(
         moonPada = moonPada,
         jataka = jatakaProfileOf(grahas, lagna, moonNakshatra, moonPada, epochMillis),
         vimshottari = vimshottariFromMoon(moonLongitude, epochMillis),
+        birthEpochMillis = epochMillis,
     )
 }
 

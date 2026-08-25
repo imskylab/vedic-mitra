@@ -56,7 +56,12 @@ class DashaRecursionTest {
         // Guards the constant directly. With the Julian year the far end of the timeline drifts by
         // about eighteen hours, which the goldens above would catch, but this says why.
         val ketu = vimshottariFromMoon(0.0, 0L).first()
-        val sevenSiderealYears = (7 * 365.2564 * 24 * 60 * 60 * 1000).toLong()
+        // Grouped exactly as the production constant is. `7 * 365.2564 * 86_400_000` associates left
+        // to right, and 7 * 365.2564 is not representable, so it truncates a millisecond lower than
+        // 7 * (365.2564 * 86_400_000) -- which is integral. A one-millisecond assertion failure is
+        // not worth chasing twice.
+        val year = 365.2564 * 24 * 60 * 60 * 1000
+        val sevenSiderealYears = (7 * year).toLong()
         assertThat(ketu.end.toEpochMilliseconds() - ketu.start.toEpochMilliseconds())
             .isEqualTo(sevenSiderealYears)
     }

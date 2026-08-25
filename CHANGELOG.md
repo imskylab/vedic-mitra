@@ -30,24 +30,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   than a fitted number. Some texts intend a 360-day year, which is a different timeline altogether;
   this app follows the sidereal year, consistent with computing everything else from real positions.
 
-### Notes
+- **Ashtottari and Yogini**, as literal derived tables. Ashtottari runs eight lords over 108 years
+  with no Ketu, covering the nakshatras in runs of three and four; Yogini runs eight over 36 years,
+  one to eight years each, one nakshatra apiece. Lord orders and year tables were read off an
+  independent implementation's period durations, and the starting-lord tables from two sweeps taken
+  independently of each other, which agreed on all 27 nakshatras. The Kundali dasha pages now carry a
+  system selector.
 
-- **Ashtottari and Yogini were derived but not shipped.** Both had their lord order and year tables
-  read cleanly off an independent implementation, and two independent sweeps across all 27
-  nakshatras agreed on every starting lord. Each has one thing left unexplained, and shipping a
-  table nobody can account for is what this project's validation work exists to prevent:
+  **The tables are written out rather than generated, and reproduce the source including where it is
+  odd.** Yogini's starting lord advances one per nakshatra everywhere except between Ardra and
+  Punarvasu, where it moves *back two*; both sweeps reproduce it, and a test pins it so a later
+  tidy-up cannot quietly change every Yogini reading for those nakshatras. Whether that is a real
+  convention or the reference's own off-by-one could not be established — and matching the tool
+  people compare against is worth more here than being right in a way that agrees with nobody.
 
-  - **Ashtottari** measures its first period's elapsed fraction through the *lord's group of
-    nakshatras* rather than a single nakshatra — 49 of 57 sampled births confirm it. All eight
-    failures fall in the Rahu group and only there: the one that wraps the end of the zodiac back to
-    the beginning (nakshatras 26, 27, 1, 2), where the observed fraction comes out negative or above
-    one, putting the birth outside the very period it should sit in.
-  - **Yogini's** starting lord advances one per nakshatra except for a single step between
-    nakshatras 6 and 7, where it moves back two. Both sweeps reproduce it, so it is not noise — but
-    one unexplained discontinuity is the shape of somebody else's off-by-one, and encoding it would
-    make their bug our behaviour.
-
-  The findings are recorded in `VimshottariCalculator.kt` so the work is not repeated from scratch.
+  **One thing is not bug-for-bug, and should not be read as if it were.** Ashtottari's first period
+  takes its elapsed share across the lord's whole run of nakshatras, which 49 of 57 sampled births
+  confirm. The eight that differ are exactly Rahu's run — 26, 27, 1, 2, the one wrapping the end of
+  the zodiac back to its start. A controlled sweep, holding the date fixed and moving only the time
+  of day, showed the reference's Rahu start shifting about 66 days per eight hours of birth time
+  where the run model calls for three years per nakshatra, and placing the birth outside the very
+  period it should sit in. Consistent and reproducible across four months, so it is some rule, but
+  not one recoverable from the data. This engine applies the run model uniformly: for those four
+  nakshatras the **lord is still right** and only the boundaries differ. Their goldens assert the
+  lord and skip the start, and a test holds that exclusion at exactly eight so it cannot grow.
 
 ### Fixed
 

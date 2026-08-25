@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.DashaPeriod
+import io.github.vedicmitra.core.astronomy.DashaSystem
 import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.JatakaProfile
 import io.github.vedicmitra.core.astronomy.Lagna
@@ -206,11 +207,37 @@ private fun KundaliPageContent(
 
         KundaliPage.YOGAS -> YogasPage(chart = chart, modifier = scroll)
 
-        KundaliPage.MAHADASHA -> MahadashaPage(periods = chart.vimshottari, modifier = scroll)
+        KundaliPage.MAHADASHA -> MahadashaPage(chart = chart, modifier = scroll)
 
-        KundaliPage.ANTARDASHA -> AntardashaPage(periods = chart.vimshottari, modifier = scroll)
+        KundaliPage.ANTARDASHA -> AntardashaPage(chart = chart, modifier = scroll)
 
         KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
+    }
+}
+
+/**
+ * Which dasha system the timeline is read in.
+ *
+ * Vimshottari first because it is what a reader means by "dasha" unless they say otherwise; the
+ * other two are read alongside it rather than instead of it, which is why this is a switch on one
+ * page rather than three more pages.
+ */
+@Composable
+private fun DashaSystemChips(
+    selected: Int,
+    onSelect: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        DashaSystem.entries.forEachIndexed { index, system ->
+            FilterChip(
+                selected = index == selected,
+                onClick = { onSelect(index) },
+                label = { Text(text = system.displayName) },
+            )
+        }
     }
 }
 
@@ -293,11 +320,15 @@ private fun YogasPage(
 /** The nine mahadashas of the 120-year cycle, with the running one marked. */
 @Composable
 private fun MahadashaPage(
-    periods: List<DashaPeriod>,
+    chart: NatalChart,
     modifier: Modifier,
 ) {
+    var selected by rememberSaveable { mutableStateOf(DashaSystem.VIMSHOTTARI.ordinal) }
+    val system = DashaSystem.entries[selected]
+    val periods = chart.dasha(system)
     val now = remember { System.currentTimeMillis() }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        DashaSystemChips(selected = selected, onSelect = { selected = it })
         VedicTable(
             columns = DASHA_COLUMNS,
             rows =
@@ -310,7 +341,7 @@ private fun MahadashaPage(
                 },
         )
         Text(
-            text = "The full Vimshottari cycle from birth. ● marks the period running now.",
+            text = "The full ${system.displayName} cycle from birth. ● marks the period running now.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -320,12 +351,16 @@ private fun MahadashaPage(
 /** The nine sub-periods of whichever mahadasha is running now. */
 @Composable
 private fun AntardashaPage(
-    periods: List<DashaPeriod>,
+    chart: NatalChart,
     modifier: Modifier,
 ) {
+    var selected by rememberSaveable { mutableStateOf(DashaSystem.VIMSHOTTARI.ordinal) }
+    val system = DashaSystem.entries[selected]
+    val periods = chart.dasha(system)
     val now = remember { System.currentTimeMillis() }
     val running = periods.firstOrNull { isRunning(it.start, it.end, now) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        DashaSystemChips(selected = selected, onSelect = { selected = it })
         if (running == null) {
             Text(
                 text = "No mahadasha covers the present moment, so there are no sub-periods to show.",
@@ -335,7 +370,7 @@ private fun AntardashaPage(
             return@Column
         }
         Text(
-            text = "Within ${running.lord.displayName} mahadasha",
+            text = "Within ${running.lord.displayName} mahadasha (${system.displayName})",
             style = MaterialTheme.typography.titleSmall,
         )
         VedicTable(

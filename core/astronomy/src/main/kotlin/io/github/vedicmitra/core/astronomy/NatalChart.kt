@@ -28,6 +28,8 @@ package io.github.vedicmitra.core.astronomy
  *   that test fixtures build; the real engine always populates it.
  * @property vimshottari the nine mahadasha periods over the 120-year cycle, birth inside the first.
  *   Each divides into antardashas and those into pratyantardashas, on demand.
+ * @property birthEpochMillis the birth instant, needed to cast the chart into a dasha system other
+ *   than the one already computed. Defaults to zero for the lightweight charts test fixtures build.
  */
 data class NatalChart(
     val lagna: Lagna,
@@ -38,6 +40,7 @@ data class NatalChart(
     val moonPada: Int,
     val vimshottari: List<DashaPeriod>,
     val jataka: JatakaProfile? = null,
+    val birthEpochMillis: Long = 0L,
 ) {
     /**
      * The named combinations present in this chart.
@@ -46,6 +49,18 @@ data class NatalChart(
      * computed from itself.
      */
     val yogas: List<ChartYoga> get() = chartYogasOf(this)
+
+    /**
+     * This chart's timeline in any dasha system.
+     *
+     * Derived from the Moon and the birth instant rather than stored, so the three systems cannot
+     * drift apart from one another or from the chart they came from. [vimshottari] is the same thing
+     * for [DashaSystem.VIMSHOTTARI], kept as a name because it is the one every reader expects.
+     */
+    fun dasha(system: DashaSystem): List<DashaPeriod> {
+        val moon = grahas.firstOrNull { it.graha == Graha.MOON } ?: return emptyList()
+        return dashaFromMoon(system, moon.siderealLongitude, birthEpochMillis)
+    }
 }
 
 /**
