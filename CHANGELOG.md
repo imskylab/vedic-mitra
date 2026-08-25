@@ -9,6 +9,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Kundali Matching is one result surface instead of three stacked cards.** Gunas, porutham and
+  Mangal dosha had equal visual weight and sat in the order they happened to be built, which put the
+  eight koota rows *above* everything capable of vetoing a match — so a reader scrolled past the
+  detail to reach the conditions. Now ordered the way the question is actually asked: the score, then
+  anything wrong with it, then the breakdown.
+
+  The conditions stay out of the 36 for the reason they always did — a strong score should not bury a
+  failed Rajju — but they sit above the breakdown rather than beneath it. Mangal dosha becomes one
+  condition among the others, collapsed to a verdict and opening to its full working on tap, which is
+  the gesture the koota rows already used; its working is the longest here and left open it pushed
+  the gunas off the screen entirely.
+
+### Changed
+
 - **The four porutham now show their working.** They were the only verdicts in the app given without
   one: three of the four displayed "Matched / Not matched" and a generic gloss, and Rajju named the
   shared limb *only when it failed*, so a passing Rajju never said which limbs. Every row now carries

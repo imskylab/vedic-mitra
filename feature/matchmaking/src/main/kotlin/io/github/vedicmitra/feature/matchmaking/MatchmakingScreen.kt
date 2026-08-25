@@ -109,9 +109,9 @@ private fun MatchReady(
             PickerRow("Groom", uiState.males, uiState.selectedGroomId, onSelectGroom, Modifier.weight(1f))
             PickerRow("Bride", uiState.females, uiState.selectedBrideId, onSelectBride, Modifier.weight(1f))
         }
-        uiState.result?.let { ResultCard(it) }
-        uiState.porutham?.let { PoruthamCard(it) }
-        uiState.mangal?.let { MangalCard(it) }
+        uiState.result?.let {
+            MatchResultCard(result = it, porutham = uiState.porutham, mangal = uiState.mangal)
+        }
         Text(
             text = "Ashtakoota (Guna Milan) from both Moons; general classical guidance, not a ruling.",
             style = MaterialTheme.typography.bodySmall,
@@ -148,10 +148,25 @@ private fun PickerRow(
     }
 }
 
+/**
+ * The whole match on one surface.
+ *
+ * This was three cards of equal visual weight — gunas, porutham, Mangal dosha — stacked in the order
+ * they happened to be built. That put the eight koota rows above everything that can *veto* a match,
+ * so a reader scrolled past the detail to reach the conditions. One card, ordered the way the
+ * question is actually asked: what is the score, is anything wrong, and then the breakdown.
+ *
+ * The conditions stay out of the 36 for the reason they always did — a strong score should not be
+ * able to bury a failed Rajju — but they now sit *above* the score's breakdown rather than beneath it.
+ */
 @Composable
-private fun ResultCard(result: GunaMilanResult) {
+private fun MatchResultCard(
+    result: GunaMilanResult,
+    porutham: AdditionalPorutham?,
+    mangal: MangalMatch?,
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "${trim(result.total)} / ${trim(result.maxTotal)} gunas",
@@ -164,79 +179,120 @@ private fun ResultCard(result: GunaMilanResult) {
                     color = verdictColor(result.verdict),
                 )
             }
-            if (result.doshas.isNotEmpty()) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    result.doshas.forEach { dosha ->
-                        AssistChip(onClick = {}, label = { Text(text = dosha) })
+
+            if (porutham != null || mangal != null || result.doshas.isNotEmpty()) {
+                SectionLabel("Conditions")
+                if (result.doshas.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        result.doshas.forEach { dosha ->
+                            AssistChip(onClick = {}, label = { Text(text = dosha) })
+                        }
                     }
                 }
+                mangal?.let { MangalRow(it) }
+                porutham?.all?.forEach { PoruthamRow(it) }
+                Text(
+                    text =
+                        "Pass-or-fail conditions, deliberately kept out of the 36 — a strong guna " +
+                            "score should not bury a failed Rajju.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-            Spacer(modifier = Modifier.height(4.dp))
+
+            SectionLabel("The thirty-six gunas")
             result.scores.forEach { KootaRow(it) }
         }
     }
 }
 
+/** A heading inside the card, so the sections read apart without three separate surfaces. */
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 4.dp),
+    )
+}
+
 /**
- * The four porutham read beside the thirty-six gunas.
+ * Mangal dosha as one condition among the others, opening to its working on tap.
  *
- * Kept out of the guna total on purpose. These are pass-or-fail conditions rather than points, and
- * folding them in would let a strong score bury a failed Rajju — which is the one case a reader most
- * needs to see.
- *
- * Every row shows its working, because these four are exactly where sources disagree: the count
- * between two nakshatras, or which limbs they fall on, is the thing another almanac would dispute.
- * A bare "not matched" cannot be checked against anything.
+ * Collapsed by default because its working is the longest here — every trigger on both sides, plus
+ * any parihara — and leaving it open pushed the guna breakdown off the screen. Tapping is the same
+ * gesture the koota rows already use.
  */
 @Composable
-private fun PoruthamCard(porutham: AdditionalPorutham) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+private fun MangalRow(mangal: MangalMatch) {
+    var expanded by remember { mutableStateOf(false) }
+    val accent = if (mangal.standing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+    Row(modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }) {
+        ConditionBar(accent)
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "Four additional porutham",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "Mangal dosha",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    text = "${porutham.matched} / 4",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = if (mangal.standing) "Present" else "Not standing",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = accent,
                 )
             }
-            porutham.all.forEach { PoruthamRow(it) }
             Text(
                 text =
-                    "Pass-or-fail conditions, deliberately kept out of the 36 — a strong guna score " +
-                        "should not bury a failed Rajju.",
+                    when {
+                        mangal.mutuallyCancelled -> "Both charts carry it, which answers it on both sides"
+                        mangal.standing -> "Tap for the placements that raise it"
+                        else -> "Tap for the working"
+                    },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (expanded) {
+                if (mangal.mutuallyCancelled) {
+                    Text(
+                        text =
+                            "The objection to a Manglik marrying is that the partner suffers for it, " +
+                                "and that does not arise when both carry it.",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                MangalSide(label = "Groom", dosha = mangal.groom)
+                MangalSide(label = "Bride", dosha = mangal.bride)
+                Text(
+                    text =
+                        "Mars in the 1st, 2nd, 4th, 7th, 8th or 12th from the lagna, the Moon or " +
+                            "Venus. Traditions differ on the houses and on what may be counted from, " +
+                            "so each placement is listed separately rather than merged into one verdict.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
         }
     }
 }
 
 /**
- * One porutham: what it is called, whether it holds, what it governs, and the arithmetic behind it.
+ * One porutham: what it is called, whether it holds, its working, and what it governs.
  *
- * The verdict word is deliberately not "Matched"/"Not matched" for all four. Vedha's good outcome is
- * an *absence* — "matched" reads as though something aligned, when what happened is that nothing
- * pierced — so each rule says the thing that is actually true of it.
+ * The verdict word is deliberately not "Matched"/"Not matched". Vedha's good outcome is an
+ * *absence* — nothing pierced — which "matched" misdescribes, so each rule says the thing that is
+ * actually true of it.
  */
 @Composable
 private fun PoruthamRow(result: PoruthamResult) {
     val accent = if (result.held) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
     Row(modifier = Modifier.fillMaxWidth()) {
-        // A filled bar rather than a tick: it reads at a glance without relying on colour alone,
-        // which matters for the roughly one reader in twelve who cannot separate red from green.
-        Box(
-            modifier =
-                Modifier
-                    .padding(top = 4.dp, end = 10.dp)
-                    .size(width = 3.dp, height = 34.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(accent),
-        )
+        ConditionBar(accent)
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -266,66 +322,16 @@ private fun PoruthamRow(result: PoruthamResult) {
     }
 }
 
-/**
- * Mangal dosha across the pair, with its working shown.
- *
- * The working is the point. A bare "Manglik" verdict is the thing this card exists to avoid: most
- * charts trigger the rule somewhere, so the number that matters to a reader is *which* placement and
- * whether anything answers it. Every trigger and every parihara is listed.
- */
-@Composable
-private fun MangalCard(mangal: MangalMatch) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Mangal dosha",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = if (mangal.standing) "Present" else "Not standing",
-                    style = MaterialTheme.typography.titleMedium,
-                    color =
-                        if (mangal.standing) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        },
-                )
-            }
-            if (mangal.mutuallyCancelled) {
-                Text(
-                    text =
-                        "Both charts carry it, which classically answers it on both sides — the " +
-                            "objection is that the partner suffers for it, and that does not arise here.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            MangalSide(label = "Groom", dosha = mangal.groom)
-            MangalSide(label = "Bride", dosha = mangal.bride)
-            Text(
-                text =
-                    "Mars in the 1st, 2nd, 4th, 7th, 8th or 12th from the lagna, the Moon or Venus. " +
-                        "Traditions differ on the houses and on what may be counted from, so each " +
-                        "placement is listed separately rather than merged into one verdict.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-/** One partner's triggers and parihara. */
+/** One partner's Mangal triggers and parihara, shown when the Mangal row is opened. */
 @Composable
 private fun MangalSide(
     label: String,
     dosha: MangalDosha,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.padding(top = 4.dp)) {
         Text(
             text = "$label — ${if (dosha.present) "afflicted" else "clear"}",
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium,
         )
         if (!dosha.afflicted) {
@@ -355,6 +361,24 @@ private fun MangalSide(
             )
         }
     }
+}
+
+/**
+ * The accent stripe every condition row carries.
+ *
+ * Shape as well as colour, so pass and fail stay distinguishable for the roughly one reader in
+ * twelve who cannot separate red from green.
+ */
+@Composable
+private fun ConditionBar(accent: Color) {
+    Box(
+        modifier =
+            Modifier
+                .padding(top = 4.dp, end = 10.dp)
+                .size(width = 3.dp, height = 34.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(accent),
+    )
 }
 
 @Composable
