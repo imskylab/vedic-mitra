@@ -147,8 +147,8 @@ class AdditionalPoruthamTest {
     fun `sharing a nakshatra fails Rajju and Sthree Dheerga`() {
         (1..27).forEach { nak ->
             val p = additionalPorutham(profile(nak), profile(nak))
-            assertWithMessage("nakshatra $nak rajju").that(p.rajju).isFalse()
-            assertWithMessage("nakshatra $nak sthree dheerga").that(p.sthreeDheerga).isFalse()
+            assertWithMessage("nakshatra $nak rajju").that(p.rajju.held).isFalse()
+            assertWithMessage("nakshatra $nak sthree dheerga").that(p.sthreeDheerga.held).isFalse()
         }
     }
 
