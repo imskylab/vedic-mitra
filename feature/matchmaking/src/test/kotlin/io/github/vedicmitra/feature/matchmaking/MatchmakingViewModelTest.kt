@@ -85,12 +85,13 @@ class MatchmakingViewModelTest {
             // Pushya (8) and Hasta (13): the inclusive count is 6, so Mahendra fails; 8 + 13 = 21 is
             // not a vedha sum; Waist against Neck, so Rajju holds; and 23 from her star to his, so
             // Sthree Dheerga does too.
-            assertThat(state.porutham?.mahendra).isFalse()
-            assertThat(state.porutham?.vedha).isTrue()
-            assertThat(state.porutham?.rajju).isTrue()
-            assertThat(state.porutham?.sthreeDheerga).isTrue()
-            assertThat(state.groomNakshatra).isEqualTo(8)
-            assertThat(state.brideNakshatra).isEqualTo(13)
+            assertThat(state.porutham?.mahendra?.held).isFalse()
+            assertThat(state.porutham?.vedha?.held).isTrue()
+            assertThat(state.porutham?.rajju?.held).isTrue()
+            assertThat(state.porutham?.sthreeDheerga?.held).isTrue()
+            // The working is the point of showing these at all, so it is asserted too.
+            assertThat(state.porutham?.rajju?.working).isEqualTo("Waist and Neck — different limbs")
+            assertThat(state.porutham?.mahendra?.working).contains("6 between Pushya and Hasta")
         }
 
     @Test

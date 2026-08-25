@@ -25,23 +25,45 @@ package io.github.vedicmitra.core.astronomy
  * worth doing: two of the four came out differently from the textbook summary this would otherwise
  * have been written from. See each rule for what the data actually said.
  *
- * @property mahendra progeny and longevity — a count of 4, 7, 10, 13, 16, 19, 22 or 25 between the
- *   two nakshatras.
- * @property vedha the absence of mutual affliction. `true` means no vedha, matching the sense of the
- *   other three, where `true` is always the good outcome.
- * @property rajju the couple falling on different limbs of the body. `true` means different.
- * @property sthreeDheerga the bride's welfare and longevity — more than thirteen nakshatras from
- *   hers to his.
+ * Each result carries **why**, not just whether. A verdict a reader cannot check against another
+ * source is worth very little here, since sources genuinely differ on these rules — and the count or
+ * the pair of limbs is the thing they differ about.
+ *
+ * @property mahendra progeny and longevity.
+ * @property vedha the absence of mutual affliction. `held` means no vedha, matching the sense of the
+ *   other three, where `held` is always the good outcome.
+ * @property rajju the couple falling on different limbs of the body.
+ * @property sthreeDheerga the bride's welfare and longevity.
  */
 data class AdditionalPorutham(
-    val mahendra: Boolean,
-    val vedha: Boolean,
-    val rajju: Boolean,
-    val sthreeDheerga: Boolean,
+    val mahendra: PoruthamResult,
+    val vedha: PoruthamResult,
+    val rajju: PoruthamResult,
+    val sthreeDheerga: PoruthamResult,
 ) {
+    /** The four in reading order, for a UI that wants to render them uniformly. */
+    val all: List<PoruthamResult> get() = listOf(mahendra, vedha, rajju, sthreeDheerga)
+
     /** How many of the four hold, 0..4. */
-    val matched: Int get() = listOf(mahendra, vedha, rajju, sthreeDheerga).count { it }
+    val matched: Int get() = all.count { it.held }
 }
+
+/**
+ * One porutham: whether it holds, and the working behind that.
+ *
+ * @property name what the rule is called.
+ * @property held whether it holds. Always `true` for the good outcome, including Vedha, where the
+ *   good outcome is an absence.
+ * @property governs what the rule is traditionally read for, in a few words.
+ * @property working the arithmetic that produced the verdict — the count, the limbs, the pair of
+ *   nakshatras — phrased so it can be checked against a printed table.
+ */
+data class PoruthamResult(
+    val name: String,
+    val held: Boolean,
+    val governs: String,
+    val working: String,
+)
 
 /**
  * The limb of the body a nakshatra belongs to, for Rajju.
@@ -61,17 +83,71 @@ enum class Rajju(
     SIRO("Head"),
 }
 
-/** The four porutham between a [groom] and a [bride]. */
+/** The four porutham between a [groom] and a [bride], each with its working. */
 fun additionalPorutham(
     groom: GunaMilanProfile,
     bride: GunaMilanProfile,
-): AdditionalPorutham =
-    AdditionalPorutham(
-        mahendra = mahendraPorutham(groom.nakshatraNumber, bride.nakshatraNumber),
-        vedha = !hasVedha(groom.nakshatraNumber, bride.nakshatraNumber),
-        rajju = rajjuOf(groom.nakshatraNumber) != rajjuOf(bride.nakshatraNumber),
-        sthreeDheerga = sthreeDheergaPorutham(groom.nakshatraNumber, bride.nakshatraNumber),
+): AdditionalPorutham {
+    val g = groom.nakshatraNumber
+    val b = bride.nakshatraNumber
+    val gName = NAKSHATRA_NAMES[g - 1]
+    val bName = NAKSHATRA_NAMES[b - 1]
+
+    val mahendraCount = countBetween(g, b)
+    val mahendraHolds = mahendraCount in MAHENDRA_COUNTS
+    val sthreeCount = countBetween(b, g)
+    val sthreeHolds = sthreeCount > STHREE_DHEERGA_MINIMUM
+    val pierced = hasVedha(g, b)
+    val gRajju = rajjuOf(g)
+    val bRajju = rajjuOf(b)
+
+    return AdditionalPorutham(
+        mahendra =
+            PoruthamResult(
+                name = "Mahendra",
+                held = mahendraHolds,
+                governs = "Progeny and longevity",
+                working =
+                    "$mahendraCount between $gName and $bName — " +
+                        (if (mahendraHolds) "one of " else "wants one of ") +
+                        MAHENDRA_COUNTS.sorted().joinToString(", "),
+            ),
+        vedha =
+            PoruthamResult(
+                name = "Vedha",
+                held = !pierced,
+                governs = "Absence of mutual affliction",
+                working =
+                    if (pierced) {
+                        "$gName and $bName pierce one another"
+                    } else {
+                        "$gName and $bName do not pierce"
+                    },
+            ),
+        rajju =
+            PoruthamResult(
+                name = "Rajju",
+                held = gRajju != bRajju,
+                governs = "The husband's longevity",
+                working =
+                    if (gRajju != bRajju) {
+                        "${gRajju.displayName} and ${bRajju.displayName} — different limbs"
+                    } else {
+                        "Both fall on the ${gRajju.displayName.lowercase()}"
+                    },
+            ),
+        sthreeDheerga =
+            PoruthamResult(
+                name = "Sthree Dheerga",
+                held = sthreeHolds,
+                governs = "The bride's welfare and longevity",
+                working =
+                    "$sthreeCount from her star to his — " +
+                        (if (sthreeHolds) "more than " else "wants more than ") +
+                        STHREE_DHEERGA_MINIMUM,
+            ),
     )
+}
 
 /** The limb [nakshatraNumber] (1..27) falls on. */
 fun rajjuOf(nakshatraNumber: Int): Rajju = RAJJU_BY_NAKSHATRA[nakshatraNumber - 1]

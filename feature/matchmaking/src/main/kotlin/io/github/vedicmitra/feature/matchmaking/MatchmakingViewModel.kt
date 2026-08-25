@@ -121,8 +121,6 @@ class MatchmakingViewModel
                     selectedBrideId = brideId,
                     result = result,
                     porutham = porutham,
-                    groomNakshatra = groom?.guna?.nakshatraNumber,
-                    brideNakshatra = bride?.guna?.nakshatraNumber,
                     mangal = mangal,
                 )
         }
@@ -213,8 +211,6 @@ sealed interface MatchmakingUiState {
      * @property selectedBrideId the chosen bride, or `null` if none available.
      * @property result the match for the current pairing, or `null` until both are chosen.
      * @property porutham the four porutham read beside the gunas, or `null` until both are chosen.
-     * @property groomNakshatra the groom's Moon nakshatra, 1..27 — the Rajju row names the shared limb.
-     * @property brideNakshatra the bride's Moon nakshatra, 1..27.
      * @property mangal Mangal dosha across the pair, or `null` until both are chosen.
      */
     data class Ready(
@@ -224,8 +220,6 @@ sealed interface MatchmakingUiState {
         val selectedBrideId: String?,
         val result: GunaMilanResult?,
         val porutham: AdditionalPorutham? = null,
-        val groomNakshatra: Int? = null,
-        val brideNakshatra: Int? = null,
         val mangal: MangalMatch? = null,
     ) : MatchmakingUiState
 }
