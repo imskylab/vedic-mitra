@@ -181,7 +181,81 @@ a day the Moon changes sign soon after sunrise the app can differ from a source 
 different clock time — confirm you're on the same sunrise day. Tarabala shows only on your own (starred)
 sign; every other sign is Chandrabala-only by design, so their reading won't carry a tara line.
 
+## G — Divisional charts (vargas)
+
+Same synthetic birth as section C. The Charts section's chip row holds the lagna figure, the Chandra
+figure, and sixteen vargas.
+
+| Varga | App lagna sign | Reference | Match? |
+| --- | --- | --- | --- |
+| D-9 (navamsa) | | | |
+| D-10 (dasamsa) | | | |
+| D-12 (dwadasamsa) | | | |
+| D-30 — *absent by design* | — | — | — |
+
+Check a couple of graha placements per varga rather than the whole grid; if the lagna and two grahas
+agree, the table behind it is right. **Expect disagreement near a division edge** — see the precision
+ladder in `Varga.kt`, which runs from 0.0% at risk for D-3 to 8.3% for D-60. A mismatch is only
+interesting if the graha sits well away from an edge.
+
+## H — Dashas
+
+| Check | App | Reference | Match? |
+| --- | --- | --- | --- |
+| Vimshottari: first mahadasha lord | | | |
+| Vimshottari: its start date | | | |
+| Current mahadasha → antardasha → pratyantardasha | | | |
+| Ashtottari: first mahadasha lord | | | |
+| Yogini: first mahadasha lord | | | |
+
+Two known and deliberate divergences:
+
+- **Ashtottari period boundaries** for a Moon in nakshatras 26, 27, 1 or 2 (Rahu's run, which wraps
+  the end of the zodiac). The **lord will match**; the dates will not. Documented in
+  `VimshottariCalculator.kt`.
+- **Yogini's starting lord** between Ardra and Punarvasu moves back two rather than forward one. This
+  reproduces the reference deliberately; if a *third* source disagrees with both, that is worth
+  knowing and worth recording here.
+
+Dasha dates are extremely sensitive to the Moon: one arcminute of difference moves every boundary in
+the timeline by about three days. Judge a mismatch by that scale, not by the calendar.
+
+## I — Ashtakavarga
+
+| Check | App | Reference | Match? |
+| --- | --- | --- | --- |
+| Sarvashtakavarga per sign (12 numbers) | | | |
+| Sarva total | 337 | 337 | must always be 337 |
+| Binnashtakavarga for the Sun (12 numbers) | | | |
+
+The total is the quickest check in this whole document: it is 337 for every chart ever cast, so if it
+is not, something is wrong before any comparison is needed.
+
+## J — Mangal dosha and the four porutham
+
+Needs two profiles (section E's pair will do).
+
+| Check | App | Reference | Match? |
+| --- | --- | --- | --- |
+| Mangal dosha present for each partner | | | |
+| Which placement raised it (house + from what) | | | |
+| Whether a parihara cancels it | | | |
+| Mahendra / Vedha / Rajju / Sthree Dheerga | | | |
+
+The app shows **every trigger and every cancellation**, so compare the working and not just the
+verdict. Sources differ on whether the 1st and 2nd houses count and on which parihara apply; a
+different verdict with the same placements listed is a convention difference, not an error.
+
 ## Known limitations (expected, not bugs)
+
+- **Fine vargas near a division edge.** D-40, D-45 and D-60 divide a sign into 45, 40 and 30
+  arcminutes; this engine's longitudes are good to about an arcminute, and two independent
+  ephemerides can differ by nearly five. Roughly one D-60 placement in twelve is not decidable by
+  comparison at all. Below about D-24 the **birth time** matters more than the arithmetic does.
+- **Ashtottari boundaries in Rahu's run** (nakshatras 26, 27, 1, 2) — lord right, dates ours.
+- **No degree-based house cusps.** Houses are whole-sign throughout, so a chart drawn with bhava
+  chalit cusps will place some grahas in a different house. That is a different house system, not a
+  disagreement.
 
 - The Lahiri ayanamsa uses a **linear fit** (`23.853 + 1.397·t` centuries); it's accurate to a couple
   of arc-minutes near the present but drifts for dates far from now.

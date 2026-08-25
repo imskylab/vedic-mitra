@@ -6,8 +6,8 @@ you owe nothing and need nothing from this page — use it, fork it, ship it.
 This page is for everyone the AGPL does *not* work for: teams who want to build on Vedic Mitra
 inside a **proprietary, closed-source product** and cannot publish their own source in return.
 
-> **Pricing below is a starting proposal, not a researched market rate.** See
-> [MONETIZATION_SETUP.md](MONETIZATION_SETUP.md) for what remains to be settled.
+> **Pricing below is indicative.** Tell us what you are building and we will quote against it —
+> team size, distribution and support needs all move the number.
 
 ---
 

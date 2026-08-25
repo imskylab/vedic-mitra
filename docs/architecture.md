@@ -42,9 +42,12 @@ Shared, cross-feature building blocks.
   UI, no other internal deps.
 - **`:core:ui`** — reusable composables and preview tooling (`@ThemePreviews`).
 - **`:core:designsystem`** — the Material 3 theme (`VedicMitraTheme`) and tokens.
-- **`:core:astronomy` / `:core:scheduler` / `:core:notifications` / `:core:location`** — **ports**:
-  interfaces defining a capability. In Phase 1 these are contracts only; implementations land later
-  and are Hilt-bound in their own `di/` modules.
+- **`:core:datastore`** — persisted preferences and birth profiles on Jetpack DataStore.
+- **`:core:domain`** — use cases needed by more than one feature, so neither has to own them.
+- **`:core:astronomy` / `:core:scheduler` / `:core:alarm` / `:core:notifications` /
+  `:core:location`** — **ports**: an interface defining a capability, with its implementation
+  Hilt-bound in the module's own `di/`. A feature depends on the interface, never the
+  implementation, which is what lets a test swap in a fake without a framework.
 
 ### `:feature`
 User-facing screens. Each owns its UI + ViewModel (+ later, domain/data). A feature may depend on
@@ -59,7 +62,7 @@ User-facing screens. Each owns its UI + ViewModel (+ later, domain/data). A feat
 | `:feature:*` | `:core:*` | other `:feature:*` |
 | `:core:ui` | `:core:designsystem`, `:core:common` | any `:feature`, capability ports |
 | `:core:designsystem` | `:core:common` (rare) | any `:feature` |
-| `:core:astronomy/scheduler/notifications/location` | `:core:common` | any `:feature`, other capability ports |
+| `:core:astronomy/scheduler/alarm/notifications/location/datastore` | `:core:common` | any `:feature`, other capability ports |
 | `:core:common` | — (external libs only) | everything internal |
 
 These rules are enforced socially in review today; a Gradle module-graph assertion may be added
