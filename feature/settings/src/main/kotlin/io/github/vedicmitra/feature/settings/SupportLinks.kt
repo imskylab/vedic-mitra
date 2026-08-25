@@ -22,8 +22,7 @@ package io.github.vedicmitra.feature.settings
  *
  * `SupportLinksTest` pins the shape of every constant so a malformed link cannot ship silently —
  * in particular, the UPI entry is a bare VPA to copy, never a `upi://` URI (see [SupportScreen] for
- * why that distinction matters), and no constant may carry a leftover placeholder. Remaining setup
- * is tracked in `docs/MONETIZATION_SETUP.md`.
+ * why that distinction matters), and no constant may carry a leftover placeholder.
  */
 internal object SupportLinks {
     /** Canonical repository — also the "share" payload and the star-the-repo destination. */
