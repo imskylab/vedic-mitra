@@ -14,7 +14,9 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 private const val NAKSHATRA_SPAN = 360.0 / 27.0
-private const val YEAR_MILLIS = 31_557_600_000.0
+
+// The sidereal year, matching DASHA_YEAR_MILLIS -- see its KDoc for why it is not 365.25.
+private const val YEAR_MILLIS = 365.2564 * 24 * 60 * 60 * 1000
 private const val BIRTH = 1_786_000_000_000L
 
 @Suppress("MagicNumber")

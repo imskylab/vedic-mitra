@@ -69,7 +69,7 @@ class AntardashaTest {
         // Within Ketu's 7-year mahadasha, Shukra (20 of the 120 years) takes 7 x 20 / 120 years.
         val ketu = mahadashas.first { it.lord == Graha.KETU }
         val shukra = ketu.antardashas.first { it.lord == Graha.SHUKRA }
-        val expectedMillis = (7.0 * 20.0 / 120.0 * 365.25 * 86_400_000.0).toLong()
+        val expectedMillis = (7.0 * 20.0 / 120.0 * 365.2564 * 86_400_000.0).toLong()
         val actualMillis = shukra.end.toEpochMilliseconds() - shukra.start.toEpochMilliseconds()
         assertThat(actualMillis.toDouble()).isWithin(1000.0).of(expectedMillis.toDouble())
     }

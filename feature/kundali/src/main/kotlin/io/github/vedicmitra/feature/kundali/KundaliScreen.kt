@@ -53,10 +53,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.DashaPeriod
+import io.github.vedicmitra.core.astronomy.DashaSystem
 import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.JatakaProfile
 import io.github.vedicmitra.core.astronomy.Lagna
-import io.github.vedicmitra.core.astronomy.MahadashaPeriod
 import io.github.vedicmitra.core.astronomy.MangalDosha
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
@@ -206,11 +207,37 @@ private fun KundaliPageContent(
 
         KundaliPage.YOGAS -> YogasPage(chart = chart, modifier = scroll)
 
-        KundaliPage.MAHADASHA -> MahadashaPage(periods = chart.vimshottari, modifier = scroll)
+        KundaliPage.MAHADASHA -> MahadashaPage(chart = chart, modifier = scroll)
 
-        KundaliPage.ANTARDASHA -> AntardashaPage(periods = chart.vimshottari, modifier = scroll)
+        KundaliPage.ANTARDASHA -> AntardashaPage(chart = chart, modifier = scroll)
 
         KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
+    }
+}
+
+/**
+ * Which dasha system the timeline is read in.
+ *
+ * Vimshottari first because it is what a reader means by "dasha" unless they say otherwise; the
+ * other two are read alongside it rather than instead of it, which is why this is a switch on one
+ * page rather than three more pages.
+ */
+@Composable
+private fun DashaSystemChips(
+    selected: Int,
+    onSelect: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        DashaSystem.entries.forEachIndexed { index, system ->
+            FilterChip(
+                selected = index == selected,
+                onClick = { onSelect(index) },
+                label = { Text(text = system.displayName) },
+            )
+        }
     }
 }
 
@@ -293,11 +320,15 @@ private fun YogasPage(
 /** The nine mahadashas of the 120-year cycle, with the running one marked. */
 @Composable
 private fun MahadashaPage(
-    periods: List<MahadashaPeriod>,
+    chart: NatalChart,
     modifier: Modifier,
 ) {
+    var selected by rememberSaveable { mutableStateOf(DashaSystem.VIMSHOTTARI.ordinal) }
+    val system = DashaSystem.entries[selected]
+    val periods = chart.dasha(system)
     val now = remember { System.currentTimeMillis() }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        DashaSystemChips(selected = selected, onSelect = { selected = it })
         VedicTable(
             columns = DASHA_COLUMNS,
             rows =
@@ -310,7 +341,7 @@ private fun MahadashaPage(
                 },
         )
         Text(
-            text = "The full Vimshottari cycle from birth. ● marks the period running now.",
+            text = "The full ${system.displayName} cycle from birth. ● marks the period running now.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -320,12 +351,16 @@ private fun MahadashaPage(
 /** The nine sub-periods of whichever mahadasha is running now. */
 @Composable
 private fun AntardashaPage(
-    periods: List<MahadashaPeriod>,
+    chart: NatalChart,
     modifier: Modifier,
 ) {
+    var selected by rememberSaveable { mutableStateOf(DashaSystem.VIMSHOTTARI.ordinal) }
+    val system = DashaSystem.entries[selected]
+    val periods = chart.dasha(system)
     val now = remember { System.currentTimeMillis() }
     val running = periods.firstOrNull { isRunning(it.start, it.end, now) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        DashaSystemChips(selected = selected, onSelect = { selected = it })
         if (running == null) {
             Text(
                 text = "No mahadasha covers the present moment, so there are no sub-periods to show.",
@@ -335,7 +370,7 @@ private fun AntardashaPage(
             return@Column
         }
         Text(
-            text = "Within ${running.lord.displayName} mahadasha",
+            text = "Within ${running.lord.displayName} mahadasha (${system.displayName})",
             style = MaterialTheme.typography.titleSmall,
         )
         VedicTable(
@@ -349,10 +384,31 @@ private fun AntardashaPage(
                     )
                 },
         )
+        val runningAntardasha = running.antardashas.firstOrNull { isRunning(it.start, it.end, now) }
+        if (runningAntardasha != null) {
+            Text(
+                text = "Within ${runningAntardasha.lord.displayName} antardasha",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            VedicTable(
+                columns = DASHA_COLUMNS,
+                rows =
+                    runningAntardasha.subPeriods.map { period ->
+                        listOf(
+                            period.lord.displayName + if (isRunning(period.start, period.end, now)) " ●" else "",
+                            formatDayMonthYear(period.start),
+                            formatDayMonthYear(period.end),
+                        )
+                    },
+            )
+        }
         Text(
             text =
                 "Each mahadasha divides into nine antardashas, beginning with its own lord and " +
-                    "sharing the period in proportion to each lord's dasha years.",
+                    "sharing the period in proportion to each lord's dasha years. The same division " +
+                    "applied once more gives the pratyantardashas below it — a few weeks each, so " +
+                    "these carry the day as well as the month.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -843,7 +899,7 @@ private fun Centered(
 private fun currentDashaOf(
     chart: NatalChart,
     nowMillis: Long,
-): MahadashaPeriod? =
+): DashaPeriod? =
     chart.vimshottari.firstOrNull {
         nowMillis >= it.start.toEpochMilliseconds() && nowMillis < it.end.toEpochMilliseconds()
     }
@@ -855,6 +911,15 @@ private fun formatMonthYear(instant: Instant): String =
         .ofEpochMilli(instant.toEpochMilliseconds())
         .atZone(ZoneId.systemDefault())
         .format(monthYearFormatter)
+
+/** Pratyantardashas run a few weeks, so a month alone would show the same value on several rows. */
+private val dayMonthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+
+private fun formatDayMonthYear(instant: Instant): String =
+    java.time.Instant
+        .ofEpochMilli(instant.toEpochMilliseconds())
+        .atZone(ZoneId.systemDefault())
+        .format(dayMonthYearFormatter)
 
 @Preview
 @Composable
@@ -895,10 +960,11 @@ private fun sampleChart(): NatalChart =
         moonPada = 2,
         vimshottari =
             listOf(
-                MahadashaPeriod(
+                DashaPeriod(
                     lord = Graha.KETU,
                     start = Instant.fromEpochMilliseconds(0L),
                     end = Instant.fromEpochMilliseconds(9_999_999_999_999L),
+                    level = 1,
                 ),
             ),
     )

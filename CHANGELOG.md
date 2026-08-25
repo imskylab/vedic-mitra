@@ -7,6 +7,54 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Pratyantardasha** — the third dasha level — and one recursion in place of two hand-written ones.
+  Mahadasha, antardasha and pratyantardasha were three names for a single rule applied again: a
+  period divides into sub-periods running through the lord sequence from its own lord, each taking a
+  share proportional to that lord's dasha years. `MahadashaPeriod` and `AntardashaPeriod` collapse
+  into one `DashaPeriod` carrying its level, and a fourth level would now be free — it is capped at
+  three because the next one splits a few weeks into a few hours, finer than a birth time known to
+  the minute can support. Checked against an independent implementation at all three levels: **729 of
+  729 periods matched on lord and order.**
+
+### Fixed
+
+- **A dasha year is the sidereal year, not the Julian one.** This was 365.25 days and is now
+  365.2564, which moves every dasha date in the app — by six hours per century of elapsed timeline,
+  reaching **about eighteen hours** by the end of the 120-year cycle. Fitting the constant against
+  729 published period boundaries put the worst disagreement at 66,255 seconds for 365.25 against 604
+  seconds for the sidereal year, and that remaining ten minutes is fully explained by the
+  four-decimal rounding of the Moon longitude fed into the comparison. The Gregorian and tropical
+  years came out four to six times worse than the Julian one, so this is a real convention rather
+  than a fitted number. Some texts intend a 360-day year, which is a different timeline altogether;
+  this app follows the sidereal year, consistent with computing everything else from real positions.
+
+- **Ashtottari and Yogini**, as literal derived tables. Ashtottari runs eight lords over 108 years
+  with no Ketu, covering the nakshatras in runs of three and four; Yogini runs eight over 36 years,
+  one to eight years each, one nakshatra apiece. Lord orders and year tables were read off an
+  independent implementation's period durations, and the starting-lord tables from two sweeps taken
+  independently of each other, which agreed on all 27 nakshatras. The Kundali dasha pages now carry a
+  system selector.
+
+  **The tables are written out rather than generated, and reproduce the source including where it is
+  odd.** Yogini's starting lord advances one per nakshatra everywhere except between Ardra and
+  Punarvasu, where it moves *back two*; both sweeps reproduce it, and a test pins it so a later
+  tidy-up cannot quietly change every Yogini reading for those nakshatras. Whether that is a real
+  convention or the reference's own off-by-one could not be established — and matching the tool
+  people compare against is worth more here than being right in a way that agrees with nobody.
+
+  **One thing is not bug-for-bug, and should not be read as if it were.** Ashtottari's first period
+  takes its elapsed share across the lord's whole run of nakshatras, which 49 of 57 sampled births
+  confirm. The eight that differ are exactly Rahu's run — 26, 27, 1, 2, the one wrapping the end of
+  the zodiac back to its start. A controlled sweep, holding the date fixed and moving only the time
+  of day, showed the reference's Rahu start shifting about 66 days per eight hours of birth time
+  where the run model calls for three years per nakshatra, and placing the birth outside the very
+  period it should sit in. Consistent and reproducible across four months, so it is some rule, but
+  not one recoverable from the data. This engine applies the run model uniformly: for those four
+  nakshatras the **lord is still right** and only the boundaries differ. Their goldens assert the
+  lord and skip the start, and a test holds that exclusion at exactly eight so it cannot grow.
+
 ### Fixed
 
 - **The app stayed on its fallback location after location was switched on.** Two causes, both real.
