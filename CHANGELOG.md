@@ -7,6 +7,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The Kundali book is six named sections instead of ten swipes.** It had grown a page at a time
+  until reaching the last one meant swiping past every other, guided by ten identical dots that told
+  a reader where they were but never where anything else was. A scrollable tab row replaces them, so
+  every section is one tap away, and the pages are grouped by the question a reader is asking rather
+  than by which calculation produced them:
+
+  - **Charts** — the lagna figure, the same placements read from the Moon, and the sixteen
+    divisional charts, all behind one chip row. They are the same diagram drawn from different
+    starting points and are compared against each other, so they now sit together. The D-1 chip is
+    gone: it was the lagna chart under another name, worth saying when they lived on separate pages
+    and merely a duplicate now they do not.
+  - **Grahas** — Spashta Graha and Ashtakavarga together. A graha's house means one thing in a sign
+    holding 30 bindus and another in a sign holding 20; those were two swipes apart.
+  - **Dasha** — mahadasha, the antardashas of the one running now, and its pratyantardashas, under a
+    single system selector. The period you are in and the period inside it were on separate pages,
+    and a reader nearly always wants both at once.
+  - **Reading** — what was called "Details". Every other section is a diagram or a table; this is
+    the only place the app says what any of it is taken to mean, and it was named as an afterthought
+    and left last.
+
 ### Added
 
 - **Ashtakavarga** — binnashtakavarga per graha and the sarvashtakavarga, on a new Kundali page.
