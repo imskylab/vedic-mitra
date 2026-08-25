@@ -1,12 +1,11 @@
 name: Release
 
-# Builds an installable APK when a version tag is pushed and attaches it to a GitHub Release.
-# Tag the commit you want to ship, e.g.:
-#   git tag v0.1.0 && git push origin v0.1.0
+# Auto-release on tag push is DISABLED. Releases are cut locally with release.bat, which builds the
+# production keystore-signed APK and publishes the GitHub Release. This workflow only built a
+# debug-signed APK, so letting it fire on tags would overwrite a signed release with a debug one.
+# Kept as manual-only (workflow_dispatch) so it can be re-enabled or run deliberately if ever needed.
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 # Needed to create the release and upload assets.
 permissions:

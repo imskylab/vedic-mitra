@@ -69,6 +69,8 @@ jobs:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: warn
+          # A throwaway convenience build — released APKs live in GitHub Releases, so expire this fast.
+          retention-days: 7
 
       - name: Upload test reports
         if: always()
@@ -77,3 +79,5 @@ jobs:
           name: test-reports
           path: '**/build/reports/tests/**'
           if-no-files-found: ignore
+          # Only needed to debug a failed run; no reason to keep them around.
+          retention-days: 7
