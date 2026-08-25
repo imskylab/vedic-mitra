@@ -66,6 +66,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
@@ -131,11 +133,22 @@ fun HomeScreen(
             viewModel.load()
         }
 
+    // Ask once, on first composition only. Asking again on every resume would re-prompt a user who
+    // has already declined, which Android answers by refusing outright after the second refusal.
     LaunchedEffect(Unit) {
         val granted =
             context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
-        if (granted) viewModel.load() else permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (!granted) permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
+
+    // Reload whenever the screen comes back to the foreground, rather than once per composition.
+    // Someone who opens the app with location switched off, turns it on and comes back was being
+    // shown the fallback city indefinitely, because nothing re-resolved. The same staleness applies
+    // to time: leave the app open overnight and the day, tithi and muhurta windows are all wrong
+    // until something else happens to trigger a load.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.load()
     }
 
     LaunchedEffect(Unit) {
@@ -181,7 +194,10 @@ private fun HomeContent(
 ) {
     val snapshot = uiState.snapshot
     when {
-        uiState.isLoading -> CenteredBox(modifier) { CircularProgressIndicator() }
+        // Only the first load takes over the screen. Now that the content reloads on every resume,
+        // showing a spinner whenever isLoading is set would blank the hub every time the user came
+        // back from another app; a refresh with content already on screen happens silently.
+        uiState.isLoading && snapshot == null -> CenteredBox(modifier) { CircularProgressIndicator() }
         uiState.errorMessage != null ->
             CenteredBox(modifier) { Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge) }
 
@@ -607,54 +623,76 @@ private fun HeroCard(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Today's Panchang",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-                Text(
-                    text = snapshot.vara.displayName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-                Text(
-                    text = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-                if (nowPanchanga != null) {
-                    NowLine(nowPanchanga)
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Today's Panchang",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Text(
+                        text = snapshot.vara.displayName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                    if (nowPanchanga != null) {
+                        RunningTithi(now = nowPanchanga, sunriseTithi = snapshot.tithi)
+                    } else {
+                        Text(
+                            text = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+                    Text(
+                        text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
                 }
                 Text(
-                    text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name} · tap for full panchang ›",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = snapshot.moonPhase.displayName,
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = TextAlign.End,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
+            // Outside the row, so it gets the whole card width and stays on one line. Inside it, the
+            // moon-phase label on the right squeezed the column and this wrapped mid-phrase.
             Text(
-                text = snapshot.moonPhase.displayName,
-                style = MaterialTheme.typography.labelMedium,
-                textAlign = TextAlign.End,
+                text = "Tap for full panchang ›",
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(top = 8.dp),
             )
         }
     }
 }
 
 /**
- * What is running *right now*, as against the day's name above it, which is fixed at sunrise.
+ * The tithi that is actually running, and — when the day has already moved on — when the one that
+ * named the day gave way.
+ *
+ * The day is named by its **sunrise** tithi, which is the convention every published panchanga
+ * follows, and that name still appears on the Panchang screen. But a card read at nine in the
+ * evening was leading with a tithi that ended before breakfast, with the one genuinely in force
+ * demoted to small print underneath. The prominence is now the other way round: what is running, and
+ * how long it has left, with the handover recorded below it.
  *
  * The countdown re-reads the clock once a minute rather than every frame: the Moon opens the
- * elongation by about half an arcsecond a second, so a faster tick would redraw the same minute
- * over and over.
+ * elongation by about half an arcsecond a second, so a faster tick would redraw the same minute over
+ * and over.
  */
 @Composable
-private fun NowLine(now: PanchangaNow) {
+private fun RunningTithi(
+    now: PanchangaNow,
+    sunriseTithi: Tithi,
+) {
     val remaining by produceState(initialValue = now.limbs.tithi.remainingFrom(systemNow()), now) {
         while (true) {
             value = now.limbs.tithi.remainingFrom(systemNow())
@@ -662,11 +700,22 @@ private fun NowLine(now: PanchangaNow) {
         }
     }
     Text(
-        text = "Now ${now.tithi.name} · ends in ${formatRemaining(remaining)}",
-        style = MaterialTheme.typography.bodySmall,
+        text = "${now.tithi.paksha.title} ${now.tithi.name} · ends in ${formatRemaining(remaining)}",
+        style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onPrimaryContainer,
         modifier = Modifier.padding(top = 4.dp),
     )
+    // The current tithi's window opens exactly where the previous one closed, so its start is the
+    // handover instant -- no second solve needed. Shown only once the day has actually rolled over;
+    // before that the sunrise tithi and the running one are the same thing said twice.
+    if (now.tithi.number != sunriseTithi.number) {
+        Text(
+            text = "${sunriseTithi.paksha.title} ${sunriseTithi.name} ended ${formatTime(now.limbs.tithi.start)}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.padding(top = 2.dp),
+        )
+    }
 }
 
 private fun systemNow(): Instant = Instant.fromEpochMilliseconds(System.currentTimeMillis())
