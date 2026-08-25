@@ -6,9 +6,6 @@ you owe nothing and need nothing from this page — use it, fork it, ship it.
 This page is for everyone the AGPL does *not* work for: teams who want to build on Vedic Mitra
 inside a **proprietary, closed-source product** and cannot publish their own source in return.
 
-> **Pricing below is indicative.** Tell us what you are building and we will quote against it —
-> team size, distribution and support needs all move the number.
-
 ---
 
 ## Do you need a commercial license?
@@ -39,10 +36,17 @@ If you are unsure, ask. Answering the question costs nothing.
 
 ## What you are actually buying
 
-The engine, not the wrapper. `:core:astronomy` is ~4,500 lines of computed astronomy —
-Meeus ephemeris, Lahiri ayanamsa, sunrise-tithi day naming, muhurta and kalam derivation,
-Vimshottari dasha, Ashtakoota matching — with ~22 test files behind it, cross-checked against
-published almanacs and an independent reference implementation before each release. It has no network dependency and no ephemeris data files to license.
+The engine, not the wrapper. `:core:astronomy` is roughly 6,700 lines of computed astronomy:
+Meeus ephemeris and Lahiri ayanamsa, the full panchanga with sunrise-tithi day naming, muhurta and
+kalam derivation, natal charts with seventeen divisional charts, three dasha systems to three
+levels, ashtakavarga, graha drishti, and Ashtakoota matching with Mangal dosha and the four
+additional porutham.
+
+Behind it sit 40 test files and about 6,000 lines of tests, cross-checked against published almanacs
+and an independent reference implementation before each release — the rules are derived from
+reference data and pinned as inline goldens rather than transcribed from memory, so a regression
+fails CI rather than reaching a chart. It has no network dependency and no ephemeris data files to
+license.
 
 A commercial license grants you the right to use that work in a product you keep closed.
 
