@@ -285,9 +285,9 @@ Status marks reflect what's actually implemented today, verified against the cod
 
 **Vrat Support**
 
-- [ ] Fasting days
+- [x] Fasting days *(Ekadashi and Pradosh, computed from the tithi)*
 - [ ] Parana timings
-- [ ] Festival descriptions
+- [x] Festival descriptions *(`PanchangaGlossary` — a significance blurb per entry; the major festivals and every recurring observance are covered, the long tail is not)*
 - [ ] Ritual guidance
 - [x] Important observances
 
@@ -340,7 +340,11 @@ for the Phase 6 astrology features)*
 - [x] Vimshottari dasha state at an arbitrary date *(three levels deep)*
 - [x] Transit snapshot at an arbitrary date *(`planetaryPositionsAt`)*
 - [x] Pure `natalChartAt(birth)` API — offline, deterministic, reference-checked
-- [x] Astangata (combustion), graha drishti, named yogas, ashtakavarga
+- [x] Astangata (combustion) — classical BPHS orbs
+- [x] Graha drishti — whole-sign Parashari aspects
+- [x] Named yogas — Gajakesari, Budhaditya, Chandra-Mangala, the five Panchamahapurusha
+- [x] Ashtakavarga — binnashtakavarga per graha and the sarvashtakavarga
+- [x] Jataka properties — varna, vashya, yoni, gana, nadi, the samvats and the ayanamsa at birth
 - [x] Ashtottari and Yogini dasha *(alongside Vimshottari)*
 - [ ] Bhava chalit / degree-based house cusps
 
@@ -402,6 +406,7 @@ for the Phase 6 astrology features)*
 - [x] Sunrise *(covered as a muhurta reminder, not a dedicated toggle)*
 - [x] Sunset *(covered as a muhurta reminder, not a dedicated toggle)*
 - [x] Brahma Muhurta
+- [x] Ringing alarms *(a reminder can ring like a clock alarm rather than posting a notification; see [ADR 0009](docs/adr/0009-ringing-alarm-reminders.md))*
 - [ ] Sandhyavandanam
 - [ ] Festival reminders
 - [ ] Vrat reminders
