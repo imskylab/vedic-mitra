@@ -11,7 +11,6 @@
 package io.github.vedicmitra.feature.kundali
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -28,25 +27,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
@@ -73,6 +73,7 @@ import io.github.vedicmitra.core.designsystem.component.VedicPropertyTable
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.component.VedicTable
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
@@ -134,6 +135,7 @@ private fun ChartView(
 ) {
     val pages = KundaliPage.entries
     val pagerState = rememberPagerState(pageCount = { pages.size })
+    val scope = rememberCoroutineScope()
     Column(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -143,33 +145,44 @@ private fun ChartView(
                 ProfilePicker(options = uiState.options, selectedId = uiState.selectedId, onSelect = onSelectProfile)
             }
             Text(text = "${uiState.name}'s Kundali", style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = pages[pagerState.currentPage].title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+        }
+        // Named tabs rather than dots. Ten identical dots told a reader where they were but never
+        // where anything else was, so reaching the last section meant swiping past every other one.
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            edgePadding = 16.dp,
+        ) {
+            pages.forEachIndexed { index, page ->
+                Tab(
+                    selected = index == pagerState.currentPage,
+                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                    text = { Text(text = page.title) },
+                )
+            }
         }
         HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
             KundaliPageContent(page = pages[page], uiState = uiState)
         }
-        PageIndicator(count = pages.size, current = pagerState.currentPage)
     }
 }
 
-/** The pages of the kundali book, in swipe order. */
+/**
+ * The sections of the kundali book, in swipe order.
+ *
+ * Grouped by the question a reader is asking rather than by calculation. The book had grown to ten
+ * pages one addition at a time, which is how it ended up with the mahadasha and its antardashas on
+ * separate pages, and a graha's position two swipes from its bindu support. Six named sections fit a
+ * tab row, and the things read together now sit together.
+ */
 private enum class KundaliPage(
     val title: String,
 ) {
-    LAGNA_CHART("Lagna Kundali"),
-    RASHI_CHART("Rashi (Chandra) Kundali"),
+    CHARTS("Charts"),
     JATAKA("Jataka"),
-    SPASHTA_GRAHA("Spashta Graha"),
-    VARGA("Varga Kundali"),
-    YOGAS("Pramukh Yoga"),
-    MAHADASHA("Mahadasha"),
-    ANTARDASHA("Antardasha"),
-    ASHTAKAVARGA("Ashtakavarga"),
-    DETAILS("Details"),
+    GRAHAS("Grahas"),
+    YOGAS("Yogas"),
+    DASHA("Dasha"),
+    READING("Reading"),
 }
 
 @Composable
@@ -180,43 +193,17 @@ private fun KundaliPageContent(
     val chart = uiState.chart
     val scroll = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)
     when (page) {
-        KundaliPage.LAGNA_CHART ->
-            ChartPage(
-                houses = chart.houses,
-                grahas = chart.grahas,
-                houseOf = { it.house },
-                caption =
-                    "North-Indian style. House 1 (top centre) is the lagna; numbers are the rashi " +
-                        "in each house. Retrograde grahas are shown in red.",
-                modifier = scroll,
-            )
-
-        KundaliPage.RASHI_CHART ->
-            ChartPage(
-                houses = chart.moonHouses,
-                grahas = chart.grahas,
-                houseOf = { it.houseFromMoon },
-                caption =
-                    "The same placements counted from the Moon rather than the lagna, so house 1 is " +
-                        "the Moon's own rashi. Read alongside the lagna chart.",
-                modifier = scroll,
-            )
+        KundaliPage.CHARTS -> ChartsPage(chart = chart, modifier = scroll)
 
         KundaliPage.JATAKA -> JatakaPage(jataka = chart.jataka, modifier = scroll)
 
-        KundaliPage.SPASHTA_GRAHA -> SpashtaGrahaPage(grahas = chart.grahas, modifier = scroll)
-
-        KundaliPage.VARGA -> VargaPage(chart = chart, modifier = scroll)
+        KundaliPage.GRAHAS -> GrahasPage(chart = chart, modifier = scroll)
 
         KundaliPage.YOGAS -> YogasPage(chart = chart, modifier = scroll)
 
-        KundaliPage.MAHADASHA -> MahadashaPage(chart = chart, modifier = scroll)
+        KundaliPage.DASHA -> DashaPage(chart = chart, modifier = scroll)
 
-        KundaliPage.ANTARDASHA -> AntardashaPage(chart = chart, modifier = scroll)
-
-        KundaliPage.ASHTAKAVARGA -> AshtakavargaPage(chart = chart, modifier = scroll)
-
-        KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
+        KundaliPage.READING -> ReadingPage(uiState = uiState, modifier = scroll)
     }
 }
 
@@ -228,13 +215,14 @@ private fun KundaliPageContent(
  * own rows beneath it for anyone who wants to see where the support comes from.
  */
 @Composable
-private fun AshtakavargaPage(
-    chart: NatalChart,
-    modifier: Modifier,
-) {
+private fun AshtakavargaSection(chart: NatalChart) {
     val sarva = chart.sarvashtakavarga
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(text = "Sarvashtakavarga", style = MaterialTheme.typography.titleSmall)
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Sarvashtakavarga",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(top = 8.dp),
+        )
         VedicTable(
             columns = ASHTAKAVARGA_COLUMNS,
             rows =
@@ -399,9 +387,15 @@ private fun YogasPage(
     }
 }
 
-/** The nine mahadashas of the 120-year cycle, with the running one marked. */
+/**
+ * The whole dasha timeline: the major periods, then the one running now opened out.
+ *
+ * Mahadasha and antardasha were separate pages, which meant the period you are in and the period
+ * inside it were a swipe apart -- and the reader nearly always wants both at once. One page, one
+ * system selector, three levels deep.
+ */
 @Composable
-private fun MahadashaPage(
+private fun DashaPage(
     chart: NatalChart,
     modifier: Modifier,
 ) {
@@ -409,6 +403,7 @@ private fun MahadashaPage(
     val system = DashaSystem.entries[selected]
     val periods = chart.dasha(system)
     val now = remember { System.currentTimeMillis() }
+    val running = periods.firstOrNull { isRunning(it.start, it.end, now) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         DashaSystemChips(selected = selected, onSelect = { selected = it })
         VedicTable(
@@ -427,22 +422,6 @@ private fun MahadashaPage(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-    }
-}
-
-/** The nine sub-periods of whichever mahadasha is running now. */
-@Composable
-private fun AntardashaPage(
-    chart: NatalChart,
-    modifier: Modifier,
-) {
-    var selected by rememberSaveable { mutableStateOf(DashaSystem.VIMSHOTTARI.ordinal) }
-    val system = DashaSystem.entries[selected]
-    val periods = chart.dasha(system)
-    val now = remember { System.currentTimeMillis() }
-    val running = periods.firstOrNull { isRunning(it.start, it.end, now) }
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        DashaSystemChips(selected = selected, onSelect = { selected = it })
         if (running == null) {
             Text(
                 text = "No mahadasha covers the present moment, so there are no sub-periods to show.",
@@ -452,8 +431,9 @@ private fun AntardashaPage(
             return@Column
         }
         Text(
-            text = "Within ${running.lord.displayName} mahadasha (${system.displayName})",
+            text = "Within ${running.lord.displayName} mahadasha",
             style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(top = 8.dp),
         )
         VedicTable(
             columns = DASHA_COLUMNS,
@@ -487,10 +467,10 @@ private fun AntardashaPage(
         }
         Text(
             text =
-                "Each mahadasha divides into nine antardashas, beginning with its own lord and " +
-                    "sharing the period in proportion to each lord's dasha years. The same division " +
-                    "applied once more gives the pratyantardashas below it — a few weeks each, so " +
-                    "these carry the day as well as the month.",
+                "Each mahadasha divides into antardashas beginning with its own lord, sharing the " +
+                    "period in proportion to each lord's dasha years. The same division applied " +
+                    "once more gives the pratyantardashas — a few weeks each, so those carry the " +
+                    "day as well as the month.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -557,17 +537,20 @@ private fun jatakaEntries(jataka: JatakaProfile): List<Pair<String, String>> =
         "Samvatsara" to jataka.samvatsara,
     )
 
-/** The Spashta Graha table: where each graha sits, to the arcminute. */
+/**
+ * Where each graha sits, and how much benefic support each sign carries.
+ *
+ * Position and bindus on one screen because they are read together: a graha's house means one thing
+ * in a sign holding 30 bindus and another in a sign holding 20. They used to be two swipes apart.
+ */
 @Composable
-private fun SpashtaGrahaPage(
-    grahas: List<NatalGraha>,
+private fun GrahasPage(
+    chart: NatalChart,
     modifier: Modifier,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        VedicTable(
-            columns = SPASHTA_COLUMNS,
-            rows = grahas.map { spashtaRow(it) },
-        )
+        Text(text = "Spashta Graha", style = MaterialTheme.typography.titleSmall)
+        VedicTable(columns = SPASHTA_COLUMNS, rows = chart.grahas.map { spashtaRow(it) })
         Text(
             text =
                 "Positions are degrees and minutes into the rashi. (V) marks retrograde motion and " +
@@ -576,6 +559,7 @@ private fun SpashtaGrahaPage(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        AshtakavargaSection(chart = chart)
     }
 }
 
@@ -608,48 +592,90 @@ private fun formatDegrees(degrees: Double): String {
 private const val MINUTES_PER_DEGREE = 60
 
 /**
- * The divisional charts, one figure at a time.
+ * Every figure of the chart in one place: the lagna chart, the same placements read from the Moon,
+ * and the sixteen divisional charts.
  *
- * A chip per varga rather than a page per varga: nine more pages would triple the length of the book
- * for what is really one page asked nine ways, and swiping between two divisions to compare them is
- * worse than tapping between them. The pager stays a table of contents; the chips are the dial.
- *
- * Defaults to the D-9, which is the varga a reader means when they do not say which.
+ * One chip row rather than three pages, because they are the same diagram drawn from different
+ * starting points and a reader compares them against each other. The D-1 chip that used to sit at
+ * the head of the varga list is gone: it was the lagna chart under another name, which was worth
+ * saying when the two lived on separate pages and is just a duplicate now they do not.
  */
 @Composable
-private fun VargaPage(
+private fun ChartsPage(
     chart: NatalChart,
     modifier: Modifier,
 ) {
-    var selected by rememberSaveable { mutableStateOf(Varga.D9.ordinal) }
-    val varga = Varga.entries[selected]
-    val cast = chart.vargaChart(varga)
+    var selected by rememberSaveable { mutableStateOf(0) }
+    val figures = chartFigures(chart)
+    val figure = figures[selected.coerceIn(figures.indices)]
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Varga.entries.forEachIndexed { index, entry ->
+            figures.forEachIndexed { index, entry ->
                 FilterChip(
                     selected = index == selected,
                     onClick = { selected = index },
-                    label = { Text(text = entry.name) },
+                    label = { Text(text = entry.chip) },
                 )
             }
         }
         Text(
-            text = "${varga.name} · ${varga.displayName} — ${VARGA_PURPOSE[varga].orEmpty()}",
+            text = figure.heading,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary,
         )
-        NorthIndianChart(houses = cast.houses, grahas = chart.grahas, houseOf = cast::houseOf)
+        NorthIndianChart(houses = figure.houses, grahas = chart.grahas, houseOf = figure.houseOf)
         Text(
-            text = vargaCaption(varga),
+            text = figure.caption,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
+
+/** One selectable figure: what its chip says, what it draws, and how to read it. */
+private data class ChartFigure(
+    val chip: String,
+    val heading: String,
+    val houses: List<Rasi>,
+    val houseOf: (NatalGraha) -> Int,
+    val caption: String,
+)
+
+/** The lagna and Chandra figures, then every varga but D-1, which the lagna figure already is. */
+private fun chartFigures(chart: NatalChart): List<ChartFigure> =
+    listOf(
+        ChartFigure(
+            chip = "Lagna",
+            heading = "Lagna Kundali",
+            houses = chart.houses,
+            houseOf = { it.house },
+            caption =
+                "North-Indian style. House 1 (top centre) is the lagna; numbers are the rashi in " +
+                    "each house. Retrograde grahas are shown in red.",
+        ),
+        ChartFigure(
+            chip = "Chandra",
+            heading = "Rashi (Chandra) Kundali",
+            houses = chart.moonHouses,
+            houseOf = { it.houseFromMoon },
+            caption =
+                "The same placements counted from the Moon rather than the lagna, so house 1 is " +
+                    "the Moon's own rashi. Read alongside the lagna chart.",
+        ),
+    ) +
+        Varga.entries.filter { it != Varga.D1 }.map { varga ->
+            val cast = chart.vargaChart(varga)
+            ChartFigure(
+                chip = varga.name,
+                heading = "${varga.name} · ${varga.displayName} — ${VARGA_PURPOSE[varga].orEmpty()}",
+                houses = cast.houses,
+                houseOf = cast::houseOf,
+                caption = vargaCaption(varga),
+            )
+        }
 
 /** How to read the divisional figure on screen, and what not to read into it. */
 private fun vargaCaption(varga: Varga): String =
@@ -703,28 +729,14 @@ private val VARGA_PURPOSE: Map<Varga, String> =
             "the whole of the chart in miniature — weighted heavily, and the most demanding of an exact birth time",
     )
 
-/** One chart page: the diagram, plus a sentence on how to read it. */
+/**
+ * The chart in plain language — the one section here that interprets rather than tabulates.
+ *
+ * It was called "Details" and sat last, which undersold it: every other section is a diagram or a
+ * table, and this is the only place the app says what any of it is taken to mean.
+ */
 @Composable
-private fun ChartPage(
-    houses: List<Rasi>,
-    grahas: List<NatalGraha>,
-    houseOf: (NatalGraha) -> Int,
-    caption: String,
-    modifier: Modifier,
-) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        NorthIndianChart(houses = houses, grahas = grahas, houseOf = houseOf)
-        Text(
-            text = caption,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/** Everything not yet split into a page of its own — lagna, Moon, dasha and the graha list. */
-@Composable
-private fun DetailsPage(
+private fun ReadingPage(
     uiState: KundaliUiState.Ready,
     modifier: Modifier,
 ) {
@@ -757,39 +769,6 @@ private fun DetailsPage(
         chart.grahas.forEach { GrahaRow(it) }
     }
 }
-
-/** Dots showing which page of the book is open. */
-@Composable
-private fun PageIndicator(
-    count: Int,
-    current: Int,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        repeat(count) { index ->
-            val active = index == current
-            Box(
-                modifier =
-                    Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(if (active) ACTIVE_DOT else INACTIVE_DOT)
-                        .clip(CircleShape)
-                        .background(
-                            if (active) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.outlineVariant
-                            },
-                        ),
-            )
-        }
-    }
-}
-
-private val ACTIVE_DOT = 9.dp
-private val INACTIVE_DOT = 7.dp
 
 /** A dropdown to pick which chart-ready profile's kundali to show. */
 @Composable
