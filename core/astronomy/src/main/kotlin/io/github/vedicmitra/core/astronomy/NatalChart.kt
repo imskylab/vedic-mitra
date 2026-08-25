@@ -57,10 +57,37 @@ data class NatalChart(
      * drift apart from one another or from the chart they came from. [vimshottari] is the same thing
      * for [DashaSystem.VIMSHOTTARI], kept as a name because it is the one every reader expects.
      */
+
     fun dasha(system: DashaSystem): List<DashaPeriod> {
         val moon = grahas.firstOrNull { it.graha == Graha.MOON } ?: return emptyList()
         return dashaFromMoon(system, moon.siderealLongitude, birthEpochMillis)
     }
+
+    /**
+     * Where each reference point sits, for [Ashtakavarga]. The lagna is a point like any other here.
+     */
+    private fun ashtakavargaSign(reference: AshtakavargaReference): Int {
+        // Spelled out rather than matched on enum names, which would couple two unrelated enums by
+        // their spelling and break silently if either were renamed.
+        val graha =
+            when (reference) {
+                AshtakavargaReference.SUN -> Graha.SUN
+                AshtakavargaReference.MOON -> Graha.MOON
+                AshtakavargaReference.MANGALA -> Graha.MANGALA
+                AshtakavargaReference.BUDHA -> Graha.BUDHA
+                AshtakavargaReference.GURU -> Graha.GURU
+                AshtakavargaReference.SHUKRA -> Graha.SHUKRA
+                AshtakavargaReference.SHANI -> Graha.SHANI
+                AshtakavargaReference.LAGNA -> return lagna.rasi.index
+            }
+        return grahas.firstOrNull { it.graha == graha }?.rasi?.index ?: 0
+    }
+
+    /** The bindus each sign holds in [graha]'s binnashtakavarga, Mesha first. */
+    fun binnashtakavarga(graha: Graha): List<Int> = Ashtakavarga.binna(graha, ::ashtakavargaSign)
+
+    /** The sarvashtakavarga — the seven binnashtakavargas summed per sign, totalling 337. */
+    val sarvashtakavarga: List<Int> get() = Ashtakavarga.sarva(::ashtakavargaSign)
 }
 
 /**

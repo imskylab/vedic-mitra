@@ -9,6 +9,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Ashtakavarga** — binnashtakavarga per graha and the sarvashtakavarga, on a new Kundali page.
+  Seven grahas each mark certain houses benefic from each of eight reference points (the seven
+  grahas and the lagna); a sign collects one bindu per reference point that marks it, 0 to 8 per
+  graha, and the seven summed always total **337** across the twelve signs. A transit through a sign
+  holding 30 bindus is read very differently from the same transit through one holding 20, which is
+  what makes the sarva row worth having.
+
+  No new astronomy whatsoever — only which rashi each body occupies, which the chart already knows.
+
+  **The 64 tables were read off an independent implementation's per-reference breakdown rather than
+  recalled**, then replayed against 14 further charts spanning four cities and 1968 to 2083: **98
+  binnashtakavarga rows and 14 sarvashtakavarga rows, no disagreements.** Two things fell out of the
+  tables rather than being put into them, which is what says the reading is right and not merely
+  self-consistent: each graha's own total lands on the classical figure (Sun 48, Moon 49, Mars 39,
+  Mercury 54, Jupiter 56, Venus 52, Saturn 39), and those sum to 337. Both are asserted, the 337 for
+  positions no real chart would produce as well, since it is a property of the tables rather than of
+  any chart.
+
+  Rahu and Ketu take no part: no binnashtakavarga of their own and no reference point, which is why
+  eight references cover seven grahas plus the lagna.
+
+### Added
+
 - **Pratyantardasha** — the third dasha level — and one recursion in place of two hand-written ones.
   Mahadasha, antardasha and pratyantardasha were three names for a single rule applied again: a
   period divides into sub-periods running through the lord sequence from its own lord, each taking a

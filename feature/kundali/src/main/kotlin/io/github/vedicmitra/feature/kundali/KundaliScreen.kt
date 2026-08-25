@@ -53,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.Ashtakavarga
 import io.github.vedicmitra.core.astronomy.DashaPeriod
 import io.github.vedicmitra.core.astronomy.DashaSystem
 import io.github.vedicmitra.core.astronomy.Graha
@@ -62,6 +63,7 @@ import io.github.vedicmitra.core.astronomy.MangalDosha
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
 import io.github.vedicmitra.core.astronomy.NatalGraha
+import io.github.vedicmitra.core.astronomy.RASHI_NAMES
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Varga
 import io.github.vedicmitra.core.astronomy.mangalDoshaOf
@@ -166,6 +168,7 @@ private enum class KundaliPage(
     YOGAS("Pramukh Yoga"),
     MAHADASHA("Mahadasha"),
     ANTARDASHA("Antardasha"),
+    ASHTAKAVARGA("Ashtakavarga"),
     DETAILS("Details"),
 }
 
@@ -211,9 +214,88 @@ private fun KundaliPageContent(
 
         KundaliPage.ANTARDASHA -> AntardashaPage(chart = chart, modifier = scroll)
 
+        KundaliPage.ASHTAKAVARGA -> AshtakavargaPage(chart = chart, modifier = scroll)
+
         KundaliPage.DETAILS -> DetailsPage(uiState = uiState, modifier = scroll)
     }
 }
+
+/**
+ * Ashtakavarga: how much benefic support each sign carries.
+ *
+ * The sarva row is the one a reader uses — a transit through a sign holding 30 bindus is read very
+ * differently from the same transit through one holding 20 — so it leads, with the seven grahas'
+ * own rows beneath it for anyone who wants to see where the support comes from.
+ */
+@Composable
+private fun AshtakavargaPage(
+    chart: NatalChart,
+    modifier: Modifier,
+) {
+    val sarva = chart.sarvashtakavarga
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(text = "Sarvashtakavarga", style = MaterialTheme.typography.titleSmall)
+        VedicTable(
+            columns = ASHTAKAVARGA_COLUMNS,
+            rows =
+                sarva.mapIndexed { index, bindus ->
+                    listOf(RASHI_NAMES[index], bindus.toString(), strengthLabel(bindus))
+                },
+        )
+        Text(
+            text = "Total ${sarva.sum()} — always 337, spread over the twelve signs.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "Binnashtakavarga",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        VedicTable(
+            columns = BINNA_COLUMNS,
+            rows =
+                RASHI_NAMES.mapIndexed { sign, name ->
+                    listOf(name) +
+                        Ashtakavarga.CONTRIBUTORS.map { chart.binnashtakavarga(it)[sign].toString() }
+                },
+        )
+        Text(
+            text =
+                "Each graha marks certain houses from every reference point as benefic, and a sign " +
+                    "collects one bindu per reference point that marks it — so 0 to 8 in each " +
+                    "column. Rahu and Ketu take no part.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** Rough bands for the sarva row; 337 over twelve signs makes the average a little over 28. */
+private fun strengthLabel(bindus: Int): String =
+    when {
+        bindus >= STRONG_BINDUS -> "Strong"
+        bindus >= GOOD_BINDUS -> "Good"
+        bindus >= MIDDLING_BINDUS -> "Middling"
+        else -> "Weak"
+    }
+
+private const val STRONG_BINDUS = 32
+private const val GOOD_BINDUS = 28
+private const val MIDDLING_BINDUS = 25
+
+private val ASHTAKAVARGA_COLUMNS =
+    listOf(
+        TableColumn(header = "Rashi", weight = 1.4f),
+        TableColumn(header = "Bindus", weight = 0.8f),
+        TableColumn(header = "", weight = 1.0f),
+    )
+
+private val BINNA_COLUMNS =
+    listOf(TableColumn(header = "Rashi", weight = 1.6f)) +
+        listOf("Su", "Mo", "Ma", "Me", "Ju", "Ve", "Sa").map {
+            TableColumn(header = it, weight = 0.6f)
+        }
 
 /**
  * Which dasha system the timeline is read in.
