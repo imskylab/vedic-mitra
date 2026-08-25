@@ -27,6 +27,7 @@ package io.github.vedicmitra.core.astronomy
  *   nadi, the samvats and the ayanamsa at birth. `null` only for the lightweight/synthetic charts
  *   that test fixtures build; the real engine always populates it.
  * @property vimshottari the nine mahadasha periods over the 120-year cycle, birth inside the first.
+ *   Each divides into antardashas and those into pratyantardashas, on demand.
  */
 data class NatalChart(
     val lagna: Lagna,
@@ -35,7 +36,7 @@ data class NatalChart(
     val grahas: List<NatalGraha>,
     val moonNakshatra: Nakshatra,
     val moonPada: Int,
-    val vimshottari: List<MahadashaPeriod>,
+    val vimshottari: List<DashaPeriod>,
     val jataka: JatakaProfile? = null,
 ) {
     /**

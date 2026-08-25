@@ -53,10 +53,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.DashaPeriod
 import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.JatakaProfile
 import io.github.vedicmitra.core.astronomy.Lagna
-import io.github.vedicmitra.core.astronomy.MahadashaPeriod
 import io.github.vedicmitra.core.astronomy.MangalDosha
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.NatalChart
@@ -293,7 +293,7 @@ private fun YogasPage(
 /** The nine mahadashas of the 120-year cycle, with the running one marked. */
 @Composable
 private fun MahadashaPage(
-    periods: List<MahadashaPeriod>,
+    periods: List<DashaPeriod>,
     modifier: Modifier,
 ) {
     val now = remember { System.currentTimeMillis() }
@@ -320,7 +320,7 @@ private fun MahadashaPage(
 /** The nine sub-periods of whichever mahadasha is running now. */
 @Composable
 private fun AntardashaPage(
-    periods: List<MahadashaPeriod>,
+    periods: List<DashaPeriod>,
     modifier: Modifier,
 ) {
     val now = remember { System.currentTimeMillis() }
@@ -349,10 +349,31 @@ private fun AntardashaPage(
                     )
                 },
         )
+        val runningAntardasha = running.antardashas.firstOrNull { isRunning(it.start, it.end, now) }
+        if (runningAntardasha != null) {
+            Text(
+                text = "Within ${runningAntardasha.lord.displayName} antardasha",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            VedicTable(
+                columns = DASHA_COLUMNS,
+                rows =
+                    runningAntardasha.subPeriods.map { period ->
+                        listOf(
+                            period.lord.displayName + if (isRunning(period.start, period.end, now)) " ●" else "",
+                            formatDayMonthYear(period.start),
+                            formatDayMonthYear(period.end),
+                        )
+                    },
+            )
+        }
         Text(
             text =
                 "Each mahadasha divides into nine antardashas, beginning with its own lord and " +
-                    "sharing the period in proportion to each lord's dasha years.",
+                    "sharing the period in proportion to each lord's dasha years. The same division " +
+                    "applied once more gives the pratyantardashas below it — a few weeks each, so " +
+                    "these carry the day as well as the month.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -843,7 +864,7 @@ private fun Centered(
 private fun currentDashaOf(
     chart: NatalChart,
     nowMillis: Long,
-): MahadashaPeriod? =
+): DashaPeriod? =
     chart.vimshottari.firstOrNull {
         nowMillis >= it.start.toEpochMilliseconds() && nowMillis < it.end.toEpochMilliseconds()
     }
@@ -855,6 +876,15 @@ private fun formatMonthYear(instant: Instant): String =
         .ofEpochMilli(instant.toEpochMilliseconds())
         .atZone(ZoneId.systemDefault())
         .format(monthYearFormatter)
+
+/** Pratyantardashas run a few weeks, so a month alone would show the same value on several rows. */
+private val dayMonthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+
+private fun formatDayMonthYear(instant: Instant): String =
+    java.time.Instant
+        .ofEpochMilli(instant.toEpochMilliseconds())
+        .atZone(ZoneId.systemDefault())
+        .format(dayMonthYearFormatter)
 
 @Preview
 @Composable
@@ -895,10 +925,11 @@ private fun sampleChart(): NatalChart =
         moonPada = 2,
         vimshottari =
             listOf(
-                MahadashaPeriod(
+                DashaPeriod(
                     lord = Graha.KETU,
                     start = Instant.fromEpochMilliseconds(0L),
                     end = Instant.fromEpochMilliseconds(9_999_999_999_999L),
+                    level = 1,
                 ),
             ),
     )

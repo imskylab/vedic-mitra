@@ -7,6 +7,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Pratyantardasha** — the third dasha level — and one recursion in place of two hand-written ones.
+  Mahadasha, antardasha and pratyantardasha were three names for a single rule applied again: a
+  period divides into sub-periods running through the lord sequence from its own lord, each taking a
+  share proportional to that lord's dasha years. `MahadashaPeriod` and `AntardashaPeriod` collapse
+  into one `DashaPeriod` carrying its level, and a fourth level would now be free — it is capped at
+  three because the next one splits a few weeks into a few hours, finer than a birth time known to
+  the minute can support. Checked against an independent implementation at all three levels: **729 of
+  729 periods matched on lord and order.**
+
+### Fixed
+
+- **A dasha year is the sidereal year, not the Julian one.** This was 365.25 days and is now
+  365.2564, which moves every dasha date in the app — by six hours per century of elapsed timeline,
+  reaching **about eighteen hours** by the end of the 120-year cycle. Fitting the constant against
+  729 published period boundaries put the worst disagreement at 66,255 seconds for 365.25 against 604
+  seconds for the sidereal year, and that remaining ten minutes is fully explained by the
+  four-decimal rounding of the Moon longitude fed into the comparison. The Gregorian and tropical
+  years came out four to six times worse than the Julian one, so this is a real convention rather
+  than a fitted number. Some texts intend a 360-day year, which is a different timeline altogether;
+  this app follows the sidereal year, consistent with computing everything else from real positions.
+
+### Notes
+
+- **Ashtottari and Yogini were derived but not shipped.** Both had their lord order and year tables
+  read cleanly off an independent implementation, and two independent sweeps across all 27
+  nakshatras agreed on every starting lord. Each has one thing left unexplained, and shipping a
+  table nobody can account for is what this project's validation work exists to prevent:
+
+  - **Ashtottari** measures its first period's elapsed fraction through the *lord's group of
+    nakshatras* rather than a single nakshatra — 49 of 57 sampled births confirm it. All eight
+    failures fall in the Rahu group and only there: the one that wraps the end of the zodiac back to
+    the beginning (nakshatras 26, 27, 1, 2), where the observed fraction comes out negative or above
+    one, putting the birth outside the very period it should sit in.
+  - **Yogini's** starting lord advances one per nakshatra except for a single step between
+    nakshatras 6 and 7, where it moves back two. Both sweeps reproduce it, so it is not noise — but
+    one unexplained discontinuity is the shape of somebody else's off-by-one, and encoding it would
+    make their bug our behaviour.
+
+  The findings are recorded in `VimshottariCalculator.kt` so the work is not repeated from scratch.
+
 ### Fixed
 
 - **The app stayed on its fallback location after location was switched on.** Two causes, both real.
