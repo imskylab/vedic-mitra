@@ -13,6 +13,36 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.jpg" width="240" alt="Home hub" /><br/><sub><b>Home hub</b></sub></td>
+    <td align="center"><img src="docs/screenshots/today-panchang.jpg" width="240" alt="Daily Panchang" /><br/><sub><b>Daily Panchang</b></sub></td>
+    <td align="center"><img src="docs/screenshots/calendar.jpg" width="240" alt="Panchang calendar" /><br/><sub><b>Calendar</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/festivals.jpg" width="240" alt="Festivals" /><br/><sub><b>Festivals</b></sub></td>
+    <td align="center"><img src="docs/screenshots/upcoming-festivals.jpg" width="240" alt="Upcoming festivals" /><br/><sub><b>Upcoming festivals</b></sub></td>
+    <td align="center"><img src="docs/screenshots/events.jpg" width="240" alt="Events" /><br/><sub><b>Events</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/muhurat.jpg" width="240" alt="Muhurat" /><br/><sub><b>Muhurat</b></sub></td>
+    <td align="center"><img src="docs/screenshots/reminders.jpg" width="240" alt="Reminders" /><br/><sub><b>Reminders</b></sub></td>
+    <td align="center"><img src="docs/screenshots/rashifal.jpg" width="240" alt="Rashifal" /><br/><sub><b>Rashifal</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/kundli.jpg" width="240" alt="Kundali" /><br/><sub><b>Kundali</b></sub></td>
+    <td align="center"><img src="docs/screenshots/kundli-matching.jpg" width="240" alt="Kundali Matching" /><br/><sub><b>Kundali Matching</b></sub></td>
+    <td align="center"><img src="docs/screenshots/japa.jpg" width="240" alt="Japa counter" /><br/><sub><b>Japa</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/meditation.jpg" width="240" alt="Meditation" /><br/><sub><b>Meditation</b></sub></td>
+    <td align="center"><img src="docs/screenshots/stotra.jpg" width="240" alt="Stotra reader" /><br/><sub><b>Stotra</b></sub></td>
+    <td></td>
+  </tr>
+</table>
+
 > **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
 > (Foundation) is done**; Phases **2–9** and **11** are partially built, with the astrology arc
 > (Phase 6) now largely complete. The app computes
