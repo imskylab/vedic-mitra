@@ -7,6 +7,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The app stayed on its fallback location after location was switched on.** Two causes, both real.
+  `lastLocation` returns `null` whenever nothing has recently asked the system for a position — which
+  is exactly the state after the device's location setting has been off — so the resolver fell through
+  to New Delhi. It now falls back to an active fix, bounded by a timeout, with the cache still tried
+  first because it is instant and almost always populated. And Home only ever loaded once per
+  composition, so nothing re-resolved on return; it now reloads whenever the screen comes back to the
+  foreground. That second fix also cures a staleness nobody had reported yet: leave the app open
+  overnight and the day, tithi and muhurta windows were all yesterday's until something else
+  triggered a load.
+
+  The permission prompt deliberately stays on first composition only. Asking again on every resume
+  would re-prompt someone who has already declined, which Android answers by refusing outright after
+  the second refusal.
+
+- **The hero card led with a tithi that had already ended.** The day is named by its sunrise tithi —
+  the convention every published panchanga follows, and still what the Panchang screen shows — but
+  the card read at nine in the evening was headlining a tithi that ended before breakfast, with the
+  one actually in force demoted to small print beneath it. The prominence is now the other way round:
+  what is running and how long it has left, with "Dwadashi ended 06:22" recorded underneath. The
+  handover line appears only once the day has rolled over; before that it would be the same tithi
+  said twice.
+
+- **"Tap for full panchang" wrapped mid-phrase.** It had been appended to the maasa and samvatsara
+  line, inside a column the moon-phase label was squeezing from the right. It is now its own line
+  across the full width of the card.
+
+- **The hub no longer flashes a spinner on every resume**, which reloading on resume would otherwise
+  have caused. The loading indicator now takes over the screen only when there is nothing to show yet.
+
 ### Added
 
 - **Eight more divisional charts** — D-3, D-4, D-10, D-12, D-24, D-40, D-45 and D-60 — taking the
