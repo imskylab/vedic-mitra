@@ -7,28 +7,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
-
-- **The Kundali book is six named sections instead of ten swipes.** It had grown a page at a time
-  until reaching the last one meant swiping past every other, guided by ten identical dots that told
-  a reader where they were but never where anything else was. A scrollable tab row replaces them, so
-  every section is one tap away, and the pages are grouped by the question a reader is asking rather
-  than by which calculation produced them:
-
-  - **Charts** — the lagna figure, the same placements read from the Moon, and the sixteen
-    divisional charts, all behind one chip row. They are the same diagram drawn from different
-    starting points and are compared against each other, so they now sit together. The D-1 chip is
-    gone: it was the lagna chart under another name, worth saying when they lived on separate pages
-    and merely a duplicate now they do not.
-  - **Grahas** — Spashta Graha and Ashtakavarga together. A graha's house means one thing in a sign
-    holding 30 bindus and another in a sign holding 20; those were two swipes apart.
-  - **Dasha** — mahadasha, the antardashas of the one running now, and its pratyantardashas, under a
-    single system selector. The period you are in and the period inside it were on separate pages,
-    and a reader nearly always wants both at once.
-  - **Reading** — what was called "Details". Every other section is a diagram or a table; this is
-    the only place the app says what any of it is taken to mean, and it was named as an afterthought
-    and left last.
-
 ### Added
 
 - **Ashtakavarga** — binnashtakavarga per graha and the sarvashtakavarga, on a new Kundali page.
@@ -52,8 +30,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Rahu and Ketu take no part: no binnashtakavarga of their own and no reference point, which is why
   eight references cover seven grahas plus the lagna.
 
-### Added
-
 - **Pratyantardasha** — the third dasha level — and one recursion in place of two hand-written ones.
   Mahadasha, antardasha and pratyantardasha were three names for a single rule applied again: a
   period divides into sub-periods running through the lord sequence from its own lord, each taking a
@@ -62,6 +38,195 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   three because the next one splits a few weeks into a few hours, finer than a birth time known to
   the minute can support. Checked against an independent implementation at all three levels: **729 of
   729 periods matched on lord and order.**
+
+- **Eight more divisional charts** — D-3, D-4, D-10, D-12, D-24, D-40, D-45 and D-60 — taking the
+  varga engine from nine to seventeen. D-10 (career) and D-12 (parents) are the two a reader asks for
+  by name after the D-9; D-60 is the most heavily weighted chart in classical practice.
+
+  **All seventeen are now one expression**, `sign = start(rashi) + step × division`, differing only in
+  where each rashi's first division starts and how far each step moves. That was fitted to an
+  independent implementation's output rather than recalled, then checked against **every** observation
+  — 520 placements per chart, **8,320 in all, with no disagreements**. Four vargas needed a
+  twelve-entry start table and those tables were read off the same data; the drekkana and
+  chaturthamsa turned out to need a *step* of four and three rather than a table at all.
+
+  The fit also settled what to leave out. D-2 (hora), D-5, D-30, D-108 and D-144 take two or more
+  different steps within a single sign, so they do not fit the expression at all. They are different
+  rules rather than variations, and approximating them would be inventing answers.
+
+- **A measured precision ladder for the vargas.** `Varga.divisionArcminutes` and
+  `Varga.needsExactBirthTime` replace hand-waving about accuracy with numbers. Measured over the same
+  sample, the share of placements sitting within an arcminute of a division edge — where the sign is
+  effectively a coin toss — runs from 0.0% for D-3 up to **8.3% for D-60**.
+
+  Below roughly D-24 the **birth time**, not the ephemeris, becomes the limit: the ascendant covers a
+  degree in about four minutes, so a birth time known only to the nearest five minutes leaves a D-60
+  ascendant meaningless however exact the arithmetic. The Varga page now says so on the finer charts
+  instead of repeating a generic caveat. D-81 stays out, at 22-arcminute divisions and 17% at risk.
+
+- **The four additional porutham** — Mahendra, Vedha, Rajju and Sthree Dheerga — read beside the
+  thirty-six gunas on Kundali Matching. Ashtakoota answers "how well matched" as a score; these
+  answer "is anything wrong" as yes or no. They are **deliberately not folded into the total**,
+  because a strong guna score should not be able to bury a failed Rajju, which is exactly the case
+  the score alone would hide. Rajju names the limb both partners fall on rather than reporting a bare
+  failure, since which limb is shared is what the rule is held to say.
+
+  **Every table was derived from an independent implementation rather than from memory**, by sweeping
+  one partner's nakshatra across a full lunar month and reading back its verdicts — 186 pairings over
+  six groom nakshatras and all twenty-seven bride nakshatras, all four rules agreeing throughout.
+  That was worth the trouble, because two of the four came out differently from the textbook summary
+  they would otherwise have been written from:
+
+  - **Vedha is not thirteen disjoint pairs.** It is a sum relation — two nakshatra numbers piercing
+    one another when they total 19, 28 or 37 — which gives most nakshatras *two* partners and the
+    nine from Magha to Jyeshtha *three*. Implemented as pairs it would have missed about half of all
+    vedha, and nothing in the app would have looked wrong.
+  - **Sthree Dheerga is directional and Mahendra is not.** Counting between two nakshatras one way
+    and the other always sums to 29; Mahendra's matching set is closed under that, so sources giving
+    opposite directions turn out to agree. Sthree Dheerga's range of 14..27 is not, so counting it
+    backwards inverts nearly every verdict. It is counted from the bride's star to the groom's.
+
+  One consequence that looks like a bug and is not: **Chitra pierces itself**, since 14 + 14 = 28. It
+  falls out of the same arithmetic as every other pairing, and the reference implementation reports
+  it too. A test pins it so it is never "fixed" by mistake.
+
+- **Mangal dosha (Kuja dosha, Manglik, Chevvai dosham).** Across much of India this is the *first*
+  question asked of a proposed match, and the app did not answer it at all — Ashtakoota without it
+  was missing the question many users came to ask. Mars in the 1st, 2nd, 4th, 7th, 8th or 12th,
+  counted separately from the lagna, the Moon and Venus, with classical parihara.
+
+  **Every trigger and every cancellation is shown.** A dosha computed without its parihara is worse
+  than no dosha at all: most charts trigger the rule somewhere, so a bare "Manglik" verdict would
+  alarm nearly everyone and inform no one. Two kinds of parihara apply and they are not
+  interchangeable — general ones, about Mars's own condition, answer the affliction wherever it
+  arises, while the house-and-sign rules lift *one* house only. Treating the second kind as the
+  first would clear a dosha that still stands, so they are modelled separately and the dosha stands
+  while any trigger is unanswered. Two charts that both carry it cancel each other, which is the
+  most widely applied parihara of all and the reason the question belongs to the pair.
+
+  The houses and the reference points are both convention choices — the classical verse names the
+  lagna, 4th, 7th, 8th and 12th; the 2nd is a South Indian addition — so the app takes the union and
+  reports each placement separately, letting a reader who follows the stricter verse discount a
+  trigger the app cannot discount for them. The one rule deliberately left out is that the dosha
+  lapses with age: widely repeated, no classical basis, and stating it would be inventing
+  reassurance.
+
+  Shown on **Kundali Matching** for a pair and on the Kundali **Pramukh Yoga** page for one chart.
+
+- **Graha drishti.** Whole-sign Parashari aspects — every graha on the 7th from itself, Mars also the
+  4th and 8th, Jupiter the 5th and 9th, Saturn the 3rd and 10th. Added because the "Jupiter aspects
+  Mars" parihara is not optional, and a cancellation rule that silently did nothing would be the
+  worst of both worlds. Rahu and Ketu report no drishti: authorities disagree on whether the nodes
+  aspect and on which houses, and picking one and presenting it as settled would be inventing a
+  convention. Note that this is Vedic drishti and is *asymmetric* — Saturn looks upon the third from
+  itself and nothing there looks back — so it must never be conflated with Western aspects.
+
+- **Varga Kundali page.** The divisional charts are now drawn as charts. `NatalChart.vargaChart(varga)`
+  casts a whole chart into a division: the *lagna's* longitude is divided too, its divisional sign
+  becomes house 1, and every graha is placed by counting whole signs from there. That framing is the
+  point — the seventh house of the D-9 is what a reader is actually looking for, and a per-graha
+  accessor can never supply it, because a house only exists relative to an ascendant and the lagna is
+  the one longitude such an accessor never sees.
+
+  In the Kundali book it is one page with a chip per varga rather than nine pages. Nine more pages
+  would triple the book for what is one page asked nine ways, and comparing two divisions by swiping
+  between them is worse than tapping. It opens on the D-9, which is the varga a reader means when
+  they do not say which, and each chip carries what that division is traditionally read for.
+
+  The caption states the arcminute caveat on the page rather than only in the KDoc: a graha sitting
+  on a division edge may be shown either side of it, and the finer the varga the likelier that is.
+  A reader deciding something from a D-27 house deserves to know that from the screen.
+
+- **Divisional charts (vargas).** The navamsha rule turned out to be general: counting divisions
+  continuously from 0° Mesha reproduces the classical rule for nine of the divisional charts, so the
+  engine now computes D-1, D-6, D-7, D-8, D-9, D-11, D-16, D-20 and D-27 from one function rather
+  than nine. Verified against an independent implementation — 7,500 placements, no
+  disagreements.
+
+- **"Ends in" for every limb of the panchanga.** The panchang detail now shows when each limb gives
+  way to the next — tithi, nakshatra, pada, yoga, karana, chandra rashi, surya rashi (the sankranti)
+  and moon phase — solved by bisection rather than extrapolated from a mean rate, which is wrong by
+  up to 30% as the Moon's speed varies between apogee and perigee.
+
+- **Home now distinguishes the day's tithi from the current one.** The card is still named for the
+  tithi running at sunrise, as panchangas name the day, with a live line beneath showing what is
+  actually running now and how long it lasts.
+
+- **The Kundali screen is now a swipeable book.** The birth chart opens as pages you swipe between,
+  starting with the **Lagna Kundali** and the **Rashi (Chandra) Kundali** — the same placements
+  counted from the Moon instead of the ascendant, which is how the two charts are read side by side
+  in a printed panchang. A header names the open page and dots show where you are.
+
+- **Jataka properties.** A page of the standing details a panchanga lists beside the charts: janma
+  rashi and its lord, nakshatra with pada, varna, vashya, yoni, gana and nadi in the classical
+  Ashtakoota order, lagna, the Sun in both zodiacs, the ayanamsa at birth, and the Shaka, Vikram and
+  samvatsara years.
+
+- **Spashta Graha.** A table of all nine grahas — position to the arcminute within the sign,
+  nakshatra and pada, retrograde marker, and the navamsha (D9) sign.
+
+- **Pramukh Yoga.** The named combinations present in the chart — Gajakesari, Budhaditya,
+  Chandra-Mangala and the five Panchamahapurusha — each shown with the placement that produced it,
+  so the claim can be checked against the chart pages rather than taken on trust. Every rule was
+  verified against an independent implementation over 75 charts before being kept.
+
+- **Astangata (combustion)** in the Spashta Graha table, marking a graha lost in the Sun's glare,
+  using the classical Parashari orbs.
+
+- **Mahadasha and Antardasha.** The full Vimshottari cycle from birth with the running period marked,
+  and the nine sub-periods of whichever mahadasha is running now.
+
+### Changed
+
+- **The Kundali book is six named sections instead of ten swipes.** It had grown a page at a time
+  until reaching the last one meant swiping past every other, guided by ten identical dots that told
+  a reader where they were but never where anything else was. A scrollable tab row replaces them, so
+  every section is one tap away, and the pages are grouped by the question a reader is asking rather
+  than by which calculation produced them:
+
+  - **Charts** — the lagna figure, the same placements read from the Moon, and the sixteen
+    divisional charts, all behind one chip row. They are the same diagram drawn from different
+    starting points and are compared against each other, so they now sit together. The D-1 chip is
+    gone: it was the lagna chart under another name, worth saying when they lived on separate pages
+    and merely a duplicate now they do not.
+  - **Grahas** — Spashta Graha and Ashtakavarga together. A graha's house means one thing in a sign
+    holding 30 bindus and another in a sign holding 20; those were two swipes apart.
+  - **Dasha** — mahadasha, the antardashas of the one running now, and its pratyantardashas, under a
+    single system selector. The period you are in and the period inside it were on separate pages,
+    and a reader nearly always wants both at once.
+  - **Reading** — what was called "Details". Every other section is a diagram or a table; this is
+    the only place the app says what any of it is taken to mean, and it was named as an afterthought
+    and left last.
+
+- **Third-party services are no longer named anywhere in the repository.** Calculations were
+  described as cross-checked against particular commercial almanac sites, and the varga and natal
+  goldens were labelled with the name of the reference implementation they came from. Naming other
+  people's products as accuracy benchmarks invites trademark and comparative-advertising questions
+  this project has no reason to answer, and the claim reads no differently without them: what makes
+  a calculation trustworthy is that it was checked against something independent, not which thing.
+  Docs, ADRs, KDoc and test names now say "published almanacs" and "an independent reference
+  implementation"; `JagannathaHoraReferenceTest` is now `ReferenceImplementationTest`. The manual
+  validation checklist now tells the reader to pick two independent almanacs and record which they
+  used, rather than linking specific ones.
+
+  Left in place deliberately: **drik ganita**, spelled lowercase, in the Ayana and Ritu
+  documentation. That is the classical Sanskrit name for the observed-position convention, as
+  against saura ganita's mean positions -- it names the maths the app implements, and one of those
+  sites is named after it rather than the other way round. Removing it would have lost real meaning.
+
+- **The Support tab now carries a donation-box glyph** — an Om coin dropping into a daana-patra. Drawn
+  as an alpha stencil, so it takes the navigation bar's colours like every other tab, shows the
+  selected state, and stays legible on a dark theme.
+
+- **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
+  is a whole number of arcseconds (a nakshatra is 48,000, a pada 12,000, a tithi 43,200) while most
+  are non-terminating in degrees, so dividing in degrees left boundary cases to the mercy of
+  floating-point rounding. Divisions are documented as half-open — a longitude exactly on a boundary
+  belongs to the division beginning, so 26°40′00″ is Krittika rather than Bharani.
+
+- **Every screen's title bar now reads the same way** — "Vedic Mitra" with the open destination
+  beneath it. Previously the four tabs showed their own label, pushed screens showed the app name
+  with nothing under it, and the Home tab kept saying "Home" while a detail view was open.
 
 ### Fixed
 
@@ -100,8 +265,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   nakshatras the **lord is still right** and only the boundaries differ. Their goldens assert the
   lord and skip the start, and a test holds that exclusion at exactly eight so it cannot grow.
 
-### Fixed
-
 - **The app stayed on its fallback location after location was switched on.** Two causes, both real.
   `lastLocation` returns `null` whenever nothing has recently asked the system for a position — which
   is exactly the state after the device's location setting has been off — so the resolver fell through
@@ -131,181 +294,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **The hub no longer flashes a spinner on every resume**, which reloading on resume would otherwise
   have caused. The loading indicator now takes over the screen only when there is nothing to show yet.
 
-### Added
-
-- **Eight more divisional charts** — D-3, D-4, D-10, D-12, D-24, D-40, D-45 and D-60 — taking the
-  varga engine from nine to seventeen. D-10 (career) and D-12 (parents) are the two a reader asks for
-  by name after the D-9; D-60 is the most heavily weighted chart in classical practice.
-
-  **All seventeen are now one expression**, `sign = start(rashi) + step × division`, differing only in
-  where each rashi's first division starts and how far each step moves. That was fitted to an
-  independent implementation's output rather than recalled, then checked against **every** observation
-  — 520 placements per chart, **8,320 in all, with no disagreements**. Four vargas needed a
-  twelve-entry start table and those tables were read off the same data; the drekkana and
-  chaturthamsa turned out to need a *step* of four and three rather than a table at all.
-
-  The fit also settled what to leave out. D-2 (hora), D-5, D-30, D-108 and D-144 take two or more
-  different steps within a single sign, so they do not fit the expression at all. They are different
-  rules rather than variations, and approximating them would be inventing answers.
-
-- **A measured precision ladder for the vargas.** `Varga.divisionArcminutes` and
-  `Varga.needsExactBirthTime` replace hand-waving about accuracy with numbers. Measured over the same
-  sample, the share of placements sitting within an arcminute of a division edge — where the sign is
-  effectively a coin toss — runs from 0.0% for D-3 up to **8.3% for D-60**.
-
-  Below roughly D-24 the **birth time**, not the ephemeris, becomes the limit: the ascendant covers a
-  degree in about four minutes, so a birth time known only to the nearest five minutes leaves a D-60
-  ascendant meaningless however exact the arithmetic. The Varga page now says so on the finer charts
-  instead of repeating a generic caveat. D-81 stays out, at 22-arcminute divisions and 17% at risk.
-
-### Added
-
-- **The four additional porutham** — Mahendra, Vedha, Rajju and Sthree Dheerga — read beside the
-  thirty-six gunas on Kundali Matching. Ashtakoota answers "how well matched" as a score; these
-  answer "is anything wrong" as yes or no. They are **deliberately not folded into the total**,
-  because a strong guna score should not be able to bury a failed Rajju, which is exactly the case
-  the score alone would hide. Rajju names the limb both partners fall on rather than reporting a bare
-  failure, since which limb is shared is what the rule is held to say.
-
-  **Every table was derived from an independent implementation rather than from memory**, by sweeping
-  one partner's nakshatra across a full lunar month and reading back its verdicts — 186 pairings over
-  six groom nakshatras and all twenty-seven bride nakshatras, all four rules agreeing throughout.
-  That was worth the trouble, because two of the four came out differently from the textbook summary
-  they would otherwise have been written from:
-
-  - **Vedha is not thirteen disjoint pairs.** It is a sum relation — two nakshatra numbers piercing
-    one another when they total 19, 28 or 37 — which gives most nakshatras *two* partners and the
-    nine from Magha to Jyeshtha *three*. Implemented as pairs it would have missed about half of all
-    vedha, and nothing in the app would have looked wrong.
-  - **Sthree Dheerga is directional and Mahendra is not.** Counting between two nakshatras one way
-    and the other always sums to 29; Mahendra's matching set is closed under that, so sources giving
-    opposite directions turn out to agree. Sthree Dheerga's range of 14..27 is not, so counting it
-    backwards inverts nearly every verdict. It is counted from the bride's star to the groom's.
-
-  One consequence that looks like a bug and is not: **Chitra pierces itself**, since 14 + 14 = 28. It
-  falls out of the same arithmetic as every other pairing, and the reference implementation reports
-  it too. A test pins it so it is never "fixed" by mistake.
-
-### Added
-
-- **Mangal dosha (Kuja dosha, Manglik, Chevvai dosham).** Across much of India this is the *first*
-  question asked of a proposed match, and the app did not answer it at all — Ashtakoota without it
-  was missing the question many users came to ask. Mars in the 1st, 2nd, 4th, 7th, 8th or 12th,
-  counted separately from the lagna, the Moon and Venus, with classical parihara.
-
-  **Every trigger and every cancellation is shown.** A dosha computed without its parihara is worse
-  than no dosha at all: most charts trigger the rule somewhere, so a bare "Manglik" verdict would
-  alarm nearly everyone and inform no one. Two kinds of parihara apply and they are not
-  interchangeable — general ones, about Mars's own condition, answer the affliction wherever it
-  arises, while the house-and-sign rules lift *one* house only. Treating the second kind as the
-  first would clear a dosha that still stands, so they are modelled separately and the dosha stands
-  while any trigger is unanswered. Two charts that both carry it cancel each other, which is the
-  most widely applied parihara of all and the reason the question belongs to the pair.
-
-  The houses and the reference points are both convention choices — the classical verse names the
-  lagna, 4th, 7th, 8th and 12th; the 2nd is a South Indian addition — so the app takes the union and
-  reports each placement separately, letting a reader who follows the stricter verse discount a
-  trigger the app cannot discount for them. The one rule deliberately left out is that the dosha
-  lapses with age: widely repeated, no classical basis, and stating it would be inventing
-  reassurance.
-
-  Shown on **Kundali Matching** for a pair and on the Kundali **Pramukh Yoga** page for one chart.
-
-- **Graha drishti.** Whole-sign Parashari aspects — every graha on the 7th from itself, Mars also the
-  4th and 8th, Jupiter the 5th and 9th, Saturn the 3rd and 10th. Added because the "Jupiter aspects
-  Mars" parihara is not optional, and a cancellation rule that silently did nothing would be the
-  worst of both worlds. Rahu and Ketu report no drishti: authorities disagree on whether the nodes
-  aspect and on which houses, and picking one and presenting it as settled would be inventing a
-  convention. Note that this is Vedic drishti and is *asymmetric* — Saturn looks upon the third from
-  itself and nothing there looks back — so it must never be conflated with Western aspects.
-
-### Added
-
-- **Varga Kundali page.** The divisional charts are now drawn as charts. `NatalChart.vargaChart(varga)`
-  casts a whole chart into a division: the *lagna's* longitude is divided too, its divisional sign
-  becomes house 1, and every graha is placed by counting whole signs from there. That framing is the
-  point — the seventh house of the D-9 is what a reader is actually looking for, and a per-graha
-  accessor can never supply it, because a house only exists relative to an ascendant and the lagna is
-  the one longitude such an accessor never sees.
-
-  In the Kundali book it is one page with a chip per varga rather than nine pages. Nine more pages
-  would triple the book for what is one page asked nine ways, and comparing two divisions by swiping
-  between them is worse than tapping. It opens on the D-9, which is the varga a reader means when
-  they do not say which, and each chip carries what that division is traditionally read for.
-
-  The caption states the arcminute caveat on the page rather than only in the KDoc: a graha sitting
-  on a division edge may be shown either side of it, and the finer the varga the likelier that is.
-  A reader deciding something from a D-27 house deserves to know that from the screen.
-
-### Changed
-
-- **Third-party services are no longer named anywhere in the repository.** Calculations were
-  described as cross-checked against particular commercial almanac sites, and the varga and natal
-  goldens were labelled with the name of the reference implementation they came from. Naming other
-  people's products as accuracy benchmarks invites trademark and comparative-advertising questions
-  this project has no reason to answer, and the claim reads no differently without them: what makes
-  a calculation trustworthy is that it was checked against something independent, not which thing.
-  Docs, ADRs, KDoc and test names now say "published almanacs" and "an independent reference
-  implementation"; `JagannathaHoraReferenceTest` is now `ReferenceImplementationTest`. The manual
-  validation checklist now tells the reader to pick two independent almanacs and record which they
-  used, rather than linking specific ones.
-
-  Left in place deliberately: **drik ganita**, spelled lowercase, in the Ayana and Ritu
-  documentation. That is the classical Sanskrit name for the observed-position convention, as
-  against saura ganita's mean positions -- it names the maths the app implements, and one of those
-  sites is named after it rather than the other way round. Removing it would have lost real meaning.
-
-### Added
-- **Divisional charts (vargas).** The navamsha rule turned out to be general: counting divisions
-  continuously from 0° Mesha reproduces the classical rule for nine of the divisional charts, so the
-  engine now computes D-1, D-6, D-7, D-8, D-9, D-11, D-16, D-20 and D-27 from one function rather
-  than nine. Verified against an independent implementation — 7,500 placements, no
-  disagreements.
-- **"Ends in" for every limb of the panchanga.** The panchang detail now shows when each limb gives
-  way to the next — tithi, nakshatra, pada, yoga, karana, chandra rashi, surya rashi (the sankranti)
-  and moon phase — solved by bisection rather than extrapolated from a mean rate, which is wrong by
-  up to 30% as the Moon's speed varies between apogee and perigee.
-- **Home now distinguishes the day's tithi from the current one.** The card is still named for the
-  tithi running at sunrise, as panchangas name the day, with a live line beneath showing what is
-  actually running now and how long it lasts.
-- **The Kundali screen is now a swipeable book.** The birth chart opens as pages you swipe between,
-  starting with the **Lagna Kundali** and the **Rashi (Chandra) Kundali** — the same placements
-  counted from the Moon instead of the ascendant, which is how the two charts are read side by side
-  in a printed panchang. A header names the open page and dots show where you are.
-- **Jataka properties.** A page of the standing details a panchanga lists beside the charts: janma
-  rashi and its lord, nakshatra with pada, varna, vashya, yoni, gana and nadi in the classical
-  Ashtakoota order, lagna, the Sun in both zodiacs, the ayanamsa at birth, and the Shaka, Vikram and
-  samvatsara years.
-- **Spashta Graha.** A table of all nine grahas — position to the arcminute within the sign,
-  nakshatra and pada, retrograde marker, and the navamsha (D9) sign.
-- **Pramukh Yoga.** The named combinations present in the chart — Gajakesari, Budhaditya,
-  Chandra-Mangala and the five Panchamahapurusha — each shown with the placement that produced it,
-  so the claim can be checked against the chart pages rather than taken on trust. Every rule was
-  verified against an independent implementation over 75 charts before being kept.
-- **Astangata (combustion)** in the Spashta Graha table, marking a graha lost in the Sun's glare,
-  using the classical Parashari orbs.
-- **Mahadasha and Antardasha.** The full Vimshottari cycle from birth with the running period marked,
-  and the nine sub-periods of whichever mahadasha is running now.
-
-### Changed
-- **The Support tab now carries a donation-box glyph** — an Om coin dropping into a daana-patra. Drawn
-  as an alpha stencil, so it takes the navigation bar's colours like every other tab, shows the
-  selected state, and stays legible on a dark theme.
-- **Angular divisions are now bucketed in exact integer arcseconds.** Every division of the zodiac
-  is a whole number of arcseconds (a nakshatra is 48,000, a pada 12,000, a tithi 43,200) while most
-  are non-terminating in degrees, so dividing in degrees left boundary cases to the mercy of
-  floating-point rounding. Divisions are documented as half-open — a longitude exactly on a boundary
-  belongs to the division beginning, so 26°40′00″ is Krittika rather than Bharani.
-- **Every screen's title bar now reads the same way** — "Vedic Mitra" with the open destination
-  beneath it. Previously the four tabs showed their own label, pushed screens showed the app name
-  with nothing under it, and the Home tab kept saying "Home" while a detail view was open.
-
-### Fixed
 - **Seven yogas were removed after checking them against an independent implementation.** The
   Sunapha/Anapha/Durudhara/Kemadruma and Vesi/Vasi/Ubhayachari families agreed with it only 45% and
   72% of the time across 75 charts — the disagreements are matters of convention rather than
   arithmetic, and a yoga wrong one time in four does not belong on a page describing someone's
   chart. What remained was measured at 100% and 97%.
+
 - **Pada was computed wrongly at its boundaries.** Deriving the Moon's pada by taking its longitude
   modulo the nakshatra span and dividing again rounds twice, which put **40 of the 108 pada
   boundaries in the wrong quarter**. Pada feeds the Navamsha and the Nadi-dosha cancellation in

@@ -10,12 +10,12 @@
 [![CI](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 [![Commercial license](https://img.shields.io/badge/Commercial-available-brightgreen.svg)](docs/COMMERCIAL_LICENSE.md)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 
 > **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
-> (Foundation) is done**; **Phase 2 (Daily Timings)**, **Phase 3 (Panchang)**, **Phase 4 (Festivals
-> & Vrats)**, and **Phase 7 (Location & Astronomy)** are partially built: the app already computes
+> (Foundation) is done**; Phases **2–9** and **11** are partially built, with the astrology arc
+> (Phase 6) now largely complete. The app computes
 > today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa, samvatsara),
 > Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, the inauspicious kalams (Rahu, Yamaganda, Gulika),
 > the sixteen Choghadiya windows, sunrise/sunset, moonrise/moonset, Moon phase, golden-hour windows,
@@ -27,8 +27,10 @@
 > (tap any day for its full panchang; notable days are highlighted), wrapped in a golden/maroon
 > brand theme drawn from the app emblem, navigated via a bottom bar. Calculations — including the
 > sunrise-tithi convention by which the day is named — are cross-checked against published
-> almanacs and an independent reference implementation before shipping. Phases 5–6 and 8–12 remain largely aspirational — see the [Roadmap](#roadmap) for
-> the full picture and current progress.
+> almanacs and an independent reference implementation before shipping. The astrology arc
+> (Phase 6) is now largely built — natal charts, seventeen divisional charts, three dasha systems,
+> ashtakavarga, matchmaking and muhurta — while Phases 10 and 12 remain aspirational. See the
+> [Roadmap](#roadmap) for the full picture and current progress.
 
 ---
 
@@ -66,21 +68,24 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
 ### Module graph
 
 ```
-                       ┌─────────┐
-                       │  :app   │  (assembles everything, Hilt root, single Activity)
-                       └────┬────┘
-          ┌─────────────────┼───────────────────┐
-   ┌──────▼──────┐   ┌──────▼───────┐   ┌───────▼──────┐
-   │ :feature:   │   │ :feature:    │   │ :feature:    │
-   │   home      │   │  settings    │   │   alarm      │
-   └──────┬──────┘   └──────┬───────┘   └──────┬───────┘
-          │                 │                  │
-          └───────── depend on core ports ─────┘
-   ┌──────────────────────────────────────────────────────┐
-   │ :core:common  :core:ui  :core:designsystem           │
-   │ :core:astronomy  :core:scheduler                     │
-   │ :core:notifications  :core:location                  │
-   └──────────────────────────────────────────────────────┘
+                              ┌─────────┐
+                              │  :app   │  (Hilt root, single Activity, nav host)
+                              └────┬────┘
+      ┌──────────────────────┬─────┴──────┬──────────────────────┐
+ ┌────▼─────┐         ┌──────▼─────┐ ┌────▼──────┐        ┌──────▼──────┐
+ │ Daily    │         │ Astrology  │ │ Devotion  │        │ Support     │
+ │ home     │         │ kundali    │ │ japa      │        │ settings    │
+ │ calendar │         │ muhurat    │ │ meditation│        │ location    │
+ │ alarm    │         │ matchmaking│ │ stotra    │        │ profile     │
+ │          │         │ rashifal   │ │           │        │             │
+ └────┬─────┘         └──────┬─────┘ └────┬──────┘        └──────┬──────┘
+      └──────────────────────┴─────┬──────┴──────────────────────┘
+                    features depend on core ports only
+ ┌─────────────────────────────────┴────────────────────────────────────┐
+ │ :core:common   :core:ui   :core:designsystem   :core:datastore       │
+ │ :core:astronomy   :core:domain   :core:scheduler   :core:alarm       │
+ │ :core:notifications   :core:location                                 │
+ └──────────────────────────────────────────────────────────────────────┘
 ```
 
 | Module | Responsibility |
@@ -88,15 +93,27 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
 | `:app` | Application shell: Hilt root, single Activity, navigation host, module assembly. |
 | `:core:common` | Framework-agnostic building blocks: `AppResult`, dispatcher abstractions, value types. |
 | `:core:ui` | Reusable Compose widgets and preview tooling. |
-| `:core:designsystem` | Material 3 theme: colour, typography, shapes, spacing tokens. |
-| `:core:astronomy` | Panchanga/astronomy engine: Meeus ephemeris, Lahiri ayanamsa, muhurta windows. |
+| `:core:designsystem` | Material 3 theme: colour, typography, shapes, spacing tokens, shared tables and icons. |
+| `:core:astronomy` | Panchanga and jyotisha engine: Meeus ephemeris, Lahiri ayanamsa, muhurta windows, natal charts, vargas, dashas, ashtakavarga, matchmaking. |
+| `:core:domain` | Use cases shared by more than one feature (e.g. resolving which location to compute for). |
 | `:core:scheduler` | `AlarmManager`-backed exact scheduling of reminder notifications. |
+| `:core:alarm` | Ringing-alarm playback and its lifecycle. |
 | `:core:notifications` | `NotificationManagerCompat`-backed channels and notification posting. |
-| `:core:location` | Device location via Play Services fused provider. |
-| `:core:datastore` | Persisted preferences (theme, enabled reminders) on Jetpack DataStore. |
-| `:feature:home` | Home screen: today's panchanga for the device location. |
-| `:feature:settings` | Settings screen: theme preferences. |
-| `:feature:alarm` | Reminders screen: schedule notifications for the day's muhurta windows. |
+| `:core:location` | Device location via Play Services fused provider, plus offline coordinate → time-zone resolution. |
+| `:core:datastore` | Persisted preferences and birth profiles on Jetpack DataStore. |
+| `:feature:home` | Landing hub: today's panchanga hero, category tabs, shortcut grid. |
+| `:feature:calendar` | Browsable monthly panchang grid; tap a day for its full panchang. |
+| `:feature:alarm` | Reminders: schedule notifications for muhurta windows, Choghadiya and custom tithis. |
+| `:feature:location` | Location picking: GPS, city search, manual coordinates, saved locations. |
+| `:feature:profile` | Birth profiles — the prerequisite for every chart-based feature. |
+| `:feature:kundali` | The chart book: charts, jataka, grahas, yogas, dashas, reading. |
+| `:feature:muhurat` | Electional muhurta: ranked windows for an activity, optionally personalised. |
+| `:feature:matchmaking` | Kundali matching: Ashtakoota, the four porutham, Mangal dosha. |
+| `:feature:rashifal` | Computed daily and weekly outlook by rashi. |
+| `:feature:japa` | 108-bead mala counter with a daily streak. |
+| `:feature:meditation` | Meditation timer with a daily streak. |
+| `:feature:stotra` | Offline stotra library. |
+| `:feature:settings` | Settings: theme, and the Support screen. |
 
 Build configuration is not copy-pasted between modules — it lives in **convention plugins** under
 [`build-logic/`](build-logic), applied by id (e.g. `vedicmitra.android.feature`). See
@@ -259,7 +276,7 @@ for the Phase 6 astrology features)*
 - [x] Name
 - [x] Date of Birth
 - [x] Time of Birth *(exact — Lagna, houses and divisional charts collapse without it)*
-- [x] Place of Birth *(free text for now; geocoding to coordinates + time zone is a later refinement)*
+- [x] Place of Birth *(geocoded to coordinates + IANA time zone, which is what a chart needs)*
 
 **Saved Information**
 
@@ -272,61 +289,64 @@ for the Phase 6 astrology features)*
 **Custom Tracking**
 
 - [ ] Daily sadhana
-- [ ] Meditation streak
-- [ ] Japa counter
+- [x] Meditation streak *(`:feature:meditation` — timer plus a daily streak)*
+- [x] Japa counter *(`:feature:japa` — 108-bead mala counter with a daily streak)*
 - [ ] Reading tracker
 - [ ] Temple visits
 
-### ⬜ Phase 6 — Astrology
+### 🟡 Phase 6 — Astrology
 
-> Restructured to lead with the **chart-computation layer** — the shared foundation for Kundali,
-> Rashifal and Muhurta. The engine already computes graha rashi positions (with pravesh), nakshatra,
-> yoga and karana; this phase adds the natal-chart primitives it lacks.
+> Led with the **chart-computation layer** — the shared foundation for Kundali, Rashifal and
+> Muhurta — and that layer is now built and reference-checked. What remains here is reporting and
+> the longer Rashifal horizons, not calculation.
 
 **Chart-Computation Layer** *(build once, on `:core:astronomy`)*
 
-- [ ] Lagna / ascendant + house cusps
-- [ ] Whole-chart planetary rasi + degree
-- [ ] Navamsa (D9)
-- [ ] Dasamsa (D10) *(and further divisional charts as needed)*
-- [ ] Vimshottari dasha state at an arbitrary date
-- [ ] Transit snapshot at an arbitrary date
-- [ ] Pure `natalChart(birth)` + `chartStateAt(birth, moment)` API — offline, deterministic,
-  reference-checked
+- [x] Lagna / ascendant *(whole-sign houses; **degree-based cusps are not computed** — see
+  Bhava chalit below)*
+- [x] Whole-chart planetary rasi + degree *(Spashta Graha, to the arcminute)*
+- [x] Navamsa (D9)
+- [x] Dasamsa (D10) — and **seventeen** divisional charts in all, from one expression
+- [x] Vimshottari dasha state at an arbitrary date *(three levels deep)*
+- [x] Transit snapshot at an arbitrary date *(`planetaryPositionsAt`)*
+- [x] Pure `natalChartAt(birth)` API — offline, deterministic, reference-checked
+- [x] Astangata (combustion), graha drishti, named yogas, ashtakavarga
+- [x] Ashtottari and Yogini dasha *(alongside Vimshottari)*
+- [ ] Bhava chalit / degree-based house cusps
 
 **Kundli** *(consumes the chart layer)*
 
-- [ ] Birth chart
-- [ ] Planetary positions
-- [ ] Lagna
-- [ ] Navamsa
-- [ ] Dasha overview
-- [ ] Birth report
+- [x] Birth chart *(North-Indian, lagna and Chandra framings)*
+- [x] Planetary positions *(Spashta Graha + ashtakavarga bindus)*
+- [x] Lagna
+- [x] Navamsa *(and every other varga, behind one chip row)*
+- [x] Dasha overview *(mahadasha → antardasha → pratyantardasha)*
+- [ ] Birth report *(nothing exports or shares a chart yet)*
 
 **Horoscope (Rashifal)**
 
-- [ ] Daily Rashifal *(start light: transit vs. birth Moon rashi)*
-- [ ] Weekly Rashifal
+- [x] Daily Rashifal *(computed, not editorial: Chandrabala and, when personalised, Tarabala)*
+- [x] Weekly Rashifal *(a seven-day strip on the same grading)*
 - [ ] Monthly Rashifal
 - [ ] Yearly Rashifal
 
 **Muhurta (Electional)** *(picking auspicious times for events)*
 
-- [ ] General / panchang muhurta — tithi · nakshatra · yoga · karana · Choghadiya/Hora · avoiding
-  Rahu/Yamaganda/Gulika · Abhijit *(needs only today's engine — buildable now)*
-- [ ] Personalized muhurta — Tarabala / Chandrabala relative to the user's birth Moon *(needs
-  Profile + the chart layer's birth-Moon slice)*
-- [ ] Event-type presets (marriage, housewarming, travel, purchase, …)
+- [x] General / panchang muhurta — tithi · nakshatra · yoga · karana · Choghadiya/Hora · avoiding
+  Rahu/Yamaganda/Gulika · Abhijit
+- [x] Personalized muhurta — Tarabala / Chandrabala relative to a profile's birth Moon
+- [x] Event-type presets (marriage, housewarming, travel, purchase, …)
 
 **Match Making**
 
-- [ ] Kundli matching
-- [ ] Compatibility score
-- [ ] Guna Milan
+- [x] Kundli matching
+- [x] Compatibility score *(36 gunas, with each koota's working shown)*
+- [x] Guna Milan — plus **Mangal dosha** with its parihara, and the four additional porutham
+  (Mahendra, Vedha, Rajju, Sthree Dheerga)
 
 **Reports**
 
-- [ ] Planetary transit report
+- [ ] Planetary transit report *(positions are computed; nothing narrates them over time)*
 - [ ] Personalized recommendations
 
 ### 🟡 Phase 7 — Location & Astronomy
@@ -385,9 +405,9 @@ for the Phase 6 astrology features)*
 **Landing hub** *(new default Home — hero + categorised shortcut grid; see
 [ADR 0013](docs/adr/0013-home-hub-landing-and-navigation.md))*
 
-- [ ] Contextual "today" hero (panchang glance + auspicious-now strip) → opens the daily Panchang
-- [ ] Category tabs: Daily · Astrology · Devotion
-- [ ] Shortcut grid — tiles map to roadmap phases; unbuilt features show a "coming/unlock" state
+- [x] Contextual "today" hero (panchang glance + auspicious-now strip) → opens the daily Panchang
+- [x] Category tabs: Daily · Astrology · Devotion
+- [x] Shortcut grid — tiles map to roadmap phases; unbuilt features show a "coming/unlock" state
 - [ ] Bottom nav: Home · Panchang · Reminders · Explore · Profile *(Settings moves under Profile)*
 - [ ] Panchang dashboard preserved as the Panchang destination (reachable from the hero + tab)
 
@@ -416,23 +436,23 @@ for the Phase 6 astrology features)*
 
 Future community contributions can expand this list.
 
-### ⬜ Phase 11 — Knowledge & Devotion
+### 🟡 Phase 11 — Knowledge & Devotion
 
 **Learning**
 
 - [ ] Daily shloka
 - [ ] Daily quote
 - [ ] Festival significance
-- [ ] Panchang explanations
+- [x] Panchang explanations *(`PanchangaGlossary` — a significance blurb behind each limb)*
 - [ ] Beginner guides
 
 **Devotional Tools**
 
-- [ ] Stotra library
-- [ ] Chant counter
-- [ ] Meditation timer
-- [ ] Audio support
-- [ ] Offline content
+- [x] Stotra library *(`:feature:stotra`)*
+- [x] Chant counter *(`:feature:japa`)*
+- [x] Meditation timer *(`:feature:meditation`)*
+- [ ] Audio support *(text only — nothing plays)*
+- [x] Offline content *(everything ships in the APK; the app makes no network calls)*
 
 ### ⬜ Phase 12 — Ecosystem
 

@@ -5,8 +5,10 @@ repository. Follow it precisely; it encodes the architecture and conventions the
 on. When a request conflicts with these rules, surface the conflict rather than silently breaking
 them.
 
-> **Project state:** Phase 1 (Foundation) is complete, and Phases 2 (Daily Timings) and 3
-> (Panchang) are partially built. The core capability modules are **no longer contracts-only** — the
+> **Project state:** Phase 1 (Foundation) is complete; Phases 2–9 and 11 are partially built, and
+> the astrology arc (Phase 6) is largely done — natal charts, seventeen divisional charts, three
+> dasha systems to three levels, ashtakavarga, matchmaking and electional muhurta all ship. The core
+> capability modules are **no longer contracts-only** — the
 > astronomy engine (`:core:astronomy`), exact-alarm scheduler (`:core:scheduler`), notifications
 > (`:core:notifications`), location (`:core:location`), and DataStore persistence (`:core:datastore`)
 > all have working implementations behind their ports. When adding behaviour, still extend a port
