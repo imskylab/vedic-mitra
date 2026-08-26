@@ -7,37 +7,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
-
-- **Kundali Matching is one result surface instead of three stacked cards.** Gunas, porutham and
-  Mangal dosha had equal visual weight and sat in the order they happened to be built, which put the
-  eight koota rows *above* everything capable of vetoing a match — so a reader scrolled past the
-  detail to reach the conditions. Now ordered the way the question is actually asked: the score, then
-  anything wrong with it, then the breakdown.
-
-  The conditions stay out of the 36 for the reason they always did — a strong score should not bury a
-  failed Rajju — but they sit above the breakdown rather than beneath it. Mangal dosha becomes one
-  condition among the others, collapsed to a verdict and opening to its full working on tap, which is
-  the gesture the koota rows already used; its working is the longest here and left open it pushed
-  the gunas off the screen entirely.
-
-### Changed
-
-- **The four porutham now show their working.** They were the only verdicts in the app given without
-  one: three of the four displayed "Matched / Not matched" and a generic gloss, and Rajju named the
-  shared limb *only when it failed*, so a passing Rajju never said which limbs. Every row now carries
-  the arithmetic — the count between the two nakshatras and which counts qualify, which nakshatra
-  pierces which, both partners' limbs whether they differ or not, and the bride-to-groom count
-  against its threshold.
-
-  That matters more here than elsewhere, because these four are exactly where almanacs disagree.
-  The count and the limbs are the thing another source would dispute, and a bare "not matched"
-  cannot be checked against anything.
-
-  The verdict word changed with it. "Matched" read wrongly for Vedha, whose good outcome is an
-  *absence* — nothing aligned, nothing pierced — so each rule now says "Holds" or "Does not hold".
-  Pass and fail are also marked with a coloured bar rather than colour alone, which the roughly one
-  reader in twelve who cannot separate red from green would otherwise have to infer from the wording.
+## [0.8.0] - 2026-08-26
 
 ### Added
 
@@ -209,6 +179,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the nine sub-periods of whichever mahadasha is running now.
 
 ### Changed
+
+- **Kundali Matching is one result surface instead of three stacked cards.** Gunas, porutham and
+  Mangal dosha had equal visual weight and sat in the order they happened to be built, which put the
+  eight koota rows *above* everything capable of vetoing a match — so a reader scrolled past the
+  detail to reach the conditions. Now ordered the way the question is actually asked: the score, then
+  anything wrong with it, then the breakdown.
+
+  The conditions stay out of the 36 for the reason they always did — a strong score should not bury a
+  failed Rajju — but they sit above the breakdown rather than beneath it. Mangal dosha becomes one
+  condition among the others, collapsed to a verdict and opening to its full working on tap, which is
+  the gesture the koota rows already used; its working is the longest here and left open it pushed
+  the gunas off the screen entirely.
+
+- **The four porutham now show their working.** They were the only verdicts in the app given without
+  one: three of the four displayed "Matched / Not matched" and a generic gloss, and Rajju named the
+  shared limb *only when it failed*, so a passing Rajju never said which limbs. Every row now carries
+  the arithmetic — the count between the two nakshatras and which counts qualify, which nakshatra
+  pierces which, both partners' limbs whether they differ or not, and the bride-to-groom count
+  against its threshold.
+
+  That matters more here than elsewhere, because these four are exactly where almanacs disagree.
+  The count and the limbs are the thing another source would dispute, and a bare "not matched"
+  cannot be checked against anything.
+
+  The verdict word changed with it. "Matched" read wrongly for Vedha, whose good outcome is an
+  *absence* — nothing aligned, nothing pierced — so each rule now says "Holds" or "Does not hold".
+  Pass and fail are also marked with a coloured bar rather than colour alone, which the roughly one
+  reader in twelve who cannot separate red from green would otherwise have to infer from the wording.
 
 - **The Kundali book is six named sections instead of ten swipes.** It had grown a page at a time
   until reaching the last one meant swiping past every other, guided by ten identical dots that told
@@ -723,5 +721,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Business logic, astronomy calculations, and alarm behaviour are intentionally **not** included in
   this release — see the roadmap in the README.
 
-[Unreleased]: https://github.com/imskylab/vedic-mitra/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/imskylab/vedic-mitra/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/imskylab/vedic-mitra/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/imskylab/vedic-mitra/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/imskylab/vedic-mitra/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/imskylab/vedic-mitra/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/imskylab/vedic-mitra/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/imskylab/vedic-mitra/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/imskylab/vedic-mitra/releases/tag/v0.1.0
