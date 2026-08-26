@@ -62,7 +62,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -113,6 +116,7 @@ import kotlin.time.Instant
 @Composable
 fun HomeScreen(
     onSubViewChange: (String?) -> Unit,
+    returnToHub: Int,
     onNavigateToLocation: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
@@ -160,6 +164,7 @@ fun HomeScreen(
     HomeContent(
         uiState = uiState,
         onSubViewChange = onSubViewChange,
+        returnToHub = returnToHub,
         onNavigateToLocation = onNavigateToLocation,
         onOpenCalendar = onOpenCalendar,
         onOpenReminders = onOpenReminders,
@@ -179,6 +184,7 @@ fun HomeScreen(
 private fun HomeContent(
     uiState: HomeUiState,
     onSubViewChange: (String?) -> Unit,
+    returnToHub: Int,
     onNavigateToLocation: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
@@ -204,6 +210,15 @@ private fun HomeContent(
         snapshot != null -> {
             var view by rememberSaveable { mutableStateOf(HomeView.HUB) }
             val toHub = { view = HomeView.HUB }
+            // Tapping Home in the bottom bar while a sub-view is open has to close it. The sub-views
+            // are state inside this screen rather than nav destinations, so navigating to the Home
+            // route is a no-op when it is already the current route -- the composable is not
+            // recreated and this stays where it was. The bar bumps a counter instead, which is the
+            // one thing that reliably crosses that boundary.
+            //
+            // That the app-bar title, the back handler and now this each need a special case is the
+            // same fact showing three times: these ought to be nav destinations.
+            LaunchedEffect(returnToHub) { if (returnToHub > 0) view = HomeView.HUB }
             // The sub-views live inside the Home tab, so the app-level back handler (which only acts on
             // pushed routes) can't return from them — handle it here so system back goes to the hub.
             BackHandler(enabled = view != HomeView.HUB) { view = HomeView.HUB }
@@ -624,51 +639,45 @@ private fun HeroCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Today's Panchang",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        text = snapshot.vara.displayName,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 2.dp),
-                    )
-                    if (nowPanchanga != null) {
-                        RunningTithi(now = nowPanchanga, sunriseTithi = snapshot.tithi)
-                    } else {
-                        Text(
-                            text = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(top = 4.dp),
-                        )
-                    }
-                    Text(
-                        text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
+            Text(
+                text = "Today's Panchang",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            // The moon phase sits with the weekday rather than in its own right-hand column. It is
+            // a fact about today like the others, and giving it a column of its own narrowed
+            // everything beneath it -- which is what made the lines below wrap.
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
                 Text(
-                    text = snapshot.moonPhase.displayName,
-                    style = MaterialTheme.typography.labelMedium,
-                    textAlign = TextAlign.End,
+                    text = snapshot.vara.displayName,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
+                Text(
+                    text = snapshot.moonPhase.displayName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(start = 8.dp, bottom = 3.dp),
+                )
             }
-            // Outside the row, so it gets the whole card width and stays on one line. Inside it, the
-            // moon-phase label on the right squeezed the column and this wrapped mid-phrase.
+            if (nowPanchanga != null) {
+                RunningTithi(now = nowPanchanga, sunriseTithi = snapshot.tithi)
+            } else {
+                Text(
+                    text = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
             Text(
-                text = "Tap for full panchang ›",
+                text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name}",
                 style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 4.dp),
             )
         }
     }
@@ -699,9 +708,20 @@ private fun RunningTithi(
             delay(MINUTE_MILLIS)
         }
     }
+    // One line, two weights: the tithi is the fact, the countdown qualifies it. Built as a single
+    // annotated string rather than two Texts in a Row so the pair cannot be split across lines --
+    // "Shukla Trayodashi · ends in" with a stranded "4h 12m" underneath was the glitch here.
+    val countdownSize = MaterialTheme.typography.bodySmall.fontSize
     Text(
-        text = "${now.tithi.paksha.title} ${now.tithi.name} · ends in ${formatRemaining(remaining)}",
+        text =
+            buildAnnotatedString {
+                append("${now.tithi.paksha.title} ${now.tithi.name}")
+                withStyle(SpanStyle(fontSize = countdownSize)) {
+                    append(" · ends in ${formatRemaining(remaining)}")
+                }
+            },
         style = MaterialTheme.typography.bodyLarge,
+        maxLines = 1,
         color = MaterialTheme.colorScheme.onPrimaryContainer,
         modifier = Modifier.padding(top = 4.dp),
     )
@@ -992,6 +1012,7 @@ private fun HomeContentPreview() {
         HomeContent(
             uiState = sampleHomeState(),
             onSubViewChange = {},
+            returnToHub = 0,
             onNavigateToLocation = {},
             onOpenCalendar = {},
             onOpenReminders = {},
