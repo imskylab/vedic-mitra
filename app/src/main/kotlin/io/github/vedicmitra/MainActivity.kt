@@ -45,6 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -328,6 +329,9 @@ private fun VedicMitraApp() {
     // The Home tab swaps between a hub and several detail views in place rather than by navigating,
     // so it reports which one is open — otherwise the bar would read "Home" while a detail is shown.
     var homeSubView by rememberSaveable { mutableStateOf<String?>(null) }
+    // Bumped when the Home tab is tapped while one of its sub-views is open; Home watches it and
+    // returns to the hub. A counter rather than a flag, so consecutive taps each register.
+    var returnHomeToHub by rememberSaveable { mutableIntStateOf(0) }
 
     // System back should retrace the in-app journey and only leave the app from the Home landing.
     // Handled explicitly so it is reliable regardless of the platform's predictive-back path.
@@ -354,7 +358,19 @@ private fun VedicMitraApp() {
                 TopDestination.entries.forEach { destination ->
                     NavigationBarItem(
                         selected = currentRoute == destination.route,
-                        onClick = { navController.navigateToTab(destination.route) },
+                        onClick = {
+                            // Re-tapping the tab you are already on should take you to its root.
+                            // For Home that root is a sub-view inside the screen rather than a nav
+                            // destination, so navigating cannot do it -- the route is unchanged and
+                            // the composable is not recreated. Bump a counter the screen observes.
+                            if (destination == TopDestination.HOME &&
+                                currentRoute == TopDestination.HOME.route &&
+                                homeSubView != null
+                            ) {
+                                returnHomeToHub++
+                            }
+                            navController.navigateToTab(destination.route)
+                        },
                         icon = { DestinationIcon(destination) },
                         label = { Text(destination.label) },
                     )
@@ -365,6 +381,7 @@ private fun VedicMitraApp() {
         AppNavHost(
             navController = navController,
             onHomeSubViewChange = { homeSubView = it },
+            returnHomeToHub = returnHomeToHub,
             modifier = Modifier.padding(padding),
         )
     }
@@ -392,6 +409,7 @@ private fun NavHostController.navigateToTab(route: String) {
 private fun AppNavHost(
     navController: NavHostController,
     onHomeSubViewChange: (String?) -> Unit,
+    returnHomeToHub: Int,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -402,6 +420,7 @@ private fun AppNavHost(
         composable(TopDestination.HOME.route) {
             HomeScreen(
                 onSubViewChange = onHomeSubViewChange,
+                returnToHub = returnHomeToHub,
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
                 onOpenReminders = { navController.navigate(ALARM_ROUTE) },
