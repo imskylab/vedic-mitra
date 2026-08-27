@@ -472,7 +472,6 @@ private fun AppNavHost(
     }
 }
 
-/** The muhurta "find best dates" flow: category grid → activity list → ranked results. */
 /**
  * The three screens reached from the Home hub's own content: the full daily panchanga, and the two
  * upcoming lists. Grouped here rather than inline so [AppNavHost] stays readable, the same reason
@@ -487,6 +486,7 @@ private fun NavGraphBuilder.homeDestinations() {
     composable(EVENTS_ROUTE) { EventsScreen() }
 }
 
+/** The muhurta "find best dates" flow: category grid → activity list → ranked results. */
 private fun NavGraphBuilder.muhuratDestinations(navController: NavHostController) {
     composable(MUHURAT_ROUTE) {
         MuhuratCategoriesScreen(
