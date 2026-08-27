@@ -7,6 +7,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The Events list dropped any observance that shared its day with a named festival.** Raksha
+  Bandhan is Shravana Purnima, so it appeared under Festivals while Events skipped that Purnima
+  entirely — and, because each name is listed only once, quietly offered the *following* month's
+  instead. The same collision hit Diwali (Amavasya), Maha Shivaratri (Masik Shivaratri), Ganesh
+  Chaturthi (Vinayaka Chaturthi) and every Purnima festival.
+
+  The calculation was never wrong; the day was correctly a Purnima. One `else` decided a day was
+  *either* a festival *or* an observance, which was the right call while both fed a single combined
+  list — nobody wants "Purnima" printed beside "Raksha Bandhan". It became a bug when the UI split
+  them onto separate screens, at which point a row on Festivals was silently deleting a row from
+  Events. The two are now emitted independently, the way a Sankranti already was.
+
+  The single-name precedence is kept where it still belongs: the calendar's one-line day badge names
+  the festival, not the observance. Same day, two questions, two answers — now recorded next to both
+  functions so the asymmetry does not read as an oversight.
+
 ## [0.8.0] - 2026-08-26
 
 ### Added

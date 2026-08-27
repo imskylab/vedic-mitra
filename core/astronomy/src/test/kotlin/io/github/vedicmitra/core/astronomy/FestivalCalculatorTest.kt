@@ -42,14 +42,40 @@ class FestivalCalculatorTest {
     }
 
     @Test
-    fun `a named festival overrides the generic observance on the same tithi`() {
-        // Tithi 15 in Ashadha is Guru Purnima, not a plain "Purnima".
+    fun `a named festival and its observance are both emitted on the same day`() {
+        // Tithi 15 in Ashadha is Guru Purnima *and* a Purnima. The two land on separate screens, so
+        // the festival must not swallow the observance the way it used to.
         val source = source(tithis = listOf(14, 15), maasas = listOf(maasa("Ashadha"), maasa("Ashadha")))
 
         val festivals = upcomingFestivals(fromEpochMillis = 0L, windowDays = 2, limit = 10, source = source)
 
-        assertThat(festivals.map { it.name }).containsExactly("Guru Purnima")
-        assertThat(festivals.single().type).isEqualTo(FestivalType.FESTIVAL)
+        assertThat(festivals.map { it.name }).containsExactly("Guru Purnima", "Purnima")
+        assertThat(festivals.first { it.name == "Guru Purnima" }.type).isEqualTo(FestivalType.FESTIVAL)
+        assertThat(festivals.first { it.name == "Purnima" }.type).isEqualTo(FestivalType.OBSERVANCE)
+        // Both on the one civil day, so Events dates the Purnima correctly instead of a month late.
+        assertThat(festivals.map { it.atSunrise }.distinct()).containsExactly(dayInstant(1))
+    }
+
+    @Test
+    fun `a festival day still names only the festival on the calendar badge`() {
+        // The deliberate asymmetry: upcomingFestivals emits both, festivalOn picks one.
+        val source = source(tithis = listOf(14, 15), maasas = listOf(maasa("Ashadha"), maasa("Ashadha")))
+
+        assertThat(festivalOn(DAY_MILLIS, source)).isEqualTo("Guru Purnima")
+    }
+
+    @Test
+    fun `Shravana Purnima yields Raksha Bandhan and the Purnima observance`() {
+        // The reported bug: Raksha Bandhan showed under Festivals while the Events list skipped that
+        // day's Purnima entirely and offered the following month's instead.
+        val source = source(tithis = listOf(15), maasas = listOf(maasa("Shravana")))
+
+        val festivals = upcomingFestivals(fromEpochMillis = 0L, windowDays = 1, limit = 10, source = source)
+
+        assertThat(festivals.map { it.name }).containsExactly("Raksha Bandhan", "Purnima")
+        // HomeViewModel partitions on this type, so it decides which screen each row reaches.
+        assertThat(festivals.filter { it.type == FestivalType.OBSERVANCE }.map { it.name })
+            .containsExactly("Purnima")
     }
 
     @Test
@@ -117,7 +143,7 @@ class FestivalCalculatorTest {
     private fun source(
         tithis: List<Int>,
         rashis: List<Int> = List(tithis.size) { 0 },
-        // Pausha hosts none of the festivals, so festival-tithi days fall through to observances.
+        // Pausha hosts none of the festivals, so a festival tithi yields only its observance.
         maasas: List<Maasa> = List(tithis.size) { maasa("Pausha") },
     ): FestivalPanchangaSource =
         object : FestivalPanchangaSource {
