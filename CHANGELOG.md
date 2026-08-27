@@ -7,6 +7,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A dignity column on Spashta Graha** — exalted, own sign, friend's, neutral, enemy's, or
+  debilitated, for each of the seven grahas. It is the oldest statement of planetary strength and
+  the thing every other placement is read against: the same Mars means one thing in Makara, where it
+  is exalted, and another in Karka, where it is debilitated.
+
+  Almost all of it was already being computed and thrown away. Exaltation lived privately inside the
+  yoga code, the sign lords inside the matchmaking code, the friendship matrix beside them, and
+  Mars's own-and-exaltation signs were written out a **third** time inside the Mangal dosha rule.
+  Three statements of one fact, none reachable from a chart. They are now one table that the yoga
+  and dosha rules both delegate to, so a correction lands in one place instead of three.
+
+  Debilitation is **derived** as six signs from exaltation rather than typed as a second table — the
+  classical relationship becomes a property of the code, and a test asserts it holds for all seven.
+  Two more invariants guard the tables: the five non-luminaries rule two signs each and the
+  luminaries one (twelve only comes out even that way), and the friendship matrix is **deliberately
+  asymmetric** — Budha counts the Moon an enemy while the Moon counts Budha a friend — asserted so
+  nobody later tidies it into symmetry and changes the rule.
+
+  **Rahu and Ketu show a dash, not a dignity.** They own no sign, so there is no lord to be friendly
+  or hostile to, and the exaltations attributed to them are not agreed between sources. Drishti
+  already declines the same way rather than guessing.
+
+  Moolatrikona and temporal (tatkalika) friendship are deliberately absent: both need data that does
+  not exist in this repo yet, and this change surfaces what was already computed rather than adding
+  new claims.
+
 ### Changed
 
 - **Today's Panchang, Festivals and Events are now navigation destinations** rather than state inside

@@ -555,7 +555,10 @@ private fun GrahasPage(
             text =
                 "Positions are degrees and minutes into the rashi. (V) marks retrograde motion and " +
                     "A marks astangata — combust, lost in the Sun's glare, by the classical orbs. " +
-                    "Navamsha is the graha's sign in the D9 division.",
+                    "Navamsha is the graha's sign in the D9 division. Dignity is how well a graha " +
+                    "sits in its sign: Ex exalted, Deb debilitated, Own its own sign, and Fr / Neu " +
+                    "/ En the sign lord's natural friendship. Rahu and Ketu own no sign, so they " +
+                    "take no dignity.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -563,14 +566,21 @@ private fun GrahasPage(
     }
 }
 
+/**
+ * Weights, not widths — [VedicTable] hands each column its share of whatever width there is, and the
+ * table deliberately does not scroll sideways. Adding dignity therefore takes room from its
+ * neighbours, so the others are trimmed a little to pay for it and the abbreviations are kept to
+ * three characters. Nakshatra–pada stays the widest: it holds the longest strings in the table.
+ */
 private val SPASHTA_COLUMNS =
     listOf(
-        TableColumn(header = "Graha", weight = 1.1f),
-        TableColumn(header = "Position", weight = 1.0f),
-        TableColumn(header = "Rashi", weight = 1.1f),
-        TableColumn(header = "Nakshatra–pada", weight = 1.5f),
-        TableColumn(header = "Navamsha", weight = 1.0f),
-        TableColumn(header = "Ast.", weight = 0.5f),
+        TableColumn(header = "Graha", weight = 1.0f),
+        TableColumn(header = "Position", weight = 0.95f),
+        TableColumn(header = "Rashi", weight = 1.0f),
+        TableColumn(header = "Nakshatra–pada", weight = 1.45f),
+        TableColumn(header = "Navamsha", weight = 0.95f),
+        TableColumn(header = "Dignity", weight = 0.7f),
+        TableColumn(header = "Ast.", weight = 0.45f),
     )
 
 private fun spashtaRow(graha: NatalGraha): List<String> =
@@ -580,6 +590,7 @@ private fun spashtaRow(graha: NatalGraha): List<String> =
         graha.rasi.name,
         "${graha.nakshatra.name}–${graha.pada}",
         graha.navamsha.name,
+        graha.dignity?.abbreviation ?: "—",
         if (graha.combust) "A" else "",
     )
 

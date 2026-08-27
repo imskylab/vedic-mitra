@@ -151,9 +151,6 @@ private val NO_DOSHA = MangalDosha(triggers = emptyList(), cancellations = empty
 /** Houses raising the dosha — see the KDoc above on why this is the union of two conventions. */
 private val DOSHA_HOUSES = setOf(1, 2, 4, 7, 8, 12)
 
-/** Mesha and Vrischika are Mars's own signs; Makara is its exaltation. */
-private val MARS_STRONG_SIGNS = setOf(0, 7, 9)
-
 /** Simha and Kumbha — the fixed signs of the Sun and Saturn, where Mars is held to do no harm. */
 private val MARS_HARMLESS_SIGNS = setOf(4, 10)
 
@@ -177,7 +174,7 @@ private fun generalParihara(
 ): List<String> {
     val cancellations = mutableListOf<String>()
     val marsSign = mars.rasi.index
-    if (marsSign in MARS_STRONG_SIGNS) {
+    if (isStrongByPlace(Graha.MANGALA, marsSign)) {
         cancellations +=
             "Mars is in ${mars.rasi.name} — its own sign or exaltation — and a graha at full " +
             "strength is not held to afflict."
