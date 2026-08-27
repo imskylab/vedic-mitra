@@ -415,9 +415,7 @@ private fun AppNavHost(
                 onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
             )
         }
-        composable(PANCHANG_ROUTE) { PanchangScreen() }
-        composable(FESTIVALS_ROUTE) { FestivalsScreen() }
-        composable(EVENTS_ROUTE) { EventsScreen() }
+        homeDestinations()
         composable(TopDestination.SETTINGS.route) {
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
@@ -475,6 +473,20 @@ private fun AppNavHost(
 }
 
 /** The muhurta "find best dates" flow: category grid → activity list → ranked results. */
+/**
+ * The three screens reached from the Home hub's own content: the full daily panchanga, and the two
+ * upcoming lists. Grouped here rather than inline so [AppNavHost] stays readable, the same reason
+ * [muhuratDestinations] is separate.
+ *
+ * Each takes no arguments and navigates nowhere, so unlike the muhurat flow none of them needs the
+ * NavHostController.
+ */
+private fun NavGraphBuilder.homeDestinations() {
+    composable(PANCHANG_ROUTE) { PanchangScreen() }
+    composable(FESTIVALS_ROUTE) { FestivalsScreen() }
+    composable(EVENTS_ROUTE) { EventsScreen() }
+}
+
 private fun NavGraphBuilder.muhuratDestinations(navController: NavHostController) {
     composable(MUHURAT_ROUTE) {
         MuhuratCategoriesScreen(
