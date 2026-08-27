@@ -45,7 +45,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -76,7 +75,10 @@ import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
+import io.github.vedicmitra.feature.home.EventsScreen
+import io.github.vedicmitra.feature.home.FestivalsScreen
 import io.github.vedicmitra.feature.home.HomeScreen
+import io.github.vedicmitra.feature.home.PanchangScreen
 import io.github.vedicmitra.feature.japa.JapaScreen
 import io.github.vedicmitra.feature.kundali.KundaliScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
@@ -138,22 +140,17 @@ private fun AppBarTitle(subtitle: String?) {
 /**
  * What to show beneath the app name for [route].
  *
- * [homeSubView] wins on the Home tab, which swaps its content in place instead of navigating.
- *
  * Routes carrying arguments arrive here as their declared pattern — `profile/edit?profileId={…}`,
  * `muhurat/day/{activity}/{day}` — so the argument part is trimmed before the lookup.
  */
-private fun subtitleOf(
-    route: String?,
-    homeSubView: String?,
-): String? {
-    if (route == TopDestination.HOME.route) return homeSubView ?: TopDestination.HOME.label
+private fun subtitleOf(route: String?): String? {
     val base = route?.substringBefore('?')?.substringBefore("/{") ?: return null
     return DESTINATION_LABELS[base]
 }
 
 private val DESTINATION_LABELS: Map<String, String> =
     mapOf(
+        TopDestination.HOME.route to TopDestination.HOME.label,
         TopDestination.SETTINGS.route to TopDestination.SETTINGS.label,
         TopDestination.PROFILE.route to TopDestination.PROFILE.label,
         TopDestination.SUPPORT.route to TopDestination.SUPPORT.label,
@@ -162,6 +159,9 @@ private val DESTINATION_LABELS: Map<String, String> =
         ADD_CITY_ROUTE to "Add a city",
         ADD_COORDINATES_ROUTE to "Add coordinates",
         PROFILE_EDIT_ROUTE to "Birth profile",
+        PANCHANG_ROUTE to "Today's Panchang",
+        FESTIVALS_ROUTE to "Festivals",
+        EVENTS_ROUTE to "Events",
         CALENDAR_ROUTE to "Panchang calendar",
         ALARM_ROUTE to "Reminders",
         KUNDALI_ROUTE to "Kundali",
@@ -207,6 +207,9 @@ private val NAV_ICON_SIZE = 24.dp
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
 // tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
+private const val PANCHANG_ROUTE = "panchang"
+private const val FESTIVALS_ROUTE = "festivals"
+private const val EVENTS_ROUTE = "events"
 private const val CALENDAR_ROUTE = "calendar"
 private const val ALARM_ROUTE = "alarm"
 private const val KUNDALI_ROUTE = "kundali"
@@ -326,12 +329,6 @@ private fun VedicMitraApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val current = TopDestination.entries.firstOrNull { it.route == currentRoute }
-    // The Home tab swaps between a hub and several detail views in place rather than by navigating,
-    // so it reports which one is open — otherwise the bar would read "Home" while a detail is shown.
-    var homeSubView by rememberSaveable { mutableStateOf<String?>(null) }
-    // Bumped when the Home tab is tapped while one of its sub-views is open; Home watches it and
-    // returns to the hub. A counter rather than a flag, so consecutive taps each register.
-    var returnHomeToHub by rememberSaveable { mutableIntStateOf(0) }
 
     // System back should retrace the in-app journey and only leave the app from the Home landing.
     // Handled explicitly so it is reliable regardless of the platform's predictive-back path.
@@ -342,7 +339,7 @@ private fun VedicMitraApp() {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { AppBarTitle(subtitle = subtitleOf(currentRoute, homeSubView)) },
+                title = { AppBarTitle(subtitle = subtitleOf(currentRoute)) },
                 navigationIcon = {
                     // Sub-routes (calendar, reminders, kundali, …) aren't tabs, so offer a back arrow.
                     if (current == null) {
@@ -358,19 +355,7 @@ private fun VedicMitraApp() {
                 TopDestination.entries.forEach { destination ->
                     NavigationBarItem(
                         selected = currentRoute == destination.route,
-                        onClick = {
-                            // Re-tapping the tab you are already on should take you to its root.
-                            // For Home that root is a sub-view inside the screen rather than a nav
-                            // destination, so navigating cannot do it -- the route is unchanged and
-                            // the composable is not recreated. Bump a counter the screen observes.
-                            if (destination == TopDestination.HOME &&
-                                currentRoute == TopDestination.HOME.route &&
-                                homeSubView != null
-                            ) {
-                                returnHomeToHub++
-                            }
-                            navController.navigateToTab(destination.route)
-                        },
+                        onClick = { navController.navigateToTab(destination.route) },
                         icon = { DestinationIcon(destination) },
                         label = { Text(destination.label) },
                     )
@@ -380,8 +365,6 @@ private fun VedicMitraApp() {
     ) { padding ->
         AppNavHost(
             navController = navController,
-            onHomeSubViewChange = { homeSubView = it },
-            returnHomeToHub = returnHomeToHub,
             modifier = Modifier.padding(padding),
         )
     }
@@ -408,8 +391,6 @@ private fun NavHostController.navigateToTab(route: String) {
 @Composable
 private fun AppNavHost(
     navController: NavHostController,
-    onHomeSubViewChange: (String?) -> Unit,
-    returnHomeToHub: Int,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -419,9 +400,10 @@ private fun AppNavHost(
     ) {
         composable(TopDestination.HOME.route) {
             HomeScreen(
-                onSubViewChange = onHomeSubViewChange,
-                returnToHub = returnHomeToHub,
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+                onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
+                onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
+                onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
                 onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
                 onOpenReminders = { navController.navigate(ALARM_ROUTE) },
                 onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
@@ -433,6 +415,7 @@ private fun AppNavHost(
                 onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
             )
         }
+        homeDestinations()
         composable(TopDestination.SETTINGS.route) {
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
@@ -487,6 +470,20 @@ private fun AppNavHost(
         composable(STOTRA_ROUTE) { StotraScreen() }
         muhuratDestinations(navController)
     }
+}
+
+/**
+ * The three screens reached from the Home hub's own content: the full daily panchanga, and the two
+ * upcoming lists. Grouped here rather than inline so [AppNavHost] stays readable, the same reason
+ * [muhuratDestinations] is separate.
+ *
+ * Each takes no arguments and navigates nowhere, so unlike the muhurat flow none of them needs the
+ * NavHostController.
+ */
+private fun NavGraphBuilder.homeDestinations() {
+    composable(PANCHANG_ROUTE) { PanchangScreen() }
+    composable(FESTIVALS_ROUTE) { FestivalsScreen() }
+    composable(EVENTS_ROUTE) { EventsScreen() }
 }
 
 /** The muhurta "find best dates" flow: category grid → activity list → ranked results. */
