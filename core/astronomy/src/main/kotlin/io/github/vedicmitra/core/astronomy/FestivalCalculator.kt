@@ -52,10 +52,17 @@ private const val FALLBACK_SUNRISE_OFFSET_MILLIS = 21_600_000L
 
 /**
  * Finds up to [limit] upcoming festivals and observances within [windowDays] of [fromEpochMillis],
- * in date order. Each civil day is judged by its **sunrise** panchanga: a named festival if the
- * amanta month and tithi match a rule, else a recurring observance (Ekadashi/Purnima/Amavasya), plus
- * a Sankranti whenever the Sun has entered a new rashi since the previous day. Each name appears at
- * most once (its next occurrence).
+ * in date order. Each civil day is judged by its **sunrise** panchanga and can contribute all three
+ * kinds independently: a named festival if the amanta month and tithi match a rule, a recurring
+ * observance if the tithi is one (Ekadashi/Purnima/Amavasya), and a Sankranti whenever the Sun has
+ * entered a new rashi since the previous day. Each name appears at most once (its next occurrence).
+ *
+ * **A named festival does not displace the observance sharing its tithi**, so Shravana Purnima
+ * yields both "Raksha Bandhan" and "Purnima". It used to, which was right while this fed one
+ * combined list and wrong once the UI split festivals and observances onto separate screens: the
+ * suppression then deleted a row from the Events screen because of a row on the Festivals screen,
+ * leaving the reader with the *next* month's Purnima. Contrast [festivalOn], which still names
+ * exactly one thing per day and should.
  */
 internal fun upcomingFestivals(
     fromEpochMillis: Long,
@@ -79,12 +86,9 @@ internal fun upcomingFestivals(
         }
         previousRashi = rashi
 
-        val festivalName = namedFestivalAt(tithi) { source.maasa(sunrise) }
-        if (festivalName != null) {
-            addUnique(results, seen, festivalName, sunrise, FestivalType.FESTIVAL)
-        } else {
-            observanceAt(tithi)?.let { addUnique(results, seen, it, sunrise, FestivalType.OBSERVANCE) }
-        }
+        namedFestivalAt(tithi) { source.maasa(sunrise) }
+            ?.let { addUnique(results, seen, it, sunrise, FestivalType.FESTIVAL) }
+        observanceAt(tithi)?.let { addUnique(results, seen, it, sunrise, FestivalType.OBSERVANCE) }
         day++
     }
 
@@ -171,6 +175,11 @@ fun observanceTithis(name: String): Set<Int>? =
  * The single most notable entry on the civil day containing [dayEpochMillis] — a named festival,
  * else a recurring observance, else a Sankranti — judged by that day's sunrise panchanga, or `null`
  * for an ordinary day. Used to highlight days in the calendar.
+ *
+ * **The precedence here is deliberate and differs from [upcomingFestivals]**, which emits every
+ * match. A one-line day badge has room for one name and should read "Raksha Bandhan", not
+ * "Purnima"; a list feeding two separate screens must not let one screen's entry suppress the
+ * other's. Same day, two questions, two answers.
  */
 internal fun festivalOn(
     dayEpochMillis: Long,
