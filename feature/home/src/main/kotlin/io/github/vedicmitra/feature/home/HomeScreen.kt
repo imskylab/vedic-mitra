@@ -13,7 +13,6 @@ package io.github.vedicmitra.feature.home
 import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -33,7 +32,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
@@ -44,7 +42,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -110,14 +107,15 @@ import kotlin.time.Instant
 
 /**
  * Home screen entry point — the hub landing. Resolves the location permission, drives
- * [HomeViewModel.load], and delegates to the stateless, previewable [HomeContent]. Tiles either
- * navigate out (calendar, reminders), open the in-screen panchang detail, or report "coming soon".
+ * [HomeViewModel.load], and delegates to the stateless, previewable [HomeContent]. Every tile
+ * navigates; nothing is swapped in place.
  */
 @Composable
 fun HomeScreen(
-    onSubViewChange: (String?) -> Unit,
-    returnToHub: Int,
     onNavigateToLocation: () -> Unit,
+    onOpenPanchang: () -> Unit,
+    onOpenFestivals: () -> Unit,
+    onOpenEvents: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
@@ -146,26 +144,14 @@ fun HomeScreen(
         if (!granted) permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
     }
 
-    // Reload whenever the screen comes back to the foreground, rather than once per composition.
-    // Someone who opens the app with location switched off, turns it on and comes back was being
-    // shown the fallback city indefinitely, because nothing re-resolved. The same staleness applies
-    // to time: leave the app open overnight and the day, tithi and muhurta windows are all wrong
-    // until something else happens to trigger a load.
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        viewModel.load()
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.messages.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
-    }
+    HomeDataEffects(viewModel)
 
     HomeContent(
         uiState = uiState,
-        onSubViewChange = onSubViewChange,
-        returnToHub = returnToHub,
         onNavigateToLocation = onNavigateToLocation,
+        onOpenPanchang = onOpenPanchang,
+        onOpenFestivals = onOpenFestivals,
+        onOpenEvents = onOpenEvents,
         onOpenCalendar = onOpenCalendar,
         onOpenReminders = onOpenReminders,
         onOpenKundali = onOpenKundali,
@@ -180,12 +166,104 @@ fun HomeScreen(
     )
 }
 
+/**
+ * The load-on-resume and message wiring every screen in the Home family needs.
+ *
+ * Reloading on resume rather than once per composition is what keeps a stale view from persisting:
+ * someone who opens the app with location switched off, turns it on and comes back was being shown
+ * the fallback city indefinitely, because nothing re-resolved. The same staleness applies to time —
+ * leave the app open overnight and the day, tithi and muhurta windows are all wrong until something
+ * else happens to trigger a load.
+ */
+@Composable
+private fun HomeDataEffects(viewModel: HomeViewModel) {
+    val context = LocalContext.current
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.load()
+    }
+    LaunchedEffect(Unit) {
+        viewModel.messages.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+/**
+ * The loading / error / ready gate the Home family shares.
+ *
+ * Only the first load takes over the screen. Now that the content reloads on every resume, showing a
+ * spinner whenever `isLoading` is set would blank the screen every time the user came back from
+ * another app; a refresh with content already on screen happens silently.
+ */
+@Composable
+private fun HomeDataGate(
+    uiState: HomeUiState,
+    modifier: Modifier,
+    content: @Composable () -> Unit,
+) {
+    when {
+        uiState.isLoading && uiState.snapshot == null -> CenteredBox(modifier) { CircularProgressIndicator() }
+        uiState.errorMessage != null ->
+            CenteredBox(modifier) { Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge) }
+
+        uiState.snapshot != null -> content()
+    }
+}
+
+/** The full daily panchanga, as its own destination. */
+@Composable
+fun PanchangScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeDataEffects(viewModel)
+    HomeDataGate(uiState, modifier) {
+        PanchangaDetailView(uiState = uiState, onSetReminder = viewModel::setReminder, modifier = modifier)
+    }
+}
+
+/** Every upcoming named festival and Sankranti, as its own destination. */
+@Composable
+fun FestivalsScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeDataEffects(viewModel)
+    HomeDataGate(uiState, modifier) {
+        EventListView(
+            rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+            onSetReminder = viewModel::setReminder,
+            modifier = modifier,
+        )
+    }
+}
+
+/** The next occurrence of each recurring lunar observance, as its own destination. */
+@Composable
+fun EventsScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    HomeDataEffects(viewModel)
+    HomeDataGate(uiState, modifier) {
+        EventListView(
+            rows = uiState.events.map { it.toEventRow() },
+            onSetReminder = viewModel::setReminder,
+            modifier = modifier,
+        )
+    }
+}
+
 @Composable
 private fun HomeContent(
     uiState: HomeUiState,
-    onSubViewChange: (String?) -> Unit,
-    returnToHub: Int,
     onNavigateToLocation: () -> Unit,
+    onOpenPanchang: () -> Unit,
+    onOpenFestivals: () -> Unit,
+    onOpenEvents: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
@@ -198,96 +276,27 @@ private fun HomeContent(
     onSetReminder: (ReminderTarget) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val snapshot = uiState.snapshot
-    when {
-        // Only the first load takes over the screen. Now that the content reloads on every resume,
-        // showing a spinner whenever isLoading is set would blank the hub every time the user came
-        // back from another app; a refresh with content already on screen happens silently.
-        uiState.isLoading && snapshot == null -> CenteredBox(modifier) { CircularProgressIndicator() }
-        uiState.errorMessage != null ->
-            CenteredBox(modifier) { Text(text = uiState.errorMessage, style = MaterialTheme.typography.bodyLarge) }
-
-        snapshot != null -> {
-            var view by rememberSaveable { mutableStateOf(HomeView.HUB) }
-            val toHub = { view = HomeView.HUB }
-            // Tapping Home in the bottom bar while a sub-view is open has to close it. The sub-views
-            // are state inside this screen rather than nav destinations, so navigating to the Home
-            // route is a no-op when it is already the current route -- the composable is not
-            // recreated and this stays where it was. The bar bumps a counter instead, which is the
-            // one thing that reliably crosses that boundary.
-            //
-            // That the app-bar title, the back handler and now this each need a special case is the
-            // same fact showing three times: these ought to be nav destinations.
-            LaunchedEffect(returnToHub) { if (returnToHub > 0) view = HomeView.HUB }
-            // The sub-views live inside the Home tab, so the app-level back handler (which only acts on
-            // pushed routes) can't return from them — handle it here so system back goes to the hub.
-            BackHandler(enabled = view != HomeView.HUB) { view = HomeView.HUB }
-            LaunchedEffect(view) { onSubViewChange(view.label) }
-            when (view) {
-                HomeView.HUB ->
-                    HubView(
-                        uiState = uiState,
-                        snapshot = snapshot,
-                        onNavigateToLocation = onNavigateToLocation,
-                        onOpenPanchang = { view = HomeView.PANCHANG },
-                        onOpenCalendar = onOpenCalendar,
-                        onOpenReminders = onOpenReminders,
-                        onOpenKundali = onOpenKundali,
-                        onOpenMuhurat = onOpenMuhurat,
-                        onOpenMatch = onOpenMatch,
-                        onOpenRashifal = onOpenRashifal,
-                        onOpenJapa = onOpenJapa,
-                        onOpenMeditate = onOpenMeditate,
-                        onOpenStotra = onOpenStotra,
-                        onOpenFestivals = { view = HomeView.FESTIVALS },
-                        onOpenEvents = { view = HomeView.EVENTS },
-                        onSetReminder = onSetReminder,
-                        modifier = modifier,
-                    )
-
-                HomeView.PANCHANG ->
-                    PanchangaDetailView(
-                        uiState = uiState,
-                        onBack = toHub,
-                        onSetReminder = onSetReminder,
-                        modifier = modifier,
-                    )
-
-                HomeView.FESTIVALS ->
-                    EventListView(
-                        title = "Festivals",
-                        rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
-                        onBack = toHub,
-                        onSetReminder = onSetReminder,
-                        modifier = modifier,
-                    )
-
-                HomeView.EVENTS ->
-                    EventListView(
-                        title = "Events",
-                        rows = uiState.events.map { it.toEventRow() },
-                        onBack = toHub,
-                        onSetReminder = onSetReminder,
-                        modifier = modifier,
-                    )
-            }
-        }
+    HomeDataGate(uiState, modifier) {
+        HubView(
+            uiState = uiState,
+            snapshot = checkNotNull(uiState.snapshot),
+            onNavigateToLocation = onNavigateToLocation,
+            onOpenPanchang = onOpenPanchang,
+            onOpenCalendar = onOpenCalendar,
+            onOpenReminders = onOpenReminders,
+            onOpenKundali = onOpenKundali,
+            onOpenMuhurat = onOpenMuhurat,
+            onOpenMatch = onOpenMatch,
+            onOpenRashifal = onOpenRashifal,
+            onOpenJapa = onOpenJapa,
+            onOpenMeditate = onOpenMeditate,
+            onOpenStotra = onOpenStotra,
+            onOpenFestivals = onOpenFestivals,
+            onOpenEvents = onOpenEvents,
+            onSetReminder = onSetReminder,
+            modifier = modifier,
+        )
     }
-}
-
-/**
- * Which sub-view the Home tab is showing: the hub, the full daily panchang, or a full list.
- *
- * The Home tab swaps between these in place rather than navigating, so each carries the label the
- * app bar shows beneath the app name. The hub has none — the bar falls back to "Home".
- */
-private enum class HomeView(
-    val label: String?,
-) {
-    HUB(null),
-    PANCHANG("Today's Panchang"),
-    FESTIVALS("Festivals"),
-    EVENTS("Events"),
 }
 
 /** The hub landing: header, a tappable today's-panchang hero, the auspicious-now strip, the full
@@ -408,11 +417,15 @@ private fun ShortcutGrid(
     }
 }
 
-/** The detailed daily panchanga (limbs, sun/moon, periods, festivals, events), behind a back button. */
+/**
+ * The detailed daily panchanga — limbs, sun/moon, planetary positions and the period tables.
+ *
+ * No title or back arrow of its own: this is a nav destination, so the app bar supplies both. It
+ * used to draw them itself, which meant the title appeared twice, once in the bar and once beneath.
+ */
 @Composable
 private fun PanchangaDetailView(
     uiState: HomeUiState,
-    onBack: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -422,12 +435,6 @@ private fun PanchangaDetailView(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text(text = "Today's Panchang", style = MaterialTheme.typography.titleMedium)
-        }
         PanchangaLimbsStrip(snapshot)
         SunMoonStrip(snapshot)
         SeasonAyanaStrip(snapshot)
@@ -459,15 +466,16 @@ private fun PanchangaDetailView(
 }
 
 /**
- * A full, scrollable list of [rows] under a [title] with a back button — used for the Festivals and
- * Events shortcuts. Each row is tappable, opening the significance sheet (and a Set-reminder button
- * for recurring observances).
+ * A full, scrollable list of [rows] — the body of both the Festivals and the Events destinations.
+ * Each row is tappable, opening the significance sheet (and a Set-reminder button for recurring
+ * observances).
+ *
+ * The title and back arrow come from the app bar, as they do for any other destination. Drawing its
+ * own meant Festivals and Events each showed their title twice.
  */
 @Composable
 private fun EventListView(
-    title: String,
     rows: List<SectionRow>,
-    onBack: () -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -476,12 +484,6 @@ private fun EventListView(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
-        }
         if (rows.isEmpty()) {
             Text(
                 text = "Nothing upcoming.",
@@ -1011,9 +1013,10 @@ private fun HomeContentPreview() {
     VedicMitraTheme {
         HomeContent(
             uiState = sampleHomeState(),
-            onSubViewChange = {},
-            returnToHub = 0,
             onNavigateToLocation = {},
+            onOpenPanchang = {},
+            onOpenFestivals = {},
+            onOpenEvents = {},
             onOpenCalendar = {},
             onOpenReminders = {},
             onOpenKundali = {},

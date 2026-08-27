@@ -70,6 +70,34 @@ the hub's hero card and its own bottom-nav tab.
   Astrology/Devotion tiles as those phases approach. Five bottom-nav items is the practical maximum;
   further destinations must go inside Explore or the hub, not the bar.
 
+## Amendment — 2026-08-27
+
+What shipped differs from the Decision above in one respect, and this records it rather than leaving
+the ADR to drift.
+
+**The bottom bar has four tabs, not five:** `Home` · `Settings` · `Profile` · `Support`. `Panchang`,
+`Reminders` and `Explore` were never promoted to tabs. Reminders and the calendar are reached from
+hub tiles; `Explore` was never built as a destination at all, its contents (festivals, devotion)
+being hub tiles instead. `Support` was added after this ADR, for daana.
+
+The hub-and-tiles decision itself held up — new features have landed as tiles without a redesign,
+which was the point. It is only the bar that stayed smaller, and that looks like the better call: the
+ADR itself notes five is the practical maximum, and four leaves the room it warns about needing.
+
+**Panchang is now a destination, as this ADR always said it should be.** For a period it was neither
+a tab nor a route but *state inside the Home screen*, along with the Festivals and Events lists. That
+cost four separate workarounds — the app-bar title could not see which sub-view was open, the
+app-level back handler had to be disabled on Home, the bottom Home tab could not return to the hub
+without a counter passed down into the screen, and each sub-view drew its own title and back arrow
+because the app bar could not, so the title appeared twice. All three are now ordinary pushed routes
+(`panchang`, `festivals`, `events`) and all four workarounds are gone.
+
+The general lesson is worth keeping: **a drill-down is a route.** Screen-local state is right for
+peer sections that are simultaneously visible and swipe-connected — the Kundali tabs are correctly
+built that way — but anything reached by tapping *into* it, and left by pressing back, belongs on the
+back stack. Every one of those four workarounds existed to re-implement something the back stack
+provides for free.
+
 ## Related
 
 - Roadmap: Phase 9 (UI & User Experience → Dashboard / Landing hub)

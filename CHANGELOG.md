@@ -7,6 +7,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Today's Panchang, Festivals and Events are now navigation destinations** rather than state inside
+  the Home screen. Visibly, one thing changes: each showed its title twice — once in the app bar and
+  once again above the content — and now shows it once.
+
+  The rest is debt. Because these were screen state rather than routes, everything the back stack
+  normally provides had to be re-implemented: the app bar could not tell which one was open, so the
+  title was passed up out of the screen; the app-level back handler had to be *disabled* on Home so a
+  second one inside the screen could take over; the bottom Home tab could not return to the hub,
+  because navigating to a route you are already on does nothing, so a counter was passed down for the
+  screen to observe; and each view drew its own back arrow, which is where the doubled title came
+  from. Four workarounds, one cause. All four are gone, along with a latent bug where a restored
+  sub-view was silently reset to the hub after process death.
+
+  `feature/muhurat` already did this correctly, and ADR 0013 always specified Panchang as a
+  destination. The ADR has been amended to record what actually shipped — four bottom tabs, not the
+  five it proposed — and the rule worth keeping: a drill-down is a route. Peer sections that are
+  swipe-connected and simultaneously visible, like the Kundali tabs, are correctly screen state; the
+  test is whether you reach it by tapping *into* it and leave it with back.
+
 ### Fixed
 
 - **The Events list dropped any observance that shared its day with a named festival.** Raksha
