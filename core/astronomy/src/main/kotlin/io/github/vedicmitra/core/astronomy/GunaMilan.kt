@@ -134,7 +134,7 @@ private fun bhakootCancelled(
     val lg = RASI_LORD[groom.moonRasiIndex]
     val lb = RASI_LORD[bride.moonRasiIndex]
     if (lg == lb) return true
-    return relationOf(lg, lb) == Relation.FRIEND && relationOf(lb, lg) == Relation.FRIEND
+    return naturalRelation(lg, lb) == Dignity.FRIEND && naturalRelation(lb, lg) == Dignity.FRIEND
 }
 
 /**
@@ -373,56 +373,6 @@ private fun yoniKoota(
 
 // ---- Graha Maitri (max 5): friendship of the Moon-sign lords.
 
-private enum class Relation { FRIEND, NEUTRAL, ENEMY }
-
-internal val RASI_LORD =
-    listOf(
-        Graha.MANGALA,
-        Graha.SHUKRA,
-        Graha.BUDHA,
-        Graha.MOON,
-        Graha.SUN,
-        Graha.BUDHA,
-        Graha.SHUKRA,
-        Graha.MANGALA,
-        Graha.GURU,
-        Graha.SHANI,
-        Graha.SHANI,
-        Graha.GURU,
-    )
-
-private val PLANET_FRIENDS =
-    mapOf(
-        Graha.SUN to setOf(Graha.MOON, Graha.MANGALA, Graha.GURU),
-        Graha.MOON to setOf(Graha.SUN, Graha.BUDHA),
-        Graha.MANGALA to setOf(Graha.SUN, Graha.MOON, Graha.GURU),
-        Graha.BUDHA to setOf(Graha.SUN, Graha.SHUKRA),
-        Graha.GURU to setOf(Graha.SUN, Graha.MOON, Graha.MANGALA),
-        Graha.SHUKRA to setOf(Graha.BUDHA, Graha.SHANI),
-        Graha.SHANI to setOf(Graha.BUDHA, Graha.SHUKRA),
-    )
-
-private val PLANET_ENEMIES =
-    mapOf(
-        Graha.SUN to setOf(Graha.SHUKRA, Graha.SHANI),
-        Graha.MOON to emptySet(),
-        Graha.MANGALA to setOf(Graha.BUDHA),
-        Graha.BUDHA to setOf(Graha.MOON),
-        Graha.GURU to setOf(Graha.BUDHA, Graha.SHUKRA),
-        Graha.SHUKRA to setOf(Graha.SUN, Graha.MOON),
-        Graha.SHANI to setOf(Graha.SUN, Graha.MOON, Graha.MANGALA),
-    )
-
-private fun relationOf(
-    of: Graha,
-    to: Graha,
-): Relation =
-    when (to) {
-        in PLANET_FRIENDS.getValue(of) -> Relation.FRIEND
-        in PLANET_ENEMIES.getValue(of) -> Relation.ENEMY
-        else -> Relation.NEUTRAL
-    }
-
 private fun grahaMaitriKoota(
     groom: GunaMilanProfile,
     bride: GunaMilanProfile,
@@ -433,17 +383,17 @@ private fun grahaMaitriKoota(
         if (lg == lb) {
             5.0
         } else {
-            pointsForRelations(relationOf(lg, lb), relationOf(lb, lg))
+            pointsForRelations(naturalRelation(lg, lb), naturalRelation(lb, lg))
         }
     return KootaScore(Koota.GRAHA_MAITRI, points, "Sign lords ${lg.displayName} & ${lb.displayName}")
 }
 
 private fun pointsForRelations(
-    a: Relation,
-    b: Relation,
+    a: Dignity,
+    b: Dignity,
 ): Double {
-    val friends = listOf(a, b).count { it == Relation.FRIEND }
-    val enemies = listOf(a, b).count { it == Relation.ENEMY }
+    val friends = listOf(a, b).count { it == Dignity.FRIEND }
+    val enemies = listOf(a, b).count { it == Dignity.ENEMY }
     return when {
         friends == 2 -> 5.0
         friends == 1 && enemies == 0 -> 4.0

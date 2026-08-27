@@ -100,9 +100,8 @@ private fun panchamahapurusha(
     PANCHAMAHAPURUSHA.mapNotNull { (graha, name) ->
         val placement = byGraha.getValue(graha)
         val house = ((placement.rasi.index - lagnaRasiIndex + RASHI_COUNT) % RASHI_COUNT) + 1
-        val ownSign = RASI_LORD[placement.rasi.index] == graha
-        val exalted = EXALTATION[graha] == placement.rasi.index
-        if (house in KENDRA && (ownSign || exalted)) {
+        val exalted = dignityOf(graha, placement.rasi.index) == Dignity.EXALTED
+        if (house in KENDRA && isStrongByPlace(graha, placement.rasi.index)) {
             ChartYoga(
                 name = name,
                 rule =
@@ -132,18 +131,6 @@ internal fun ordinal(house: Int): String =
 
 private const val RASHI_COUNT = 12
 private val KENDRA = setOf(1, 4, 7, 10)
-
-/** Exaltation rashi index per graha, classical. */
-private val EXALTATION =
-    mapOf(
-        Graha.SUN to 0,
-        Graha.MOON to 1,
-        Graha.MANGALA to 9,
-        Graha.BUDHA to 5,
-        Graha.GURU to 3,
-        Graha.SHUKRA to 11,
-        Graha.SHANI to 6,
-    )
 
 private val PANCHAMAHAPURUSHA =
     listOf(

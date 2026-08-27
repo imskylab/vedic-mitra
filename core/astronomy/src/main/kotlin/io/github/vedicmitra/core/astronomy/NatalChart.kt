@@ -128,6 +128,13 @@ data class NatalGraha(
     /** Its sign in the navamsha (D9) division — the varga a reader asks for by name. */
     val navamsha: Rasi get() = varga(Varga.D9)
 
+    /**
+     * How well it sits in [rasi] — exalted, own, friendly, neutral, hostile or debilitated.
+     *
+     * `null` for Rahu and Ketu, which have no dignity to report; see [dignityOf].
+     */
+    val dignity: Dignity? get() = dignityOf(graha, rasi.index)
+
     /** Its sign in any supported divisional chart. */
     fun varga(varga: Varga): Rasi = vargaSign(varga, siderealLongitude)
 }
