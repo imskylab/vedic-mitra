@@ -66,6 +66,8 @@ import io.github.vedicmitra.core.astronomy.NatalGraha
 import io.github.vedicmitra.core.astronomy.RASHI_NAMES
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Varga
+import io.github.vedicmitra.core.astronomy.gandaMoolaDoshaOf
+import io.github.vedicmitra.core.astronomy.kalaSarpaDoshaOf
 import io.github.vedicmitra.core.astronomy.mangalDoshaOf
 import io.github.vedicmitra.core.astronomy.vargaChart
 import io.github.vedicmitra.core.designsystem.component.TableColumn
@@ -366,7 +368,18 @@ private fun YogasPage(
 ) {
     val yogas = chart.yogas
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Doshas first, and labelled: they are what a reader comes to this page to check, and with
+        // three of them the yoga list below needs a heading to separate it from.
+        Text(text = "Doshas", style = MaterialTheme.typography.titleSmall)
         MangalDoshaCard(dosha = mangalDoshaOf(chart))
+        listOf(kalaSarpaDoshaOf(chart), gandaMoolaDoshaOf(chart)).forEach { dosha ->
+            InfoCard(
+                label = if (dosha.present) "${dosha.name} — present" else "${dosha.name} — clear",
+                value = dosha.rule,
+                detail = dosha.summary,
+            )
+        }
+        Text(text = "Yogas", style = MaterialTheme.typography.titleSmall)
         if (yogas.isEmpty()) {
             Text(
                 text = "None of the combinations this app checks for are present in this chart.",

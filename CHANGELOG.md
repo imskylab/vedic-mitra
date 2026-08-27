@@ -9,6 +9,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Kala Sarpa and Ganda Moola doshas**, on the Kundali Yogas page beside Mangal, under a Doshas
+  heading. Both rules were derived from an independent implementation before any Kotlin was written,
+  and one of them came out different from the textbook.
+
+  **Kala Sarpa is whole-sign, not by longitude.** Every statement of the rule says the seven grahas
+  must fall *between* Rahu and Ketu, which reads as a comparison of longitudes. Tested over 56
+  charts, 18 of them carrying the dosha: the longitude rule was wrong on **every single positive**,
+  and whole-sign agreed on all 56. A graha in the same *sign* as a node counts as inside the arc even
+  when its longitude has passed it — on one sampled chart both the Moon and Saturn sat a degree or
+  two past Ketu and the dosha still stood. Implementing the remembered rule would have produced false
+  negatives on exactly the charts the feature exists to catch, and silently, this being an uncommon
+  dosha. Whole-sign is also what the app already uses for houses and for drishti, so the rule that
+  turned out to be right is the one consistent with everything else.
+
+  All twelve named types — Ananta through Sheshanaga — are read from Rahu's house and were each
+  confirmed, by holding one chart's date fixed and sweeping the birth time, which turns the lagna
+  through every house in a day.
+
+  **Ganda Moola** fires for a Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati. Confirmed
+  by sweeping the Moon through a full lunar month, 26 of the 27 nakshatras covered, with no
+  nakshatra appearing on both sides — so the pada does not affect it. The six are written in the code
+  as the three *pairs* straddling a rashi seam (Revati→Ashwini, Ashlesha→Magha, Jyeshtha→Mula),
+  because a flat list of six loses the reason there are six.
+
+  Both report their working whether or not they stand: which grahas fell outside the arc, or which
+  nakshatra the Moon is actually in. A verdict a reader cannot check is worth little.
+
+
 - **A dignity column on Spashta Graha** — exalted, own sign, friend's, neutral, enemy's, or
   debilitated, for each of the seven grahas. It is the oldest statement of planetary strength and
   the thing every other placement is read against: the same Mars means one thing in Makara, where it
