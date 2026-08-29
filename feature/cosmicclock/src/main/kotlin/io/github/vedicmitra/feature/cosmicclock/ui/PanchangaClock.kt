@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.Dp
 import io.github.vedicmitra.feature.cosmicclock.domain.ClockRing
 import io.github.vedicmitra.feature.cosmicclock.domain.PanchangaClockModel
@@ -41,6 +43,9 @@ import kotlin.math.min
  *
  * @param progress each ring's fill, parallel to `model.rings`. Passed in rather than read from the
  *   model so the caller owns the animation, including the unwrap across a rollover.
+ * @param spokenDescription the whole face as one sentence, for TalkBack. The Canvas is invisible to
+ *   a screen reader and the hub's text is cleared along with it, because this already says what the
+ *   hub says — hearing it twice would be worse than hearing it once.
  * @param hub what to show in the middle. A slot rather than a parameter so this file stays about
  *   drawing: text in a `Canvas` would mean measuring glyphs by hand, and the hub is ordinary
  *   Compose text that should scale, wrap and be readable by TalkBack like any other.
@@ -51,6 +56,7 @@ fun PanchangaClock(
     progress: List<Float>,
     colors: ClockColors,
     modifier: Modifier = Modifier,
+    spokenDescription: String = "",
     onSelectRing: (ClockRing) -> Unit = {},
     hub: @Composable (maxWidth: Dp) -> Unit = {},
 ) {
@@ -72,7 +78,7 @@ fun PanchangaClock(
                                 ringCount = model.rings.size,
                             )?.let { onSelectRing(model.rings[it]) }
                     }
-                },
+                }.clearAndSetSemantics { contentDescription = spokenDescription },
         contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
