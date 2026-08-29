@@ -22,7 +22,19 @@ object PanchangaGlossary {
     private const val SANKRANTI_SUFFIX = " Sankranti"
 
     /** The significance blurb for the item shown as [name], or `null` if none is known. */
-    fun significanceOf(name: String): String? = ENTRIES[name] ?: sankrantiSignificanceOf(name)
+    fun significanceOf(name: String): String? =
+        ENTRIES[name] ?: ENTRIES[name.withoutOrdinalSuffix()] ?: sankrantiSignificanceOf(name)
+
+    /**
+     * `"Dur Muhurta 2"` → `"Dur Muhurta"`.
+     *
+     * A window that occurs twice in a day is displayed numbered, so the display name stops matching
+     * the entry. Saturday is the only weekday with two Dur Muhurtas, and on Saturdays both rows were
+     * falling through to the caller's "no significance known" fallback.
+     */
+    private fun String.withoutOrdinalSuffix(): String = ORDINAL_SUFFIX.replace(this, "")
+
+    private val ORDINAL_SUFFIX = Regex(" \\d+$")
 
     private fun sankrantiSignificanceOf(name: String): String? =
         when {
