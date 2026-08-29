@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -114,6 +115,7 @@ import kotlin.time.Instant
 fun HomeScreen(
     onNavigateToLocation: () -> Unit,
     onOpenPanchang: () -> Unit,
+    onOpenCosmicClock: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onOpenCalendar: () -> Unit,
@@ -150,6 +152,7 @@ fun HomeScreen(
         uiState = uiState,
         onNavigateToLocation = onNavigateToLocation,
         onOpenPanchang = onOpenPanchang,
+        onOpenCosmicClock = onOpenCosmicClock,
         onOpenFestivals = onOpenFestivals,
         onOpenEvents = onOpenEvents,
         onOpenCalendar = onOpenCalendar,
@@ -262,6 +265,7 @@ private fun HomeContent(
     uiState: HomeUiState,
     onNavigateToLocation: () -> Unit,
     onOpenPanchang: () -> Unit,
+    onOpenCosmicClock: () -> Unit,
     onOpenFestivals: () -> Unit,
     onOpenEvents: () -> Unit,
     onOpenCalendar: () -> Unit,
@@ -282,6 +286,8 @@ private fun HomeContent(
             snapshot = checkNotNull(uiState.snapshot),
             onNavigateToLocation = onNavigateToLocation,
             onOpenPanchang = onOpenPanchang,
+            onOpenCosmicClock = onOpenCosmicClock,
+            onOpenCosmicClock = onOpenCosmicClock,
             onOpenCalendar = onOpenCalendar,
             onOpenReminders = onOpenReminders,
             onOpenKundali = onOpenKundali,
@@ -308,6 +314,7 @@ private fun HubView(
     snapshot: AstronomySnapshot,
     onNavigateToLocation: () -> Unit,
     onOpenPanchang: () -> Unit,
+    onOpenCosmicClock: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
@@ -340,6 +347,8 @@ private fun HubView(
         }
         ShortcutGrid(
             onOpenPanchang = onOpenPanchang,
+            onOpenCosmicClock = onOpenCosmicClock,
+            onOpenCosmicClock = onOpenCosmicClock,
             onOpenCalendar = onOpenCalendar,
             onOpenReminders = onOpenReminders,
             onOpenKundali = onOpenKundali,
@@ -380,6 +389,7 @@ private fun CopyrightFooter() {
 @Composable
 private fun ShortcutGrid(
     onOpenPanchang: () -> Unit,
+    onOpenCosmicClock: () -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenReminders: () -> Unit,
     onOpenKundali: () -> Unit,
@@ -400,6 +410,14 @@ private fun ShortcutGrid(
             { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenFestivals) },
             { GlyphTile("Events", VedicIcons.events, HubCategory.DAILY, onClick = onOpenEvents) },
             { VectorTile("Reminders", Icons.Filled.Notifications, HubCategory.DAILY, onClick = onOpenReminders) },
+            {
+                VectorTile(
+                    label = "Cosmic Clock",
+                    icon = Icons.Filled.Schedule,
+                    category = HubCategory.DAILY,
+                    onClick = onOpenCosmicClock,
+                )
+            },
             { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
             { GlyphTile("Rashifal", VedicIcons.rashifal, HubCategory.ASTROLOGY, onClick = onOpenRashifal) },
             { GlyphTile("Match", VedicIcons.matchmaking, HubCategory.ASTROLOGY, onClick = onOpenMatch) },
@@ -1015,6 +1033,7 @@ private fun HomeContentPreview() {
             uiState = sampleHomeState(),
             onNavigateToLocation = {},
             onOpenPanchang = {},
+            onOpenCosmicClock = {},
             onOpenFestivals = {},
             onOpenEvents = {},
             onOpenCalendar = {},

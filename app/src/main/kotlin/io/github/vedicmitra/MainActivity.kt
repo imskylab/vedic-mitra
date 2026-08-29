@@ -75,6 +75,7 @@ import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
+import io.github.vedicmitra.feature.cosmicclock.CosmicClockScreen
 import io.github.vedicmitra.feature.home.EventsScreen
 import io.github.vedicmitra.feature.home.FestivalsScreen
 import io.github.vedicmitra.feature.home.HomeScreen
@@ -160,6 +161,7 @@ internal val DESTINATION_LABELS: Map<String, String> =
         ADD_COORDINATES_ROUTE to "Add coordinates",
         PROFILE_EDIT_ROUTE to "Birth profile",
         PANCHANG_ROUTE to "Today's Panchang",
+        COSMIC_CLOCK_ROUTE to "Cosmic Clock",
         FESTIVALS_ROUTE to "Festivals",
         EVENTS_ROUTE to "Events",
         CALENDAR_ROUTE to "Panchang calendar",
@@ -208,6 +210,7 @@ private val NAV_ICON_SIZE = 24.dp
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
 // tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
 internal const val PANCHANG_ROUTE = "panchang"
+internal const val COSMIC_CLOCK_ROUTE = "cosmic-clock"
 internal const val FESTIVALS_ROUTE = "festivals"
 internal const val EVENTS_ROUTE = "events"
 internal const val CALENDAR_ROUTE = "calendar"
@@ -402,6 +405,7 @@ private fun AppNavHost(
             HomeScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
                 onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
+                onOpenCosmicClock = { navController.navigate(COSMIC_CLOCK_ROUTE) },
                 onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
                 onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
                 onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
@@ -482,6 +486,7 @@ private fun AppNavHost(
  */
 private fun NavGraphBuilder.homeDestinations() {
     composable(PANCHANG_ROUTE) { PanchangScreen() }
+    composable(COSMIC_CLOCK_ROUTE) { CosmicClockScreen() }
     composable(FESTIVALS_ROUTE) { FestivalsScreen() }
     composable(EVENTS_ROUTE) { EventsScreen() }
 }
