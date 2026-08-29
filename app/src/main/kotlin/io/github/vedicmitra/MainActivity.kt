@@ -105,7 +105,7 @@ import io.github.vedicmitra.feature.stotra.StotraScreen
  * the ornate brand glyphs for signature features. Support is the exception: giving away money is a
  * cultural act (daana), so it carries the brand glyph.
  */
-private enum class TopDestination(
+internal enum class TopDestination(
     val route: String,
     val label: String,
     val icon: ImageVector? = null,
@@ -143,12 +143,12 @@ private fun AppBarTitle(subtitle: String?) {
  * Routes carrying arguments arrive here as their declared pattern — `profile/edit?profileId={…}`,
  * `muhurat/day/{activity}/{day}` — so the argument part is trimmed before the lookup.
  */
-private fun subtitleOf(route: String?): String? {
+internal fun subtitleOf(route: String?): String? {
     val base = route?.substringBefore('?')?.substringBefore("/{") ?: return null
     return DESTINATION_LABELS[base]
 }
 
-private val DESTINATION_LABELS: Map<String, String> =
+internal val DESTINATION_LABELS: Map<String, String> =
     mapOf(
         TopDestination.HOME.route to TopDestination.HOME.label,
         TopDestination.SETTINGS.route to TopDestination.SETTINGS.label,
@@ -207,30 +207,30 @@ private val NAV_ICON_SIZE = 24.dp
 
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
 // tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
-private const val PANCHANG_ROUTE = "panchang"
-private const val FESTIVALS_ROUTE = "festivals"
-private const val EVENTS_ROUTE = "events"
-private const val CALENDAR_ROUTE = "calendar"
-private const val ALARM_ROUTE = "alarm"
-private const val KUNDALI_ROUTE = "kundali"
-private const val MATCHMAKING_ROUTE = "matchmaking"
-private const val RASHIFAL_ROUTE = "rashifal"
-private const val JAPA_ROUTE = "japa"
-private const val MEDITATION_ROUTE = "meditation"
-private const val STOTRA_ROUTE = "stotra"
-private const val LOCATION_ROUTE = "settings/location"
-private const val ADD_CITY_ROUTE = "settings/location/add-city"
-private const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
-private const val PROFILE_EDIT_ROUTE = "profile/edit"
-private const val PROFILE_ID_ARG = "profileId"
-private const val MUHURAT_ROUTE = "muhurat"
-private const val MUHURAT_ACTIVITIES_ROUTE = "muhurat/activities"
-private const val MUHURAT_RESULTS_ROUTE = "muhurat/results"
-private const val MUHURAT_DAY_ROUTE = "muhurat/day"
-private const val MUHURAT_CATEGORY_ARG = "category"
-private const val MUHURAT_ACTIVITY_ARG = "activity"
-private const val MUHURAT_DAY_ARG = "day"
-private const val ABOUT_ROUTE = "settings/about"
+internal const val PANCHANG_ROUTE = "panchang"
+internal const val FESTIVALS_ROUTE = "festivals"
+internal const val EVENTS_ROUTE = "events"
+internal const val CALENDAR_ROUTE = "calendar"
+internal const val ALARM_ROUTE = "alarm"
+internal const val KUNDALI_ROUTE = "kundali"
+internal const val MATCHMAKING_ROUTE = "matchmaking"
+internal const val RASHIFAL_ROUTE = "rashifal"
+internal const val JAPA_ROUTE = "japa"
+internal const val MEDITATION_ROUTE = "meditation"
+internal const val STOTRA_ROUTE = "stotra"
+internal const val LOCATION_ROUTE = "settings/location"
+internal const val ADD_CITY_ROUTE = "settings/location/add-city"
+internal const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
+internal const val PROFILE_EDIT_ROUTE = "profile/edit"
+internal const val PROFILE_ID_ARG = "profileId"
+internal const val MUHURAT_ROUTE = "muhurat"
+internal const val MUHURAT_ACTIVITIES_ROUTE = "muhurat/activities"
+internal const val MUHURAT_RESULTS_ROUTE = "muhurat/results"
+internal const val MUHURAT_DAY_ROUTE = "muhurat/day"
+internal const val MUHURAT_CATEGORY_ARG = "category"
+internal const val MUHURAT_ACTIVITY_ARG = "activity"
+internal const val MUHURAT_DAY_ARG = "day"
+internal const val ABOUT_ROUTE = "settings/about"
 
 /**
  * Single-activity host. Applies the user's persisted theme to the whole UI and hosts the
