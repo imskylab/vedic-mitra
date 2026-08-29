@@ -68,4 +68,24 @@ class PanchangaGlossaryTest {
     fun `an unknown name has no blurb`() {
         assertThat(PanchangaGlossary.significanceOf("Not A Panchanga Thing")).isNull()
     }
+
+    @Test
+    fun `a numbered window falls back to its unnumbered entry`() {
+        // MuhurtaCalculator names a window "Dur Muhurta 1" / "Dur Muhurta 2" when a weekday has two
+        // of them. Saturday is the only such weekday, and on Saturdays both rows were showing the
+        // caller's "no significance known" fallback rather than the blurb, because the display name
+        // no longer matched the key. [surfacedNames] could not catch it: it lists the unnumbered
+        // name, which always resolved.
+        val plain = PanchangaGlossary.significanceOf("Dur Muhurta")
+        assertThat(plain).isNotNull()
+        assertThat(PanchangaGlossary.significanceOf("Dur Muhurta 1")).isEqualTo(plain)
+        assertThat(PanchangaGlossary.significanceOf("Dur Muhurta 2")).isEqualTo(plain)
+    }
+
+    @Test
+    fun `stripping a trailing number does not invent entries`() {
+        // The fallback must rescue a real entry, never manufacture one for a name that has none.
+        assertThat(PanchangaGlossary.significanceOf("Not A Panchanga Thing 2")).isNull()
+        assertThat(PanchangaGlossary.significanceOf("12")).isNull()
+    }
 }
