@@ -12,10 +12,11 @@ package io.github.vedicmitra.feature.cosmicclock.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import io.github.vedicmitra.feature.cosmicclock.domain.ClockRing
 import io.github.vedicmitra.feature.cosmicclock.domain.PanchangaClockModel
 import io.github.vedicmitra.feature.cosmicclock.domain.RingGeometry
@@ -39,6 +41,9 @@ import kotlin.math.min
  *
  * @param progress each ring's fill, parallel to `model.rings`. Passed in rather than read from the
  *   model so the caller owns the animation, including the unwrap across a rollover.
+ * @param hub what to show in the middle. A slot rather than a parameter so this file stays about
+ *   drawing: text in a `Canvas` would mean measuring glyphs by hand, and the hub is ordinary
+ *   Compose text that should scale, wrap and be readable by TalkBack like any other.
  */
 @Composable
 fun PanchangaClock(
@@ -47,8 +52,9 @@ fun PanchangaClock(
     colors: ClockColors,
     modifier: Modifier = Modifier,
     onSelectRing: (ClockRing) -> Unit = {},
+    hub: @Composable (maxWidth: Dp) -> Unit = {},
 ) {
-    Box(
+    BoxWithConstraints(
         modifier =
             modifier
                 .aspectRatio(1f)
@@ -67,10 +73,12 @@ fun PanchangaClock(
                             )?.let { onSelectRing(model.rings[it]) }
                     }
                 },
+        contentAlignment = Alignment.Center,
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawActiveArcs(model, progress, colors)
         }
+        hub(maxWidth * HUB_TEXT_WIDTH_FRACTION)
     }
 }
 

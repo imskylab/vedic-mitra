@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.cosmicclock.domain.PanchangaClockModel
+import io.github.vedicmitra.feature.cosmicclock.domain.summaryAt
 
 /**
  * The clock's states, for eyes rather than assertions.
@@ -52,6 +53,11 @@ private fun PanchangaClockRollingOverPreview() = Framed(ClockPreviewData.aboutTo
 @Composable
 private fun PanchangaClockPolarPreview() = Framed(ClockPreviewData.polar())
 
+/** A preview at 200% font, where the hub is tightest -- three lines in a circle of about 95dp. */
+@Preview(name = "Clock — large font", showBackground = true, fontScale = 2f)
+@Composable
+private fun PanchangaClockLargeFontPreview() = Framed(ClockPreviewData.typical())
+
 @Composable
 private fun Framed(model: PanchangaClockModel) {
     VedicMitraTheme {
@@ -63,6 +69,10 @@ private fun Framed(model: PanchangaClockModel) {
                 Modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(16.dp),
-        )
+        ) { hubWidth ->
+            model.summaryAt(model.at)?.let { summary ->
+                ClockHub(summary = summary, maxWidth = hubWidth, endsAtLabel = "ends 15:42")
+            }
+        }
     }
 }
