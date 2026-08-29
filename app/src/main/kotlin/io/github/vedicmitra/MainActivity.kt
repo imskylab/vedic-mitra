@@ -401,25 +401,7 @@ private fun AppNavHost(
         startDestination = TopDestination.HOME.route,
         modifier = modifier,
     ) {
-        composable(TopDestination.HOME.route) {
-            HomeScreen(
-                onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
-                onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
-                onOpenCosmicClock = { navController.navigate(COSMIC_CLOCK_ROUTE) },
-                onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
-                onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
-                onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
-                onOpenReminders = { navController.navigate(ALARM_ROUTE) },
-                onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
-                onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
-                onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
-                onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
-                onOpenJapa = { navController.navigate(JAPA_ROUTE) },
-                onOpenMeditate = { navController.navigate(MEDITATION_ROUTE) },
-                onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
-            )
-        }
-        homeDestinations()
+        homeDestination(navController)
         composable(TopDestination.SETTINGS.route) {
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
@@ -473,6 +455,34 @@ private fun AppNavHost(
         composable(MEDITATION_ROUTE) { MeditationScreen() }
         composable(STOTRA_ROUTE) { StotraScreen() }
         muhuratDestinations(navController)
+    }
+}
+
+/**
+ * The Home hub itself.
+ *
+ * Extracted because every tile Home gains adds a line here, and [AppNavHost] sits against detekt's
+ * eighty-line limit — the Cosmic Clock tile was the line that crossed it. Grouping the hub's wiring
+ * means the next feature costs a line in a function that has room, rather than another refactor.
+ */
+private fun NavGraphBuilder.homeDestination(navController: NavHostController) {
+    composable(TopDestination.HOME.route) {
+        HomeScreen(
+            onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+            onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
+            onOpenCosmicClock = { navController.navigate(COSMIC_CLOCK_ROUTE) },
+            onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
+            onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
+            onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
+            onOpenReminders = { navController.navigate(ALARM_ROUTE) },
+            onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
+            onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
+            onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
+            onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
+            onOpenJapa = { navController.navigate(JAPA_ROUTE) },
+            onOpenMeditate = { navController.navigate(MEDITATION_ROUTE) },
+            onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
+        )
     }
 }
 
