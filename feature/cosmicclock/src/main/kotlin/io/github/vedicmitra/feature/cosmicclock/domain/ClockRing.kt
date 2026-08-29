@@ -67,8 +67,12 @@ data class ClockRing(
  * The current pada, drawn *inside* the active nakshatra segment rather than as a ring of its own.
  *
  * A pada ring would carry 108 divisions — the least legible thing on the face, for a subdivision
- * most readers never ask about directly. Nesting it puts the detail exactly where the eye already
- * is, and costs no radius.
+ * most readers never ask about directly.
+ *
+ * **Nesting it inside the active nakshatra arc was tried and does not work either.** That arc spans
+ * 13.3°, so a quarter of it is 3.3° — about five density-independent pixels at a 160dp radius, which
+ * is not four distinguishable things. It is carried here for the limb list and the hub, which have
+ * room to name it, and the clock face does not draw it at all.
  *
  * @property index which quarter of the nakshatra, 0-based.
  * @property window when this pada began and ends.
