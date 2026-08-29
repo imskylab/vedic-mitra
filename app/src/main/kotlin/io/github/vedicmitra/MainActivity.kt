@@ -75,6 +75,7 @@ import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
+import io.github.vedicmitra.feature.cosmicclock.CosmicClockScreen
 import io.github.vedicmitra.feature.home.EventsScreen
 import io.github.vedicmitra.feature.home.FestivalsScreen
 import io.github.vedicmitra.feature.home.HomeScreen
@@ -160,6 +161,7 @@ internal val DESTINATION_LABELS: Map<String, String> =
         ADD_COORDINATES_ROUTE to "Add coordinates",
         PROFILE_EDIT_ROUTE to "Birth profile",
         PANCHANG_ROUTE to "Today's Panchang",
+        COSMIC_CLOCK_ROUTE to "Cosmic Clock",
         FESTIVALS_ROUTE to "Festivals",
         EVENTS_ROUTE to "Events",
         CALENDAR_ROUTE to "Panchang calendar",
@@ -208,6 +210,7 @@ private val NAV_ICON_SIZE = 24.dp
 // Sub-routes pushed on top of a tab; reached from the Home hub tiles or Settings. They are not
 // tabs (no bottom-bar entry), so they're returned from via the top-bar back button or system back.
 internal const val PANCHANG_ROUTE = "panchang"
+internal const val COSMIC_CLOCK_ROUTE = "cosmic-clock"
 internal const val FESTIVALS_ROUTE = "festivals"
 internal const val EVENTS_ROUTE = "events"
 internal const val CALENDAR_ROUTE = "calendar"
@@ -398,24 +401,8 @@ private fun AppNavHost(
         startDestination = TopDestination.HOME.route,
         modifier = modifier,
     ) {
-        composable(TopDestination.HOME.route) {
-            HomeScreen(
-                onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
-                onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
-                onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
-                onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
-                onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
-                onOpenReminders = { navController.navigate(ALARM_ROUTE) },
-                onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
-                onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
-                onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
-                onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
-                onOpenJapa = { navController.navigate(JAPA_ROUTE) },
-                onOpenMeditate = { navController.navigate(MEDITATION_ROUTE) },
-                onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
-            )
-        }
-        homeDestinations()
+        homeHubDestination(navController)
+        homeDetailDestinations()
         composable(TopDestination.SETTINGS.route) {
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
@@ -473,6 +460,34 @@ private fun AppNavHost(
 }
 
 /**
+ * The Home hub itself.
+ *
+ * Extracted because every tile Home gains adds a line here, and [AppNavHost] sits against detekt's
+ * eighty-line limit — the Cosmic Clock tile was the line that crossed it. Grouping the hub's wiring
+ * means the next feature costs a line in a function that has room, rather than another refactor.
+ */
+private fun NavGraphBuilder.homeHubDestination(navController: NavHostController) {
+    composable(TopDestination.HOME.route) {
+        HomeScreen(
+            onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
+            onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
+            onOpenCosmicClock = { navController.navigate(COSMIC_CLOCK_ROUTE) },
+            onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
+            onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
+            onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
+            onOpenReminders = { navController.navigate(ALARM_ROUTE) },
+            onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
+            onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
+            onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
+            onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
+            onOpenJapa = { navController.navigate(JAPA_ROUTE) },
+            onOpenMeditate = { navController.navigate(MEDITATION_ROUTE) },
+            onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
+        )
+    }
+}
+
+/**
  * The three screens reached from the Home hub's own content: the full daily panchanga, and the two
  * upcoming lists. Grouped here rather than inline so [AppNavHost] stays readable, the same reason
  * [muhuratDestinations] is separate.
@@ -480,8 +495,9 @@ private fun AppNavHost(
  * Each takes no arguments and navigates nowhere, so unlike the muhurat flow none of them needs the
  * NavHostController.
  */
-private fun NavGraphBuilder.homeDestinations() {
+private fun NavGraphBuilder.homeDetailDestinations() {
     composable(PANCHANG_ROUTE) { PanchangScreen() }
+    composable(COSMIC_CLOCK_ROUTE) { CosmicClockScreen() }
     composable(FESTIVALS_ROUTE) { FestivalsScreen() }
     composable(EVENTS_ROUTE) { EventsScreen() }
 }
