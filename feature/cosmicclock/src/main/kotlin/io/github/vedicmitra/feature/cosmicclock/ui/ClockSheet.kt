@@ -46,7 +46,7 @@ fun ClockSheet(
     val primer = PanchangaPrimer.of(ring.concept)
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, bottom = 32.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(text = primer.title, style = MaterialTheme.typography.headlineSmall)

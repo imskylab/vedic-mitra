@@ -36,7 +36,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -287,7 +287,6 @@ private fun HomeContent(
             onNavigateToLocation = onNavigateToLocation,
             onOpenPanchang = onOpenPanchang,
             onOpenCosmicClock = onOpenCosmicClock,
-            onOpenCosmicClock = onOpenCosmicClock,
             onOpenCalendar = onOpenCalendar,
             onOpenReminders = onOpenReminders,
             onOpenKundali = onOpenKundali,
@@ -347,7 +346,6 @@ private fun HubView(
         }
         ShortcutGrid(
             onOpenPanchang = onOpenPanchang,
-            onOpenCosmicClock = onOpenCosmicClock,
             onOpenCosmicClock = onOpenCosmicClock,
             onOpenCalendar = onOpenCalendar,
             onOpenReminders = onOpenReminders,
@@ -413,7 +411,7 @@ private fun ShortcutGrid(
             {
                 VectorTile(
                     label = "Cosmic Clock",
-                    icon = Icons.Filled.Schedule,
+                    icon = Icons.Filled.DateRange,
                     category = HubCategory.DAILY,
                     onClick = onOpenCosmicClock,
                 )
