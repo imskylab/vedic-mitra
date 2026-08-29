@@ -401,7 +401,8 @@ private fun AppNavHost(
         startDestination = TopDestination.HOME.route,
         modifier = modifier,
     ) {
-        homeDestination(navController)
+        homeHubDestination(navController)
+        homeDetailDestinations()
         composable(TopDestination.SETTINGS.route) {
             SettingsScreen(
                 onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
@@ -465,7 +466,7 @@ private fun AppNavHost(
  * eighty-line limit — the Cosmic Clock tile was the line that crossed it. Grouping the hub's wiring
  * means the next feature costs a line in a function that has room, rather than another refactor.
  */
-private fun NavGraphBuilder.homeDestination(navController: NavHostController) {
+private fun NavGraphBuilder.homeHubDestination(navController: NavHostController) {
     composable(TopDestination.HOME.route) {
         HomeScreen(
             onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
@@ -494,7 +495,7 @@ private fun NavGraphBuilder.homeDestination(navController: NavHostController) {
  * Each takes no arguments and navigates nowhere, so unlike the muhurat flow none of them needs the
  * NavHostController.
  */
-private fun NavGraphBuilder.homeDestinations() {
+private fun NavGraphBuilder.homeDetailDestinations() {
     composable(PANCHANG_ROUTE) { PanchangScreen() }
     composable(COSMIC_CLOCK_ROUTE) { CosmicClockScreen() }
     composable(FESTIVALS_ROUTE) { FestivalsScreen() }
