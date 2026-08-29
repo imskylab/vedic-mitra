@@ -9,6 +9,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Cosmic Clock** — a new screen showing the five limbs of the panchanga as concentric rings, each a
+  whole cycle with the current division picked out and filling as it progresses. Reached from a tile
+  on the Home grid.
+
+  It is a *family* of clock faces rather than one dial, and this is the first: the Panchanga clock.
+  Every ring on a face means the same thing — position within that limb's cycle — which is what lets
+  five sit together without the angle changing meaning between them. The day's windows (Rahu Kalam,
+  Abhijit and the rest) will get their own face, where the angle means time of day.
+
+  Rings run karana (60 divisions) outermost through vara (7) innermost, ordered by segment count
+  rather than by the order a panchanga is recited. Arc per segment is `2πr / n`, so tick spacing only
+  stays even across five rings if radius grows with count; recitation order would have crammed sixty
+  karana ticks onto the smallest ring.
+
+  Beneath the face, the same five limbs appear as rows with their exact times and countdowns. That is
+  not a fallback — a Canvas is invisible to a screen reader, five rings leave about 19dp of radius
+  each so a ring tap is approximate, and for exact times most people would rather read than squint.
+  The face itself is announced as one sentence rather than two dozen fragments.
+
+  **The engine needed no changes.** `PanchangaLimbWindows` already carried a window and progress
+  fraction for exactly the six values drawn, and `angularFraction` — documented in its own KDoc as
+  "the right input for a progress arc" — had been computed and unused by every screen since it was
+  written.
+
+  Two things this face deliberately does not do. It is a **slow** clock: four of its five rings turn
+  over in about a day, and the motion is the arcs filling rather than anything racing. And it does
+  not show pada — nesting four padas inside the active nakshatra arc works out at about five pixels
+  each, so pada is named in the list, the hub and the spoken summary instead. See
+  [ADR 0015](docs/adr/0015-cosmic-clock.md).
+
+- **Plain-language explanations of the panchanga itself.** `PanchangaPrimer` covers the five limbs
+  plus paksha, pada, the lunar month, the moon phase, and why the day begins at sunrise — eleven
+  ideas the app previously could not explain at all. Tapping a limb used to produce "More details
+  coming soon."
+
+  Each carries a one-liner shown *without* tapping, since clarity that only arrives on tap is clarity
+  most readers never get. Concepts are keyed by an enum rather than a string and looked up over a
+  complete map, so **adding one without writing its copy fails the build** — explanatory text is what
+  gets cut when time runs short, and now something enforces it.
+
 - **Kala Sarpa and Ganda Moola doshas**, on the Kundali Yogas page beside Mangal, under a Doshas
   heading. Both rules were derived from an independent implementation before any Kotlin was written,
   and one of them came out different from the textbook.
@@ -35,7 +75,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
   Both report their working whether or not they stand: which grahas fell outside the arc, or which
   nakshatra the Moon is actually in. A verdict a reader cannot check is worth little.
-
 
 - **A dignity column on Spashta Graha** — exalted, own sign, friend's, neutral, enemy's, or
   debilitated, for each of the seven grahas. It is the oldest statement of planetary strength and
