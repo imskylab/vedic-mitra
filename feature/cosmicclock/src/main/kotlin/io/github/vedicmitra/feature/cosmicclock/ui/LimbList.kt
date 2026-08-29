@@ -128,12 +128,12 @@ private fun rowDescription(
     pada: Int?,
     oneLine: String,
 ): String {
-    val value = if (pada == null) ring.activeName else "${ring.activeName}, pada ${'$'}pada"
+    val value = if (pada == null) ring.activeName else "${ring.activeName}, pada $pada"
     val ending =
         ring.window
-            ?.let { ", ends ${'$'}{formatClockTime(it.end)}, in ${'$'}{formatRemaining(it.remainingFrom(at))}" }
+            ?.let { ", ends ${formatClockTime(it.end)}, in ${formatRemaining(it.remainingFrom(at))}" }
             .orEmpty()
-    return "${'$'}{ring.label} ${'$'}value${'$'}ending. ${'$'}oneLine"
+    return "${ring.label} $value$ending. $oneLine"
 }
 
 /**

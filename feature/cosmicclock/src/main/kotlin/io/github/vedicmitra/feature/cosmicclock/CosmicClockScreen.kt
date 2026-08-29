@@ -100,7 +100,7 @@ private fun ClockBody(
             progress = model.animatedProgress(),
             colors = clockColors(),
             modifier = Modifier.widthIn(max = MAX_FACE_WIDTH),
-            spokenDescription = model.spokenSummary(now, ::formatClockTime),
+            spokenDescription = model.spokenSummary(::formatClockTime),
             onSelectRing = { selected = it },
         ) { hubWidth ->
             model.summaryAt(now)?.let { summary ->

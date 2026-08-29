@@ -29,7 +29,7 @@ class SpokenSummaryTest {
     fun `the whole face is one sentence per limb, in drawing order`() {
         // Outside in, matching the rings, so someone who listens first and looks later can map what
         // they heard onto what they see.
-        val spoken = model().spokenSummary(AT, ::fakeTime)
+        val spoken = model().spokenSummary(fakeTime)
 
         assertThat(spoken).startsWith("Panchanga clock.")
         assertThat(spoken).contains("Karana Bava")
@@ -46,7 +46,7 @@ class SpokenSummaryTest {
     fun `pada is spoken with the nakshatra, the only place it appears`() {
         // The face cannot draw pada -- a quarter of a nakshatra arc is about five pixels -- so for a
         // listener this and the limb list are the only ways to reach it at all.
-        val spoken = model().spokenSummary(AT, ::fakeTime)
+        val spoken = model().spokenSummary(fakeTime)
         assertThat(spoken).contains("Nakshatra Rohini, pada 3")
         assertWithMessage("pada belongs to the nakshatra, not to every limb")
             .that(spoken.split("pada").size - 1)
@@ -55,7 +55,7 @@ class SpokenSummaryTest {
 
     @Test
     fun `each limb says when it changes`() {
-        val spoken = model().spokenSummary(AT, ::fakeTime)
+        val spoken = model().spokenSummary(fakeTime)
         assertThat(spoken).contains("ends 06:00")
     }
 
@@ -63,7 +63,7 @@ class SpokenSummaryTest {
     fun `a limb with no known boundary is still named`() {
         // Vara at a latitude where the Sun does not rise. Saying nothing about it would be worse
         // than saying the weekday without a time.
-        val spoken = model(varaWindow = null).spokenSummary(AT, ::fakeTime)
+        val spoken = model(varaWindow = null).spokenSummary(fakeTime)
         assertThat(spoken).contains("Vara Shukravara")
         assertWithMessage("no dangling 'ends' for the limb without a window")
             .that(spoken)
@@ -73,14 +73,14 @@ class SpokenSummaryTest {
     @Test
     fun `the sentence is closed`() {
         // It is read aloud; a trailing fragment sounds like the app was interrupted.
-        assertThat(model().spokenSummary(AT, ::fakeTime)).endsWith(".")
+        assertThat(model().spokenSummary(fakeTime)).endsWith(".")
     }
 
     @Test
     fun `time formatting is the caller's business`() {
         // The domain has no zone and no locale. Passing the formatter in is what keeps it that way,
         // and this asserts the seam holds rather than a zone leaking in through a default.
-        val shouted = model().spokenSummary(AT) { "SIX O'CLOCK" }
+        val shouted = model().spokenSummary { "SIX O'CLOCK" }
         assertThat(shouted).contains("ends SIX O'CLOCK")
     }
 
@@ -126,6 +126,6 @@ class SpokenSummaryTest {
             )
 
         /** A fixed rendering, so the assertions are about the sentence rather than about a clock. */
-        fun fakeTime(instant: Instant): String = "06:00"
+        val fakeTime: (Instant) -> String = { "06:00" }
     }
 }

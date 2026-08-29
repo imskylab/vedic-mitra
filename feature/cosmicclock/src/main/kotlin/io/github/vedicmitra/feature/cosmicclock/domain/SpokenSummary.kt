@@ -24,14 +24,16 @@ import kotlin.time.Instant
  *
  * Pure, so it can be tested, and so the same string can seed a widget or a complication later.
  *
- * @param at the moment being described.
+ * Deliberately says when each limb *ends* rather than how long is left. A countdown read aloud is
+ * stale the moment it is spoken, and re-announcing the whole face every minute to keep it current
+ * would be intolerable; the limb rows carry the countdown, where a listener asks for it one at a
+ * time. That is also why this needs no "now" — an end time is a fact about the day, not about the
+ * moment of asking.
+ *
  * @param formatTime renders an instant as the reader would hear it. Injected because time zones and
  *   locale formatting are a platform concern and this layer has no business knowing about them.
  */
-fun PanchangaClockModel.spokenSummary(
-    at: Instant,
-    formatTime: (Instant) -> String,
-): String {
+fun PanchangaClockModel.spokenSummary(formatTime: (Instant) -> String): String {
     val parts =
         rings.map { ring ->
             val ending = ring.endsAt?.let { ", ends ${formatTime(it)}" } ?: ""
