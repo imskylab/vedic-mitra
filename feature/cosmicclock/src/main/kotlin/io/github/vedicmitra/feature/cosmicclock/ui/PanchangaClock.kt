@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import io.github.vedicmitra.feature.cosmicclock.domain.ClockRing
 import io.github.vedicmitra.feature.cosmicclock.domain.PanchangaClockModel
 import io.github.vedicmitra.feature.cosmicclock.domain.RingGeometry
