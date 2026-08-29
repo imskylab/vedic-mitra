@@ -127,7 +127,7 @@ class PanchangaClockModelTest {
     fun `vara keeps its ring when its sunrise boundary is unknown`() {
         // Polar latitudes: the weekday is still known, only its window is not. Dropping the ring
         // would reshuffle every other ring's radius as the reader crossed a latitude.
-        val model = checkNotNull(buildPanchangaClock(snapshot(varaWindow = null)))
+        val model = checkNotNull(buildPanchangaClock(snapshot(limbs = limbWindows(varaWindow = null))))
         val varaRing = checkNotNull(model.ring(PanchangaConcept.VARA))
         assertThat(model.rings).hasSize(5)
         assertThat(varaRing.window).isNull()
@@ -184,8 +184,7 @@ class PanchangaClockModelTest {
         karana: Karana = Karana(number = 27, name = "Bava"),
         vara: Vara = Vara.SHUKRAVARA,
         moonPada: Int? = 3,
-        varaWindow: LimbWindow? = window(0.5),
-        limbs: PanchangaLimbWindows? = limbWindows(varaWindow),
+        limbs: PanchangaLimbWindows? = limbWindows(),
     ): AstronomySnapshot =
         AstronomySnapshot(
             instant = AT,
@@ -208,7 +207,7 @@ class PanchangaClockModelTest {
             limbs = limbs,
         )
 
-    private fun limbWindows(varaWindow: LimbWindow?) =
+    private fun limbWindows(varaWindow: LimbWindow? = window(0.5)) =
         PanchangaLimbWindows(
             tithi = window(0.25),
             nakshatra = window(0.6),
