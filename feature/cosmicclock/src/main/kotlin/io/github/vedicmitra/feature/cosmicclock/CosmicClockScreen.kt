@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.feature.cosmicclock.domain.ClockRing
 import io.github.vedicmitra.feature.cosmicclock.domain.PanchangaClockModel
+import io.github.vedicmitra.feature.cosmicclock.domain.spokenSummary
 import io.github.vedicmitra.feature.cosmicclock.domain.summaryAt
 import io.github.vedicmitra.feature.cosmicclock.ui.ClockHub
 import io.github.vedicmitra.feature.cosmicclock.ui.ClockSheet
@@ -99,6 +100,7 @@ private fun ClockBody(
             progress = model.animatedProgress(),
             colors = clockColors(),
             modifier = Modifier.widthIn(max = MAX_FACE_WIDTH),
+            spokenDescription = model.spokenSummary(::formatClockTime),
             onSelectRing = { selected = it },
         ) { hubWidth ->
             model.summaryAt(now)?.let { summary ->

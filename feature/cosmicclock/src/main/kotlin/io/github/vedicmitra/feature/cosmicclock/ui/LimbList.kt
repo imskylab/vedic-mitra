@@ -22,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import io.github.vedicmitra.core.astronomy.PanchangaConcept
 import io.github.vedicmitra.core.astronomy.PanchangaPrimer
@@ -79,12 +81,16 @@ private fun LimbRow(
     onClick: () -> Unit,
 ) {
     val primer = PanchangaPrimer.of(ring.concept)
+    val spoken = rowDescription(ring, at, pada, primer.oneLine)
     Column(
         modifier =
             Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(vertical = 8.dp),
+                .padding(vertical = 8.dp)
+                // One node per row rather than four texts and a progress bar read as a bare
+                // percentage. The row is the unit a listener cares about.
+                .clearAndSetSemantics { contentDescription = spoken },
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Row(
@@ -112,6 +118,22 @@ private fun LimbRow(
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
         )
     }
+}
+
+/** One row as a sentence: what it is, what it says, and when it changes. */
+@Composable
+private fun rowDescription(
+    ring: ClockRing,
+    at: Instant,
+    pada: Int?,
+    oneLine: String,
+): String {
+    val value = if (pada == null) ring.activeName else "${ring.activeName}, pada $pada"
+    val ending =
+        ring.window
+            ?.let { ", ends ${formatClockTime(it.end)}, in ${formatRemaining(it.remainingFrom(at))}" }
+            .orEmpty()
+    return "${ring.label} $value$ending. $oneLine"
 }
 
 /**
