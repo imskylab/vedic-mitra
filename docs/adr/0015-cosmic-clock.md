@@ -1,7 +1,28 @@
 # 15. Cosmic Clock — a family of clock faces
 
-- **Status:** Accepted
+- **Status:** Superseded by the cycle rows on the calendar's day detail (2026-08-31)
 - **Date:** 2026-08-29
+
+## Superseded
+
+The circular face is gone. It was replaced by prev / current / next rows on the calendar's day
+detail — the same five limbs as a picker wheel rather than as arcs.
+
+**Why it lost.** The face put each limb at its own angle, because each cycle has its own position.
+That is defensible and it meant the five current values were scattered around the circle, so a reader
+could never see them together. It also only ever showed *now*: a ring cannot say what the previous
+tithi was or what the next one is, and that sequence is exactly what someone new to a panchanga does
+not know. Rows show it for free, in text, at a glance.
+
+The decisions below are kept because the findings cost something to get and would otherwise be
+rediscovered — particularly the two that only appeared when the geometry was rendered, and the note
+about which layers are not angular data at all. That last one is what eventually pointed at rows:
+the calendar's table turned out to be three different kinds of thing, and only nine of its twenty
+rows are cycles.
+
+What survived the retirement: `PanchangaPrimer` (the eleven explanations, in `core:astronomy`),
+`PanchangaLimb` / `LimbStep` (the cycle arithmetic), and the observation that `angularFraction` had
+been computed and unused since it was written — it is now the progress bar on each row.
 
 ## Context
 

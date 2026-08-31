@@ -429,14 +429,12 @@ for the Phase 6 astrology features)*
 - [x] Festival highlights
 - [x] Color-coded observances
 
-**Cosmic Clock** *(a family of clock faces; see [ADR 0015](docs/adr/0015-cosmic-clock.md))*
+**Panchanga at a glance** *(see [ADR 0015](docs/adr/0015-cosmic-clock.md) for the retired circular face)*
 
-- [x] Panchanga clock — the five limbs as concentric cycles, current division picked out
+- [x] Cycle rows on the day detail — what each limb was, is, and becomes, with the times
 - [x] Plain-language explanations of the limbs, enforced by the build
-- [x] Spoken summary and a limb list, so the face is readable without seeing it
-- [ ] Day clock — sunrise/sunset ground with the day's windows as arcs
-- [ ] Graha clock — the sidereal zodiac and planetary positions
-- [ ] Time scrubbing — drag to a moment and watch every cycle turn
+- [ ] Time scrubbing — drag a row to a moment and watch the values change
+- [ ] Graha positions — the sidereal zodiac as its own view
 
 **Dashboard**
 
