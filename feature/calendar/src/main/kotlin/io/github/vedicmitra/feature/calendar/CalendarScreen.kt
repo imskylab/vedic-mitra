@@ -21,9 +21,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -57,7 +59,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
-import io.github.vedicmitra.core.astronomy.LimbWindow
+import io.github.vedicmitra.core.astronomy.LimbStep
 import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
@@ -65,13 +67,17 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.PanchangaLimb
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
+import io.github.vedicmitra.core.astronomy.limbSteps
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.designsystem.component.VedicCycleHeader
+import io.github.vedicmitra.core.designsystem.component.VedicCycleRow
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import java.time.LocalDate
 import java.time.YearMonth
@@ -354,24 +360,16 @@ private fun DetailCard(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            val limbs = snapshot.limbs
-            DetailRow(
-                label = "Tithi",
-                value = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
-                note = untilLabel(limbs?.tithi),
-            )
-            DetailRow(label = "Nakshatra", value = snapshot.nakshatra.name, note = untilLabel(limbs?.nakshatra))
-            snapshot.moonPada?.let { pada ->
-                DetailRow(label = "Pada", value = "Pada $pada", note = untilLabel(limbs?.moonPada))
-            }
-            DetailRow(label = "Yoga", value = snapshot.yoga.name, note = untilLabel(limbs?.yoga))
-            DetailRow(label = "Karana", value = snapshot.karana.name, note = untilLabel(limbs?.karana))
-            snapshot.moonRasi?.let { rasi ->
-                DetailRow(label = "Chandra Rashi", value = rasi.name, note = untilLabel(limbs?.moonRashi))
-            }
-            snapshot.sunRasi?.let { rasi ->
-                // The Sun's sign change is the sankranti, so its window end is the next ingress.
-                DetailRow(label = "Surya Rashi", value = rasi.name, note = untilLabel(limbs?.sunRashi))
+            // The nine values that repeat on a cycle read as wheels: what each was, is, and becomes.
+            // A bare name says what today is called; the neighbours say it is a *sequence*, which is
+            // what someone new to a panchanga cannot infer from a table. The rows below -- rise and
+            // set times, the muhurtas, and the slow context -- stay as they are, because they are
+            // instants and spans rather than positions in a loop.
+            val steps = snapshot.limbSteps()
+            if (steps.isNotEmpty()) {
+                VedicCycleHeader(modifier = Modifier.padding(top = 4.dp))
+                steps.forEach { step -> CycleRow(step) }
+                Spacer(modifier = Modifier.height(10.dp))
             }
             DetailRow(label = "Maasa", value = snapshot.maasa.displayName)
             DetailRow(
@@ -380,11 +378,6 @@ private fun DetailCard(
             )
             DetailRow(label = "Ayana", value = snapshot.ayana.displayName)
             DetailRow(label = "Ritu", value = snapshot.ritu.displayName)
-            DetailRow(
-                label = "Moon Phase",
-                value = snapshot.moonPhase.displayName,
-                note = untilLabel(limbs?.moonPhase),
-            )
             DetailRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
             DetailRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
             DetailRow(label = "Moonrise", value = formatTime(snapshot.moonTimes.moonrise))
@@ -397,6 +390,48 @@ private fun DetailCard(
             }
         }
     }
+}
+
+/**
+ * One [LimbStep] as a wheel row.
+ *
+ * The two neighbour times are the current window's own edges -- the previous value ended when this
+ * one began, and the next begins when it ends -- so all three columns come from one window and cost
+ * no extra computation.
+ *
+ * The tithi is shown with its paksha because each tithi name occurs twice a lunar month, and a
+ * reader checking against an almanac would otherwise have no way to tell which one this is.
+ */
+@Composable
+private fun CycleRow(step: LimbStep) {
+    val paksha = if (step.limb == PanchangaLimb.TITHI) pakshaPrefix(step.position) else ""
+    VedicCycleRow(
+        label = step.limb.displayName,
+        previous = step.previous,
+        current = "$paksha${step.current}",
+        next = step.next,
+        previousNote = step.window?.let { formatTime(it.start) },
+        currentNote = step.window?.let { "till ${formatTime(it.end)}" },
+        nextNote = step.window?.let { formatTime(it.end) },
+        progress = step.fraction?.toFloat(),
+        spokenDescription = cycleRowDescription(step, paksha),
+    )
+}
+
+/** "Shukla " or "Krishna ", from the tithi's place in the month. Empty for every other limb. */
+private fun pakshaPrefix(tithiPosition: Int): String =
+    if (tithiPosition <= SHUKLA_TITHI_COUNT) "Shukla " else "Krishna "
+
+/** The row as one sentence, so a screen reader hears it whole rather than as seven fragments. */
+private fun cycleRowDescription(
+    step: LimbStep,
+    paksha: String,
+): String {
+    val window = step.window
+    val ending = if (window == null) "" else ", until ${formatTime(window.end)}"
+    val after = if (window == null) "" else ", when ${step.next} begins"
+    return "${step.limb.displayName}: $paksha${step.current}$ending$after. " +
+        "Follows ${step.previous}."
 }
 
 @Composable
@@ -435,8 +470,6 @@ private fun DetailRow(
  * Absolute rather than a countdown on purpose: this card describes a chosen day, computed at that
  * day's sunrise, so "ends in 4h" would be meaningless for any day but today.
  */
-private fun untilLabel(window: LimbWindow?): String? = window?.let { "till ${formatTime(it.end)}" }
-
 private val Tithi.shortLabel: String
     get() {
         val inPaksha = if (number <= SHUKLA_TITHI_COUNT) number else number - SHUKLA_TITHI_COUNT
