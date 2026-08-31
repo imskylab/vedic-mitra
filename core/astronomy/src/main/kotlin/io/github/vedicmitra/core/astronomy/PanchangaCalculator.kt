@@ -111,16 +111,29 @@ private val KARANA_MOVABLE =
 /** Derives the [Tithi] from the Moon's elongation from the Sun (degrees, 0..360). */
 internal fun tithiOf(elongationDeg: Double): Tithi {
     val number = AngularBuckets.tithiIndex(elongationDeg) + 1
-    val paksha = if (number <= 15) Paksha.SHUKLA else Paksha.KRISHNA
-    val inPaksha = if (number <= 15) number else number - 15
-    val name =
-        if (inPaksha == 15) {
-            if (paksha == Paksha.SHUKLA) "Purnima" else "Amavasya"
-        } else {
-            TITHI_NAMES[inPaksha - 1]
-        }
-    return Tithi(number = number, paksha = paksha, name = name)
+    return Tithi(
+        number = number,
+        paksha = if (number <= TITHIS_PER_PAKSHA) Paksha.SHUKLA else Paksha.KRISHNA,
+        name = tithiNameAt(number),
+    )
 }
+
+/**
+ * The tithi called [number] (1..30), without needing an ephemeris.
+ *
+ * Split out so a screen can name the tithi *before* and *after* this one, which is a question about
+ * the cycle rather than about the sky: the previous tithi is simply the previous number.
+ */
+internal fun tithiNameAt(number: Int): String {
+    val inPaksha = if (number <= TITHIS_PER_PAKSHA) number else number - TITHIS_PER_PAKSHA
+    return when {
+        inPaksha != TITHIS_PER_PAKSHA -> TITHI_NAMES[inPaksha - 1]
+        number <= TITHIS_PER_PAKSHA -> "Purnima"
+        else -> "Amavasya"
+    }
+}
+
+private const val TITHIS_PER_PAKSHA = 15
 
 /**
  * Derives the [MoonPhase] from the Moon's elongation from the Sun (degrees, 0..360), dividing the
@@ -163,8 +176,11 @@ internal fun rasiOf(siderealDeg: Double): Rasi {
 /** Derives the [Yoga] from the combined sidereal longitudes of the Sun and Moon (degrees, 0..360). */
 internal fun yogaOf(yogaSumDeg: Double): Yoga {
     val number = AngularBuckets.yogaIndex(yogaSumDeg) + 1
-    return Yoga(number = number, name = YOGA_NAMES[number - 1])
+    return Yoga(number = number, name = yogaNameAt(number))
 }
+
+/** The yoga called [number] (1..27). See [tithiNameAt] on why this is separable. */
+internal fun yogaNameAt(number: Int): String = YOGA_NAMES[number - 1]
 
 /**
  * Derives the [Karana] from the Moon's elongation from the Sun (degrees, 0..360). The 60 half-tithi
@@ -173,15 +189,24 @@ internal fun yogaOf(yogaSumDeg: Double): Yoga {
  */
 internal fun karanaOf(elongationDeg: Double): Karana {
     val index = AngularBuckets.karanaIndex(elongationDeg) // 0..59
-    val name =
-        when {
-            index == 0 -> "Kimstughna"
-            index <= 56 -> KARANA_MOVABLE[(index - 1) % 7]
-            index == 57 -> "Shakuni"
-            index == 58 -> "Chatushpada"
-            else -> "Naga"
-        }
-    return Karana(number = index + 1, name = name)
+    return Karana(number = index + 1, name = karanaNameAt(index + 1))
+}
+
+/**
+ * The karana at position [number] (1..60) in the lunar month.
+ *
+ * Not a plain table lookup: the first position is Kimstughna, the next fifty-six cycle through the
+ * seven movable karanas, and the last three are fixed. See [tithiNameAt] on why this is separable.
+ */
+internal fun karanaNameAt(number: Int): String {
+    val index = number - 1
+    return when {
+        index == 0 -> "Kimstughna"
+        index <= 56 -> KARANA_MOVABLE[(index - 1) % 7]
+        index == 57 -> "Shakuni"
+        index == 58 -> "Chatushpada"
+        else -> "Naga"
+    }
 }
 
 /**
