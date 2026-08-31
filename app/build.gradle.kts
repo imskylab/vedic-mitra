@@ -77,7 +77,6 @@ dependencies {
     implementation(projects.feature.japa)
     implementation(projects.feature.meditation)
     implementation(projects.feature.stotra)
-    implementation(projects.feature.cosmicclock)
 
     // App-level Compose + AndroidX.
     implementation(libs.androidx.core.ktx)

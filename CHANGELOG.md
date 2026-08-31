@@ -9,35 +9,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Cosmic Clock** — a new screen showing the five limbs of the panchanga as concentric rings, each a
-  whole cycle with the current division picked out and filling as it progresses. Reached from a tile
-  on the Home grid.
+- **The calendar's day detail now shows each cycling limb as a wheel** — what it was, what it is,
+  and what it becomes, with the time each boundary falls.
 
-  It is a *family* of clock faces rather than one dial, and this is the first: the Panchanga clock.
-  Every ring on a face means the same thing — position within that limb's cycle — which is what lets
-  five sit together without the angle changing meaning between them. The day's windows (Rahu Kalam,
-  Abhijit and the rest) will get their own face, where the angle means time of day.
+  A bare "Tithi — Chaturdashi" says what today is called. Putting Trayodashi behind it and Purnima
+  ahead says it is a *sequence*, which is the thing someone new to a panchanga does not know and
+  cannot infer from a table of names. Nine rows change: vara, tithi, nakshatra, pada, yoga, karana,
+  the Moon's and Sun's rashis, and the moon phase.
 
-  Rings run karana (60 divisions) outermost through vara (7) innermost, ordered by segment count
-  rather than by the order a panchanga is recited. Arc per segment is `2πr / n`, so tick spacing only
-  stays even across five rings if radius grows with count; recitation order would have crammed sixty
-  karana ticks onto the smallest ring.
+  The neighbours cost nothing. Each of these limbs is a numbered position in a closed loop, so the
+  names are arithmetic, and the two times are the current window's own edges — the previous value
+  ended when this one began, and the next begins when it ends.
 
-  Beneath the face, the same five limbs appear as rows with their exact times and countdowns. That is
-  not a fallback — a Canvas is invisible to a screen reader, five rings leave about 19dp of radius
-  each so a ring tap is approximate, and for exact times most people would rather read than squint.
-  The face itself is announced as one sentence rather than two dozen fragments.
+  Emphasis decays outward from the middle: past settles, now is lit, next waits. Making the future
+  the most vivid was the first attempt and it pulled the eye onto the one column that is not true
+  yet. A progress bar per row shows *rate*, which is the only place karana visibly moves faster than
+  vara, and the value slides up when a limb rolls over.
 
-  **The engine needed no changes.** `PanchangaLimbWindows` already carried a window and progress
-  fraction for exactly the six values drawn, and `angularFraction` — documented in its own KDoc as
-  "the right input for a progress arc" — had been computed and unused by every screen since it was
-  written.
+  Rows that are not cycles keep their table. Sunrise, sunset, moonrise, moonset and the muhurtas are
+  instants and spans — "the previous Rahu Kalam" is yesterday's, not a step back in a loop — and a
+  neighbouring samvatsara is a year away.
 
-  Two things this face deliberately does not do. It is a **slow** clock: four of its five rings turn
-  over in about a day, and the motion is the arcs filling rather than anything racing. And it does
-  not show pada — nesting four padas inside the active nakshatra arc works out at about five pixels
-  each, so pada is named in the list, the hub and the spoken summary instead. See
-  [ADR 0015](docs/adr/0015-cosmic-clock.md).
+  **The circular Cosmic Clock face that shipped earlier in this cycle is retired**; it put each limb
+  at its own angle, so the five current values scattered around the face and could never be read
+  together, and a ring cannot show what came before or comes next. See
+  [ADR 0015](docs/adr/0015-cosmic-clock.md) for what was learned from it.
 
 - **Plain-language explanations of the panchanga itself.** `PanchangaPrimer` covers the five limbs
   plus paksha, pada, the lunar month, the moon phase, and why the day begins at sunrise — eleven
