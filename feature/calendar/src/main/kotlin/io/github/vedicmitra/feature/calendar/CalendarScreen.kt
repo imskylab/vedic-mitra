@@ -647,7 +647,6 @@ private fun sundayFirstWeekdayLabels(): List<String> =
             .getDisplayName(TextStyle.SHORT, Locale.getDefault())
     }
 
-/** Formats an instant as local wall-clock time in the device's zone, or an em dash if absent. */
 /** A day and month, for boundaries that are weeks or months away rather than hours. */
 private fun formatDate(instant: Instant?): String {
     if (instant == null) return "—"
@@ -657,6 +656,7 @@ private fun formatDate(instant: Instant?): String {
         .format(boundaryFormatter)
 }
 
+/** Formats an instant as local wall-clock time in the device's zone, or an em dash if absent. */
 private fun formatTime(instant: Instant?): String {
     if (instant == null) return "—"
     val local =
