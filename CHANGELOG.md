@@ -7,6 +7,47 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/knowledge-standards.md` — what the app is allowed to say.** The project is widening from
+  astronomy into shastras where no independent implementation exists to check against, so every
+  feature now declares one of four modes: **Compute** (asserts a derived value), **Cite** (reports
+  what a tradition holds, with a named source), **Track** (records what you did, claiming nothing),
+  **Teach** (explains an idea). Compute splits into *oracle-validated* and *rule-transcribed*, and
+  the two may not be shown at the same confidence.
+
+  This also names a gap the codebase had never recorded: the 26 stotras and 12 mantras assert only
+  that their Sanskrit is public-domain, which is a licensing claim rather than a provenance one. No
+  edition, no recension, no source, and no test on `MantraCatalog` at all. It is the one deliberate
+  narrowing that was not written down. Remediation is on the roadmap as foundation work.
+
+  The document also sets red lines that hold in every mode — no medical claims, no fatalism, no
+  instruction in anyone's practice, no remedy commerce.
+
+- **`docs/roadmap.md` — a domain map**, and [ADR 0016](docs/adr/0016-shastra-domains-and-knowledge-modes.md)
+  recording why.
+
+### Changed
+
+- **The twelve-phase roadmap is retired.** Phases described one person's build order, which is the
+  wrong shape for a public repository: a contributor arriving to work on one domain should not have
+  to know what came before it. The phases had also started contradicting each other, with the same
+  work checked under one heading and unchecked under another.
+
+  Every item is re-filed by domain rather than discarded — the checkbox status was verified against
+  the code and that information is kept. Status is now Shipped / Building / Next / Open / Exploring
+  / Declined, where **Open means wanted but unscheduled**, so nothing reads as a commitment that has
+  not been made.
+
+  Some domains are declined with reasons recorded, and Nirukta and Vyakarana are re-termed from
+  sections into a glossary layer reachable from any Sanskrit term — which serves every domain rather
+  than one.
+
+- The README loses ~370 lines of roadmap and keeps a summary and a link. Its status note now says
+  plainly that the app is **not yet localized**: 599 hardcoded strings, no `stringResource` calls,
+  and no locale at all. That is the largest single limit on the project's reach, and it gates the
+  knowledge domains, because every English screen added first multiplies the translation debt.
+
 ## [0.9.0] - 2026-08-31
 
 ### Added

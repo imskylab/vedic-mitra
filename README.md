@@ -43,9 +43,8 @@
   </tr>
 </table>
 
-> **Status:** The roadmap below is an expanded, 12-phase vision for the project. **Phase 1
-> (Foundation) is done**; Phases **2–9** and **11** are partially built, with the astrology arc
-> (Phase 6) now largely complete. The app computes
+> **Status:** The **panchanga, muhurta and jyotisha** domains are largely built; the wider shastra
+> map in [docs/roadmap.md](docs/roadmap.md) is mostly open. The app computes
 > today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa, samvatsara),
 > Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, the inauspicious kalams (Rahu, Yamaganda, Gulika),
 > the sixteen Choghadiya windows, sunrise/sunset, moonrise/moonset, Moon phase, golden-hour windows,
@@ -57,24 +56,34 @@
 > (tap any day for its full panchang; notable days are highlighted), wrapped in a golden/maroon
 > brand theme drawn from the app emblem, navigated via a bottom bar. Calculations — including the
 > sunrise-tithi convention by which the day is named — are cross-checked against published
-> almanacs and an independent reference implementation before shipping. The astrology arc
-> (Phase 6) is now largely built — natal charts, seventeen divisional charts, three dasha systems,
-> ashtakavarga, matchmaking and muhurta — while Phases 10 and 12 remain aspirational. See the
+> almanacs and an independent reference implementation before shipping. The astrology arc is now
+> largely built — natal charts, seventeen divisional charts, three dasha systems, ashtakavarga,
+> matchmaking and muhurta. The app is **not yet localized** and ships in English only. See the
 > [Roadmap](#roadmap) for the full picture and current progress.
 
 ---
 
 ## Project Vision
 
-Vedic Mitra ("Vedic Friend") aims to make traditional Vedic timekeeping genuinely useful on a
-modern phone. Rather than static almanac tables, it computes the panchanga (tithi, nakshatra, yoga,
-karana, vara) and auspicious windows (muhurta) for the user's exact location and time, and lets
-them set astronomy-aware reminders and alarms around those windows.
+Vedic Mitra ("Vedic Friend") aims to be a single, offline, honest place for the practices and
+knowledge of the Indian tradition — starting with timekeeping, because that is what the rest hangs
+off. Rather than static almanac tables, it computes the panchanga (tithi, nakshatra, yoga, karana,
+vara) and auspicious windows (muhurta) for the user's exact location and time, and lets them set
+astronomy-aware reminders and alarms around those windows.
+
+The wider aim is to bring genuinely valued practices back within reach — and an app does not do that
+by listing them. It does it by making them doable: what a tradition holds, when it applies, and a
+private record that you kept it. Knowing *when* is the thread that ties the domains together, and
+the engine already knows.
 
 Guiding principles:
 
 - **Accuracy first** — astronomy is computed, not looked up, from the observer's coordinates.
-- **Offline-friendly** — core calculations run on-device.
+- **Say what stands behind a claim** — computation is validated against an independent reference;
+  traditional knowledge is cited to a named source and attributed, never asserted in the app's own
+  voice. See [docs/knowledge-standards.md](docs/knowledge-standards.md).
+- **Record what is not done** — every deliberate narrowing is written down beside the code.
+- **Offline-friendly** — core calculations run on-device. No ads, no tracking, no accounts.
 - **Respectful, uncluttered UX** — Material 3, light/dark, dynamic colour.
 - **Maintainable by many** — strict modular Clean Architecture so features stay independent.
 
@@ -165,382 +174,37 @@ Build configuration is not copy-pasted between modules — it lives in **convent
 
 ## Roadmap
 
-A longer-range, 12-phase roadmap that balances a solid MVP with progressively richer features.
-Status marks reflect what's actually implemented today, verified against the code — not aspiration.
-
-> **Astrology arc — build order.** Profile (Phase 5) → the **chart-computation layer** in
-> `:core:astronomy` (Lagna/houses, D9/D10, Vimshottari dasha, transits — Phase 6) → Kundali display →
-> Rashifal → **Muhurta** (Phase 6). General (panchang) Muhurta needs none of this — it runs on today's
-> engine and can ship independently as a quick win.
-
-### ✅ Phase 1 — Foundation
-
-**Engineering**
-
-- [x] Clean Architecture
-- [x] Modular project structure
-- [x] Jetpack Compose
-- [x] Material 3
-- [x] Hilt
-- [ ] Room
-- [ ] WorkManager
-- [x] Offline-first architecture
-- [x] GitHub Actions CI/CD
-- [x] Unit testing framework
-- [x] Documentation
-- [x] AI development guidelines (AGENTS.md)
-
-> **Note:** the shipped app doesn't use Room or WorkManager. Persistence is on Jetpack DataStore
-> (`:core:datastore`), and scheduling is on `AlarmManager` — exact alarms plus a reboot-survivable
-> `BootReceiver` (`:core:scheduler`, `:feature:alarm`) — not deferred/constrained background work.
-> Revisit this pairing only if a future phase genuinely needs a relational store or WorkManager's
-> constraint-based scheduling.
-
-### 🟡 Phase 2 — Daily Timings (MVP)
-
-**Astronomical Calculations**
-
-- [x] Sunrise
-- [x] Sunset
-- [x] Moonrise
-- [x] Moonset
-- [x] Moon phase
-- [x] Golden Hour
-- [x] Brahma Muhurta
-- [x] Abhijit Muhurta
-- [x] Rahu Kalam
-- [x] Yamagandam
-- [x] Gulika Kalam
-- [x] Dur Muhurta
-- [x] Varjyam
-
-**Smart Alarms**
-
-- [x] Brahma Muhurta alarm (as one of the scheduled muhurta reminders)
-- [ ] Sunrise reminder
-- [ ] Sunset reminder
-- [x] Custom reminder offsets (configurable lead time)
-- [x] Exact alarms
-- [x] Daily automatic rescheduling (reboot-survivable via `BootReceiver`)
-
-**Home Dashboard**
-
-- [x] Current time
-- [x] Today's Panchang summary
-- [x] Upcoming events
-- [x] Current moon phase
-- [ ] Next alarm
-
-### 🟡 Phase 3 — Panchang
-
-**Hindu Calendar**
-
-- [x] Daily Panchang screen with calendar navigation
-- [x] Monthly calendar
-- [x] Grid calendar
-- [ ] List calendar
-- [ ] Yearly overview
-
-**Panchang Details**
-
-- [x] Tithi
-- [x] Nakshatra
-- [x] Yoga
-- [x] Karana
-- [x] Paksha
-- [x] Maas
-- [x] Ritu
-- [x] Samvatsara
-- [x] Ayana
-
-**Celestial Information**
-
-- [x] Sunrise
-- [x] Sunset
-- [x] Moonrise
-- [x] Moonset
-- [x] Moon phase
-- [x] Planetary positions
-- [x] Zodiac transitions
-
-### 🟡 Phase 4 — Festivals & Vrats
-
-**Festival Calendar**
-
-- [x] Major Hindu festivals
-- [ ] Regional festivals
-- [x] Sankranti
-- [x] Ekadashi
-- [x] Purnima
-- [x] Amavasya
-- [x] Chaturthi
-- [x] Pradosham
-- [x] Shivaratri
-- [x] Navaratri
-- [x] Diwali
-- [x] Holi
-- [x] Janmashtami
-- [x] Rama Navami
-- [x] Guru Purnima
-
-**Vrat Support**
-
-- [x] Fasting days *(Ekadashi and Pradosh, computed from the tithi)*
-- [ ] Parana timings
-- [x] Festival descriptions *(`PanchangaGlossary` — a significance blurb per entry; the major festivals and every recurring observance are covered, the long tail is not)*
-- [ ] Ritual guidance
-- [x] Important observances
-
-**Notifications**
-
-- [ ] Festival reminders
-- [x] Vrat reminders
-- [ ] Panchang alerts
-- [x] Upcoming observances
-
-### 🟡 Phase 5 — Personalization
-
-**User Profile** *(multiple profiles — yourself + family/friends, one primary "Self"; prerequisite
-for the Phase 6 astrology features)*
-
-- [x] Name
-- [x] Date of Birth
-- [x] Time of Birth *(exact — Lagna, houses and divisional charts collapse without it)*
-- [x] Place of Birth *(geocoded to coordinates + IANA time zone, which is what a chart needs)*
-
-**Saved Information**
-
-- [ ] Personal tithis
-- [ ] Family birthdays
-- [ ] Spiritual milestones
-- [ ] Favorite festivals
-- [ ] Frequently observed vrats
-
-**Custom Tracking**
-
-- [ ] Daily sadhana
-- [x] Meditation streak *(`:feature:meditation` — timer plus a daily streak)*
-- [x] Japa counter *(`:feature:japa` — 108-bead mala counter with a daily streak)*
-- [ ] Reading tracker
-- [ ] Temple visits
-
-### 🟡 Phase 6 — Astrology
-
-> Led with the **chart-computation layer** — the shared foundation for Kundali, Rashifal and
-> Muhurta — and that layer is now built and reference-checked. What remains here is reporting and
-> the longer Rashifal horizons, not calculation.
-
-**Chart-Computation Layer** *(build once, on `:core:astronomy`)*
-
-- [x] Lagna / ascendant *(whole-sign houses; **degree-based cusps are not computed** — see
-  Bhava chalit below)*
-- [x] Whole-chart planetary rasi + degree *(Spashta Graha, to the arcminute)*
-- [x] Navamsa (D9)
-- [x] Dasamsa (D10) — and **seventeen** divisional charts in all, from one expression
-- [x] Vimshottari dasha state at an arbitrary date *(three levels deep)*
-- [x] Transit snapshot at an arbitrary date *(`planetaryPositionsAt`)*
-- [x] Pure `natalChartAt(birth)` API — offline, deterministic, reference-checked
-- [x] Astangata (combustion) — classical BPHS orbs
-- [x] Graha drishti — whole-sign Parashari aspects
-- [x] Named yogas — Gajakesari, Budhaditya, Chandra-Mangala, the five Panchamahapurusha
-- [x] Ashtakavarga — binnashtakavarga per graha and the sarvashtakavarga
-- [x] Jataka properties — varna, vashya, yoni, gana, nadi, the samvats and the ayanamsa at birth
-- [x] Ashtottari and Yogini dasha *(alongside Vimshottari)*
-- [ ] Bhava chalit / degree-based house cusps
-
-**Kundli** *(consumes the chart layer)*
-
-- [x] Birth chart *(North-Indian, lagna and Chandra framings)*
-- [x] Planetary positions *(Spashta Graha + ashtakavarga bindus)*
-- [x] Lagna
-- [x] Navamsa *(and every other varga, behind one chip row)*
-- [x] Dasha overview *(mahadasha → antardasha → pratyantardasha)*
-- [ ] Birth report *(nothing exports or shares a chart yet)*
-
-**Horoscope (Rashifal)**
-
-- [x] Daily Rashifal *(computed, not editorial: Chandrabala and, when personalised, Tarabala)*
-- [x] Weekly Rashifal *(a seven-day strip on the same grading)*
-- [ ] Monthly Rashifal
-- [ ] Yearly Rashifal
-
-**Muhurta (Electional)** *(picking auspicious times for events)*
-
-- [x] General / panchang muhurta — tithi · nakshatra · yoga · karana · Choghadiya/Hora · avoiding
-  Rahu/Yamaganda/Gulika · Abhijit
-- [x] Personalized muhurta — Tarabala / Chandrabala relative to a profile's birth Moon
-- [x] Event-type presets (marriage, housewarming, travel, purchase, …)
-
-**Match Making**
-
-- [x] Kundli matching
-- [x] Compatibility score *(36 gunas, with each koota's working shown)*
-- [x] Guna Milan — plus **Mangal dosha** with its parihara, and the four additional porutham
-  (Mahendra, Vedha, Rajju, Sthree Dheerga)
-
-**Reports**
-
-- [ ] Planetary transit report *(positions are computed; nothing narrates them over time)*
-- [ ] Personalized recommendations
-
-### 🟡 Phase 7 — Location & Astronomy
-
-**Location Support**
-
-- [x] GPS location
-- [x] City selection
-- [x] Custom latitude/longitude
-- [x] Multiple saved locations
-
-**Offline Engine**
-
-- [x] Offline astronomical calculations (on-device Meeus ephemeris, no network)
-- [x] Automatic timezone detection
-- [x] DST support
-- [ ] Regional Panchang support
-
-### 🟡 Phase 8 — Reminders & Automation
-
-**Daily Notifications**
-
-- [x] Sunrise *(covered as a muhurta reminder, not a dedicated toggle)*
-- [x] Sunset *(covered as a muhurta reminder, not a dedicated toggle)*
-- [x] Brahma Muhurta
-- [x] Ringing alarms *(a reminder can ring like a clock alarm rather than posting a notification; see [ADR 0009](docs/adr/0009-ringing-alarm-reminders.md))*
-- [ ] Sandhyavandanam
-- [ ] Festival reminders
-- [ ] Vrat reminders
-- [ ] Meditation reminders
-
-**Smart Scheduling**
-
-- [x] Dynamic daily alarms
-- [ ] Snooze options
-- [ ] Repeat schedules
-- [ ] Wear OS notifications (future)
-
-### 🟡 Phase 9 — UI & User Experience
-
-**Calendar Views**
-
-- [x] Monthly grid
-- [ ] Agenda view
-- [ ] Timeline view
-- [x] Festival highlights
-- [x] Color-coded observances
-
-**Panchanga at a glance** *(see [ADR 0015](docs/adr/0015-cosmic-clock.md) for the retired circular face)*
-
-- [x] Cycle rows on the day detail — what each limb was, is, and becomes, with the times
-- [x] Plain-language explanations of the limbs, enforced by the build
-- [ ] Time scrubbing — drag a row to a moment and watch the values change
-- [ ] Graha positions — the sidereal zodiac as its own view
-
-**Dashboard**
-
-- [x] Clean, modern UI
-- [x] Material You support
-- [x] Dark mode
-- [x] Dynamic colors
-- [ ] Home screen widgets
-
-**Landing hub** *(new default Home — hero + categorised shortcut grid; see
-[ADR 0013](docs/adr/0013-home-hub-landing-and-navigation.md))*
-
-- [x] Contextual "today" hero (panchang glance + auspicious-now strip) → opens the daily Panchang
-- [x] Category tabs: Daily · Astrology · Devotion
-- [x] Shortcut grid — tiles map to roadmap phases; unbuilt features show a "coming/unlock" state
-- [ ] Bottom nav: Home · Panchang · Reminders · Explore · Profile *(Settings moves under Profile)*
-- [ ] Panchang dashboard preserved as the Panchang destination (reachable from the hero + tab)
-
-**Accessibility**
-
-- [ ] Large text mode
-- [ ] High contrast
-- [ ] Screen reader support
-- [ ] Multiple themes
-
-### ⬜ Phase 10 — Languages
-
-**Localization**
-
-- [ ] English
-- [ ] Hindi
-- [ ] Sanskrit
-- [ ] Telugu
-- [ ] Tamil
-- [ ] Kannada
-- [ ] Malayalam
-- [ ] Marathi
-- [ ] Gujarati
-- [ ] Bengali
-- [ ] Odia
-
-Future community contributions can expand this list.
-
-### 🟡 Phase 11 — Knowledge & Devotion
-
-**Learning**
-
-- [ ] Daily shloka
-- [ ] Daily quote
-- [ ] Festival significance
-- [x] Panchang explanations *(`PanchangaGlossary` for named windows, observances and festivals;
-      `PanchangaPrimer` for the limbs and the ideas behind them)*
-- [ ] Beginner guides
-
-**Devotional Tools**
-
-- [x] Stotra library *(`:feature:stotra`)*
-- [x] Chant counter *(`:feature:japa`)*
-- [x] Meditation timer *(`:feature:meditation`)*
-- [ ] Audio support *(text only — nothing plays)*
-- [x] Offline content *(everything ships in the APK; the app makes no network calls)*
-
-### ⬜ Phase 12 — Ecosystem
-
-**Integrations**
-
-- [ ] Wear OS
-- [ ] Android Auto (notifications)
-- [ ] Calendar export (.ics)
-- [ ] Backup & restore
-- [ ] Cloud sync (optional and privacy-focused)
-
-**Open Platform**
-
-- [ ] Plugin architecture
-- [ ] Public calculation library
-- [ ] REST API (future)
-- [ ] Desktop companion (future)
-
-### Long-Term Vision (V2+)
-
-Transform Vedic Mitra into a complete Digital Vedic Companion by combining:
-
-- 🕉 Accurate Panchang
-- 🌞 Offline astronomical calculations
-- 📅 Hindu calendar
-- 🙏 Festival and vrat guidance
-- 🔔 Intelligent reminders
-- 🌙 Celestial information
-- ⭐ Astrology tools
-- 📖 Spiritual learning
-- 👤 Personalized experience
-- 🌍 Multi-language support
-- 🔒 Privacy-first, offline-first design
-- 🌐 Open-source community contributions
-
-### Suggested feature tiers
-
-To keep the project focused as it grows, features are classified into three tiers:
-
-- **Core (Offline):** Panchang, astronomy, reminders, calendar, location, personalization. These
-  should work entirely offline after installation.
-- **Enhanced (Optional Online):** Horoscope, planetary transit reports, and rich content updates.
-  These can use online services but should degrade gracefully if offline.
-- **Community Extensions:** Stotra packs, regional festival data, additional languages, and
-  plugins. This keeps the core app lightweight while allowing the ecosystem to grow.
+**The full map is [docs/roadmap.md](docs/roadmap.md)** — organised by domain rather than by phase,
+so a contributor can pick up one area without knowing what came before it. Status marks there
+reflect what is actually implemented, verified against the code.
+
+Vedic Mitra aims to be a single, offline, honest place for the practices and knowledge of the Indian
+tradition — the panchanga first, and then the shastras that hang off it. The engine's knowledge of
+*when* is what ties them together: a seasonal routine needs the ritu, a ritual needs its muhurta, a
+vrata needs its tithi, and the app already computes all three.
+
+| | Domains |
+| --- | --- |
+| **Built** | Panchanga · Jyotisha (reporting gaps remain) · Muhurta · Festivals and observances |
+| **Next** | Regional variation · Content provenance · Dharma and the samskaras |
+| **Open for contribution** | Localization · Vastu · Chandas · Kalpa · Ayurveda (bounded) · Yoga · Accessibility · Time reckoning |
+| **Exploring** | The arts (media-constrained) · Portable engine and iOS · Prashna and Varshaphala |
+| **Declined** | Arthashastra · Dhanurveda · Sanskrit tutoring · remedy commerce — [reasons recorded](docs/roadmap.md#part-vi--declined-and-why) |
+
+**Before contributing to any knowledge domain, read
+[docs/knowledge-standards.md](docs/knowledge-standards.md).** It sets out what the app is allowed to
+say and what has to stand behind it: astronomy is *validated* against an independent reference,
+traditional knowledge is *cited* to a named source, practice tracking claims nothing at all, and
+explanatory copy is enforced by a test. It also states the red lines — no medical claims, no
+fatalism, no instruction in anyone's practice, no remedy commerce.
+
+Three foundations come before the breadth: **localization** (the app is English-only and not yet
+localized — 599 hardcoded strings and no `stringResource` calls), **content provenance** (the
+shipped stotras and mantras carry no sources), and **regional variation** (the amanta/purnimanta
+split alone moves festival dates by a fortnight for many users).
+
+[ADR 0016](docs/adr/0016-shastra-domains-and-knowledge-modes.md) records why the twelve-phase plan
+was retired and what replaced it.
 
 ## Build Instructions
 
@@ -606,6 +270,10 @@ coding standards, and the **Definition of Done**, and **[AGENTS.md](AGENTS.md)**
 conventions (also used to brief AI coding assistants). By participating you agree to the
 [Code of Conduct](CODE_OF_CONDUCT.md).
 
+If your change touches a **knowledge domain** — anything the app says about a tradition, rather than
+computes — also read **[docs/knowledge-standards.md](docs/knowledge-standards.md)** first. It sets
+out what must stand behind each kind of claim, and the red lines that apply regardless.
+
 In short:
 
 1. Fork and branch (`feat/…`, `fix/…`).
@@ -613,6 +281,11 @@ In short:
 3. Keep `spotlessCheck`, `detekt`, and tests green.
 4. Use [Conventional Commits](https://www.conventionalcommits.org/).
 5. Open a PR using the template.
+
+**Looking for something to work on?** The domains marked *Open* in
+[docs/roadmap.md](docs/roadmap.md) are wanted and unassigned. Two are especially approachable:
+**string extraction for localization** (mechanical, high value, no domain knowledge needed) and
+**Chandas** (Sanskrit prosody — pure Kotlin, no UI, and a clear right answer).
 
 ## Support the project
 
