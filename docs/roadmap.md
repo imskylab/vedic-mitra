@@ -171,7 +171,10 @@ The core, and the connective tissue for everything else in this roadmap.
 - [x] Sunrise, sunset, moonrise, moonset, moon phase, golden hour
 - [x] Brahma and Abhijit Muhurta; Rahu Kalam, Yamaganda, Gulika, Dur Muhurta, Varjyam
 - [x] Sixteen Choghadiya windows; planetary rasi positions with next pravesh
-- [x] Monthly calendar, day detail, cycle rows showing what each limb was, is and becomes
+- [x] Monthly calendar, day detail, cycle rows showing what each limb was, is and becomes —
+      including the lunar month and the season, whose neighbours the first version of that rule
+      wrongly excluded for being slow. The ayana and the lunar year keep a table row and show when
+      they end: the useful half of a slow limb is its **boundary**, not its neighbour
 - [x] Plain-language explanations of every limb, enforced by the build **and reachable** — tapping a
       wheel row opens one. Worth noting this box was ticked for a release in which no reader could
       get to the copy at all: enforced and reachable are different claims, and only one of them was
