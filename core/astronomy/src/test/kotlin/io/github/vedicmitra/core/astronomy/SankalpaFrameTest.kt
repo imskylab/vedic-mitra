@@ -77,8 +77,13 @@ class SankalpaFrameTest {
             snapshot(maasa = Maasa(number = 12, name = "Phalguna", adhika = false))
                 .copy(tithi = Tithi(number = 22, paksha = Paksha.KRISHNA, name = "Saptami"))
 
-        assertThat(krishna.sankalpaFrame().coordinates.single { it.label == "Maasa" }.value)
-            .isEqualTo("Phalguna")
+        assertThat(
+            krishna
+                .sankalpaFrame()
+                .coordinates
+                .single { it.label == "Maasa" }
+                .value,
+        ).isEqualTo("Phalguna")
         assertThat(
             krishna
                 .sankalpaFrame(reckoning = MaasaReckoning.PURNIMANTA)
