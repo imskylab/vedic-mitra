@@ -176,6 +176,17 @@ object PanchangaPrimer {
                             "quarter days; the Sun takes roughly a month, and its move into the " +
                             "next one is the sankranti.",
                 ),
+            PanchangaConcept.SANKALPA to
+                PrimerEntry(
+                    title = "Sankalpa",
+                    oneLine = "The ten measures that fix when and where a moment is.",
+                    body =
+                        "A sankalpa traditionally opens by naming the place and then the time — the " +
+                            "year, the ayana, the season, the month, the fortnight, the tithi, the " +
+                            "weekday, the nakshatra, the yoga and the karana, in that order. Those " +
+                            "ten are the same values a panchanga reports, which is much of why it " +
+                            "reports them. The order varies by region and tradition.",
+                ),
         )
 }
 
@@ -198,6 +209,7 @@ enum class PanchangaConcept {
     SUNRISE_DAY,
     MOON_PHASE,
     RASHI,
+    SANKALPA,
 }
 
 /**

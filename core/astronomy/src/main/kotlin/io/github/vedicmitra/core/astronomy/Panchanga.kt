@@ -10,8 +10,17 @@
 
 package io.github.vedicmitra.core.astronomy
 
-/** The lunar fortnight: waxing (Shukla) or waning (Krishna). */
-enum class Paksha { SHUKLA, KRISHNA }
+/**
+ * The lunar fortnight: waxing (Shukla) or waning (Krishna).
+ *
+ * @property displayName the name as shown to the user, matching every other panchanga enum.
+ */
+enum class Paksha(
+    val displayName: String,
+) {
+    SHUKLA("Shukla"),
+    KRISHNA("Krishna"),
+}
 
 /**
  * A tithi — one of the 30 lunar days, defined by 12° increments of the Moon's elongation from the
