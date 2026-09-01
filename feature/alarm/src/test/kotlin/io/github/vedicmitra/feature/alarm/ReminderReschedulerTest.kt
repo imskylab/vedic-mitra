@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.alarm
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.PersistedReminder
@@ -44,6 +45,44 @@ class ReminderReschedulerTest {
         }
 
     @Test
+    fun `an alarm-style reminder is re-armed as an alarm`() =
+        runTest {
+            // The bug this pins: the rescheduler built its notification without an alert style, so
+            // it defaulted to NOTIFICATION. BootReceiver fires on boot *and* on app update, so every
+            // restart and every update silently turned a ringing alarm into a quiet notification —
+            // with the reminder still firing, so nothing looked broken.
+            val ringing = PersistedReminder("brahma", triggerAtEpochMillis = 5_000L, title = "Brahma", body = "wake")
+            val quiet = PersistedReminder("rahu", triggerAtEpochMillis = 6_000L, title = "Rahu", body = "avoid")
+            val repository = StubReminderRepository(listOf(ringing, quiet))
+            repository.setAlertType("brahma", AlertStyle.ALARM)
+            val scheduler = RecordingTaskScheduler()
+
+            ReminderRescheduler(repository, scheduler).rescheduleEnabled(nowEpochMillis = 1_000L)
+
+            val byId = scheduler.scheduled.associateBy { it.id }
+            assertThat(byId.getValue("brahma").notification.alert).isEqualTo(AlertStyle.ALARM)
+            assertWithMessage("a reminder with no stored style stays a notification")
+                .that(byId.getValue("rahu").notification.alert)
+                .isEqualTo(AlertStyle.NOTIFICATION)
+        }
+
+    @Test
+    fun `a reminder with no stored alert style defaults to a notification`() =
+        runTest {
+            val reminder = PersistedReminder("abhijit", triggerAtEpochMillis = 5_000L, title = "Abhijit", body = "now")
+            val scheduler = RecordingTaskScheduler()
+
+            ReminderRescheduler(StubReminderRepository(listOf(reminder)), scheduler)
+                .rescheduleEnabled(nowEpochMillis = 1_000L)
+
+            assertThat(
+                scheduler.scheduled
+                    .single()
+                    .notification.alert,
+            ).isEqualTo(AlertStyle.NOTIFICATION)
+        }
+
+    @Test
     fun `does nothing when there are no reminders`() =
         runTest {
             val scheduler = RecordingTaskScheduler()
@@ -55,9 +94,10 @@ class ReminderReschedulerTest {
         }
 }
 
-// Offsets are irrelevant to rescheduling: a re-armed reminder's trigger time and body were already
-// baked in when it was first scheduled, and are replayed verbatim, so this stub never needs to
-// hold a real offset.
+// Offsets really are irrelevant to rescheduling: a re-armed reminder's trigger time and body were
+// baked in when it was first scheduled and are replayed verbatim. The **alert style** is not, and an
+// earlier version of this comment lumped the two together — which is why the stub held an empty
+// alertTypeByName and the downgrade-on-reboot bug survived two test cases.
 private class StubReminderRepository(
     initial: List<PersistedReminder>,
 ) : ReminderRepository {
