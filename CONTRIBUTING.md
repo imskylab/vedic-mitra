@@ -43,6 +43,33 @@ contribution.
 5. **Open a Pull Request** using the template. Link the issue it closes.
 6. Address review feedback; keep the branch up to date with `main`.
 
+## Contributing knowledge, not just code
+
+Much of this project is not code — it is claims about a tradition. Those have their own bar, set out
+in **[docs/knowledge-standards.md](docs/knowledge-standards.md)**. Read it before contributing to
+any knowledge domain.
+
+The short version: every feature declares one of four modes.
+
+- **Compute** — the app asserts a value it derived. Validated against an independent reference where
+  one exists (see [the validation pass](docs/validation/panchanga-validation.md)); where none does,
+  the rule itself is cited, and the result is never shown at the same confidence as a validated one.
+- **Cite** — the app reports what a tradition holds. Needs a **named source as a field on the model,
+  not a code comment**, and a voice that attributes ("traditionally", "is said to") rather than
+  asserts. Where authorities disagree, say so instead of picking one.
+- **Track** — the app records what the user did. Makes no claim about the world; stays on the device.
+- **Teach** — the app explains an idea. Follow the `PanchangaPrimer` pattern: a closed enum and a
+  total map, so that adding a concept without writing its copy breaks the build.
+
+Two things that will get a change declined regardless of how well it is written: **crossing a
+[red line](docs/knowledge-standards.md#red-lines)** — no medical claims, no fatalism, no instruction
+in someone's practice, no remedy commerce — and **adding a knowledge claim with no declared mode**,
+which is incomplete in the same way a change with no tests is.
+
+Rules are derived from reference data rather than from memory. That is not ceremony: when the four
+porutham were derived that way, two came out differently from the textbook they would otherwise have
+been written from.
+
 ## Coding standards
 
 - Follow the module boundaries and layer rules in [AGENTS.md](AGENTS.md) — features never depend on
@@ -96,6 +123,8 @@ A change is "done" when:
 - [ ] Public APIs are documented with KDoc.
 - [ ] `spotlessCheck`, `detekt`, and unit tests pass; `assembleDebug` succeeds.
 - [ ] Tests cover the new/changed behaviour.
+- [ ] Any knowledge claim declares its [mode](docs/knowledge-standards.md) and carries the backing
+      that mode requires — a validated reference, a named source, or neither if it claims nothing.
 - [ ] UI changes include light + dark screenshots and use design-system tokens.
 - [ ] Commits follow Conventional Commits and the PR uses the template.
 
