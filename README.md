@@ -282,8 +282,10 @@ In short:
 4. Use [Conventional Commits](https://www.conventionalcommits.org/).
 5. Open a PR using the template.
 
-**Looking for something to work on?** The domains marked *Open* in
-[docs/roadmap.md](docs/roadmap.md) are wanted and unassigned. Two are especially approachable:
+**Looking for something to work on?** Start with
+[good first issue](https://github.com/imskylab/vedic-mitra/labels/good%20first%20issue) or
+[help wanted](https://github.com/imskylab/vedic-mitra/labels/help%20wanted), and see
+[Where to start](docs/roadmap.md#where-to-start) for the wider map. Two are especially approachable:
 **string extraction for localization** (mechanical, high value, no domain knowledge needed) and
 **Chandas** (Sanskrit prosody — pure Kotlin, no UI, and a clear right answer).
 

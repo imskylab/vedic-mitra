@@ -40,6 +40,29 @@ Gandharva Veda"; they think *what is today*, *when should I do this*, *what does
 The shastra structure below says where knowledge comes from and who can contribute what. The app's
 own navigation stays task-shaped — see [What the user sees](#what-the-user-sees).
 
+## Where to start
+
+Open work is filed as issues rather than only described here, so there is something to actually pick
+up:
+
+- **[good first issue](https://github.com/imskylab/vedic-mitra/labels/good%20first%20issue)** —
+  self-contained, with an existing pattern in the repo to copy
+- **[help wanted](https://github.com/imskylab/vedic-mitra/labels/help%20wanted)** — larger or needing
+  domain knowledge
+- **[foundation](https://github.com/imskylab/vedic-mitra/labels/foundation)** — the work that gates
+  everything else (Part I below)
+- **[localization](https://github.com/imskylab/vedic-mitra/labels/localization)** — needs Indic
+  language knowledge more than Android knowledge
+- **[knowledge](https://github.com/imskylab/vedic-mitra/labels/knowledge)** — subject to
+  [knowledge-standards.md](knowledge-standards.md); read it first
+
+Two are worth calling out for someone new. **String extraction** is mechanical, high value, and needs
+no domain knowledge. **Chandas** — Sanskrit prosody — is pure Kotlin with no UI and a clear right
+answer, and it serves a screen that already ships.
+
+If a domain is marked *Open* here and has no issue yet, open one and say what you intend. That is
+the preferred way in: the roadmap is a direction, not a queue.
+
 ---
 
 ## Part I — Foundations
