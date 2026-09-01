@@ -62,6 +62,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and no locale at all. That is the largest single limit on the project's reach, and it gates the
   knowledge domains, because every English screen added first multiplies the translation debt.
 
+### Fixed
+
+- **Tapping a limb on the calendar now explains it — which 0.9.0 said it already did.** The eleven
+  primer explanations shipped in that release reached no user at all. `VedicCycleRow` has always
+  accepted an `onClick`; `CalendarScreen` never passed one. The glossary the other detail sheets
+  read is keyed by item name — "Rahu Kalam", "Ekadashi" — so it has no entry for "Tithi" or
+  "Nakshatra" to fall back to either. The copy existed, was tested, and was enforced by the build,
+  and no reader could get to it.
+
+  Wiring it up surfaced a second gap: the Chandra Rashi and Surya Rashi rows had no concept to map
+  to, so a **Rashi** entry was written. The limb-to-concept mapping now lives on `PanchangaLimb`
+  instead of in the UI, which makes it total by construction — a limb cannot be added without
+  naming the concept that explains it, and a concept cannot be named without copy.
+
+  The row also states its click action in its own semantics. `clearAndSetSemantics` replaces what
+  the node reports, so without that a screen reader would be handed a row it could read and could
+  not activate — worse than a row that was never tappable, because the explanation is announced as
+  present and cannot be opened.
+
 ## [0.9.0] - 2026-08-31
 
 ### Added

@@ -36,6 +36,18 @@ class PanchangaPrimerTest {
     }
 
     @Test
+    fun `every limb the calendar draws as a wheel can be explained`() {
+        // The gap this closes: this copy shipped in 0.9.0 with no consumer at all -- VedicCycleRow
+        // took an onClick that nothing passed, and the glossary the other sheets read has no key
+        // for a limb name. Wiring it up then found two rows with no concept to map to. A row the
+        // calendar can draw but the primer cannot explain would offer a tap and say nothing.
+        PanchangaLimb.entries.forEach { limb ->
+            val entry = PanchangaPrimer.of(limb.concept)
+            assertWithMessage("copy for the ${limb.displayName} row").that(entry.body).isNotEmpty()
+        }
+    }
+
+    @Test
     fun `one-liners fit beside a value without tapping`() {
         // They are shown untapped, next to a ring or a number, so they have to survive a narrow
         // screen at a large font scale. A one-liner that wraps to three lines is a body in disguise.
