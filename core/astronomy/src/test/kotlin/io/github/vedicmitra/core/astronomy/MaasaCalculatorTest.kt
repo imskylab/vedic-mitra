@@ -11,8 +11,10 @@
 package io.github.vedicmitra.core.astronomy
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 import kotlin.math.min
+import kotlin.time.Instant
 
 /**
  * Verifies the amanta-month and samvatsara logic against the real [Ephemeris]. Reference values
@@ -33,6 +35,61 @@ class MaasaCalculatorTest {
     private fun maasa(epochMillis: Long) = maasaOf(epochMillis, ::elongationAt, ::sunSiderealAt)
 
     private fun samvatsara(epochMillis: Long) = samvatsaraOf(epochMillis, ::elongationAt, ::sunSiderealAt)
+
+    private fun cycle(epochMillis: Long) = maasaCycleOf(epochMillis, ::elongationAt, ::sunSiderealAt)
+
+    @Test
+    fun `names the months either side of the current one`() {
+        val around = cycle(EPOCH_2026_08_05)
+
+        assertThat(around.current.displayName).isEqualTo("Ashadha")
+        // 2026 inserts an Adhika Jyeshtha, so the month before Ashadha is the *nija* Jyeshtha.
+        assertThat(around.previous.displayName).isEqualTo("Jyeshtha")
+        assertThat(around.next.displayName).isEqualTo("Shravana")
+    }
+
+    @Test
+    fun `the month after a leap month is its nija counterpart, not the next name along`() {
+        // This is the whole reason the neighbours come from real lunations. Stepping the number
+        // would say Adhika Jyeshtha is followed by Ashadha; it is followed by the *nija* Jyeshtha,
+        // and a wheel built on arithmetic would be a month wrong for the length of the leap month.
+        val around = cycle(EPOCH_2026_05_25)
+
+        assertThat(around.current.displayName).isEqualTo("Adhika Jyeshtha")
+        assertThat(around.next.name).isEqualTo("Jyeshtha")
+        assertWithMessage("the month following a leap month is not itself a leap month")
+            .that(around.next.adhika)
+            .isFalse()
+        assertThat(around.previous.displayName).isEqualTo("Vaishakha")
+    }
+
+    @Test
+    fun `the month window brackets the instant it was computed for`() {
+        val around = cycle(EPOCH_2026_08_05)
+        val at = Instant.fromEpochMilliseconds(EPOCH_2026_08_05)
+
+        assertThat(around.window.start).isLessThan(at)
+        assertThat(around.window.end).isGreaterThan(at)
+        // A lunation is 29 to 30 days; anything outside that means the syzygy search drifted.
+        assertThat(around.window.duration.inWholeHours).isAtLeast(29L * 24)
+        assertThat(around.window.duration.inWholeHours).isAtMost(30L * 24)
+    }
+
+    @Test
+    fun `the lunar year runs Chaitra to Chaitra`() {
+        val start = chaitraStartAtOrBefore(EPOCH_2026_08_05, ::elongationAt, ::sunSiderealAt)
+        val end = chaitraStartAfter(start, ::elongationAt, ::sunSiderealAt)
+
+        assertThat(start).isLessThan(EPOCH_2026_08_05)
+        assertThat(end).isGreaterThan(EPOCH_2026_08_05)
+        // 2026 inserts an Adhika Jyeshtha, so this year holds thirteen lunations, not twelve --
+        // which is exactly why the boundary is walked rather than estimated from a fixed offset.
+        val days = (end - start) / 86_400_000L
+        assertWithMessage("a thirteen-month lunar year is longer than twelve lunations")
+            .that(days)
+            .isAtLeast(380L)
+        assertThat(days).isAtMost(390L)
+    }
 
     @Test
     fun `names the amanta month by the sun's rashi at the starting new moon`() {

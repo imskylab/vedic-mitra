@@ -176,6 +176,18 @@ object PanchangaPrimer {
                             "quarter days; the Sun takes roughly a month, and its move into the " +
                             "next one is the sankranti.",
                 ),
+            PanchangaConcept.RITU to
+                PrimerEntry(
+                    title = "Ritu",
+                    oneLine = "One of six seasons, each two months of the Sun's journey.",
+                    body =
+                        "The year divides into six ritus of sixty degrees of solar longitude each " +
+                            "— Vasanta, Grishma, Varsha, Sharad, Hemanta and Shishira — so each " +
+                            "runs about two months. They are read from where the Sun actually is " +
+                            "rather than from a fixed date, which is why a ritu can begin a few " +
+                            "days either side of the same day each year. Traditional daily routine " +
+                            "is said to shift with them.",
+                ),
             PanchangaConcept.SANKALPA to
                 PrimerEntry(
                     title = "Sankalpa",
@@ -209,6 +221,7 @@ enum class PanchangaConcept {
     SUNRISE_DAY,
     MOON_PHASE,
     RASHI,
+    RITU,
     SANKALPA,
 }
 

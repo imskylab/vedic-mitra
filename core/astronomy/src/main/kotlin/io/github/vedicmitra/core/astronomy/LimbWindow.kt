@@ -40,14 +40,20 @@ data class LimbWindow(
 }
 
 /**
- * Validity windows for the limbs whose value turns over quickly enough for "ends in …" to mean
- * something — hours to a couple of days.
+ * Validity windows for every limb the day card shows.
  *
- * Ayana, ritu, maasa and samvatsara are deliberately absent: their windows run to months or years,
- * where a countdown reads as noise, and maasa needs the syzygy solver rather than a simple boundary
- * crossing. The Sun's rashi (sankranti) is included because the ingress date is genuinely useful.
+ * This once covered only the fast limbs, on the reasoning that a months-long countdown reads as
+ * noise. That rule contradicted itself: the Sun's rashi was included *because the ingress date is
+ * genuinely useful*, and the lunar month turns on the same ~30-day scale. The distinction that
+ * actually matters is between a **neighbour** and a **boundary** — the neighbour is uninteresting
+ * for ayana (there are only two, so it is always the other one) and for samvatsara (last year's
+ * name is trivia), while the boundary is worth showing for all four. So the windows are computed
+ * here for everything, and it is the UI that decides which limbs also deserve their neighbours.
  *
  * @property vara the weekday's window — sunrise to sunrise, the one limb here that is not angular.
+ * @property ritu the season's window; its boundary is what ritucharya turns on.
+ * @property ayana the half-year's window — Makara and Karka Sankranti.
+ * @property samvatsara the lunar year's window, Ugadi to Ugadi.
  */
 data class PanchangaLimbWindows(
     val tithi: LimbWindow,
@@ -59,6 +65,9 @@ data class PanchangaLimbWindows(
     val moonPhase: LimbWindow,
     val sunRashi: LimbWindow,
     val vara: LimbWindow? = null,
+    val ritu: LimbWindow? = null,
+    val ayana: LimbWindow? = null,
+    val samvatsara: LimbWindow? = null,
 )
 
 /**
@@ -145,6 +154,12 @@ private const val PADA_SPAN = 10 * HOUR_MILLIS
 private const val MOON_RASHI_SPAN = 70 * HOUR_MILLIS
 private const val MOON_PHASE_SPAN = 96 * HOUR_MILLIS
 private const val SUN_RASHI_SPAN = 33 * 24 * HOUR_MILLIS
+private const val RITU_SPAN = 70L * 24 * HOUR_MILLIS
+private const val AYANA_SPAN = 200L * 24 * HOUR_MILLIS
+private const val RITU_ARCSEC = 216_000L // 60 degrees
+private const val AYANA_ARCSEC = 648_000L // 180 degrees
+private const val VASANTA_START_DEG = 330.0
+private const val UTTARAYANA_START_DEG = 270.0
 private const val MOON_PHASE_ARCSEC = 162_000L
 private const val HALF_PHASE_DEG = 22.5
 
@@ -152,9 +167,11 @@ private const val HALF_PHASE_DEG = 22.5
  * Every limb window for [epochMillis], with the weekday's sunrise-to-sunrise window folded in when
  * the sun both rises today and tomorrow (it does not, inside the polar circles).
  *
- * Roughly 270 ephemeris evaluations — two bisections per limb at about 17 iterations each. That is
- * fine for the single-moment `snapshotAt` path, and is exactly why these windows are **not** part
- * of `daySummaryAt`, which the calendar grid calls once per day of the month.
+ * Roughly 270 ephemeris evaluations for the angular limbs — two bisections per limb at about 17
+ * iterations each — plus the lunar year's two Chaitra walks, which are syzygy searches rather than
+ * boundary crossings and cost more. That is fine for the single-moment `snapshotAt` path, and is
+ * exactly why these windows are **not** part of `daySummaryAt`, which the calendar grid calls once
+ * per day of the month.
  */
 internal fun limbWindowsAt(
     epochMillis: Long,
@@ -193,6 +210,39 @@ internal fun limbWindowsAt(
             },
         sunRashi = window(SUN_RASHI_SPAN, AngularBuckets.RASHI_ARCSEC, now.sunSidereal, sunSiderealAt),
         vara = if (sunrise != null && nextSunrise != null) varaWindow(epochMillis, sunrise, nextSunrise) else null,
+        // Ritu and ayana are plain solar-longitude buckets, so they reuse the same monotonic
+        // bisection as the fast limbs -- only the bucket width and the search bracket differ.
+        ritu =
+            window(RITU_SPAN, RITU_ARCSEC, now.sunSidereal - VASANTA_START_DEG) { at ->
+                sunSiderealAt(at) - VASANTA_START_DEG
+            },
+        ayana =
+            window(AYANA_SPAN, AYANA_ARCSEC, now.sunSidereal - UTTARAYANA_START_DEG) { at ->
+                sunSiderealAt(at) - UTTARAYANA_START_DEG
+            },
+        samvatsara = samvatsaraWindow(epochMillis, elongationAt, sunSiderealAt),
+    )
+}
+
+/**
+ * The lunar year's window: the Chaitra that opened it, to the Chaitra that opens the next.
+ *
+ * Not an angle bucket. A lunar year is twelve *or thirteen* lunations, so its boundaries have to be
+ * found by walking new moons the same way [samvatsaraOf] does — there is no fixed offset that lands
+ * on Ugadi in both kinds of year.
+ */
+private fun samvatsaraWindow(
+    epochMillis: Long,
+    elongationAt: (Long) -> Double,
+    sunSiderealAt: (Long) -> Double,
+): LimbWindow {
+    val start = chaitraStartAtOrBefore(epochMillis, elongationAt, sunSiderealAt)
+    val end = chaitraStartAfter(start, elongationAt, sunSiderealAt)
+    val span = (end - start).toDouble()
+    return LimbWindow(
+        start = Instant.fromEpochMilliseconds(start),
+        end = Instant.fromEpochMilliseconds(end),
+        angularFraction = if (span > 0) ((epochMillis - start) / span).coerceIn(0.0, 1.0) else 0.0,
     )
 }
 

@@ -12,19 +12,26 @@
 
 package io.github.vedicmitra.core.astronomy
 
+import io.github.vedicmitra.core.common.model.MaasaReckoning
+
 /**
  * A panchanga value that repeats on a fixed cycle, so the one before and the one after can be named.
  *
- * This is what makes "previous / current / next" possible without touching the ephemeris. Every one
- * of these limbs is a numbered position in a closed loop, and the names are a pure function of that
- * number — the tithi before Chaturdashi is Trayodashi whatever the sky is doing. Only the *times*
- * come from the engine, and those are already carried by [LimbWindow]: the previous value ended when
- * the current one began, and the next begins when the current one ends.
+ * This is what makes "previous / current / next" possible without touching the ephemeris. For all
+ * but one of these limbs the names are a pure function of a position in a closed loop — the tithi
+ * before Chaturdashi is Trayodashi whatever the sky is doing — and only the *times* come from the
+ * engine, already carried by [LimbWindow]. The lunar month is the exception; see [LimbStep.names].
  *
  * Deliberately not every row of a panchanga. Sunrise, the muhurtas and the like are instants and
  * spans rather than positions in a cycle — "the previous Rahu Kalam" is yesterday's, not a step
- * back in a loop — and maasa, samvatsara, ayana and ritu turn over on scales where a neighbour is
- * months or years away and tells a reader nothing about today.
+ * back in a loop.
+ *
+ * **Ayana and samvatsara are excluded on their own merits, not for being slow.** An earlier version
+ * of this rule ruled out everything slower than a day, which was wrong twice over: it took maasa
+ * out despite it turning on the same ~30-day scale as the Sun's rashi, which was kept *because its
+ * boundary is useful*; and it conflated the neighbour with the boundary. The neighbour is what
+ * fails for those two — there are only two ayanas, so it is always the other one, and last year's
+ * samvatsara name is trivia. Their boundaries are still worth showing, and are, as a table row.
  *
  * @property displayName what the row is called.
  * @property cycleLength how many values the loop holds before it repeats.
@@ -49,6 +56,12 @@ enum class PanchangaLimb(
     MOON_RASHI("Chandra Rashi", 12, PanchangaConcept.RASHI),
     SUN_RASHI("Surya Rashi", 12, PanchangaConcept.RASHI),
     MOON_PHASE("Moon Phase", 8, PanchangaConcept.MOON_PHASE),
+
+    // The two slow limbs whose neighbours are worth naming. Ayana and samvatsara are deliberately
+    // not here: there are only two ayanas, so the neighbour is always the other one, and last
+    // year's samvatsara name is trivia. Both still get their boundary shown, as a table row.
+    MAASA("Maasa", 12, PanchangaConcept.LUNAR_MONTH),
+    RITU("Ritu", 6, PanchangaConcept.RITU),
     ;
 
     /**
@@ -69,6 +82,10 @@ enum class PanchangaLimb(
             KARANA -> karanaNameAt(wrapped)
             MOON_RASHI, SUN_RASHI -> RASHI_NAMES[wrapped - 1]
             MOON_PHASE -> MoonPhase.entries[wrapped - 1].displayName
+            // Only ever a fallback: a maasa row is built with explicit names, because stepping the
+            // number is wrong in an adhika year. See LimbStep.names.
+            MAASA -> maasaNameOf(wrapped)
+            RITU -> Ritu.entries[wrapped - 1].displayName
         }
     }
 
@@ -91,28 +108,43 @@ enum class PanchangaLimb(
  *   happens for vara at latitudes where the Sun does not rise. The previous value ended at
  *   [LimbWindow.start] and the next begins at [LimbWindow.end]; they are the same two instants,
  *   which is why no extra computation is needed to show all three.
+ * @property names explicit names, for the one limb whose neighbours are **not** a pure function of
+ *   position: the lunar month. An adhika year holds thirteen lunations, and under purnimanta the
+ *   name also depends on the fortnight, so maasa's three values are computed where the ephemeris
+ *   and the user's chosen scheme are both in reach, and carried here rather than derived.
  */
 data class LimbStep(
     val limb: PanchangaLimb,
     val position: Int,
     val window: LimbWindow?,
+    val names: LimbNames? = null,
 ) {
-    val previous: String get() = limb.previousTo(position)
-    val current: String get() = limb.nameAt(position)
-    val next: String get() = limb.nextAfter(position)
+    val previous: String get() = names?.previous ?: limb.previousTo(position)
+    val current: String get() = names?.current ?: limb.nameAt(position)
+    val next: String get() = names?.next ?: limb.nextAfter(position)
 
     /** How far through the current value we are, `[0, 1)`, or `null` if unknown. */
     val fraction: Double? get() = window?.angularFraction
 }
 
+/** Three names for one row, when they cannot be derived from a position. See [LimbStep.names]. */
+data class LimbNames(
+    val previous: String,
+    val current: String,
+    val next: String,
+)
+
 /**
- * The nine cycling rows of a day's panchanga, in the order they are traditionally recited — vara,
- * tithi, nakshatra, yoga, karana — with the Moon's finer and slower positions after them.
+ * The cycling rows of a day's panchanga, in the order they are traditionally recited — vara, tithi,
+ * nakshatra, yoga, karana — with the Moon's finer positions after them, and the two slow limbs
+ * whose neighbours mean something (the lunar month and the season) last.
+ *
+ * Month names follow [reckoning]; every other row is scheme-independent.
  *
  * Returns an empty list when the snapshot has no limb windows, since without them there are no
  * boundaries to show and the row would be a bare name.
  */
-fun AstronomySnapshot.limbSteps(): List<LimbStep> {
+fun AstronomySnapshot.limbSteps(reckoning: MaasaReckoning = MaasaReckoning.AMANTA): List<LimbStep> {
     val limbs = limbs ?: return emptyList()
     return buildList {
         add(LimbStep(PanchangaLimb.VARA, vara.ordinal + 1, limbs.vara))
@@ -124,5 +156,24 @@ fun AstronomySnapshot.limbSteps(): List<LimbStep> {
         moonRasi?.let { add(LimbStep(PanchangaLimb.MOON_RASHI, it.index + 1, limbs.moonRashi)) }
         sunRasi?.let { add(LimbStep(PanchangaLimb.SUN_RASHI, it.index + 1, limbs.sunRashi)) }
         add(LimbStep(PanchangaLimb.MOON_PHASE, moonPhase.ordinal + 1, limbs.moonPhase))
+        maasaCycle?.let { cycle ->
+            // Each of the three read through nameIn, which is what makes the row correct under
+            // purnimanta: on a Krishna day every one of them shifts forward together, so the row
+            // reads as that scheme's own sequence rather than a mix of the two.
+            add(
+                LimbStep(
+                    limb = PanchangaLimb.MAASA,
+                    position = cycle.current.number,
+                    window = cycle.window,
+                    names =
+                        LimbNames(
+                            previous = cycle.previous.nameIn(reckoning, tithi.paksha),
+                            current = cycle.current.nameIn(reckoning, tithi.paksha),
+                            next = cycle.next.nameIn(reckoning, tithi.paksha),
+                        ),
+                ),
+            )
+        }
+        limbs.ritu?.let { add(LimbStep(PanchangaLimb.RITU, ritu.ordinal + 1, it)) }
     }
 }
