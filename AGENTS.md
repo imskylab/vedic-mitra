@@ -5,16 +5,21 @@ repository. Follow it precisely; it encodes the architecture and conventions the
 on. When a request conflicts with these rules, surface the conflict rather than silently breaking
 them.
 
-> **Project state:** Phase 1 (Foundation) is complete; Phases 2–9 and 11 are partially built, and
-> the astrology arc (Phase 6) is largely done — natal charts, seventeen divisional charts, three
-> dasha systems to three levels, ashtakavarga, matchmaking and electional muhurta all ship. The core
+> **Project state:** the **panchanga, jyotisha and muhurta** domains are largely built — natal
+> charts, seventeen divisional charts, three dasha systems to three levels, ashtakavarga,
+> matchmaking and electional muhurta all ship. The wider shastra map in
+> [docs/roadmap.md](docs/roadmap.md) is mostly open, and the app is **not yet localized**. The core
 > capability modules are **no longer contracts-only** — the
 > astronomy engine (`:core:astronomy`), exact-alarm scheduler (`:core:scheduler`), notifications
 > (`:core:notifications`), location (`:core:location`), and DataStore persistence (`:core:datastore`)
 > all have working implementations behind their ports. When adding behaviour, still extend a port
-> and bind the implementation in that module's `di/` package rather than reaching across layers. See
-> the README roadmap and CHANGELOG for exactly what is and isn't built before starting a phase's
-> work.
+> and bind the implementation in that module's `di/` package rather than reaching across layers.
+>
+> Read [docs/roadmap.md](docs/roadmap.md) for what is and isn't built, and
+> [docs/knowledge-standards.md](docs/knowledge-standards.md) before adding anything the app *says*
+> about a tradition, as opposed to computes. The twelve-phase plan that earlier versions of this
+> file referred to was retired by [ADR 0016](docs/adr/0016-shastra-domains-and-knowledge-modes.md);
+> ADRs numbered below that still cite phase numbers, and the roadmap explains how to read them.
 
 ---
 

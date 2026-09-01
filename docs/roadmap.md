@@ -35,6 +35,12 @@ knowledge claim without a declared mode is an incomplete change.
 scheduled** — several of these domains will not exist unless someone else builds them, and the
 roadmap says so rather than implying a team. Status marks reflect what is actually in the code.
 
+**Reading the older ADRs.** Decisions 0002–0015 predate this map and cite phase numbers from the
+twelve-phase plan [ADR 0016](adr/0016-shastra-domains-and-knowledge-modes.md) retired. They are left
+as written — an ADR records what was decided at the time, and rewriting one to match a later map
+would defeat the point. Translate roughly: Phase 7 is F2 and the location work, Phase 9 is F4 and
+the UI items under C1, Phase 11 is K5 and K6.
+
 **Shastras are the contribution map, not the navigation.** Nobody opens an app thinking "I need
 Gandharva Veda"; they think *what is today*, *when should I do this*, *what does this word mean*.
 The shastra structure below says where knowledge comes from and who can contribute what. The app's
@@ -90,18 +96,26 @@ content added before extraction multiplies the eventual translation debt.
 - [ ] Devanagari and Indic script rendering verified at each font scale
 - [ ] Transliteration scheme support (IAST / ITRANS / regional) as a user preference
 
-### F2. Regional variation — **Next** · a correctness debt, not a feature
+### F2. Regional variation — **Building** · a correctness debt, not a feature
 
-The app computes one tradition's answer and presents it as *the* answer. For a large share of users
-it is quietly wrong — the amanta/purnimanta split alone moves festival dates by a fortnight across
-much of North India.
+The app computed one tradition's answer and presented it as *the* answer, without saying so. For a
+large share of users that was quietly wrong — the amanta/purnimanta split alone moves festival dates
+by a fortnight across much of North India, and a reader whose almanac disagreed had no way to tell
+whether the app was wrong or simply following the other convention.
+
+The month scheme is now settled. The solar calendars are the larger remaining half.
 
 - [x] Amanta lunar month naming (ADR 0005)
-- [ ] Purnimanta month naming as a user preference
+- [x] Purnimanta month naming as a user preference, defaulting to amanta (ADR 0017)
+- [x] Name the month scheme in use on **every** reading, not only the non-default one
 - [ ] Tamil, Malayalam, Bengali and Odia solar calendars
 - [ ] Regional festival sets and regional variants of shared festivals
 - [ ] Regional Panchang support (per-tradition conventions surfaced, not hidden)
-- [ ] Say which tradition a screen follows, wherever traditions differ
+- [ ] Say which tradition is being followed on the *other* screens where conventions differ —
+      ayana and ritu both have a "Vedic" reading this app does not use, named in their KDoc but not
+      on screen
+- [ ] Verify the adhika-month case under purnimanta, which currently follows the rule mechanically
+      and is **not** checked against a reference
 
 ### F3. Content provenance — **Next** · owed remediation
 
@@ -158,7 +172,10 @@ The core, and the connective tissue for everything else in this roadmap.
 - [x] Brahma and Abhijit Muhurta; Rahu Kalam, Yamaganda, Gulika, Dur Muhurta, Varjyam
 - [x] Sixteen Choghadiya windows; planetary rasi positions with next pravesh
 - [x] Monthly calendar, day detail, cycle rows showing what each limb was, is and becomes
-- [x] Plain-language explanations of every limb, enforced by the build
+- [x] Plain-language explanations of every limb, enforced by the build **and reachable** — tapping a
+      wheel row opens one. Worth noting this box was ticked for a release in which no reader could
+      get to the copy at all: enforced and reachable are different claims, and only one of them was
+      true
 - [ ] Time scrubbing across the day (**Open** — the best demonstration of what a panchanga is)
 - [ ] Yearly overview; agenda and timeline calendar views
 - [ ] Home-screen widgets
@@ -190,13 +207,17 @@ The deepest domain here and roughly complete on the computation side.
 - [ ] Muhurta for the samskaras — see K2, where the two domains meet
 - [ ] Snooze, repeat schedules, dedicated sunrise/sunset toggles
 
-### C4. Kala — time reckoning — **Open** · Compute
+### C4. Kala — time reckoning — **Open**, with the era years shipped · Compute
 
 Partly built and never named as a domain. The era and calendar arithmetic the app already does,
 made explicit and complete.
 
 - [x] Samvatsara, ayana, ritu, maasa
-- [ ] Era conversion (Vikrama, Shaka, Kali) both ways
+- [x] Vikrama, Shaka and Kali years for the current lunar year, all Chaitradi and anchored to the
+      same Chaitra the samvatsara turns at, so the four cannot turn on different days
+- [ ] The reverse direction — an era year to its Gregorian range
+- [ ] Kartikadi Vikrama, deliberately not modelled today (see `EraYears`); needs a second year
+      boundary and a per-user choice of which to follow
 - [ ] Yuga and kalpa reckoning, as explanation rather than assertion
 - [ ] Ghati / vighati / muhurta as a time display option
 
@@ -262,10 +283,22 @@ can cite. It is the natural bridge between what is built and what is planned.
 - [ ] Observances and duties by stage of life, attributed
 - [ ] Explicitly **not**: prescriptive instruction, or any claim about who owes what to whom
 
-### K3. Kalpa Shastra — ritual procedure — **Open** · Cite
+### K3. Kalpa Shastra — ritual procedure — **Open**, with the sankalpa frame shipped · Cite + Compute
 
-Procedure as reference, tied to the timing the app already computes. Sequence, materials and
-sankalpa, each attributed to a named text, with regional variation reported rather than flattened.
+Procedure as reference, tied to the timing the app already computes. The entry point is built: the
+day detail assembles the **ten measures a sankalpa names** — place, then samvatsara, ayana, ritu,
+maasa, paksha, tithi, vara, nakshatra, yoga, karana — with a copy action, because those ten are
+exactly what a panchanga reports and the app already computed every one.
+
+- [x] The sankalpa's temporal frame, in recitation order, copyable
+- [ ] **A source for the ordering.** It is the sequence in common use and varies by sampradaya and
+      region; no text is named yet. This is a Cite claim currently failing the Cite bar, recorded in
+      `SankalpaFrame.kt` rather than papered over — see F3
+- [ ] Vrata procedure: what is kept, and what a named source says about keeping it
+- [ ] Samskara procedure — see K2, where the two domains meet
+- [ ] Regional variation reported rather than flattened
+- [ ] Deliberately **not**: locative declension, Devanagari for the panchanga vocabulary, the
+      cosmological prefix, or any of the personal elements — all recorded in `SankalpaFrame.kt`
 
 ### K4. Ayurveda — **Open**, deliberately narrow · Cite
 
@@ -281,14 +314,19 @@ a contribution that crosses it will be declined regardless of quality.
 - [ ] Ritucharya — the seasonal order, tied to the computed ritu
 - [ ] A primer explaining the concepts, attributed throughout
 
-### K5. Mantra Shastra and stotra — **Shipped**, provenance owed · Cite + Track
+### K5. Mantra Shastra and stotra — **Shipped**, sources owed · Cite + Track
 
 - [x] 26 stotras with Devanagari, transliteration and a short original note
 - [x] 12 mantras including the nine graha beeja; japa counter suggesting by mahadasha lord
-- [ ] **Sources for all of it** — see F3, which blocks further content here
+- [x] A required `source` on both models, so a new entry cannot compile without deciding, and a
+      ratchet test so the unsourced count can shrink but never grow
+- [ ] **Identify the sources.** All 38 entries currently declare `NotRecorded` and the reader is
+      shown that. They were deliberately not filled in from memory — a wrong attribution is itself a
+      claim, and this needs texts to hand rather than code
 - [ ] Pronunciation guidance (text; audio is constrained — see K7)
 - [ ] Traditional associations, attributed
-- [ ] More stotras — **only after** F3 lands, so the catalog does not grow unsourced
+- [ ] More stotras — the ratchet now permits this without regressing provenance, but sourcing what
+      is already bundled comes first
 
 ### K6. Yoga Shastra — **Open** · Cite + Track + Teach
 
@@ -407,7 +445,7 @@ Every row of the source list, and where it now lives.
 | Dharma | K2 | Next — the bridge domain |
 | Yoga | K6 | Open |
 | Ayurveda | K4 | Open, bounded to dinacharya and ritucharya |
-| Mantra | K5 | Shipped; provenance owed |
+| Mantra | K5 | Shipped; sources owed |
 | Sthapatya | K7 | Exploring — media-constrained |
 | Shilpa | K7 | Exploring — media-constrained |
 | Gandharva | K7 | Exploring; samaya raga as text is Open |
@@ -417,7 +455,7 @@ Every row of the source list, and where it now lives.
 | Chandas | C6 | Open — computable, and the best first domain |
 | Vyakarana | K8 | Re-termed as a glossary layer |
 | Nirukta | K8 | Re-termed as a glossary layer |
-| Kalpa | K3 | Open |
+| Kalpa | K3 | Open; the sankalpa frame is shipped |
 
 **Added, because the list did not cover them and they matter more than several rows that were on
 it:** F1 language and reach, F2 regional variation, F3 content provenance, F4 accessibility,

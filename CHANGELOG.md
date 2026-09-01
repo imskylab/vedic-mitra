@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The lunar month and the season now read as wheels, and the ayana and lunar year say when they
+  end.** Those four rows previously showed a bare name and nothing else — "Maasa — Chaitra" said
+  nothing about when Chaitra ends.
+
+  The rule that excluded them contradicted itself. It said their windows "run to months or years,
+  where a countdown reads as noise", and in the next sentence kept the Sun's rashi *because the
+  ingress date is genuinely useful* — on the same ~30-day scale as the lunar month. It also
+  conflated two questions. **The neighbour** is worth naming for maasa and ritu, and not for the
+  other two: there are only two ayanas, so the neighbour is always the other one, and last year's
+  samvatsara name is trivia. **The boundary** is worth showing for all four.
+
+  So maasa and ritu became wheel rows; ayana and samvatsara keep a table row with a "till" date. The
+  three numbered eras moved to their own **Samvat** row so the samvatsara row could carry its
+  boundary.
+
+  **The month's neighbours are read from real lunations, not by stepping its number.** An adhika year
+  holds thirteen months and the one following an Adhika Jyeshtha is the *nija* Jyeshtha — arithmetic
+  would be a whole month wrong for the length of every leap month. All three names also go through
+  the purnimanta rule together, so the row reads as one scheme rather than a mix of both.
+
 - **Bundled stotras and mantras now carry a source — and say so when they do not.**
 
   The catalogs asserted only that their Sanskrit is public-domain, which is a *licensing* claim
@@ -110,6 +130,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   recording why.
 
 ### Changed
+
+- **The roadmap is synced to what actually shipped this cycle.** Regional variation and content
+  provenance move to in-progress; Kalpa and time reckoning gain their first shipped slices; the
+  mantra and stotra entry changes from "provenance owed" to "sources owed", which is a smaller and
+  more accurate debt.
+
+  Two things the sync surfaced and fixed rather than tidied away. **`AGENTS.md` still described the
+  twelve phases** — it was updated for the knowledge-mode rule when the phases were retired, and its
+  project-state note was missed. And **C1's "plain-language explanations" box had been ticked for a
+  release in which no reader could reach the copy at all**; the roadmap now says so beside the box,
+  because "enforced by the build" and "reachable" are different claims and only one of them was true.
+
+  ADRs 0002–0015 still cite phase numbers. They are left as written — an ADR records what was
+  decided at the time — and the roadmap now explains how to translate them.
 
 - **The twelve-phase roadmap is retired.** Phases described one person's build order, which is the
   wrong shape for a public repository: a contributor arriving to work on one domain should not have

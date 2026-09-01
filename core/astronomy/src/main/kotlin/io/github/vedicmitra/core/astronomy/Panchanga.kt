@@ -161,6 +161,27 @@ data class Maasa(
 }
 
 /**
+ * The lunar month either side of the current one, and the window the current one occupies.
+ *
+ * The neighbours are whole [Maasa] values rather than names because **an adhika month makes the
+ * sequence irregular**: a year can hold thirteen lunations, and the month after an Adhika Jyeshtha
+ * is the nija Jyeshtha rather than Ashadha. Each of the three is therefore read from its own pair of
+ * new moons and carries its own [Maasa.adhika] flag — this is the one limb whose neighbours are not
+ * a pure function of a position in a fixed cycle.
+ *
+ * @property previous the month that ended at [window]'s start.
+ * @property current the month running at the instant this was computed.
+ * @property next the month beginning at [window]'s end.
+ * @property window when the current month began and ends — the two bounding new moons.
+ */
+data class MaasaCycle(
+    val previous: Maasa,
+    val current: Maasa,
+    val next: Maasa,
+    val window: LimbWindow,
+)
+
+/**
  * Samvatsara — the year within the sixty-year Jovian cycle (Prabhava, Vibhava, … Akshaya). This app
  * uses the South-Indian **Chandramana** convention, in which the samvatsara advances at Chaitra
  * Shukla Pratipada (Ugadi) and is derived from the elapsed Shaka Samvat year of that lunar new
