@@ -58,9 +58,6 @@ data class JatakaProfile(
     val samvatsara: String,
 )
 
-/** Vikram Samvat runs 135 years ahead of Shaka. */
-private const val VIKRAM_MINUS_SHAKA = 135
-
 /** The tropical zodiac, used only for the Western sun-sign row. */
 private val TROPICAL_SIGNS =
     listOf(
@@ -115,8 +112,10 @@ internal fun jatakaProfileOf(
         sunRashi = sun.rasi,
         sunSign = TROPICAL_SIGNS[AngularBuckets.rashiIndex(sun.siderealLongitude + ayanamsa)],
         ayanamsa = ayanamsa,
-        shakaSamvat = samvatsara.shakaYear,
-        vikramSamvat = samvatsara.shakaYear + VIKRAM_MINUS_SHAKA,
+        // Through Samvatsara.eras rather than a local offset, so a birth year named on the Kundali
+        // and the same year named on the Panchang screen come from one derivation.
+        shakaSamvat = samvatsara.eras.shaka,
+        vikramSamvat = samvatsara.eras.vikrama,
         samvatsara = samvatsara.name,
     )
 }

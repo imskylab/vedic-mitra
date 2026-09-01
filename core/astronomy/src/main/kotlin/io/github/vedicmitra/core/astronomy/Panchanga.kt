@@ -165,4 +165,13 @@ data class Samvatsara(
     val number: Int,
     val name: String,
     val shakaYear: Int,
-)
+) {
+    /**
+     * The Vikrama, Shaka and Kali years for this same lunar year. Derived rather than stored: all
+     * three are fixed offsets from [shakaYear], and they turn at the Chaitra this samvatsara
+     * already turned at, so deriving them here makes it impossible for the two to disagree. See
+     * [EraYears] for the conventions followed and what is deliberately not modelled.
+     */
+    val eras: EraYears
+        get() = eraYearsOf(shakaYear)
+}

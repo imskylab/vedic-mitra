@@ -9,6 +9,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The calendar's day detail now names the year in three eras** — Vikrama, Shaka and Kali — beneath
+  the samvatsara they share a boundary with. A panchanga carries these on its cover; the app could
+  name the tithi but not the Shaka year.
+
+  All three are **Chaitradi**: they turn at Chaitra Shukla Pratipada (Ugadi), not at any Gregorian
+  date, so a day in January belongs to the era year that began the previous March. The boundary is
+  inherited whole from the existing samvatsara calculation, which already walks back to the Chaitra
+  opening the current lunar year — so the four cannot turn on different days.
+
+  Deliberately not modelled, and a source making either choice differently will differ by one year:
+  **Kartikadi Vikrama**, the Gujarati reckoning in which the year begins at Kartika instead, and the
+  elapsed-year form of Vikrama that some almanacs print. The Kundali's existing Shaka and Vikrama
+  rows now come from this same derivation rather than a local offset of their own.
+
 - **`docs/knowledge-standards.md` — what the app is allowed to say.** The project is widening from
   astronomy into shastras where no independent implementation exists to check against, so every
   feature now declares one of four modes: **Compute** (asserts a derived value), **Cite** (reports
