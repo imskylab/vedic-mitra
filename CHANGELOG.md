@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-08-31
+
 ### Added
 
 - **The calendar's day detail now shows each cycling limb as a wheel** — what it was, what it is,
@@ -120,6 +122,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   test is whether you reach it by tapping *into* it and leave it with back.
 
 ### Fixed
+
+- **Ringing alarms stopped ringing after a restart.** A reminder set to ring rather than notify was
+  silently re-armed as a plain notification after every reboot — and, because the boot receiver also
+  fires on `ACTION_MY_PACKAGE_REPLACED`, after every app update too.
+
+  The re-arming path rebuilt each reminder's notification without its alert style, so it fell back to
+  the default. Nothing surfaced it: the reminder still fired, just quietly, which is the failure mode
+  a user reports weeks later as "my alarm stopped working" with no event to point at. It also
+  defeated the premise of [ADR 0009](docs/adr/0009-ringing-alarm-reminders.md), which chose to build
+  a real alarm precisely because a notification does not reliably wake anyone.
+
+  The alert style is stored per reminder rather than on the reminder itself, so re-arming has to read
+  it back. The scheduling paths in the Reminders screen all did; the re-arming path was the one that
+  did not. The existing test could not catch it — its stub held an empty alert map, justified by a
+  comment reasoning that per-reminder overrides are irrelevant to re-arming. True of the lead-time
+  offset, false of the alert style.
 
 - **The Events list dropped any observance that shared its day with a named festival.** Raksha
   Bandhan is Shravana Purnima, so it appeared under Festivals while Events skipped that Purnima
