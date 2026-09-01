@@ -11,6 +11,7 @@
 package io.github.vedicmitra.feature.japa
 
 import io.github.vedicmitra.core.astronomy.Graha
+import io.github.vedicmitra.core.common.model.ContentSource
 
 /**
  * A mantra offered for japa.
@@ -20,12 +21,15 @@ import io.github.vedicmitra.core.astronomy.Graha
  * @property devanagari the mantra in Devanagari.
  * @property transliteration a roman transliteration.
  * @property graha the graha this is the beeja (seed) mantra of, or `null` for a general mantra.
+ * @property source the text this mantra is taken from. No default: a new entry must decide, and
+ *   [ContentSource.NotRecorded] is the honest answer where nobody has yet identified one.
  */
 data class Mantra(
     val id: String,
     val name: String,
     val devanagari: String,
     val transliteration: String,
+    val source: ContentSource,
     val graha: Graha? = null,
 )
 
@@ -39,6 +43,7 @@ object MantraCatalog {
     val all: List<Mantra> =
         listOf(
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "gayatri",
                 name = "Gayatri Mantra",
                 devanagari = "ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्",
@@ -46,12 +51,14 @@ object MantraCatalog {
                     "Om Bhur Bhuva Swaha Tat Savitur Varenyam Bhargo Devasya Dhimahi Dhiyo Yo Nah Prachodayat",
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "om_namah_shivaya",
                 name = "Om Namah Shivaya",
                 devanagari = "ॐ नमः शिवाय",
                 transliteration = "Om Namah Shivaya",
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "mahamrityunjaya",
                 name = "Mahamrityunjaya Mantra",
                 devanagari =
@@ -61,6 +68,7 @@ object MantraCatalog {
                         "Urvarukamiva Bandhanan Mrityor Mukshiya Maamritat",
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "surya_beeja",
                 name = "Surya Beeja (Sun)",
                 devanagari = "ॐ ह्रां ह्रीं ह्रौं सः सूर्याय नमः",
@@ -68,6 +76,7 @@ object MantraCatalog {
                 graha = Graha.SUN,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "chandra_beeja",
                 name = "Chandra Beeja (Moon)",
                 devanagari = "ॐ श्रां श्रीं श्रौं सः चन्द्राय नमः",
@@ -75,6 +84,7 @@ object MantraCatalog {
                 graha = Graha.MOON,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "mangala_beeja",
                 name = "Mangala Beeja (Mars)",
                 devanagari = "ॐ क्रां क्रीं क्रौं सः भौमाय नमः",
@@ -82,6 +92,7 @@ object MantraCatalog {
                 graha = Graha.MANGALA,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "budha_beeja",
                 name = "Budha Beeja (Mercury)",
                 devanagari = "ॐ ब्रां ब्रीं ब्रौं सः बुधाय नमः",
@@ -89,6 +100,7 @@ object MantraCatalog {
                 graha = Graha.BUDHA,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "guru_beeja",
                 name = "Guru Beeja (Jupiter)",
                 devanagari = "ॐ ग्रां ग्रीं ग्रौं सः गुरवे नमः",
@@ -96,6 +108,7 @@ object MantraCatalog {
                 graha = Graha.GURU,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "shukra_beeja",
                 name = "Shukra Beeja (Venus)",
                 devanagari = "ॐ द्रां द्रीं द्रौं सः शुक्राय नमः",
@@ -103,6 +116,7 @@ object MantraCatalog {
                 graha = Graha.SHUKRA,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "shani_beeja",
                 name = "Shani Beeja (Saturn)",
                 devanagari = "ॐ प्रां प्रीं प्रौं सः शनैश्चराय नमः",
@@ -110,6 +124,7 @@ object MantraCatalog {
                 graha = Graha.SHANI,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "rahu_beeja",
                 name = "Rahu Beeja",
                 devanagari = "ॐ भ्रां भ्रीं भ्रौं सः राहवे नमः",
@@ -117,6 +132,7 @@ object MantraCatalog {
                 graha = Graha.RAHU,
             ),
             Mantra(
+                source = ContentSource.NotRecorded,
                 id = "ketu_beeja",
                 name = "Ketu Beeja",
                 devanagari = "ॐ स्रां स्रीं स्रौं सः केतवे नमः",

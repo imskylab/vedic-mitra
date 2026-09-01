@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Bundled stotras and mantras now carry a source — and say so when they do not.**
+
+  The catalogs asserted only that their Sanskrit is public-domain, which is a *licensing* claim
+  rather than a *provenance* one: it says the project may ship the text, not that the text is right.
+  No edition, no recension, no source, and no test on `MantraCatalog` at all. It was the one
+  deliberate narrowing in the codebase that had never been written down.
+
+  `ContentSource` is now required on both models, so **a new entry cannot compile without deciding**.
+  It distinguishes a named text — work, place in it, recension where that matters — from
+  `NotRecorded`, which is an admission rather than a category.
+
+  **Nothing was attributed from memory.** All 26 stotras and 12 mantras declare `NotRecorded`, and
+  the stotra reader shows "Source not recorded" to anyone who opens one. Inventing plausible
+  citations would have been far worse than admitting the gap — a wrong attribution is itself a
+  claim, and the point of citing is to let a reader check. This project's own habit is to derive
+  from a reference rather than recall; recall was wrong on two of the four porutham.
+
+  A test in each catalog pins the unsourced count, so the debt **can shrink and never grow**: a 27th
+  stotra added without a source fails the build, and sourcing any existing one lowers the bound.
+
 - **Month names can follow the purnimanta scheme, and the app now says which scheme it is using.**
 
   The engine computes amanta — new moon to new moon (ADR 0005) — and presented it as the only

@@ -11,6 +11,8 @@
 package io.github.vedicmitra.feature.stotra
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
+import io.github.vedicmitra.core.common.model.ContentSource
 import org.junit.Test
 import java.time.DayOfWeek
 
@@ -53,5 +55,23 @@ class StotraCatalogTest {
     @Test
     fun `grouping by deity covers every stotra`() {
         assertThat(StotraCatalog.byDeity.values.sumOf { it.size }).isEqualTo(StotraCatalog.all.size)
+    }
+
+    @Test
+    fun `the unsourced backlog can shrink but never grow`() {
+        // All 26 stotras predate docs/knowledge-standards.md, and the catalog's only claim about
+        // them was that the Sanskrit is public-domain -- a licensing statement, not a provenance
+        // one. Pinning the count turns that from a habit into a debt: a 27th added without a source
+        // fails here, and every one that gets sourced brings the number down. Lower the bound as
+        // they are identified; never raise it.
+        val unsourced = StotraCatalog.all.count { it.source is ContentSource.NotRecorded }
+
+        assertWithMessage("stotras still lacking an identified source")
+            .that(unsourced)
+            .isAtMost(EXPECTED_UNSOURCED)
+    }
+
+    private companion object {
+        const val EXPECTED_UNSOURCED = 26
     }
 }
