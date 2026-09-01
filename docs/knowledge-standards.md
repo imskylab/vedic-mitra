@@ -94,9 +94,15 @@ stands — and write down every narrowing in KDoc beside the code.
 4. **Public domain only.** Existing policy — verse text and original notes, no bundled third-party
    translation.
 
-**Remediation owed:** the stotra and mantra catalogs predate this rule and do not meet it. Bringing
-them up to it — a `source` field, populated, with a test that it is non-empty — is on the roadmap as
-foundation work, not as a nice-to-have.
+**Remediation, partly done:** the stotra and mantra catalogs predate this rule. `ContentSource` now
+exists in `:core:common` and `source` is required on both models — a new entry **cannot compile**
+without deciding — and every existing entry declares `ContentSource.NotRecorded`, which the reader
+is shown rather than being quietly hidden. A test pins the count of unsourced entries, so the debt
+can shrink and never grow.
+
+What remains is identifying the sources themselves. That needs texts to hand rather than code, and
+it was deliberately **not** done from memory: this project's own habit is to derive from a reference
+rather than recall, precisely because recall was wrong on two of the four porutham.
 
 ## Track — the app records what you did
 

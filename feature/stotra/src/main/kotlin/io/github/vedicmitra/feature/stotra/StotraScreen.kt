@@ -182,6 +182,14 @@ private fun StotraReader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(text = stotra.significance, style = MaterialTheme.typography.bodyMedium)
+            // Shown whether or not a source is known. "Source not recorded" is the honest reading
+            // for content bundled before the rule came in, and putting it on the page rather than
+            // hiding it is what stops the gap from being comfortable.
+            Text(
+                text = stotra.source.label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

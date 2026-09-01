@@ -108,10 +108,11 @@ much of North India.
 Required by [knowledge-standards.md](knowledge-standards.md#cite--the-app-reports-what-a-tradition-holds).
 The existing devotional content predates the rule and does not meet it.
 
-- [ ] A `source` field on `Stotra` and `Mantra` — text, and recension where recensions differ
-- [ ] Populate it for all 26 stotras and all 12 mantras
-- [ ] A test asserting every entry carries a source (`MantraCatalog` currently has **no test at all**)
-- [ ] A shared content model other domains can reuse rather than reinvent
+- [x] A `source` field on `Stotra` and `Mantra` — required, so a new entry cannot compile without
+      deciding; work, locus and recension kept apart
+- [x] A shared content model other domains can reuse rather than reinvent (`ContentSource`)
+- [x] A test pinning the unsourced count, so the debt can shrink but never grow
+- [ ] Populate it for all 26 stotras and all 12 mantras — needs texts to hand, not code
 - [ ] Record the gap in the validation doc's known limitations until it is closed
 
 ### F4. Accessibility — **Open**

@@ -10,6 +10,7 @@
 
 package io.github.vedicmitra.feature.stotra
 
+import io.github.vedicmitra.core.common.model.ContentSource
 import java.time.DayOfWeek
 
 /**
@@ -21,6 +22,8 @@ import java.time.DayOfWeek
  * @property devanagari the verse(s) in Devanagari.
  * @property transliteration a roman transliteration, line-for-line with [devanagari].
  * @property significance a short note on what it is and when it's recited.
+ * @property source the text this verse is taken from. No default: a new entry must decide, and
+ *   [ContentSource.NotRecorded] is the honest answer where nobody has yet identified one.
  */
 data class Stotra(
     val id: String,
@@ -29,6 +32,7 @@ data class Stotra(
     val devanagari: String,
     val transliteration: String,
     val significance: String,
+    val source: ContentSource,
 )
 
 /**
@@ -45,6 +49,7 @@ object StotraCatalog {
     val all: List<Stotra> =
         listOf(
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "ganesha_vakratunda",
                 title = "Vakratunda Mahakaya",
                 deity = "Ganesha",
@@ -65,6 +70,7 @@ object StotraCatalog {
                 significance = "A prayer to remove obstacles, invoked before beginning any task or worship.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "ganesha_shuklambara",
                 title = "Shuklambaradharam",
                 deity = "Ganesha",
@@ -85,6 +91,7 @@ object StotraCatalog {
                 significance = "A meditation on Ganesha for the calming of all obstacles, recited to open prayers.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "ganesha_gajananam",
                 title = "Gajananam Bhutaganadi",
                 deity = "Ganesha",
@@ -105,6 +112,7 @@ object StotraCatalog {
                 significance = "The dhyana verse to elephant-faced Ganesha; recited to begin any worship.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "mahamrityunjaya",
                 title = "Mahamrityunjaya Mantra",
                 deity = "Shiva",
@@ -126,6 +134,7 @@ object StotraCatalog {
                     "The great victory-over-death mantra to three-eyed Shiva, prayed for healing and longevity.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shiva_karpura",
                 title = "Karpura Gauram",
                 deity = "Shiva",
@@ -146,6 +155,7 @@ object StotraCatalog {
                 significance = "A camphor-white image of Shiva with Parvati, dwelling ever in the lotus of the heart.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shiva_panchakshara",
                 title = "Nagendraharaya",
                 deity = "Shiva",
@@ -166,6 +176,7 @@ object StotraCatalog {
                 significance = "The opening verse of the Shiva Panchakshara Stotra, glorifying \"Namah Shivaya\".",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shiva_lingashtakam",
                 title = "Lingashtakam",
                 deity = "Shiva",
@@ -242,6 +253,7 @@ object StotraCatalog {
                 significance = "Eight verses to the Shiva-linga as the formless Absolute; sung on Shivaratri.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shiva_nirvana_shatkam",
                 title = "Nirvana Shatkam",
                 deity = "Shiva",
@@ -302,6 +314,7 @@ object StotraCatalog {
                 significance = "Adi Shankara's Advaita hymn on the true Self: I am consciousness and bliss.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "vishnu_shantakaram",
                 title = "Shantakaram",
                 deity = "Vishnu",
@@ -322,6 +335,7 @@ object StotraCatalog {
                 significance = "A serene meditation on Vishnu reclining on the cosmic serpent Shesha.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "krishna_vasudeva",
                 title = "Vasudevasutam",
                 deity = "Krishna",
@@ -342,6 +356,7 @@ object StotraCatalog {
                 significance = "A vandana to Krishna, teacher of the world and joy of Devaki.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "krishna_madhurashtakam",
                 title = "Madhurashtakam",
                 deity = "Krishna",
@@ -418,6 +433,7 @@ object StotraCatalog {
                 significance = "Adi Shankara's eight verses on the sweetness of Krishna, Lord of Mathura.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "rama_nama",
                 title = "Shri Rama Rama Rameti",
                 deity = "Rama",
@@ -438,6 +454,7 @@ object StotraCatalog {
                 significance = "The verse in which repeating \"Rama\" is said to equal a thousand names of the Lord.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "devi_ya_devi",
                 title = "Ya Devi Sarvabhuteshu",
                 deity = "Devi",
@@ -458,6 +475,7 @@ object StotraCatalog {
                 significance = "From the Devi Mahatmyam, saluting the Goddess who dwells in all beings as power.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "durga_sarva_mangala",
                 title = "Sarva Mangala Mangalye",
                 deity = "Devi",
@@ -478,6 +496,7 @@ object StotraCatalog {
                 significance = "A beloved prayer to the auspicious Goddess who fulfils all aims and grants refuge.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "lakshmi",
                 title = "Namaste'stu Mahamaye",
                 deity = "Lakshmi",
@@ -498,6 +517,7 @@ object StotraCatalog {
                 significance = "A salutation to Mahalakshmi, goddess of abundance; recited on Fridays and Diwali.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "saraswati",
                 title = "Ya Kundendu Tushara",
                 deity = "Saraswati",
@@ -518,6 +538,7 @@ object StotraCatalog {
                 significance = "A vandana to Saraswati, goddess of knowledge, music and speech; recited by students.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "gayatri",
                 title = "Gayatri Mantra",
                 deity = "Surya",
@@ -538,6 +559,7 @@ object StotraCatalog {
                 significance = "The supreme Vedic prayer to Savitr (the Sun) to awaken and guide the mind.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "guru",
                 title = "Gurur Brahma",
                 deity = "Guru",
@@ -558,6 +580,7 @@ object StotraCatalog {
                 significance = "Honours the guru as Brahma, Vishnu and Shiva; recited on Guru Purnima and Thursdays.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "hanuman",
                 title = "Manojavam Marutatulya",
                 deity = "Hanuman",
@@ -578,6 +601,7 @@ object StotraCatalog {
                 significance = "A dhyana on Hanuman — swift, wise, and devoted; recited on Tuesdays and Saturdays.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "hanuman_chalisa",
                 title = "Hanuman Chalisa",
                 deity = "Hanuman",
@@ -682,6 +706,7 @@ object StotraCatalog {
                 significance = "Tulsidas's forty-verse hymn to Hanuman; chanted on Tuesdays and Saturdays.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "navagraha",
                 title = "Navagraha Stotra",
                 deity = "Navagraha",
@@ -730,6 +755,7 @@ object StotraCatalog {
                 significance = "The nine short verses to the nine grahas (Sun through Ketu), one couplet for each.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shanti_sarve",
                 title = "Sarve Bhavantu Sukhinah",
                 deity = "Shanti & Universal",
@@ -750,6 +776,7 @@ object StotraCatalog {
                 significance = "A universal prayer that all beings be happy, healthy, and free from suffering.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shanti_asato",
                 title = "Asato Ma Sadgamaya",
                 deity = "Shanti & Universal",
@@ -769,6 +796,7 @@ object StotraCatalog {
                     "From the Brihadaranyaka Upanishad — lead me from the unreal to the real, dark to light.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "shanti_purnam",
                 title = "Purnamadah Purnamidam",
                 deity = "Shanti & Universal",
@@ -789,6 +817,7 @@ object StotraCatalog {
                 significance = "The Isha Upanishad invocation on the fullness of the Absolute.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "twameva",
                 title = "Tvameva Mata",
                 deity = "Shanti & Universal",
@@ -809,6 +838,7 @@ object StotraCatalog {
                 significance = "A surrender prayer — you alone are mother, father, friend, knowledge, my all.",
             ),
             Stotra(
+                source = ContentSource.NotRecorded,
                 id = "brahmarpanam",
                 title = "Brahmarpanam",
                 deity = "Shanti & Universal",
