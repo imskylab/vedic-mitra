@@ -9,6 +9,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The calendar's day detail now assembles the day's sankalpa frame** — the ten measures that fix
+  when and where a moment sits, in the order they are named, with a copy action.
+
+  A sankalpa traditionally opens by naming the place and then the samvatsara, ayana, ritu, maasa,
+  paksha, tithi, vara, nakshatra, yoga and karana. Those ten are exactly what a panchanga reports,
+  which is much of why it reports them — and the app already computed every one. So this adds no
+  astronomy: it adds the ordering, and a way to get the values out. Someone preparing for an
+  observance was otherwise transcribing ten rows off a table by hand.
+
+  Deliberately not done, and recorded in the source: **no locative declension** — a sankalpa recites
+  these in the locative, and generating correct forms for some 170 names is Sanskrit grammar this app
+  has no basis for, so producing plausible-looking Sanskrit that is wrong would be worse than
+  producing none. Also no Devanagari, no cosmological prefix, and none of the personal elements or
+  the statement of intent. The app states *when and where*, which is a fact about the moment; it does
+  not compose a sankalpa for anyone or suggest that one be made.
+
+  **The ordering is a cited claim carrying no citation yet.** The sequence is the one in common use
+  and varies by region and sampradaya. Under
+  [the knowledge standards](docs/knowledge-standards.md) that is a gap, and it is recorded as one in
+  the source rather than papered over — the same debt the stotra and mantra catalogs carry, tracked
+  as foundation work on the roadmap.
+
 - **The calendar's day detail now names the year in three eras** — Vikrama, Shaka and Kali — beneath
   the samvatsara they share a boundary with. A panchanga carries these on its cover; the app could
   name the tithi but not the Shaka year.

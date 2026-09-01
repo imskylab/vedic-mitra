@@ -669,7 +669,7 @@ private fun HeroCard(
                 RunningTithi(now = nowPanchanga, sunriseTithi = snapshot.tithi)
             } else {
                 Text(
-                    text = "${snapshot.tithi.paksha.title} ${snapshot.tithi.name}",
+                    text = "${snapshot.tithi.paksha.displayName} ${snapshot.tithi.name}",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(top = 4.dp),
@@ -717,7 +717,7 @@ private fun RunningTithi(
     Text(
         text =
             buildAnnotatedString {
-                append("${now.tithi.paksha.title} ${now.tithi.name}")
+                append("${now.tithi.paksha.displayName} ${now.tithi.name}")
                 withStyle(SpanStyle(fontSize = countdownSize)) {
                     append(" · ends in ${formatRemaining(remaining)}")
                 }
@@ -732,7 +732,7 @@ private fun RunningTithi(
     // before that the sunrise tithi and the running one are the same thing said twice.
     if (now.tithi.number != sunriseTithi.number) {
         Text(
-            text = "${sunriseTithi.paksha.title} ${sunriseTithi.name} ended ${formatTime(now.limbs.tithi.start)}",
+            text = "${sunriseTithi.paksha.displayName} ${sunriseTithi.name} ended ${formatTime(now.limbs.tithi.start)}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.padding(top = 2.dp),
@@ -967,13 +967,6 @@ private fun Festival.toEventRow(): SectionRow =
         trailing = formatDate(atSunrise),
         reminderTarget = observanceTithis(name)?.let { ReminderTarget.Observance(name, it) },
     )
-
-private val Paksha.title: String
-    get() =
-        when (this) {
-            Paksha.SHUKLA -> "Shukla"
-            Paksha.KRISHNA -> "Krishna"
-        }
 
 private const val AFTERNOON_FROM_HOUR = 12
 private const val EVENING_FROM_HOUR = 17

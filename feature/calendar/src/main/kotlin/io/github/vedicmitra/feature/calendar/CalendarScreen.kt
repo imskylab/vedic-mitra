@@ -12,6 +12,7 @@ package io.github.vedicmitra.feature.calendar
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -43,6 +44,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,7 +55,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,11 +81,13 @@ import io.github.vedicmitra.core.astronomy.PanchangaLimb
 import io.github.vedicmitra.core.astronomy.PanchangaPrimer
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
+import io.github.vedicmitra.core.astronomy.SankalpaFrame
 import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.astronomy.limbSteps
+import io.github.vedicmitra.core.astronomy.sankalpaFrame
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.designsystem.component.VedicCycleHeader
 import io.github.vedicmitra.core.designsystem.component.VedicCycleRow
@@ -179,6 +185,10 @@ private fun CalendarContent(
                 date = uiState.selectedDate,
                 snapshot = snapshot,
                 festival = festival,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            SankalpaCard(
+                frame = snapshot.sankalpaFrame(place = uiState.locationLabel),
                 modifier = Modifier.padding(top = 16.dp),
             )
         }
@@ -406,12 +416,12 @@ private fun DetailCard(
         }
     }
     explaining?.let { concept ->
-        LimbPrimerSheet(concept = concept, onDismiss = { explaining = null })
+        PrimerSheet(concept = concept, onDismiss = { explaining = null })
     }
 }
 
 /**
- * The primer entry for a tapped wheel row.
+ * One primer entry, opened from a tapped wheel row or from the sankalpa card.
  *
  * Both lengths are shown: the one-liner carries a whole idea on its own, and the body is there for
  * the reader who tapped because they wanted more. Nothing here is computed — it is the same copy
@@ -419,7 +429,7 @@ private fun DetailCard(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LimbPrimerSheet(
+private fun PrimerSheet(
     concept: PanchangaConcept,
     onDismiss: () -> Unit,
 ) {
@@ -440,6 +450,63 @@ private fun LimbPrimerSheet(
             )
             Text(text = entry.body, style = MaterialTheme.typography.bodyLarge)
         }
+    }
+}
+
+/**
+ * Where and when the selected day sits, in the ten measures a sankalpa names.
+ *
+ * Every value is already on the card above. What this adds is the **order** — and a way to copy the
+ * lot out, which is the actual job: someone preparing for an observance otherwise transcribes ten
+ * rows off a table by hand and hopes they read the right ones.
+ *
+ * The one-liner shows without tapping, per the primer's own design: clarity that only arrives on tap
+ * is clarity most readers never get.
+ */
+@Composable
+private fun SankalpaCard(
+    frame: SankalpaFrame,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    var explaining by remember { mutableStateOf(false) }
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Sankalpa",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    onClick = {
+                        clipboardManager.setText(AnnotatedString(frame.asText))
+                        Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
+                    },
+                ) {
+                    Text(text = "Copy")
+                }
+            }
+            Text(
+                text = PanchangaPrimer.of(PanchangaConcept.SANKALPA).oneLine,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier =
+                    Modifier
+                        .clickable { explaining = true }
+                        .padding(bottom = 8.dp),
+            )
+            frame.place?.let { DetailRow(label = "Place", value = it) }
+            frame.coordinates.forEach { DetailRow(label = it.label, value = it.value) }
+        }
+    }
+    if (explaining) {
+        PrimerSheet(concept = PanchangaConcept.SANKALPA, onDismiss = { explaining = false })
     }
 }
 
@@ -531,13 +598,6 @@ private val Tithi.shortLabel: String
         val pakshaLetter = if (paksha == Paksha.SHUKLA) "S" else "K"
         return "$pakshaLetter$inPaksha"
     }
-
-private val Paksha.title: String
-    get() =
-        when (this) {
-            Paksha.SHUKLA -> "Shukla"
-            Paksha.KRISHNA -> "Krishna"
-        }
 
 private val monthFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy")
