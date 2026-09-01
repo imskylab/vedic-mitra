@@ -13,6 +13,7 @@ package io.github.vedicmitra.core.astronomy
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import org.junit.Test
 import kotlin.time.Instant
 
@@ -65,6 +66,31 @@ class SankalpaFrameTest {
         val frame = snapshot(maasa = Maasa(number = 3, name = "Jyeshtha", adhika = true)).sankalpaFrame()
 
         assertThat(frame.coordinates.single { it.label == "Maasa" }.value).isEqualTo("Adhika Jyeshtha")
+    }
+
+    @Test
+    fun `the month follows the chosen reckoning`() {
+        // Krishna paksha is where the two schemes part company, so it is the case worth pinning:
+        // under purnimanta this day already belongs to the following month. If the frame ignored the
+        // preference it would contradict the Maasa row directly above it on the same screen.
+        val krishna =
+            snapshot(maasa = Maasa(number = 12, name = "Phalguna", adhika = false))
+                .copy(tithi = Tithi(number = 22, paksha = Paksha.KRISHNA, name = "Saptami"))
+
+        assertThat(
+            krishna
+                .sankalpaFrame()
+                .coordinates
+                .single { it.label == "Maasa" }
+                .value,
+        ).isEqualTo("Phalguna")
+        assertThat(
+            krishna
+                .sankalpaFrame(reckoning = MaasaReckoning.PURNIMANTA)
+                .coordinates
+                .single { it.label == "Maasa" }
+                .value,
+        ).isEqualTo("Chaitra")
     }
 
     @Test

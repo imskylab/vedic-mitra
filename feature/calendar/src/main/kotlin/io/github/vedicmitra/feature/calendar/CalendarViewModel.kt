@@ -18,7 +18,9 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.UserPreferencesRepository
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,8 +47,20 @@ class CalendarViewModel
     constructor(
         private val astronomyEngine: AstronomyEngine,
         private val resolveLocation: ResolveLocationUseCase,
+        userPreferences: UserPreferencesRepository,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(CalendarUiState())
+
+        init {
+            // The month scheme only relabels what is already computed, so it folds into the state
+            // rather than triggering a reload: switching it has to rename the day on screen without
+            // recomputing a month of ephemeris.
+            viewModelScope.launch {
+                userPreferences.maasaReckoning.collect { reckoning ->
+                    _uiState.update { it.copy(maasaReckoning = reckoning) }
+                }
+            }
+        }
 
         /** Observable UI state consumed by the calendar screen. */
         val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
@@ -189,4 +203,5 @@ data class CalendarUiState(
     val errorMessage: String? = null,
     val usingDefaultLocation: Boolean = false,
     val locationLabel: String? = null,
+    val maasaReckoning: MaasaReckoning = MaasaReckoning.AMANTA,
 )

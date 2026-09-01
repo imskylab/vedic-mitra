@@ -30,13 +30,19 @@ import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.DarkThemeConfig
+import io.github.vedicmitra.core.datastore.ThemeSettings
+import io.github.vedicmitra.core.datastore.UserPreferencesRepository
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -148,7 +154,11 @@ class CalendarViewModelTest {
     ): CalendarViewModel {
         val resolveLocation = mockk<ResolveLocationUseCase>()
         coEvery { resolveLocation() } returns resolved
-        return CalendarViewModel(astronomyEngine = FakeAstronomyEngine(), resolveLocation = resolveLocation)
+        return CalendarViewModel(
+            astronomyEngine = FakeAstronomyEngine(),
+            resolveLocation = resolveLocation,
+            userPreferences = FakePreferences(),
+        )
     }
 }
 
@@ -199,3 +209,17 @@ private val SAMPLE =
         goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
         muhurtas = emptyList(),
     )
+
+// The month scheme is a display preference; these tests are about loading and reminders, so the
+// fake just holds the default and never changes.
+private class FakePreferences : UserPreferencesRepository {
+    override val themeSettings: Flow<ThemeSettings> =
+        flowOf(ThemeSettings(darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM, useDynamicColor = false))
+    override val maasaReckoning: Flow<MaasaReckoning> = flowOf(MaasaReckoning.AMANTA)
+
+    override suspend fun setDarkThemeConfig(config: DarkThemeConfig) = Unit
+
+    override suspend fun setDynamicColor(enabled: Boolean) = Unit
+
+    override suspend fun setMaasaReckoning(reckoning: MaasaReckoning) = Unit
+}

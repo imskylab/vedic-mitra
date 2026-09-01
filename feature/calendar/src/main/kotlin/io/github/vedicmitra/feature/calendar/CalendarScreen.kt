@@ -87,8 +87,10 @@ import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.astronomy.limbSteps
+import io.github.vedicmitra.core.astronomy.nameIn
 import io.github.vedicmitra.core.astronomy.sankalpaFrame
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.designsystem.component.VedicCycleHeader
 import io.github.vedicmitra.core.designsystem.component.VedicCycleRow
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
@@ -185,10 +187,15 @@ private fun CalendarContent(
                 date = uiState.selectedDate,
                 snapshot = snapshot,
                 festival = festival,
+                reckoning = uiState.maasaReckoning,
                 modifier = Modifier.padding(top = 16.dp),
             )
             SankalpaCard(
-                frame = snapshot.sankalpaFrame(place = uiState.locationLabel),
+                frame =
+                    snapshot.sankalpaFrame(
+                        place = uiState.locationLabel,
+                        reckoning = uiState.maasaReckoning,
+                    ),
                 modifier = Modifier.padding(top = 16.dp),
             )
         }
@@ -353,6 +360,7 @@ private fun DetailCard(
     date: LocalDate,
     snapshot: AstronomySnapshot,
     festival: String?,
+    reckoning: MaasaReckoning,
     modifier: Modifier = Modifier,
 ) {
     // Tapping a wheel row explains that limb. The copy has existed since 0.9.0 and reached nobody:
@@ -392,7 +400,14 @@ private fun DetailCard(
                 steps.forEach { step -> CycleRow(step) { explaining = step.limb.concept } }
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            DetailRow(label = "Maasa", value = snapshot.maasa.displayName)
+            // The scheme is named on every reading, not only when it is the non-default one. A
+            // reader whose almanac disagrees needs to know which convention this is, and that is
+            // exactly the reader who would never think to look in Settings.
+            DetailRow(
+                label = "Maasa",
+                value = snapshot.maasa.nameIn(reckoning, snapshot.tithi.paksha),
+                note = reckoning.shortLabel,
+            )
             // The three numbered eras a printed panchanga carries on its cover, under the sixty-name
             // cycle they share a boundary with: all four turn at Ugadi, not at the Gregorian year.
             val eras = snapshot.samvatsara.eras
@@ -598,6 +613,13 @@ private val Tithi.shortLabel: String
         val pakshaLetter = if (paksha == Paksha.SHUKLA) "S" else "K"
         return "$pakshaLetter$inPaksha"
     }
+
+private val MaasaReckoning.shortLabel: String
+    get() =
+        when (this) {
+            MaasaReckoning.AMANTA -> "Amanta"
+            MaasaReckoning.PURNIMANTA -> "Purnimanta"
+        }
 
 private val monthFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy")

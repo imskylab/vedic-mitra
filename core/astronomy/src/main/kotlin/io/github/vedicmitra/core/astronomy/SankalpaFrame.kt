@@ -10,6 +10,8 @@
 
 package io.github.vedicmitra.core.astronomy
 
+import io.github.vedicmitra.core.common.model.MaasaReckoning
+
 /**
  * One coordinate of a [SankalpaFrame] — the name of a measure, and its value now.
  *
@@ -72,12 +74,17 @@ data class SankalpaFrame(
 }
 
 /**
- * Reads this snapshot as a [SankalpaFrame], optionally naming [place].
+ * Reads this snapshot as a [SankalpaFrame], optionally naming [place], with month names under
+ * [reckoning].
  *
  * Pure: every value is already on the snapshot, so this adds no ephemeris work and cannot disagree
- * with what the rest of the screen shows.
+ * with what the rest of the screen shows — including the month name, which follows the same
+ * [nameIn] the day card uses.
  */
-fun AstronomySnapshot.sankalpaFrame(place: String? = null): SankalpaFrame =
+fun AstronomySnapshot.sankalpaFrame(
+    place: String? = null,
+    reckoning: MaasaReckoning = MaasaReckoning.AMANTA,
+): SankalpaFrame =
     SankalpaFrame(
         place = place,
         coordinates =
@@ -85,7 +92,7 @@ fun AstronomySnapshot.sankalpaFrame(place: String? = null): SankalpaFrame =
                 SankalpaCoordinate("Samvatsara", samvatsara.name),
                 SankalpaCoordinate("Ayana", ayana.displayName),
                 SankalpaCoordinate("Ritu", ritu.displayName),
-                SankalpaCoordinate("Maasa", maasa.displayName),
+                SankalpaCoordinate("Maasa", maasa.nameIn(reckoning, tithi.paksha)),
                 SankalpaCoordinate("Paksha", tithi.paksha.displayName),
                 SankalpaCoordinate("Tithi", tithi.name),
                 SankalpaCoordinate("Vara", vara.displayName),

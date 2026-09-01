@@ -9,6 +9,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Month names can follow the purnimanta scheme, and the app now says which scheme it is using.**
+
+  The engine computes amanta — new moon to new moon (ADR 0005) — and presented it as the only
+  answer, with nothing on screen naming the convention. Under purnimanta, used across much of North
+  India, a month ends at the full moon instead: the two agree through the bright fortnight and
+  disagree through the dark one, where purnimanta already carries the *following* month's name. So
+  for a fortnight in every lunar month the same day has two correct month names, and a reader whose
+  almanac disagreed had no way to tell whether the app was wrong or simply following the other
+  convention.
+
+  This is a **relabelling, not a second calculation** — every tithi, window, festival date and the
+  year boundary is untouched. Chaitra Shukla Pratipada opens the year in both schemes, so the
+  samvatsara and the era years need no adjustment.
+
+  Settings gains a **Panchanga → Month scheme** choice, defaulting to amanta so nobody's existing
+  reading changes under them. The calendar's Maasa row names the active scheme **on every reading**,
+  not only the non-default one: a reader whose almanac disagrees is exactly the reader who would
+  never think to look in Settings. Home and the sankalpa frame read the same preference, so no two
+  places can name the same month differently. See [ADR 0017](docs/adr/0017-purnimanta-month-naming.md).
+
+  **One case is deliberately unverified:** during a leap month's dark fortnight the rule applied
+  mechanically drops the "Adhika" prefix, since the month after an Adhika Jyeshtha is the nija
+  Jyeshtha. Sources differ on intercalary labelling in purnimanta usage and there was no independent
+  implementation to check against, so the test pins it to stop it drifting — not because it is
+  confirmed. That is the case to distrust first.
+
 - **The calendar's day detail now assembles the day's sankalpa frame** — the ten measures that fix
   when and where a moment sits, in the order they are named, with a copy action.
 

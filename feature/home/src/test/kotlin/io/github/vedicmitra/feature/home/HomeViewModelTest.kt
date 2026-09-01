@@ -33,7 +33,11 @@ import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.DarkThemeConfig
+import io.github.vedicmitra.core.datastore.ThemeSettings
+import io.github.vedicmitra.core.datastore.UserPreferencesRepository
 import io.github.vedicmitra.core.domain.AddReminderUseCase
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
@@ -42,6 +46,8 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -71,7 +77,13 @@ class HomeViewModelTest {
             val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(festival))
             val coordinates = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
-            val viewModel = HomeViewModel(engine, resolveTo(coordinates, "Bengaluru", isDefault = false), addReminder)
+            val viewModel =
+                HomeViewModel(
+                    engine,
+                    resolveTo(coordinates, "Bengaluru", isDefault = false),
+                    addReminder,
+                    FakePreferences(),
+                )
 
             viewModel.load()
 
@@ -90,7 +102,13 @@ class HomeViewModelTest {
                 Festival("Ekadashi", Instant.fromEpochMilliseconds(1_760_000_000_000L), FestivalType.OBSERVANCE)
             val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(observance, festival))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
+            val viewModel =
+                HomeViewModel(
+                    engine,
+                    resolveTo(SOMEWHERE, "Home", isDefault = false),
+                    addReminder,
+                    FakePreferences(),
+                )
 
             viewModel.load()
 
@@ -111,7 +129,13 @@ class HomeViewModelTest {
                     quality = MuhurtaQuality.AUSPICIOUS,
                 )
             val engine = FakeEngine(AppResult.Success(snapshot(muhurtas = listOf(active))))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
+            val viewModel =
+                HomeViewModel(
+                    engine,
+                    resolveTo(SOMEWHERE, "Home", isDefault = false),
+                    addReminder,
+                    FakePreferences(),
+                )
 
             viewModel.load()
 
@@ -126,7 +150,13 @@ class HomeViewModelTest {
     fun `flags when the default location was used`() =
         runTest {
             val engine = FakeEngine(AppResult.Success(snapshot()))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "New Delhi", isDefault = true), addReminder)
+            val viewModel =
+                HomeViewModel(
+                    engine,
+                    resolveTo(SOMEWHERE, "New Delhi", isDefault = true),
+                    addReminder,
+                    FakePreferences(),
+                )
 
             viewModel.load()
 
@@ -137,7 +167,13 @@ class HomeViewModelTest {
     fun `surfaces engine failures as an error message`() =
         runTest {
             val engine = FakeEngine(AppResult.Failure(IllegalStateException("boom")))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
+            val viewModel =
+                HomeViewModel(
+                    engine,
+                    resolveTo(SOMEWHERE, "Home", isDefault = false),
+                    addReminder,
+                    FakePreferences(),
+                )
 
             viewModel.load()
 
@@ -151,7 +187,13 @@ class HomeViewModelTest {
         runTest {
             coEvery { addReminder.addMuhurta(any(), any()) } returns AppResult.Success(Unit)
             val engine = FakeEngine(AppResult.Success(snapshot()))
-            val viewModel = HomeViewModel(engine, resolveTo(SOMEWHERE, "Home", isDefault = false), addReminder)
+            val viewModel =
+                HomeViewModel(
+                    engine,
+                    resolveTo(SOMEWHERE, "Home", isDefault = false),
+                    addReminder,
+                    FakePreferences(),
+                )
 
             viewModel.setReminder(ReminderTarget.Muhurta("Abhijit Muhurta"))
 
@@ -227,3 +269,17 @@ private fun snapshot(muhurtas: List<Muhurta> = emptyList()): AstronomySnapshot =
         goldenHour = GoldenHour(morningStart = null, morningEnd = null, eveningStart = null, eveningEnd = null),
         muhurtas = muhurtas,
     )
+
+// The month scheme is a display preference; these tests are about loading and reminders, so the
+// fake just holds the default and never changes.
+private class FakePreferences : UserPreferencesRepository {
+    override val themeSettings: Flow<ThemeSettings> =
+        flowOf(ThemeSettings(darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM, useDynamicColor = false))
+    override val maasaReckoning: Flow<MaasaReckoning> = flowOf(MaasaReckoning.AMANTA)
+
+    override suspend fun setDarkThemeConfig(config: DarkThemeConfig) = Unit
+
+    override suspend fun setDynamicColor(enabled: Boolean) = Unit
+
+    override suspend fun setMaasaReckoning(reckoning: MaasaReckoning) = Unit
+}
