@@ -165,6 +165,17 @@ object PanchangaPrimer {
                             "on the number — a half-lit Moon means the eighth tithi of a fortnight, " +
                             "give or take a few hours.",
                 ),
+            PanchangaConcept.RASHI to
+                PrimerEntry(
+                    title = "Rashi",
+                    oneLine = "A zodiac sign — one twelfth of the sky, thirty degrees wide.",
+                    body =
+                        "The twelve rashis divide the ecliptic into equal thirty-degree stretches, " +
+                            "measured here against the stars rather than against the equinox, which " +
+                            "is what makes them sidereal. The Moon crosses one in about two and a " +
+                            "quarter days; the Sun takes roughly a month, and its move into the " +
+                            "next one is the sankranti.",
+                ),
         )
 }
 
@@ -186,6 +197,7 @@ enum class PanchangaConcept {
     LUNAR_MONTH,
     SUNRISE_DAY,
     MOON_PHASE,
+    RASHI,
 }
 
 /**

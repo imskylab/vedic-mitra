@@ -37,8 +37,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -93,19 +96,13 @@ fun VedicCycleRow(
     onClick: (() -> Unit)? = null,
 ) {
     val clickable = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
-    val semantics =
-        if (spokenDescription != null) {
-            Modifier.clearAndSetSemantics { contentDescription = spokenDescription }
-        } else {
-            Modifier
-        }
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
                 .then(clickable)
                 .padding(vertical = 6.dp)
-                .then(semantics),
+                .rowSemantics(spokenDescription, onClick),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -125,6 +122,34 @@ fun VedicCycleRow(
         SideCell(value = next, note = nextNote, alpha = COMING_ALPHA, modifier = Modifier.weight(SIDE_WEIGHT))
     }
 }
+
+/**
+ * The row's spoken identity, and — when the row is tappable — its action.
+ *
+ * `clearAndSetSemantics` replaces what this node reports, so the action a [androidx.compose.foundation.clickable]
+ * modifier contributes has to be restated here. Without it a screen reader is handed a row it can
+ * read and cannot activate, which is worse than a row that was never tappable: the explanation
+ * exists, is announced as present, and cannot be opened.
+ *
+ * It is a separate function rather than an inline block so that `onClick` inside it unambiguously
+ * means the semantics action — the composable above has a parameter of the same name, and which one
+ * won would be a question no reader should have to answer.
+ */
+private fun Modifier.rowSemantics(
+    description: String?,
+    activate: (() -> Unit)?,
+): Modifier =
+    if (description == null) {
+        this
+    } else {
+        clearAndSetSemantics {
+            contentDescription = description
+            if (activate != null) {
+                role = Role.Button
+                onClick { activate(); true }
+            }
+        }
+    }
 
 /**
  * The value now running, framed like a picker's window onto the drum.

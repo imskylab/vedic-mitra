@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,14 +37,18 @@ import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,7 +72,9 @@ import io.github.vedicmitra.core.astronomy.Muhurta
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
+import io.github.vedicmitra.core.astronomy.PanchangaConcept
 import io.github.vedicmitra.core.astronomy.PanchangaLimb
+import io.github.vedicmitra.core.astronomy.PanchangaPrimer
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SunTimes
@@ -338,6 +345,10 @@ private fun DetailCard(
     festival: String?,
     modifier: Modifier = Modifier,
 ) {
+    // Tapping a wheel row explains that limb. The copy has existed since 0.9.0 and reached nobody:
+    // VedicCycleRow has always taken an onClick, CycleRow never passed one, and the glossary the
+    // other detail sheets read is keyed by item name -- it has no entry for "Tithi" at all.
+    var explaining by remember { mutableStateOf<PanchangaConcept?>(null) }
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -368,7 +379,7 @@ private fun DetailCard(
             val steps = snapshot.limbSteps()
             if (steps.isNotEmpty()) {
                 VedicCycleHeader(modifier = Modifier.padding(top = 4.dp))
-                steps.forEach { step -> CycleRow(step) }
+                steps.forEach { step -> CycleRow(step) { explaining = step.limb.concept } }
                 Spacer(modifier = Modifier.height(10.dp))
             }
             DetailRow(label = "Maasa", value = snapshot.maasa.displayName)
@@ -394,6 +405,42 @@ private fun DetailCard(
             }
         }
     }
+    explaining?.let { concept ->
+        LimbPrimerSheet(concept = concept, onDismiss = { explaining = null })
+    }
+}
+
+/**
+ * The primer entry for a tapped wheel row.
+ *
+ * Both lengths are shown: the one-liner carries a whole idea on its own, and the body is there for
+ * the reader who tapped because they wanted more. Nothing here is computed — it is the same copy
+ * whatever day is selected — so the sheet takes the concept rather than the snapshot.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LimbPrimerSheet(
+    concept: PanchangaConcept,
+    onDismiss: () -> Unit,
+) {
+    val entry = PanchangaPrimer.of(concept)
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(text = entry.title, style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = entry.oneLine,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(text = entry.body, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
 }
 
 /**
@@ -407,7 +454,10 @@ private fun DetailCard(
  * reader checking against an almanac would otherwise have no way to tell which one this is.
  */
 @Composable
-private fun CycleRow(step: LimbStep) {
+private fun CycleRow(
+    step: LimbStep,
+    onClick: () -> Unit,
+) {
     val paksha = if (step.limb == PanchangaLimb.TITHI) pakshaPrefix(step.position) else ""
     VedicCycleRow(
         label = step.limb.displayName,
@@ -419,6 +469,7 @@ private fun CycleRow(step: LimbStep) {
         nextNote = step.window?.let { formatTime(it.end) },
         progress = step.fraction?.toFloat(),
         spokenDescription = cycleRowDescription(step, paksha),
+        onClick = onClick,
     )
 }
 

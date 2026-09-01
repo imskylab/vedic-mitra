@@ -28,20 +28,26 @@ package io.github.vedicmitra.core.astronomy
  *
  * @property displayName what the row is called.
  * @property cycleLength how many values the loop holds before it repeats.
+ * @property concept the idea a reader tapping this row wants explained, in [PanchangaPrimer]. Held
+ *   here rather than resolved in the UI so that the mapping is total by construction: a limb cannot
+ *   be added without naming the concept that explains it, and a concept cannot be named without
+ *   copy, because [PanchangaConcept] is closed and covered by a test over `entries`.
  */
 enum class PanchangaLimb(
     val displayName: String,
     val cycleLength: Int,
+    val concept: PanchangaConcept,
 ) {
-    VARA("Vara", 7),
-    TITHI("Tithi", 30),
-    NAKSHATRA("Nakshatra", 27),
-    PADA("Pada", 4),
-    YOGA("Yoga", 27),
-    KARANA("Karana", 60),
-    MOON_RASHI("Chandra Rashi", 12),
-    SUN_RASHI("Surya Rashi", 12),
-    MOON_PHASE("Moon Phase", 8),
+    VARA("Vara", 7, PanchangaConcept.VARA),
+    TITHI("Tithi", 30, PanchangaConcept.TITHI),
+    NAKSHATRA("Nakshatra", 27, PanchangaConcept.NAKSHATRA),
+    PADA("Pada", 4, PanchangaConcept.PADA),
+    YOGA("Yoga", 27, PanchangaConcept.YOGA),
+    KARANA("Karana", 60, PanchangaConcept.KARANA),
+    // Both rashi rows explain the same idea: the sign, not which body is in it.
+    MOON_RASHI("Chandra Rashi", 12, PanchangaConcept.RASHI),
+    SUN_RASHI("Surya Rashi", 12, PanchangaConcept.RASHI),
+    MOON_PHASE("Moon Phase", 8, PanchangaConcept.MOON_PHASE),
     ;
 
     /**
