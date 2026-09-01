@@ -146,7 +146,10 @@ private fun Modifier.rowSemantics(
             contentDescription = description
             if (activate != null) {
                 role = Role.Button
-                onClick { activate(); true }
+                onClick {
+                    activate()
+                    true
+                }
             }
         }
     }
