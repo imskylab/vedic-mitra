@@ -372,9 +372,13 @@ private fun DetailCard(
                 Spacer(modifier = Modifier.height(10.dp))
             }
             DetailRow(label = "Maasa", value = snapshot.maasa.displayName)
+            // The three numbered eras a printed panchanga carries on its cover, under the sixty-name
+            // cycle they share a boundary with: all four turn at Ugadi, not at the Gregorian year.
+            val eras = snapshot.samvatsara.eras
             DetailRow(
                 label = "Samvatsara",
-                value = "${snapshot.samvatsara.name} (Shaka ${snapshot.samvatsara.shakaYear})",
+                value = snapshot.samvatsara.name,
+                note = "Vikrama ${eras.vikrama} · Shaka ${eras.shaka} · Kali ${eras.kali}",
             )
             DetailRow(label = "Ayana", value = snapshot.ayana.displayName)
             DetailRow(label = "Ritu", value = snapshot.ritu.displayName)
