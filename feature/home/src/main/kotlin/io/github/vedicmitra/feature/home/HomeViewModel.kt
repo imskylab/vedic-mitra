@@ -21,7 +21,9 @@ import io.github.vedicmitra.core.astronomy.GrahaPosition
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.PanchangaNow
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.common.result.AppResult
+import io.github.vedicmitra.core.datastore.UserPreferencesRepository
 import io.github.vedicmitra.core.domain.AddReminderUseCase
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -50,8 +52,19 @@ class HomeViewModel
         private val astronomyEngine: AstronomyEngine,
         private val resolveLocation: ResolveLocationUseCase,
         private val addReminder: AddReminderUseCase,
+        userPreferences: UserPreferencesRepository,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(HomeUiState())
+
+        init {
+            // Relabelling only -- see CalendarViewModel. Home and the calendar read the same
+            // preference so the two can never name the same month differently.
+            viewModelScope.launch {
+                userPreferences.maasaReckoning.collect { reckoning ->
+                    _uiState.update { it.copy(maasaReckoning = reckoning) }
+                }
+            }
+        }
 
         private val _messages = MutableSharedFlow<String>()
 
@@ -242,4 +255,5 @@ data class HomeUiState(
     val errorMessage: String? = null,
     val usingDefaultLocation: Boolean = false,
     val locationLabel: String? = null,
+    val maasaReckoning: MaasaReckoning = MaasaReckoning.AMANTA,
 )

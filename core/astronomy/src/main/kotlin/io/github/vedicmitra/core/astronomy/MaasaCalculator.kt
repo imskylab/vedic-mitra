@@ -174,6 +174,14 @@ internal fun samvatsaraOf(
     return Samvatsara(number = index + 1, name = SAMVATSARA_NAMES[index], shakaYear = shakaYear)
 }
 
+/**
+ * The amanta month name for a 1-based [number], wrapping past Phalguna back round to Chaitra.
+ *
+ * Exposed for [nameIn], which needs the *next* month's name to label a dark fortnight the
+ * purnimanta way and must not fall off the end of the year to get it.
+ */
+internal fun maasaNameOf(number: Int): String = MAASA_NAMES[(number - 1).mod(MONTHS_PER_YEAR)]
+
 /** Whether the amanta month beginning at the new moon [newMoonMillis] is Chaitra (month index 0). */
 private fun startsChaitra(
     newMoonMillis: Long,

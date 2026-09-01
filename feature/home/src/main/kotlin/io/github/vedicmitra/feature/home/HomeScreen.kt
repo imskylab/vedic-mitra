@@ -93,8 +93,10 @@ import io.github.vedicmitra.core.astronomy.SunTimes
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
+import io.github.vedicmitra.core.astronomy.nameIn
 import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import kotlinx.coroutines.delay
@@ -328,7 +330,7 @@ private fun HubView(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Header(uiState.locationLabel, onNavigateToLocation)
-        HeroCard(snapshot, uiState.nowPanchanga, onClick = onOpenPanchang)
+        HeroCard(snapshot, uiState.nowPanchanga, uiState.maasaReckoning, onClick = onOpenPanchang)
         uiState.auspicious?.let { AuspiciousCard(it) }
         if (uiState.festivals.isNotEmpty()) {
             ExpandableSection(
@@ -634,6 +636,7 @@ private fun Header(
 private fun HeroCard(
     snapshot: AstronomySnapshot,
     nowPanchanga: PanchangaNow?,
+    reckoning: MaasaReckoning,
     onClick: () -> Unit,
 ) {
     Card(
@@ -676,7 +679,7 @@ private fun HeroCard(
                 )
             }
             Text(
-                text = "${snapshot.maasa.displayName} · ${snapshot.samvatsara.name}",
+                text = "${snapshot.maasa.nameIn(reckoning, snapshot.tithi.paksha)} · ${snapshot.samvatsara.name}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(top = 4.dp),

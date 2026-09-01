@@ -15,6 +15,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -41,11 +42,24 @@ class DefaultUserPreferencesRepository
             dataStore.edit { it[USE_DYNAMIC_COLOR] = enabled }
         }
 
+        override val maasaReckoning: Flow<MaasaReckoning> =
+            dataStore.data.map { preferences -> preferences[MAASA_RECKONING].toMaasaReckoning() }
+
+        override suspend fun setMaasaReckoning(reckoning: MaasaReckoning) {
+            dataStore.edit { it[MAASA_RECKONING] = reckoning.name }
+        }
+
         private companion object {
             val DARK_THEME_CONFIG = stringPreferencesKey("dark_theme_config")
             val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+            val MAASA_RECKONING = stringPreferencesKey("maasa_reckoning")
 
             fun String?.toDarkThemeConfig(): DarkThemeConfig =
                 DarkThemeConfig.entries.firstOrNull { it.name == this } ?: DarkThemeConfig.FOLLOW_SYSTEM
+
+            // Unset, or a value written by a future version this one does not know, both fall back
+            // to what the engine computes rather than to a guess.
+            fun String?.toMaasaReckoning(): MaasaReckoning =
+                MaasaReckoning.entries.firstOrNull { it.name == this } ?: MaasaReckoning.AMANTA
         }
     }

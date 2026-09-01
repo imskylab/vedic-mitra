@@ -15,6 +15,7 @@ android {
 
 dependencies {
     implementation(projects.core.astronomy)
+    implementation(projects.core.datastore)
     implementation(projects.core.domain)
     implementation(projects.core.location)
     // For the runtime location-permission request (rememberLauncherForActivityResult).

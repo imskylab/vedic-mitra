@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
 import io.github.vedicmitra.core.datastore.ThemeSettings
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
@@ -51,25 +53,38 @@ fun SettingsScreen(
         SettingsUiState.Loading -> Unit
         is SettingsUiState.Loaded ->
             SettingsContent(
-                settings = state.settings,
+                state = state,
                 onDarkThemeConfigChange = viewModel::setDarkThemeConfig,
                 onDynamicColorChange = viewModel::setDynamicColor,
-                onNavigateToLocation = onNavigateToLocation,
-                onNavigateToProfile = onNavigateToProfile,
-                onNavigateToAbout = onNavigateToAbout,
+                onMaasaReckoningChange = viewModel::setMaasaReckoning,
+                onNavigate = { destination ->
+                    when (destination) {
+                        SettingsDestination.LOCATION -> onNavigateToLocation()
+                        SettingsDestination.PROFILE -> onNavigateToProfile()
+                        SettingsDestination.ABOUT -> onNavigateToAbout()
+                    }
+                },
                 modifier = modifier,
             )
     }
 }
 
+/**
+ * Where a settings row can send the reader.
+ *
+ * The three navigation callbacks are grouped behind one lambda so that adding a preference does not
+ * push this screen's parameter list past what detekt allows — and because they were three
+ * pass-throughs doing the same job.
+ */
+private enum class SettingsDestination { LOCATION, PROFILE, ABOUT }
+
 @Composable
 private fun SettingsContent(
-    settings: ThemeSettings,
+    state: SettingsUiState.Loaded,
     onDarkThemeConfigChange: (DarkThemeConfig) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
-    onNavigateToLocation: () -> Unit,
-    onNavigateToProfile: () -> Unit,
-    onNavigateToAbout: () -> Unit,
+    onMaasaReckoningChange: (MaasaReckoning) -> Unit,
+    onNavigate: (SettingsDestination) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -82,7 +97,7 @@ private fun SettingsContent(
         VedicSelectField(
             label = "Theme",
             options = DarkThemeConfig.entries,
-            selected = settings.darkThemeConfig,
+            selected = state.settings.darkThemeConfig,
             optionLabel = { it.label },
             onSelect = onDarkThemeConfigChange,
         )
@@ -97,8 +112,27 @@ private fun SettingsContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(text = "Dynamic colour", modifier = Modifier.weight(1f))
-            Switch(checked = settings.useDynamicColor, onCheckedChange = onDynamicColorChange)
+            Switch(checked = state.settings.useDynamicColor, onCheckedChange = onDynamicColorChange)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SettingsSectionHeader(text = "Panchanga")
+        VedicSelectField(
+            label = "Month scheme",
+            options = MaasaReckoning.entries,
+            selected = state.maasaReckoning,
+            optionLabel = { it.label },
+            onSelect = onMaasaReckoningChange,
+        )
+        Text(
+            text =
+                "Both schemes describe the same days. They differ only in what the dark fortnight " +
+                    "is called — under purnimanta it carries the next month's name.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -106,7 +140,7 @@ private fun SettingsContent(
         SettingsActionRow(
             label = "Panchanga location",
             action = "Change",
-            onClick = onNavigateToLocation,
+            onClick = { onNavigate(SettingsDestination.LOCATION) },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -115,7 +149,7 @@ private fun SettingsContent(
         SettingsActionRow(
             label = "Your birth profile",
             action = "Set up",
-            onClick = onNavigateToProfile,
+            onClick = { onNavigate(SettingsDestination.PROFILE) },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -124,7 +158,7 @@ private fun SettingsContent(
         SettingsActionRow(
             label = "About Vedic Mitra",
             action = "View",
-            onClick = onNavigateToAbout,
+            onClick = { onNavigate(SettingsDestination.ABOUT) },
         )
     }
 }
@@ -137,17 +171,29 @@ private val DarkThemeConfig.label: String
             DarkThemeConfig.DARK -> "Dark"
         }
 
+// Named by where the month ends, because that is the difference and it is what a reader recognises
+// from their own almanac -- "amanta" and "purnimanta" alone mean nothing to someone meeting them here.
+private val MaasaReckoning.label: String
+    get() =
+        when (this) {
+            MaasaReckoning.AMANTA -> "Amanta — ends at the new moon"
+            MaasaReckoning.PURNIMANTA -> "Purnimanta — ends at the full moon"
+        }
+
 @Preview
 @Composable
 private fun SettingsContentPreview() {
     VedicMitraTheme {
         SettingsContent(
-            settings = ThemeSettings(darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM, useDynamicColor = true),
+            state =
+                SettingsUiState.Loaded(
+                    settings = ThemeSettings(darkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM, useDynamicColor = true),
+                    maasaReckoning = MaasaReckoning.AMANTA,
+                ),
             onDarkThemeConfigChange = {},
             onDynamicColorChange = {},
-            onNavigateToLocation = {},
-            onNavigateToProfile = {},
-            onNavigateToAbout = {},
+            onMaasaReckoningChange = {},
+            onNavigate = {},
         )
     }
 }
