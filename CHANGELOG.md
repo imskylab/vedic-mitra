@@ -9,6 +9,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The lunar month and the season now read as wheels, and the ayana and lunar year say when they
+  end.** Those four rows previously showed a bare name and nothing else — "Maasa — Chaitra" said
+  nothing about when Chaitra ends.
+
+  The rule that excluded them contradicted itself. It said their windows "run to months or years,
+  where a countdown reads as noise", and in the next sentence kept the Sun's rashi *because the
+  ingress date is genuinely useful* — on the same ~30-day scale as the lunar month. It also
+  conflated two questions. **The neighbour** is worth naming for maasa and ritu, and not for the
+  other two: there are only two ayanas, so the neighbour is always the other one, and last year's
+  samvatsara name is trivia. **The boundary** is worth showing for all four.
+
+  So maasa and ritu became wheel rows; ayana and samvatsara keep a table row with a "till" date. The
+  three numbered eras moved to their own **Samvat** row so the samvatsara row could carry its
+  boundary.
+
+  **The month's neighbours are read from real lunations, not by stepping its number.** An adhika year
+  holds thirteen months and the one following an Adhika Jyeshtha is the *nija* Jyeshtha — arithmetic
+  would be a whole month wrong for the length of every leap month. All three names also go through
+  the purnimanta rule together, so the row reads as one scheme rather than a mix of both.
+
 - **Bundled stotras and mantras now carry a source — and say so when they do not.**
 
   The catalogs asserted only that their Sanskrit is public-domain, which is a *licensing* claim
