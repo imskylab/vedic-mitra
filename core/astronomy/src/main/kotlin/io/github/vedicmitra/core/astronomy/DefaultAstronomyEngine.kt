@@ -69,7 +69,9 @@ class DefaultAstronomyEngine
                     val atT = Ephemeris.julianCenturies(at)
                     Ephemeris.norm360(Ephemeris.sunApparentLongitude(atT) - Ephemeris.lahiriAyanamsa(atT))
                 }
-                val maasa = maasaOf(epochMillis, elongationAt, sunSiderealAt)
+                // The cycle rather than the bare month: the day card shows the neighbours, and
+                // reading them from real lunations is what keeps an adhika year correct.
+                val maasaCycle = maasaCycleOf(epochMillis, elongationAt, sunSiderealAt)
                 val samvatsara = samvatsaraOf(epochMillis, elongationAt, sunSiderealAt)
 
                 AppResult.Success(
@@ -86,7 +88,8 @@ class DefaultAstronomyEngine
                         yoga = yogaOf(yogaSum),
                         karana = karanaOf(elongation),
                         vara = vara,
-                        maasa = maasa,
+                        maasa = maasaCycle.current,
+                        maasaCycle = maasaCycle,
                         samvatsara = samvatsara,
                         ayana = ayanaOf(sunSidereal),
                         ritu = rituOf(sunSidereal),

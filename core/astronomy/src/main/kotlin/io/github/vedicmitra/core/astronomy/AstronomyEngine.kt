@@ -212,6 +212,9 @@ data class PanchangaNow(
  * @property karana the current karana (half-tithi).
  * @property vara the weekday (sunrise-to-sunrise).
  * @property maasa the amanta lunar month.
+ * @property maasaCycle the months either side of [maasa] and the current one's window, or `null`
+ *   for lightweight/synthetic snapshots. Separate from [maasa] because the neighbours are not a
+ *   pure function of its number — an adhika year holds thirteen lunations.
  * @property samvatsara the year in the sixty-year Jovian cycle.
  * @property ayana the Sun's current half-year sidereal journey (Uttarayana/Dakshinayana).
  * @property ritu the current season, by the Sun's sidereal longitude.
@@ -240,6 +243,7 @@ data class AstronomySnapshot(
     val karana: Karana,
     val vara: Vara,
     val maasa: Maasa,
+    val maasaCycle: MaasaCycle? = null,
     val samvatsara: Samvatsara,
     val ayana: Ayana,
     val ritu: Ritu,

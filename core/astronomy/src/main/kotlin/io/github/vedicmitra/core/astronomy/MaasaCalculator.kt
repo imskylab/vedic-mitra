@@ -12,6 +12,8 @@
 
 package io.github.vedicmitra.core.astronomy
 
+import kotlin.time.Instant
+
 // The twelve amanta lunar months, in order (index 0 = Chaitra). A month is named after the solar
 // rashi the Sun occupies at the new moon that begins it: Sun in Meena -> Chaitra, Mesha ->
 // Vaishakha, ... Kumbha -> Phalguna, i.e. monthIndex = (sunRashiIndex + 1) mod 12.
@@ -135,13 +137,65 @@ internal fun maasaOf(
 ): Maasa {
     val startNewMoon = newMoonAtOrBefore(atEpochMillis, elongationAt)
     val nextNewMoon = newMoonAfter(startNewMoon + NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+    return maasaBetween(startNewMoon, nextNewMoon, sunSiderealAt)
+}
 
+/**
+ * The [Maasa] for the lunation bounded by [startNewMoon] and [endNewMoon].
+ *
+ * A lunation whose bounding new moons fall in the same rashi contains no Sankranti and is therefore
+ * [Maasa.adhika] — which is why naming a month always needs *both* of its boundaries, and why a
+ * neighbouring month cannot be named by adding one to this month's number.
+ */
+private fun maasaBetween(
+    startNewMoon: Long,
+    endNewMoon: Long,
+    sunSiderealAt: (Long) -> Double,
+): Maasa {
     val startRashi = rashiOf(sunSiderealAt(startNewMoon))
-    val nextRashi = rashiOf(sunSiderealAt(nextNewMoon))
-    val adhika = startRashi == nextRashi
-
     val index = (startRashi + 1) % MONTHS_PER_YEAR
-    return Maasa(number = index + 1, name = MAASA_NAMES[index], adhika = adhika)
+    return Maasa(
+        number = index + 1,
+        name = MAASA_NAMES[index],
+        adhika = startRashi == rashiOf(sunSiderealAt(endNewMoon)),
+    )
+}
+
+/**
+ * The lunar month around [atEpochMillis] together with the ones either side of it, and the window
+ * the current one occupies.
+ *
+ * The neighbours are read from **real lunations** rather than by stepping this month's number,
+ * because an adhika month inserts a thirteenth into the year: the month after an Adhika Jyeshtha is
+ * the nija Jyeshtha, not Ashadha. That is also why this returns whole [Maasa] values rather than
+ * names — each carries its own adhika flag, worked out from its own pair of new moons.
+ *
+ * Four syzygy searches, which is two more than [maasaOf] alone: the month before this one and the
+ * one after both need their far boundary to know whether they are intercalary.
+ */
+internal fun maasaCycleOf(
+    atEpochMillis: Long,
+    elongationAt: (Long) -> Double,
+    sunSiderealAt: (Long) -> Double,
+): MaasaCycle {
+    val start = newMoonAtOrBefore(atEpochMillis, elongationAt)
+    val previousStart = newMoonAtOrBefore(start - NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+    val end = newMoonAfter(start + NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+    val nextEnd = newMoonAfter(end + NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+    val span = (end - start).toDouble()
+
+    return MaasaCycle(
+        previous = maasaBetween(previousStart, start, sunSiderealAt),
+        current = maasaBetween(start, end, sunSiderealAt),
+        next = maasaBetween(end, nextEnd, sunSiderealAt),
+        window =
+            LimbWindow(
+                start = Instant.fromEpochMilliseconds(start),
+                end = Instant.fromEpochMilliseconds(end),
+                angularFraction =
+                    if (span > 0) ((atEpochMillis - start) / span).coerceIn(0.0, 1.0) else 0.0,
+            ),
+    )
 }
 
 /**
@@ -159,15 +213,7 @@ internal fun samvatsaraOf(
     elongationAt: (Long) -> Double,
     sunSiderealAt: (Long) -> Double,
 ): Samvatsara {
-    // Walk back new moon by new moon to the Chaitra that opened the current lunar year, bounded so
-    // a pathological input can never loop forever.
-    var found = newMoonAtOrBefore(atEpochMillis, elongationAt)
-    var monthsBack = 0
-    while (monthsBack < MAX_MONTHS_BACK_TO_CHAITRA && !startsChaitra(found, sunSiderealAt)) {
-        found = newMoonAtOrBefore(found - NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
-        monthsBack++
-    }
-
+    val found = chaitraStartAtOrBefore(atEpochMillis, elongationAt, sunSiderealAt)
     val chaitraYear = gregorianYearUtc(found)
     val shakaYear = chaitraYear - SHAKA_EPOCH_YEAR
     val index = ((shakaYear + SHAKA_TO_SAMVATSARA_OFFSET) % SAMVATSARA_CYCLE + SAMVATSARA_CYCLE) % SAMVATSARA_CYCLE
@@ -181,6 +227,42 @@ internal fun samvatsaraOf(
  * purnimanta way and must not fall off the end of the year to get it.
  */
 internal fun maasaNameOf(number: Int): String = MAASA_NAMES[(number - 1).mod(MONTHS_PER_YEAR)]
+
+/**
+ * The new moon opening the Chaitra that began the lunar year containing [atEpochMillis].
+ *
+ * Walks back a month at a time rather than estimating, because an adhika year holds thirteen
+ * lunations and any fixed offset would land in the wrong one roughly every third year. Bounded so a
+ * pathological input can never loop forever.
+ */
+internal fun chaitraStartAtOrBefore(
+    atEpochMillis: Long,
+    elongationAt: (Long) -> Double,
+    sunSiderealAt: (Long) -> Double,
+): Long {
+    var found = newMoonAtOrBefore(atEpochMillis, elongationAt)
+    var months = 0
+    while (months < MAX_MONTHS_BACK_TO_CHAITRA && !startsChaitra(found, sunSiderealAt)) {
+        found = newMoonAtOrBefore(found - NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+        months++
+    }
+    return found
+}
+
+/** The new moon opening the first Chaitra strictly after [fromEpochMillis] — the next lunar year. */
+internal fun chaitraStartAfter(
+    fromEpochMillis: Long,
+    elongationAt: (Long) -> Double,
+    sunSiderealAt: (Long) -> Double,
+): Long {
+    var found = newMoonAfter(fromEpochMillis + NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+    var months = 0
+    while (months < MAX_MONTHS_BACK_TO_CHAITRA && !startsChaitra(found, sunSiderealAt)) {
+        found = newMoonAfter(found + NEW_MOON_SEARCH_MARGIN_MS, elongationAt)
+        months++
+    }
+    return found
+}
 
 /** Whether the amanta month beginning at the new moon [newMoonMillis] is Chaitra (month index 0). */
 private fun startsChaitra(

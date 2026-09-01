@@ -87,7 +87,6 @@ import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.astronomy.limbSteps
-import io.github.vedicmitra.core.astronomy.nameIn
 import io.github.vedicmitra.core.astronomy.sankalpaFrame
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
@@ -394,30 +393,35 @@ private fun DetailCard(
             // what someone new to a panchanga cannot infer from a table. The rows below -- rise and
             // set times, the muhurtas, and the slow context -- stay as they are, because they are
             // instants and spans rather than positions in a loop.
-            val steps = snapshot.limbSteps()
+            val steps = snapshot.limbSteps(reckoning)
             if (steps.isNotEmpty()) {
                 VedicCycleHeader(modifier = Modifier.padding(top = 4.dp))
-                steps.forEach { step -> CycleRow(step) { explaining = step.limb.concept } }
+                steps.forEach { step ->
+                    CycleRow(step, reckoning) { explaining = step.limb.concept }
+                }
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            // The scheme is named on every reading, not only when it is the non-default one. A
-            // reader whose almanac disagrees needs to know which convention this is, and that is
-            // exactly the reader who would never think to look in Settings.
-            DetailRow(
-                label = "Maasa",
-                value = snapshot.maasa.nameIn(reckoning, snapshot.tithi.paksha),
-                note = reckoning.shortLabel,
-            )
-            // The three numbered eras a printed panchanga carries on its cover, under the sixty-name
-            // cycle they share a boundary with: all four turn at Ugadi, not at the Gregorian year.
-            val eras = snapshot.samvatsara.eras
+            // Ayana and samvatsara stay as table rows: with only two ayanas the neighbour is always
+            // the other one, and last year's samvatsara name is trivia. Their *boundaries* are worth
+            // showing, which is the half the old rule threw out along with the neighbours.
             DetailRow(
                 label = "Samvatsara",
                 value = snapshot.samvatsara.name,
-                note = "Vikrama ${eras.vikrama} · Shaka ${eras.shaka} · Kali ${eras.kali}",
+                note = snapshot.limbs?.samvatsara?.let { "till ${formatDate(it.end)}" },
             )
-            DetailRow(label = "Ayana", value = snapshot.ayana.displayName)
-            DetailRow(label = "Ritu", value = snapshot.ritu.displayName)
+            // The three numbered eras a printed panchanga carries on its cover, under the sixty-name
+            // cycle they share a boundary with: all of them turn at Ugadi, not at the Gregorian year.
+            val eras = snapshot.samvatsara.eras
+            DetailRow(
+                label = "Samvat",
+                value = "Vikrama ${eras.vikrama}",
+                note = "Shaka ${eras.shaka} · Kali ${eras.kali}",
+            )
+            DetailRow(
+                label = "Ayana",
+                value = snapshot.ayana.displayName,
+                note = snapshot.limbs?.ayana?.let { "till ${formatDate(it.end)}" },
+            )
             DetailRow(label = "Sunrise", value = formatTime(snapshot.sunTimes.sunrise))
             DetailRow(label = "Sunset", value = formatTime(snapshot.sunTimes.sunset))
             DetailRow(label = "Moonrise", value = formatTime(snapshot.moonTimes.moonrise))
@@ -538,11 +542,20 @@ private fun SankalpaCard(
 @Composable
 private fun CycleRow(
     step: LimbStep,
+    reckoning: MaasaReckoning,
     onClick: () -> Unit,
 ) {
     val paksha = if (step.limb == PanchangaLimb.TITHI) pakshaPrefix(step.position) else ""
+    // The month row carries its scheme in the label. A reader whose almanac disagrees needs to know
+    // which convention this is, and that reader would never think to look in Settings for it.
+    val label =
+        if (step.limb == PanchangaLimb.MAASA) {
+            "${step.limb.displayName} · ${reckoning.shortLabel}"
+        } else {
+            step.limb.displayName
+        }
     VedicCycleRow(
-        label = step.limb.displayName,
+        label = label,
         previous = step.previous,
         current = "$paksha${step.current}",
         next = step.next,
@@ -621,6 +634,7 @@ private val MaasaReckoning.shortLabel: String
             MaasaReckoning.PURNIMANTA -> "Purnimanta"
         }
 
+private val boundaryFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
 private val monthFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
 private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy")
 private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -634,6 +648,15 @@ private fun sundayFirstWeekdayLabels(): List<String> =
     }
 
 /** Formats an instant as local wall-clock time in the device's zone, or an em dash if absent. */
+/** A day and month, for boundaries that are weeks or months away rather than hours. */
+private fun formatDate(instant: Instant?): String {
+    if (instant == null) return "—"
+    return java.time.Instant
+        .ofEpochMilli(instant.toEpochMilliseconds())
+        .atZone(ZoneId.systemDefault())
+        .format(boundaryFormatter)
+}
+
 private fun formatTime(instant: Instant?): String {
     if (instant == null) return "—"
     val local =
