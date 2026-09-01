@@ -45,7 +45,8 @@
 
 > **Status:** The **panchanga, muhurta and jyotisha** domains are largely built; the wider shastra
 > map in [docs/roadmap.md](docs/roadmap.md) is mostly open. The app computes
-> today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa, samvatsara),
+> today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa in either the
+> amanta or purnimanta scheme, samvatsara and the Vikrama/Shaka/Kali years),
 > Brahma/Abhijit Muhurta, Dur Muhurta, Varjyam, the inauspicious kalams (Rahu, Yamaganda, Gulika),
 > the sixteen Choghadiya windows, sunrise/sunset, moonrise/moonset, Moon phase, golden-hour windows,
 > and the graha rashi positions (Sun/Moon/Guru/Shukra) with their next pravesh — for any saved or
@@ -186,8 +187,9 @@ vrata needs its tithi, and the app already computes all three.
 | | Domains |
 | --- | --- |
 | **Built** | Panchanga · Jyotisha (reporting gaps remain) · Muhurta · Festivals and observances |
-| **Next** | Regional variation · Content provenance · Dharma and the samskaras |
-| **Open for contribution** | Localization · Vastu · Chandas · Kalpa · Ayurveda (bounded) · Yoga · Accessibility · Time reckoning |
+| **In progress** | Regional variation (month scheme settled; solar calendars next) · Content sources (required and enforced; 38 entries still to identify) |
+| **Next** | Dharma and the samskaras |
+| **Open for contribution** | Localization · Vastu · Chandas · Ayurveda (bounded) · Yoga · Accessibility · Kalpa (sankalpa frame shipped) · Time reckoning (era years shipped) |
 | **Exploring** | The arts (media-constrained) · Portable engine and iOS · Prashna and Varshaphala |
 | **Declined** | Arthashastra · Dhanurveda · Sanskrit tutoring · remedy commerce — [reasons recorded](docs/roadmap.md#part-vi--declined-and-why) |
 
@@ -198,10 +200,15 @@ traditional knowledge is *cited* to a named source, practice tracking claims not
 explanatory copy is enforced by a test. It also states the red lines — no medical claims, no
 fatalism, no instruction in anyone's practice, no remedy commerce.
 
-Three foundations come before the breadth: **localization** (the app is English-only and not yet
-localized — 599 hardcoded strings and no `stringResource` calls), **content provenance** (the
-shipped stotras and mantras carry no sources), and **regional variation** (the amanta/purnimanta
-split alone moves festival dates by a fortnight for many users).
+Three foundations come before the breadth. **Regional variation** and **content provenance** are
+under way: the month scheme is now a setting the app names on every reading, and every bundled text
+is required to carry a source — currently an explicit "not recorded" on all 38, shown to the reader,
+with a test so that count can shrink but never grow.
+
+**Localization has not started and is the largest gap.** The app is English-only and not
+localized at all — 599 hardcoded strings, no `stringResource` calls, no locale. It limits who this
+can reach more than anything else on the roadmap, and it needs Indic language knowledge rather than
+Android knowledge, which makes it the best place for a first contribution.
 
 [ADR 0016](docs/adr/0016-shastra-domains-and-knowledge-modes.md) records why the twelve-phase plan
 was retired and what replaced it.
