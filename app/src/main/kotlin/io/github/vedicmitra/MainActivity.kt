@@ -78,6 +78,9 @@ import io.github.vedicmitra.feature.calendar.CalendarScreen
 import io.github.vedicmitra.feature.home.EventsScreen
 import io.github.vedicmitra.feature.home.FestivalsScreen
 import io.github.vedicmitra.feature.home.HomeScreen
+import io.github.vedicmitra.feature.home.hub.DomainScreen
+import io.github.vedicmitra.feature.home.hub.HubDomain
+import io.github.vedicmitra.feature.home.hub.HubTarget
 import io.github.vedicmitra.feature.home.PanchangScreen
 import io.github.vedicmitra.feature.japa.JapaScreen
 import io.github.vedicmitra.feature.kundali.KundaliScreen
@@ -170,6 +173,7 @@ internal val DESTINATION_LABELS: Map<String, String> =
         JAPA_ROUTE to "Japa",
         MEDITATION_ROUTE to "Meditation",
         STOTRA_ROUTE to "Stotra",
+        DOMAIN_ROUTE to "Shastras",
         MUHURAT_ROUTE to "Muhurat",
         MUHURAT_ACTIVITIES_ROUTE to "Muhurat",
         MUHURAT_RESULTS_ROUTE to "Muhurat",
@@ -218,6 +222,8 @@ internal const val RASHIFAL_ROUTE = "rashifal"
 internal const val JAPA_ROUTE = "japa"
 internal const val MEDITATION_ROUTE = "meditation"
 internal const val STOTRA_ROUTE = "stotra"
+internal const val DOMAIN_ROUTE = "domain"
+internal const val DOMAIN_ID_ARG = "domainId"
 internal const val LOCATION_ROUTE = "settings/location"
 internal const val ADD_CITY_ROUTE = "settings/location/add-city"
 internal const val ADD_COORDINATES_ROUTE = "settings/location/add-coordinates"
@@ -452,7 +458,8 @@ private fun AppNavHost(
         composable(JAPA_ROUTE) { JapaScreen() }
         composable(MEDITATION_ROUTE) { MeditationScreen() }
         composable(STOTRA_ROUTE) { StotraScreen() }
-        muhuratDestinations(navController)
+        domainDestinations(navController)
+    muhuratDestinations(navController)
     }
 }
 
@@ -467,18 +474,8 @@ private fun NavGraphBuilder.homeHubDestination(navController: NavHostController)
     composable(TopDestination.HOME.route) {
         HomeScreen(
             onNavigateToLocation = { navController.navigate(LOCATION_ROUTE) },
-            onOpenPanchang = { navController.navigate(PANCHANG_ROUTE) },
-            onOpenFestivals = { navController.navigate(FESTIVALS_ROUTE) },
-            onOpenEvents = { navController.navigate(EVENTS_ROUTE) },
-            onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
-            onOpenReminders = { navController.navigate(ALARM_ROUTE) },
-            onOpenKundali = { navController.navigate(KUNDALI_ROUTE) },
-            onOpenMuhurat = { navController.navigate(MUHURAT_ROUTE) },
-            onOpenMatch = { navController.navigate(MATCHMAKING_ROUTE) },
-            onOpenRashifal = { navController.navigate(RASHIFAL_ROUTE) },
-            onOpenJapa = { navController.navigate(JAPA_ROUTE) },
-            onOpenMeditate = { navController.navigate(MEDITATION_ROUTE) },
-            onOpenStotra = { navController.navigate(STOTRA_ROUTE) },
+            onOpen = { navController.navigate(routeOf(it)) },
+            onOpenDomain = { navController.navigate("$DOMAIN_ROUTE/${it.name}") },
         )
     }
 }
@@ -495,6 +492,51 @@ private fun NavGraphBuilder.homeDetailDestinations() {
     composable(PANCHANG_ROUTE) { PanchangScreen() }
     composable(FESTIVALS_ROUTE) { FestivalsScreen() }
     composable(EVENTS_ROUTE) { EventsScreen() }
+}
+
+/**
+ * The route a hub destination opens.
+ *
+ * `:feature:home` names an intent and `:app` chooses the route, so this `when` is the contract
+ * between them. Exhaustive on purpose: a destination added without a route becomes a compile error
+ * rather than a tile that silently goes nowhere. It also keeps the route strings in this file, which
+ * is where `NavigationTitleTest` reflects for them.
+ */
+internal fun routeOf(target: HubTarget): String =
+    when (target) {
+        HubTarget.PANCHANG -> PANCHANG_ROUTE
+        HubTarget.CALENDAR -> CALENDAR_ROUTE
+        HubTarget.REMINDERS -> ALARM_ROUTE
+        HubTarget.KUNDALI -> KUNDALI_ROUTE
+        HubTarget.RASHIFAL -> RASHIFAL_ROUTE
+        HubTarget.MATCH -> MATCHMAKING_ROUTE
+        HubTarget.MUHURAT -> MUHURAT_ROUTE
+        HubTarget.STOTRA -> STOTRA_ROUTE
+        HubTarget.JAPA -> JAPA_ROUTE
+        HubTarget.MEDITATE -> MEDITATION_ROUTE
+        HubTarget.FESTIVALS -> FESTIVALS_ROUTE
+        HubTarget.EVENTS -> EVENTS_ROUTE
+    }
+
+/**
+ * The hub's second level — one screen per shastra, addressed by the domain's own enum name.
+ *
+ * One parameterised route rather than a constant per domain, so every level-two screen shares the
+ * "Shastras" subtitle; the domain's own name is drawn on the screen. That is the trade the four
+ * muhurat steps already make, and it keeps the argument name declared once, here, since the screen
+ * reads it in this lambda rather than from a ViewModel.
+ */
+private fun NavGraphBuilder.domainDestinations(navController: NavHostController) {
+    composable(
+        route = "$DOMAIN_ROUTE/{$DOMAIN_ID_ARG}",
+        arguments = listOf(navArgument(DOMAIN_ID_ARG) { type = NavType.StringType }),
+    ) { entry ->
+        val name = entry.arguments?.getString(DOMAIN_ID_ARG).orEmpty()
+        DomainScreen(
+            domain = runCatching { HubDomain.valueOf(name) }.getOrDefault(HubDomain.PANCHANGA),
+            onOpen = { navController.navigate(routeOf(it)) },
+        )
+    }
 }
 
 /** The muhurta "find best dates" flow: category grid → activity list → ranked results. */
