@@ -15,10 +15,8 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,16 +24,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -55,10 +50,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -97,8 +90,14 @@ import io.github.vedicmitra.core.astronomy.nameIn
 import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
-import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.feature.home.hub.HubCatalog
+import io.github.vedicmitra.feature.home.hub.HubDomain
+import io.github.vedicmitra.feature.home.hub.HubTarget
+import io.github.vedicmitra.feature.home.hub.HubTile
+import io.github.vedicmitra.feature.home.hub.SectionLabel
+import io.github.vedicmitra.feature.home.hub.TileAction
+import io.github.vedicmitra.feature.home.hub.TileGrid
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
@@ -115,18 +114,8 @@ import kotlin.time.Instant
 @Composable
 fun HomeScreen(
     onNavigateToLocation: () -> Unit,
-    onOpenPanchang: () -> Unit,
-    onOpenFestivals: () -> Unit,
-    onOpenEvents: () -> Unit,
-    onOpenCalendar: () -> Unit,
-    onOpenReminders: () -> Unit,
-    onOpenKundali: () -> Unit,
-    onOpenMuhurat: () -> Unit,
-    onOpenMatch: () -> Unit,
-    onOpenRashifal: () -> Unit,
-    onOpenJapa: () -> Unit,
-    onOpenMeditate: () -> Unit,
-    onOpenStotra: () -> Unit,
+    onOpen: (HubTarget) -> Unit,
+    onOpenDomain: (HubDomain) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -151,21 +140,35 @@ fun HomeScreen(
     HomeContent(
         uiState = uiState,
         onNavigateToLocation = onNavigateToLocation,
-        onOpenPanchang = onOpenPanchang,
-        onOpenFestivals = onOpenFestivals,
-        onOpenEvents = onOpenEvents,
-        onOpenCalendar = onOpenCalendar,
-        onOpenReminders = onOpenReminders,
-        onOpenKundali = onOpenKundali,
-        onOpenMuhurat = onOpenMuhurat,
-        onOpenMatch = onOpenMatch,
-        onOpenRashifal = onOpenRashifal,
-        onOpenJapa = onOpenJapa,
-        onOpenMeditate = onOpenMeditate,
-        onOpenStotra = onOpenStotra,
+        onOpen = onOpen,
+        onTile = tileHandler(onOpen, onOpenDomain),
         onSetReminder = viewModel::setReminder,
         modifier = modifier,
     )
+}
+
+/**
+ * Turns a tap on a tile into navigation, or into a word about where that domain stands.
+ *
+ * The toast is raised here rather than through [HomeViewModel]'s message channel: that channel
+ * carries the result of something the reader did, while a roadmap note is presentation copy that
+ * never leaves the UI layer. It also keeps the domain screen free of a ViewModel it would otherwise
+ * have to resolve — and resolving Home's would recompute a whole panchanga to show a sentence.
+ */
+@Composable
+private fun tileHandler(
+    onOpen: (HubTarget) -> Unit,
+    onOpenDomain: (HubDomain) -> Unit,
+): (HubTile) -> Unit {
+    val context = LocalContext.current
+    return { tile ->
+        when (val action = tile.action) {
+            is TileAction.Open -> onOpen(action.target)
+            is TileAction.Drill -> onOpenDomain(action.domain)
+            // LENGTH_LONG: these are sentences, not "Copied".
+            is TileAction.NotYet -> Toast.makeText(context, action.note, Toast.LENGTH_LONG).show()
+        }
+    }
 }
 
 /**
@@ -263,18 +266,8 @@ fun EventsScreen(
 private fun HomeContent(
     uiState: HomeUiState,
     onNavigateToLocation: () -> Unit,
-    onOpenPanchang: () -> Unit,
-    onOpenFestivals: () -> Unit,
-    onOpenEvents: () -> Unit,
-    onOpenCalendar: () -> Unit,
-    onOpenReminders: () -> Unit,
-    onOpenKundali: () -> Unit,
-    onOpenMuhurat: () -> Unit,
-    onOpenMatch: () -> Unit,
-    onOpenRashifal: () -> Unit,
-    onOpenJapa: () -> Unit,
-    onOpenMeditate: () -> Unit,
-    onOpenStotra: () -> Unit,
+    onOpen: (HubTarget) -> Unit,
+    onTile: (HubTile) -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -283,18 +276,8 @@ private fun HomeContent(
             uiState = uiState,
             snapshot = checkNotNull(uiState.snapshot),
             onNavigateToLocation = onNavigateToLocation,
-            onOpenPanchang = onOpenPanchang,
-            onOpenCalendar = onOpenCalendar,
-            onOpenReminders = onOpenReminders,
-            onOpenKundali = onOpenKundali,
-            onOpenMuhurat = onOpenMuhurat,
-            onOpenMatch = onOpenMatch,
-            onOpenRashifal = onOpenRashifal,
-            onOpenJapa = onOpenJapa,
-            onOpenMeditate = onOpenMeditate,
-            onOpenStotra = onOpenStotra,
-            onOpenFestivals = onOpenFestivals,
-            onOpenEvents = onOpenEvents,
+            onOpen = onOpen,
+            onTile = onTile,
             onSetReminder = onSetReminder,
             modifier = modifier,
         )
@@ -309,18 +292,8 @@ private fun HubView(
     uiState: HomeUiState,
     snapshot: AstronomySnapshot,
     onNavigateToLocation: () -> Unit,
-    onOpenPanchang: () -> Unit,
-    onOpenCalendar: () -> Unit,
-    onOpenReminders: () -> Unit,
-    onOpenKundali: () -> Unit,
-    onOpenMuhurat: () -> Unit,
-    onOpenMatch: () -> Unit,
-    onOpenRashifal: () -> Unit,
-    onOpenJapa: () -> Unit,
-    onOpenMeditate: () -> Unit,
-    onOpenStotra: () -> Unit,
-    onOpenFestivals: () -> Unit,
-    onOpenEvents: () -> Unit,
+    onOpen: (HubTarget) -> Unit,
+    onTile: (HubTile) -> Unit,
     onSetReminder: (ReminderTarget) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -330,7 +303,7 @@ private fun HubView(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Header(uiState.locationLabel, onNavigateToLocation)
-        HeroCard(snapshot, uiState.nowPanchanga, uiState.maasaReckoning, onClick = onOpenPanchang)
+        HeroCard(snapshot, uiState.nowPanchanga, uiState.maasaReckoning) { onOpen(HubTarget.PANCHANG) }
         uiState.auspicious?.let { AuspiciousCard(it) }
         if (uiState.festivals.isNotEmpty()) {
             ExpandableSection(
@@ -340,20 +313,13 @@ private fun HubView(
                 onRowClick = { selectedRow = it },
             )
         }
-        ShortcutGrid(
-            onOpenPanchang = onOpenPanchang,
-            onOpenCalendar = onOpenCalendar,
-            onOpenReminders = onOpenReminders,
-            onOpenKundali = onOpenKundali,
-            onOpenMuhurat = onOpenMuhurat,
-            onOpenMatch = onOpenMatch,
-            onOpenRashifal = onOpenRashifal,
-            onOpenJapa = onOpenJapa,
-            onOpenMeditate = onOpenMeditate,
-            onOpenStotra = onOpenStotra,
-            onOpenFestivals = onOpenFestivals,
-            onOpenEvents = onOpenEvents,
-        )
+        // Two grids: what gets opened daily, then the shastra map. The daily few are duplicated
+        // from their domains on purpose -- a pure hierarchy would put the calendar and the reminder
+        // list two taps away, every time, which is a poor trade for the tidiness.
+        SectionLabel("TODAY")
+        TileGrid(HubCatalog.today, onTile)
+        SectionLabel("SHASTRAS")
+        TileGrid(HubCatalog.domains, onTile)
         if (uiState.usingDefaultLocation) {
             Text(
                 text = "Showing New Delhi — grant location access for your area.",
@@ -376,47 +342,6 @@ private fun CopyrightFooter() {
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
     )
-}
-
-/** The full shortcut grid — every shortcut on one screen, [GRID_COLUMNS] tiles per row. */
-@Composable
-private fun ShortcutGrid(
-    onOpenPanchang: () -> Unit,
-    onOpenCalendar: () -> Unit,
-    onOpenReminders: () -> Unit,
-    onOpenKundali: () -> Unit,
-    onOpenMuhurat: () -> Unit,
-    onOpenMatch: () -> Unit,
-    onOpenRashifal: () -> Unit,
-    onOpenJapa: () -> Unit,
-    onOpenMeditate: () -> Unit,
-    onOpenStotra: () -> Unit,
-    onOpenFestivals: () -> Unit,
-    onOpenEvents: () -> Unit,
-) {
-    val tiles: List<@Composable () -> Unit> =
-        listOf(
-            { GlyphTile("Today's Panchang", VedicIcons.panchang, HubCategory.DAILY, onClick = onOpenPanchang) },
-            { GlyphTile("Calendar", VedicIcons.calendar, HubCategory.DAILY, onClick = onOpenCalendar) },
-            { GlyphTile("Muhurat", VedicIcons.muhurat, HubCategory.DAILY, onClick = onOpenMuhurat) },
-            { GlyphTile("Festivals", VedicIcons.festivals, HubCategory.DAILY, onClick = onOpenFestivals) },
-            { GlyphTile("Events", VedicIcons.events, HubCategory.DAILY, onClick = onOpenEvents) },
-            { VectorTile("Reminders", Icons.Filled.Notifications, HubCategory.DAILY, onClick = onOpenReminders) },
-            { GlyphTile("Kundali", VedicIcons.kundali, HubCategory.ASTROLOGY, onClick = onOpenKundali) },
-            { GlyphTile("Rashifal", VedicIcons.rashifal, HubCategory.ASTROLOGY, onClick = onOpenRashifal) },
-            { GlyphTile("Match", VedicIcons.matchmaking, HubCategory.ASTROLOGY, onClick = onOpenMatch) },
-            { OmTile("Stotra", onClick = onOpenStotra) },
-            { GlyphTile("Japa", VedicIcons.japa, HubCategory.DEVOTION, onClick = onOpenJapa) },
-            { GlyphTile("Meditate", VedicIcons.meditate, HubCategory.DEVOTION, onClick = onOpenMeditate) },
-        )
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        tiles.chunked(GRID_COLUMNS).forEach { rowTiles ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                rowTiles.forEach { tile -> Box(modifier = Modifier.weight(1f)) { tile() } }
-                repeat(GRID_COLUMNS - rowTiles.size) { Spacer(modifier = Modifier.weight(1f)) }
-            }
-        }
-    }
 }
 
 /**
@@ -497,102 +422,6 @@ private fun EventListView(
         }
     }
     selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
-}
-
-/** A shortcut tile: a tinted rounded chip holding [icon], with a [label] below. */
-@Composable
-private fun TileButton(
-    label: String,
-    category: HubCategory,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    icon: @Composable () -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
-            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(15.dp)).background(category.container()),
-            contentAlignment = Alignment.Center,
-        ) { icon() }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/** A tile whose icon is one of the brand's duotone cultural glyphs (rendered in its own colours). */
-@Composable
-private fun GlyphTile(
-    label: String,
-    @androidx.annotation.DrawableRes glyph: Int,
-    category: HubCategory,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-) {
-    TileButton(label, category, enabled, onClick) {
-        Icon(
-            painter = painterResource(glyph),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(38.dp),
-        )
-    }
-}
-
-/** A tile whose icon is a Material symbol, tinted to the category's on-container colour. */
-@Composable
-private fun VectorTile(
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    category: HubCategory,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-) {
-    val tint = category.onContainer()
-    TileButton(label, category, enabled, onClick) {
-        Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(42.dp))
-    }
-}
-
-/** The Stotra tile: Om (ॐ) as a Devanagari text glyph rather than a drawable. */
-@Composable
-private fun OmTile(
-    label: String,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-) {
-    val tint = HubCategory.DEVOTION.onContainer()
-    TileButton(label, HubCategory.DEVOTION, enabled, onClick) {
-        Text(text = "ॐ", style = MaterialTheme.typography.displayMedium, color = tint)
-    }
-}
-
-@Composable
-private fun HubCategory.container(): Color =
-    when (this) {
-        HubCategory.DAILY -> MaterialTheme.colorScheme.primaryContainer
-        HubCategory.ASTROLOGY -> MaterialTheme.colorScheme.secondaryContainer
-        HubCategory.DEVOTION -> MaterialTheme.colorScheme.tertiaryContainer
-    }
-
-@Composable
-private fun HubCategory.onContainer(): Color =
-    when (this) {
-        HubCategory.DAILY -> MaterialTheme.colorScheme.onPrimaryContainer
-        HubCategory.ASTROLOGY -> MaterialTheme.colorScheme.onSecondaryContainer
-        HubCategory.DEVOTION -> MaterialTheme.colorScheme.onTertiaryContainer
-    }
-
-/** The hub's shortcut categories — each tints its tiles with its own container colour. */
-private enum class HubCategory {
-    DAILY,
-    ASTROLOGY,
-    DEVOTION,
 }
 
 @Composable
@@ -973,7 +802,6 @@ private fun Festival.toEventRow(): SectionRow =
 
 private const val AFTERNOON_FROM_HOUR = 12
 private const val EVENING_FROM_HOUR = 17
-private const val GRID_COLUMNS = 3
 
 private fun greeting(): String =
     when (LocalTime.now().hour) {
@@ -1010,18 +838,8 @@ private fun HomeContentPreview() {
         HomeContent(
             uiState = sampleHomeState(),
             onNavigateToLocation = {},
-            onOpenPanchang = {},
-            onOpenFestivals = {},
-            onOpenEvents = {},
-            onOpenCalendar = {},
-            onOpenReminders = {},
-            onOpenKundali = {},
-            onOpenMuhurat = {},
-            onOpenMatch = {},
-            onOpenRashifal = {},
-            onOpenJapa = {},
-            onOpenMeditate = {},
-            onOpenStotra = {},
+            onOpen = {},
+            onTile = {},
             onSetReminder = {},
         )
     }
