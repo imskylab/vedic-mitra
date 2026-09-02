@@ -41,10 +41,17 @@ as written — an ADR records what was decided at the time, and rewriting one to
 would defeat the point. Translate roughly: Phase 7 is F2 and the location work, Phase 9 is F4 and
 the UI items under C1, Phase 11 is K5 and K6.
 
-**Shastras are the contribution map, not the navigation.** Nobody opens an app thinking "I need
-Gandharva Veda"; they think *what is today*, *when should I do this*, *what does this word mean*.
-The shastra structure below says where knowledge comes from and who can contribute what. The app's
-own navigation stays task-shaped — see [What the user sees](#what-the-user-sees).
+**The shastras are the navigation, and this reversed a decision.** The first version of this map said
+they were "the contribution map, not the navigation" — that nobody opens an app thinking "I need
+Gandharva Veda", so the hub should stay task-shaped. That reasoning still holds for the *questions* a
+reader arrives with, which is why the daily destinations sit one tap from the landing and the
+[question table](#what-the-user-sees) below is still how the app is meant to read.
+
+What it got wrong is that it left the map invisible. A roadmap only the repository can see does not
+tell a reader what this app is for, and does not tell a would-be contributor what is wanted. So the
+hub's grid is now the domain list below — **every domain here has a tile, built or not**, and one
+that is not built says where it stands rather than pretending it is missing. `HubCatalogTest` pins
+the two together, so a domain added here without a tile fails the build.
 
 ## Where to start
 
@@ -420,8 +427,10 @@ Recording what the project will *not* do, in the habit the codebase already keep
 
 ## What the user sees
 
-The shastra map above is for contributors and for provenance. The app's navigation answers
-questions instead, and one question may draw on several shastras at once:
+The hub's grid is the shastra map above, but a reader does not arrive holding a shastra — they
+arrive holding a question, and one question may draw on several at once. This is what each domain is
+*for*, and it is why the handful of destinations opened daily stay one tap from the landing rather
+than being filed away under the domain they belong to:
 
 | The question | What answers it |
 | --- | --- |
