@@ -22,17 +22,17 @@ import org.junit.Test
  */
 class HubCatalogTest {
     @Test
-    fun `the domains are exactly the roadmap's user-facing shastras`() {
+    fun `the domains are exactly the roadmap entries a reader can go to`() {
         // Pinned deliberately. Adding a domain to docs/roadmap.md without a tile, or a tile without
         // a roadmap entry, should fail here rather than drift apart unnoticed.
         //
-        // F1-F6 are absent because they are engineering foundations with nothing to open, and K8
-        // because Nirukta/Vyakarana was re-termed as a glossary layer rather than a section. Both
-        // omissions are decisions, not oversights -- see HubDomain's KDoc.
+        // Four kinds of roadmap entry are absent on purpose, and each is a decision -- see
+        // HubDomain's KDoc: the F1-F6 foundations have nothing to open; K8 is a glossary layer
+        // rather than a section; C4 and K3 shipped into the calendar's day detail, so a tile could
+        // only say "look at the Calendar"; and C6 waits until its shape is clearer.
         val ids = HubDomain.entries.map { it.id }
 
-        assertThat(ids)
-            .containsExactly("C1", "C2", "C3", "C4", "C5", "C6", "K1", "K2", "K3", "K4", "K5", "K6", "K7")
+        assertThat(ids).containsExactly("C1", "C2", "C3", "C5", "K1", "K2", "K4", "K5", "K6", "K7")
         assertWithMessage("a roadmap id is used twice").that(ids).containsNoDuplicates()
     }
 

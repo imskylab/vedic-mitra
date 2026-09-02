@@ -83,8 +83,8 @@ when is what turns a described practice into a done one — a seasonal routine n
 ritual needs its muhurta, a vrata needs its tithi — and the engine already knows all three.
 
 That is also why this is built as a **foundation rather than a finished product**. The domain map in
-[docs/roadmap.md](docs/roadmap.md) is deliberately larger than one person will finish, every domain
-on it has a tile in the app whether or not it is built, and
+[docs/roadmap.md](docs/roadmap.md) is deliberately larger than one person will finish, the domains a
+reader can actually go to have a tile in the app whether or not they are built, and
 [docs/knowledge-standards.md](docs/knowledge-standards.md) sets what any of it must stand on before
 it ships. The direction is meant to outlast whoever is currently writing the code.
 
