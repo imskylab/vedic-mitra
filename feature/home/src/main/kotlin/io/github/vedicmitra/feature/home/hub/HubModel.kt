@@ -340,5 +340,4 @@ object HubCatalog {
     ): HubTile = HubTile(label, TileIcon.Glyph(glyph), category, open(target))
 
     private fun open(target: HubTarget): TileAction = TileAction.Open(target)
-
 }
