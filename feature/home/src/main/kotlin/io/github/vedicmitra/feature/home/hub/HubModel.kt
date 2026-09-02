@@ -264,6 +264,11 @@ enum class HubDomain(
  * than merely intended.
  */
 object HubCatalog {
+    // A bell, not a cultural glyph: VedicIcons reserves the ornate style for signature features and
+    // sends utilitarian ones to Material Symbols. Declared first -- an object's properties
+    // initialise in source order, and the lists below read it.
+    private val reminderIcon = TileIcon.Symbol(Icons.Filled.Notifications)
+
     /**
      * The handful of destinations opened daily, kept one tap away.
      *
@@ -336,7 +341,4 @@ object HubCatalog {
 
     private fun open(target: HubTarget): TileAction = TileAction.Open(target)
 
-    // A bell, not a cultural glyph: VedicIcons reserves the ornate style for signature features and
-    // sends utilitarian ones to Material Symbols.
-    private val reminderIcon = TileIcon.Symbol(Icons.Filled.Notifications)
 }
