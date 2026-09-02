@@ -78,10 +78,10 @@ import io.github.vedicmitra.feature.calendar.CalendarScreen
 import io.github.vedicmitra.feature.home.EventsScreen
 import io.github.vedicmitra.feature.home.FestivalsScreen
 import io.github.vedicmitra.feature.home.HomeScreen
+import io.github.vedicmitra.feature.home.PanchangScreen
 import io.github.vedicmitra.feature.home.hub.DomainScreen
 import io.github.vedicmitra.feature.home.hub.HubDomain
 import io.github.vedicmitra.feature.home.hub.HubTarget
-import io.github.vedicmitra.feature.home.PanchangScreen
 import io.github.vedicmitra.feature.japa.JapaScreen
 import io.github.vedicmitra.feature.kundali.KundaliScreen
 import io.github.vedicmitra.feature.location.AddCityScreen
@@ -459,7 +459,7 @@ private fun AppNavHost(
         composable(MEDITATION_ROUTE) { MeditationScreen() }
         composable(STOTRA_ROUTE) { StotraScreen() }
         domainDestinations(navController)
-    muhuratDestinations(navController)
+        muhuratDestinations(navController)
     }
 }
 

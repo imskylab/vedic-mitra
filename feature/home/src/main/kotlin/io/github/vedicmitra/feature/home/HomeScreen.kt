@@ -17,7 +17,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -345,7 +344,6 @@ private fun CopyrightFooter() {
     )
 }
 
-
 /**
  * The detailed daily panchanga — limbs, sun/moon, planetary positions and the period tables.
  *
@@ -425,11 +423,6 @@ private fun EventListView(
     }
     selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
 }
-
-
-
-
-
 
 @Composable
 private fun CenteredBox(
