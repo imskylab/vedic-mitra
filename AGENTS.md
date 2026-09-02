@@ -203,6 +203,9 @@ A task is complete only when **all** hold:
   Never let an uncited claim sit in the same voice as a validated one. The red lines in that
   document — no medical claims, no fatalism, no instruction in someone's practice, no remedy
   commerce — hold in every mode.
+- **A new roadmap domain needs a hub tile.** The app's tile grid mirrors `docs/roadmap.md`, and
+  `HubCatalogTest` pins the two together — adding a domain to one without the other fails the build.
+  A domain with nothing to open says where it stands rather than promising it is coming.
 - **Respect the port boundary.** Add capability behaviour behind its `:core` port and bind the
   implementation in that module's `di/` package; don't have features reach past a port to a concrete
   engine, scheduler, notifier, or location provider.

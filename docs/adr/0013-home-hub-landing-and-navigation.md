@@ -1,6 +1,6 @@
 # 13. Home hub landing page and navigation redesign
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0018
 - **Date:** 2026-08-12
 
 ## Context

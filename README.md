@@ -152,7 +152,7 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
 | `:core:notifications` | `NotificationManagerCompat`-backed channels and notification posting. |
 | `:core:location` | Device location via Play Services fused provider, plus offline coordinate → time-zone resolution. |
 | `:core:datastore` | Persisted preferences and birth profiles on Jetpack DataStore. |
-| `:feature:home` | Landing hub: today's panchanga hero, category tabs, shortcut grid. |
+| `:feature:home` | Landing hub: today's panchanga hero, the daily shortcuts, and a tile per shastra. |
 | `:feature:calendar` | Browsable monthly panchang grid; tap a day for its full panchang. |
 | `:feature:alarm` | Reminders: schedule notifications for muhurta windows, Choghadiya and custom tithis. |
 | `:feature:location` | Location picking: GPS, city search, manual coordinates, saved locations. |
