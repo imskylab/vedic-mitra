@@ -5,8 +5,12 @@
 
 # Roadmap
 
-Vedic Mitra's long-range aim is to be a single, offline, honest place for the practices and
-knowledge of the Indian tradition — the panchanga first, and then the shastras that hang off it.
+Vedic Mitra exists to bring the Vedic tradition back into everyday use — to put its practices and
+its knowledge back within reach rather than archive them. Much of this was not lost so much as made
+inconvenient, and the aim is a single exhaustive place for it: the panchanga first, because it is
+the thread every other practice hangs from, and then the shastras that depend on it.
+
+This map is deliberately larger than one person will finish. That is the point of writing it down.
 
 This document replaces the earlier twelve-phase plan. Phases described one person's build order;
 this describes **domains**, because a domain is something a contributor can pick up without knowing

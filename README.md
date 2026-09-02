@@ -4,8 +4,9 @@
 
 # Vedic Mitra
 
-> A modern Android companion for Vedic timekeeping — panchanga, muhurta, and astronomy-aware
-> reminders — built with Kotlin, Jetpack Compose, and Clean Architecture.
+> Bringing the Vedic tradition back into everyday use — an offline, exhaustive companion for
+> panchanga, muhurta and the shastras that hang off them. Kotlin, Jetpack Compose, Clean
+> Architecture.
 
 [![CI](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
@@ -66,16 +67,26 @@
 
 ## Project Vision
 
-Vedic Mitra ("Vedic Friend") aims to be a single, offline, honest place for the practices and
-knowledge of the Indian tradition — starting with timekeeping, because that is what the rest hangs
-off. Rather than static almanac tables, it computes the panchanga (tithi, nakshatra, yoga, karana,
-vara) and auspicious windows (muhurta) for the user's exact location and time, and lets them set
-astronomy-aware reminders and alarms around those windows.
+**Vedic Mitra ("Vedic Friend") exists to bring the Vedic tradition back into everyday use.** Not to
+archive it, and not to admire it from a distance — to put its practices and its knowledge back
+within reach of an ordinary weekday.
 
-The wider aim is to bring genuinely valued practices back within reach — and an app does not do that
-by listing them. It does it by making them doable: what a tradition holds, when it applies, and a
-private record that you kept it. Knowing *when* is the thread that ties the domains together, and
-the engine already knows.
+Much of this was never really lost. It was made **inconvenient**. Knowing when a tithi turns, which
+month it is under which reckoning, when a season changes, what a text actually says — all of it was
+once common knowledge and is now specialist. The aim is a single exhaustive place for it: the
+panchanga first, because it is the thread every other practice hangs from, and then the shastras
+that depend on it — timing, chart, ritual, routine, recitation, craft.
+
+**An app does not revive a practice by listing it.** It does so by making it doable: saying what a
+tradition holds, saying *when* it applies, and keeping a private record that you kept it. Knowing
+when is what turns a described practice into a done one — a seasonal routine needs the ritu, a
+ritual needs its muhurta, a vrata needs its tithi — and the engine already knows all three.
+
+That is also why this is built as a **foundation rather than a finished product**. The domain map in
+[docs/roadmap.md](docs/roadmap.md) is deliberately larger than one person will finish, every domain
+on it has a tile in the app whether or not it is built, and
+[docs/knowledge-standards.md](docs/knowledge-standards.md) sets what any of it must stand on before
+it ships. The direction is meant to outlast whoever is currently writing the code.
 
 Guiding principles:
 
