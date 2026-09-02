@@ -103,3 +103,23 @@ hopeful: every label now lives as data in one object, so extraction becomes a ch
 the roadmap or to the issue that wants a contributor, which is much of why these tiles exist. It was
 chosen deliberately for now; because the note is data on the model and the handler is hoisted,
 replacing it with a sheet is a change at one call site.
+
+## Amendment — 2026-09-02
+
+Three of the thirteen tiles came off within a day of this decision, and the rule in point 3 is
+narrower than it was written.
+
+**Kala (C4) and Kalpa (K3) are untiled.** Both have shipped, but *into the calendar's day detail* —
+the era years and the sankalpa frame are rows on a day, not places to go. Point 6 treated that as an
+interesting case to be solved by a better message. It is better solved by having no tile at all: one
+whose entire message is "look at the Calendar" costs a tap to learn nothing, which is precisely the
+dead tap this design set out to avoid. `DomainStatus.PARTLY` goes with them, since it described only
+those two.
+
+**Chandas (C6) is held back** until its shape is clearer. Tiling a domain nobody has thought through
+advertises a plan that does not exist.
+
+So the rule is: **a domain gets a tile when it is, or would be, a place a reader goes.** All three
+remain on the roadmap — not being a destination is not the same as not being wanted — and
+`HubCatalogTest` records which are absent and why, since that test is where anyone adding a domain
+will look.

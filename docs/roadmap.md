@@ -53,9 +53,13 @@ reader arrives with, which is why the daily destinations sit one tap from the la
 
 What it got wrong is that it left the map invisible. A roadmap only the repository can see does not
 tell a reader what this app is for, and does not tell a would-be contributor what is wanted. So the
-hub's grid is now the domain list below — **every domain here has a tile, built or not**, and one
-that is not built says where it stands rather than pretending it is missing. `HubCatalogTest` pins
-the two together, so a domain added here without a tile fails the build.
+hub's grid is the domain list below — **every domain that is a place a reader goes has a tile, built
+or not**, and one that is not built says where it stands rather than pretending it is missing.
+
+A few are deliberately untiled: the foundations have nothing to open, K8 is a layer rather than a
+section, and Kala and Kalpa shipped *into the calendar's day detail* rather than into destinations of
+their own — a tile whose whole message is "look at the Calendar" costs a tap to learn nothing.
+`HubCatalogTest` pins the rest together, so a domain added here without a tile fails the build.
 
 ## Where to start
 

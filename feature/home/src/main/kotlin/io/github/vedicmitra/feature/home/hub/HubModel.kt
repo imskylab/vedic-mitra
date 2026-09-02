@@ -40,16 +40,9 @@ enum class HubTarget {
     EVENTS,
 }
 
-/**
- * How far along a domain is, mirroring `docs/roadmap.md`.
- *
- * [PARTLY] is the awkward and interesting one: Kalpa and Kala have both shipped something, but what
- * shipped lives *inside* the calendar's day detail rather than as a destination of its own, so the
- * tile has nothing to open even though the domain is not untouched.
- */
+/** How far along a domain is, mirroring `docs/roadmap.md`. */
 enum class DomainStatus {
     BUILT,
-    PARTLY,
     NEXT,
     OPEN,
     EXPLORING,
@@ -118,12 +111,21 @@ data class HubTile(
 /**
  * A shastra the app either covers or intends to.
  *
- * The set mirrors `docs/roadmap.md` so that the roadmap is visible in the app rather than only in the
- * repository. Two kinds of roadmap entry are deliberately absent: the **foundations** (F1–F6 —
- * localization, accessibility, content provenance, the portable engine) are engineering concerns with
- * nothing for a reader to open, and **Nirukta/Vyakarana** (K8) was re-termed as a glossary layer
- * reachable from any Sanskrit term rather than a section of its own, so giving it a tile would
- * contradict the decision that put it there. The Declined domains are absent for the obvious reason.
+ * These are the roadmap's domains that are, or would be, **places a reader goes** — which is what a
+ * tile is for. Every other kind of roadmap entry is deliberately absent, and the omissions are
+ * decisions rather than oversights:
+ *
+ * - The **foundations** (F1–F6 — localization, accessibility, content provenance, the portable
+ *   engine) are engineering concerns with nothing for a reader to open.
+ * - **Nirukta/Vyakarana** (K8) was re-termed as a glossary layer reachable from any Sanskrit term
+ *   rather than a section, so a tile would contradict the decision that put it there.
+ * - **Kala** (C4) and **Kalpa** (K3) have shipped, but into the calendar's day detail — the era
+ *   years and the sankalpa frame are rows on a day, not destinations. A tile whose whole message is
+ *   "look at the Calendar" is worse than no tile: it costs a tap to learn nothing.
+ * - **Chandas** (C6) is held back until its shape is clearer. Tiling a domain nobody has thought
+ *   through yet advertises a plan that does not exist.
+ *
+ * All four remain on the roadmap. Not being a destination is not the same as not being wanted.
  *
  * @property id the roadmap's own identifier, so the two can be checked against each other.
  * @property note what a reader is told on tapping, when the domain has no screen to open. Null only
@@ -178,24 +180,6 @@ enum class HubDomain(
         category = HubCategory.DEVOTION,
         blurb = "Hymns to read, mantras to count, and a timer to sit with.",
     ),
-    KALPA(
-        id = "K3",
-        label = "Kalpa",
-        status = DomainStatus.PARTLY,
-        icon = TileIcon.Letter("क"),
-        category = HubCategory.DEVOTION,
-        blurb = "Ritual procedure, tied to the timing the app already computes.",
-        note = "Kalpa — the sankalpa frame is on a day's detail in the Calendar.",
-    ),
-    KALA(
-        id = "C4",
-        label = "Kala",
-        status = DomainStatus.PARTLY,
-        icon = TileIcon.Letter("का"),
-        category = HubCategory.DAILY,
-        blurb = "Reckoning time: the eras, the cycles, and the older units.",
-        note = "Kala — the Vikrama, Shaka and Kali years are on a day's detail in the Calendar.",
-    ),
     DHARMA(
         id = "K2",
         label = "Dharma & Samskara",
@@ -213,15 +197,6 @@ enum class HubDomain(
         category = HubCategory.ASTROLOGY,
         blurb = "Orientation and placement, computed from a bearing.",
         note = "Vastu — planned, and open for anyone who wants to build it.",
-    ),
-    CHANDAS(
-        id = "C6",
-        label = "Chandas",
-        status = DomainStatus.OPEN,
-        icon = TileIcon.Letter("छ"),
-        category = HubCategory.ASTROLOGY,
-        blurb = "Prosody: scanning a verse and naming its metre.",
-        note = "Chandas — planned, and open for anyone who wants to build it.",
     ),
     AYURVEDA(
         id = "K4",

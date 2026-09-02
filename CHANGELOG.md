@@ -14,10 +14,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with no way to see that Vastu, Ayurveda or Chandas were intended.
 
   The landing now carries **Today** — the three destinations opened daily, kept one tap away — and
-  **Shastras**, all thirteen domains. A built domain opens a screen listing what it holds; one that
-  is not built says where it stands. **The notes say something true rather than "coming soon"**:
-  Kalpa and Kala have both shipped pieces, but they live inside the calendar's day detail rather than
-  as destinations, so their tiles point there.
+  **Shastras**, the ten domains that are places to go. A built domain opens a screen listing what it
+  holds; one that is not built says where it stands, in its own words rather than a uniform "coming
+  soon".
+
+  Kala, Kalpa and Chandas are deliberately absent. The first two have shipped — the era years and the
+  sankalpa frame — but into the calendar's day detail rather than into destinations, and a tile whose
+  whole message is "look at the Calendar" costs a tap to learn nothing. Chandas waits until its shape
+  is clearer. All three stay on the roadmap.
 
   **An unbuilt tile is an outline rather than a dimmed fill.** That is a difference in shape, which
   survives greyscale and high contrast — and colour could not have carried it anyway, since the brand
