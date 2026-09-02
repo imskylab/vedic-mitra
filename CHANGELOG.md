@@ -9,6 +9,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The hub is two levels, and every shastra on the roadmap has a tile — built or not.** The map was
+  redrawn in ADR 0016 and none of it was visible in the app: twelve tiles for twelve built features,
+  with no way to see that Vastu, Ayurveda or Chandas were intended.
+
+  The landing now carries **Today** — the three destinations opened daily, kept one tap away — and
+  **Shastras**, all thirteen domains. A built domain opens a screen listing what it holds; one that
+  is not built says where it stands. **The notes say something true rather than "coming soon"**:
+  Kalpa and Kala have both shipped pieces, but they live inside the calendar's day detail rather than
+  as destinations, so their tiles point there.
+
+  **An unbuilt tile is an outline rather than a dimmed fill.** That is a difference in shape, which
+  survives greyscale and high contrast — and colour could not have carried it anyway, since the brand
+  glyphs hold their own maroon and gold and can only be faded, never tinted. The icon style is the
+  third cue: an ornate glyph means built, a Devanagari letter means not yet. No padlock; nothing in
+  this app unlocks anything.
+
+  Tiles also gained a button role and a spoken state, which none of the twelve had. `TileButton`'s
+  `enabled` flag is gone — it was dead at every call site, changed only the label colour, and left
+  the tile fully clickable.
+
+  Behind it, the grid renders from a catalog instead of twelve closures, which took the Home screen
+  from thirteen navigation lambdas to two. `HubCatalogTest` pins the tiles against the roadmap's own
+  domain ids, so the two cannot drift apart. See
+  [ADR 0018](docs/adr/0018-two-level-hub-and-roadmap-tiles.md), which supersedes ADR 0013 — whose
+  "coming" tiles were built in 2026-08 and then dismantled one per feature, the last commit titled
+  *"light up the last tile"*.
+
 - **The lunar month and the season now read as wheels, and the ayana and lunar year say when they
   end.** Those four rows previously showed a bare name and nothing else — "Maasa — Chaitra" said
   nothing about when Chaitra ends.
