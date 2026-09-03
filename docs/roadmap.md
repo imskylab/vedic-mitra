@@ -104,6 +104,11 @@ project can attract.
 It is also **strictly a prerequisite for the knowledge domains below**: every new screen of English
 content added before extraction multiplies the eventual translation debt.
 
+- [x] Vocabulary and transliteration convention settled ahead of extraction (ADR 0019) — plain
+      romanization, no diacritics; IAST deferred to the scheme preference below
+- [ ] Decouple reminder keys from display names. Reminder identity is built as `"muhurta:$name"`
+      from the **display** name, so translating a label orphans reminders a user already set —
+      this blocks any locale, not just Hindi
 - [ ] Extract UI strings to `strings.xml` per module (mechanical, large, high value — good first issues)
 - [ ] English as a real locale
 - [ ] Hindi

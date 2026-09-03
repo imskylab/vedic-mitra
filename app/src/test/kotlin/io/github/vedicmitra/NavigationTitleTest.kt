@@ -66,8 +66,8 @@ class NavigationTitleTest {
         // argument part has to come off first. Both forms the graph actually registers are covered.
         assertThat(subtitleOf("$PROFILE_EDIT_ROUTE?$PROFILE_ID_ARG={$PROFILE_ID_ARG}"))
             .isEqualTo("Birth profile")
-        assertThat(subtitleOf("$MUHURAT_DAY_ROUTE/{activity}/{day}")).isEqualTo("Muhurat")
-        assertThat(subtitleOf("$MUHURAT_RESULTS_ROUTE/{activity}")).isEqualTo("Muhurat")
+        assertThat(subtitleOf("$MUHURAT_DAY_ROUTE/{activity}/{day}")).isEqualTo("Muhurta")
+        assertThat(subtitleOf("$MUHURAT_RESULTS_ROUTE/{activity}")).isEqualTo("Muhurta")
     }
 
     @Test
@@ -84,7 +84,7 @@ class NavigationTitleTest {
         // These three were state inside HomeScreen until they became routes. Their titles used to be
         // reported up out of the screen through a special case in subtitleOf; now they come from the
         // same table as everything else, and each screen draws no title of its own.
-        assertThat(subtitleOf(PANCHANG_ROUTE)).isEqualTo("Today's Panchang")
+        assertThat(subtitleOf(PANCHANG_ROUTE)).isEqualTo("Today's Panchanga")
         assertThat(subtitleOf(FESTIVALS_ROUTE)).isEqualTo("Festivals")
         assertThat(subtitleOf(EVENTS_ROUTE)).isEqualTo("Events")
     }

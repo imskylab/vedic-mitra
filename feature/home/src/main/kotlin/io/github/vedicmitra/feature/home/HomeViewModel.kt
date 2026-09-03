@@ -84,7 +84,7 @@ class HomeViewModel
                 // Read the day's identity (tithi, nakshatra, …) at today's *sunrise* — the convention
                 // by which panchangas name the day. Sampling at sunrise (not noon) matches published
                 // almanacs on days where the tithi rolls over between sunrise and midday, and the
-                // Panchang view anchors to the same instant so the two never disagree. The "auspicious
+                // Panchanga view anchors to the same instant so the two never disagree. The "auspicious
                 // now" band below still uses `now`.
                 val today = LocalDate.now(ZoneId.of(resolved.zoneId))
                 val dayReference =

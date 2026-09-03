@@ -19,7 +19,7 @@ package io.github.vedicmitra.core.astronomy
 enum class MuhurtaCategory(
     val displayName: String,
 ) {
-    BAL_SANSKAR("Bal Sanskar"),
+    BAL_SANSKAR("Child samskaras"),
     VIVAH("Vivah"),
     VASTU("Vastu"),
     PURCHASES("Purchases"),
@@ -40,7 +40,7 @@ enum class MuhurtaActivity(
     val category: MuhurtaCategory,
     val displayName: String,
 ) {
-    // Bal Sanskar — child rites, in life order.
+    // Child samskaras — the rites of early life, in life order.
     JANANA_SHANTI(MuhurtaCategory.BAL_SANSKAR, "Janana Shanti"),
     NAMKARAN(MuhurtaCategory.BAL_SANSKAR, "Namkaran"),
     ANNAPRASHANA(MuhurtaCategory.BAL_SANSKAR, "Annaprashana"),

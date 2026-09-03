@@ -257,7 +257,7 @@ object HubCatalog {
      */
     val today: List<HubTile> =
         listOf(
-            tile("Today's Panchang", VedicIcons.panchang, HubCategory.DAILY, HubTarget.PANCHANG),
+            tile("Today's Panchanga", VedicIcons.panchang, HubCategory.DAILY, HubTarget.PANCHANG),
             tile("Calendar", VedicIcons.calendar, HubCategory.DAILY, HubTarget.CALENDAR),
             HubTile("Reminders", reminderIcon, HubCategory.DAILY, open(HubTarget.REMINDERS)),
         )
@@ -278,7 +278,7 @@ object HubCatalog {
         when (domain) {
             HubDomain.PANCHANGA ->
                 listOf(
-                    tile("Today's Panchang", VedicIcons.panchang, domain.category, HubTarget.PANCHANG),
+                    tile("Today's Panchanga", VedicIcons.panchang, domain.category, HubTarget.PANCHANG),
                     tile("Calendar", VedicIcons.calendar, domain.category, HubTarget.CALENDAR),
                 )
 
@@ -291,7 +291,7 @@ object HubCatalog {
 
             HubDomain.MUHURTA ->
                 listOf(
-                    tile("Muhurat", VedicIcons.muhurat, domain.category, HubTarget.MUHURAT),
+                    tile("Muhurta", VedicIcons.muhurat, domain.category, HubTarget.MUHURAT),
                     HubTile("Reminders", reminderIcon, domain.category, open(HubTarget.REMINDERS)),
                 )
 
