@@ -64,6 +64,26 @@ object VedicIcons {
     @get:DrawableRes
     val events: Int = R.drawable.ic_glyph_events
 
+    /** A compass rose over a house, the mandala grid at its centre — Vastu. */
+    @get:DrawableRes
+    val vastu: Int = R.drawable.ic_glyph_vastu
+
+    /** A balance over an open book, framed in a lotus — Dharma and the samskaras. */
+    @get:DrawableRes
+    val dharma: Int = R.drawable.ic_glyph_dharma
+
+    /** A figure in tree pose inside a lotus of asanas — Yoga. */
+    @get:DrawableRes
+    val yoga: Int = R.drawable.ic_glyph_yoga
+
+    /** A mortar and pestle with herbs and a lamp — Ayurveda. */
+    @get:DrawableRes
+    val ayurveda: Int = R.drawable.ic_glyph_ayurveda
+
+    /** A mala coiled around a bell — Mantra and stotra. Distinct from [japa], which is the mala alone. */
+    @get:DrawableRes
+    val mantra: Int = R.drawable.ic_glyph_mantra
+
     /**
      * An Om coin dropping into a donation box (daana-patra) — Support.
      *

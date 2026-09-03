@@ -52,19 +52,23 @@ enum class DomainStatus {
  * What a tile draws.
  *
  * [Glyph] is one of the brand's ornate cultural drawables and [Letter] a Devanagari initial. The
- * split is not decoration: the ornate glyphs exist only for features that shipped, and the app
- * bundles no Material icon that could honestly stand for Vastu or Chandas. So **the icon style is
- * itself a status signal** — ornate means built, a letter means not yet — which matters because
- * status must not be carried by colour alone, and the glyphs cannot even be tinted (they hold their
- * own maroon and gold, and are drawn with `Color.Unspecified`).
+ * split briefly carried meaning — ornate meant built, a letter meant not yet — because no artwork
+ * existed for the unbuilt domains. It no longer does: they have their own glyphs now, and a
+ * [Letter] means only that a domain is still waiting for art.
+ *
+ * Status is carried by the tile's **outline instead of a filled chip**, which is a difference in
+ * shape and so survives greyscale and high contrast. That was always the primary cue; it now stands
+ * alone with the icon's fade. Colour never could have carried it — the glyphs hold their own maroon
+ * and gold and are drawn with `Color.Unspecified`, so they can be faded but never tinted.
  */
 sealed interface TileIcon {
-    /** An ornate cultural glyph from [VedicIcons]. Reserved for what is built. */
+    /** An ornate cultural glyph from [VedicIcons]. */
     data class Glyph(
         @param:DrawableRes val res: Int,
     ) : TileIcon
 
-    /** A Devanagari letter, drawn as text — the pattern the Om tile already uses. */
+    /** A Devanagari letter, drawn as text — the pattern the Om tile already uses, and the
+     *  placeholder for a domain that has no artwork yet. */
     data class Letter(
         val text: String,
     ) : TileIcon
@@ -176,7 +180,7 @@ enum class HubDomain(
         id = "K5",
         label = "Mantra & Stotra",
         status = DomainStatus.BUILT,
-        icon = TileIcon.Glyph(VedicIcons.japa),
+        icon = TileIcon.Glyph(VedicIcons.mantra),
         category = HubCategory.DEVOTION,
         blurb = "Hymns to read, mantras to count, and a timer to sit with.",
     ),
@@ -184,7 +188,7 @@ enum class HubDomain(
         id = "K2",
         label = "Dharma & Samskara",
         status = DomainStatus.NEXT,
-        icon = TileIcon.Letter("ध"),
+        icon = TileIcon.Glyph(VedicIcons.dharma),
         category = HubCategory.DEVOTION,
         blurb = "The sixteen samskaras, and the observances of a stage of life.",
         note = "Dharma and the samskaras — next up, and the closest to being built.",
@@ -193,7 +197,7 @@ enum class HubDomain(
         id = "C5",
         label = "Vastu",
         status = DomainStatus.OPEN,
-        icon = TileIcon.Letter("वा"),
+        icon = TileIcon.Glyph(VedicIcons.vastu),
         category = HubCategory.ASTROLOGY,
         blurb = "Orientation and placement, computed from a bearing.",
         note = "Vastu — planned, and open for anyone who wants to build it.",
@@ -202,7 +206,7 @@ enum class HubDomain(
         id = "K4",
         label = "Ayurveda",
         status = DomainStatus.OPEN,
-        icon = TileIcon.Letter("आ"),
+        icon = TileIcon.Glyph(VedicIcons.ayurveda),
         category = HubCategory.DEVOTION,
         blurb = "The shape of a day and of a season, as tradition describes them.",
         note = "Ayurveda — planned, and deliberately limited to daily and seasonal routine.",
@@ -211,7 +215,7 @@ enum class HubDomain(
         id = "K6",
         label = "Yoga",
         status = DomainStatus.OPEN,
-        icon = TileIcon.Letter("यो"),
+        icon = TileIcon.Glyph(VedicIcons.yoga),
         category = HubCategory.DEVOTION,
         blurb = "The eight limbs, explained rather than instructed.",
         note = "Yoga — planned, and open for anyone who wants to build it.",

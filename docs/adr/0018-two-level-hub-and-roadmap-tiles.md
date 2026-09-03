@@ -123,3 +123,21 @@ So the rule is: **a domain gets a tile when it is, or would be, a place a reader
 remain on the roadmap — not being a destination is not the same as not being wanted — and
 `HubCatalogTest` records which are absent and why, since that test is where anyone adding a domain
 will look.
+
+## Amendment — 2026-09-03
+
+**Point 5 is retired: the icon style no longer says what is built.**
+
+It was written when no artwork existed for the unbuilt domains, and it made a virtue of that — ornate
+glyph meant shipped, Devanagari letter meant not yet, at no cost. Artwork now exists for four of the
+five, drawn in the same ornamental line style as `muhurat` and `calendar`, so the distinction has
+nothing left to mark. A letter now means only that a domain is still waiting for art; The Arts is the
+last one.
+
+**Status is carried by the outline container and the icon's fade.** That is no loss for point 4's
+requirement: outline-versus-fill is a difference in *shape*, and shape was always the primary cue —
+the icon style was the third of three, and the one a reader was least likely to learn unaided.
+
+`HubCatalogTest` keeps the half of the rule that still holds — nothing that ships falls back to a
+placeholder letter — and adds a ratchet on the number of domains still awaiting artwork, so a new
+domain cannot quietly arrive without any.
