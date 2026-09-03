@@ -25,9 +25,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
   **An unbuilt tile is an outline rather than a dimmed fill.** That is a difference in shape, which
   survives greyscale and high contrast — and colour could not have carried it anyway, since the brand
-  glyphs hold their own maroon and gold and can only be faded, never tinted. The icon style is the
-  third cue: an ornate glyph means built, a Devanagari letter means not yet. No padlock; nothing in
+  glyphs hold their own maroon and gold and can only be faded, never tinted. No padlock; nothing in
   this app unlocks anything.
+
+  Nine of the ten domains carry their own ornamental glyph, drawn in the same line style as the
+  existing artwork. The Arts is the last without one and shows a Devanagari letter until it has one.
 
   Tiles also gained a button role and a spoken state, which none of the twelve had. `TileButton`'s
   `enabled` flag is gone — it was dead at every call site, changed only the label colour, and left

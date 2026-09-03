@@ -17,8 +17,8 @@ import org.junit.Test
 /**
  * The hub is meant to be the roadmap made visible, and a claim like that decays silently unless
  * something checks it. These tests are that check: the domain set is pinned against the roadmap's
- * own ids, and the conventions that carry status to a reader — the icon style, the note on an
- * unbuilt tile — are asserted rather than left to whoever edits the catalog next.
+ * own ids, and what a reader is actually told — the note on an unbuilt tile, whether a shipped
+ * domain has artwork — is asserted rather than left to whoever edits the catalog next.
  */
 class HubCatalogTest {
     @Test
@@ -84,16 +84,28 @@ class HubCatalogTest {
     }
 
     @Test
-    fun `the icon style tracks status, so it is not colour alone that says what is built`() {
-        // Ornate glyph means built; a Devanagari letter means not yet. The glyphs cannot be tinted
-        // -- they carry their own colours -- so this distinction is what survives for a reader who
-        // cannot rely on the dimming.
-        HubDomain.entries.forEach { domain ->
-            val expected = if (domain.isOpenable) TileIcon.Glyph::class.java else TileIcon.Letter::class.java
+    fun `a built domain always has artwork`() {
+        // The icon style used to say what was built -- ornate meant shipped, a letter meant not yet
+        // -- because no artwork existed for the unbuilt domains. It does now, so that cue is gone
+        // and the outline container carries status alone. What still has to hold is the weaker half:
+        // nothing that ships falls back to a placeholder letter.
+        HubDomain.entries.filter { it.isOpenable }.forEach { domain ->
             assertWithMessage("${domain.id} ${domain.label} icon")
                 .that(domain.icon)
-                .isInstanceOf(expected)
+                .isInstanceOf(TileIcon.Glyph::class.java)
         }
+    }
+
+    @Test
+    fun `the domains still waiting for artwork can shrink but never grow`() {
+        // A Devanagari letter is now a placeholder, not a statement. Pinning the count keeps it that
+        // way: a new domain cannot quietly ship without art, and each one that gets drawn brings the
+        // bound down. Lower it as artwork lands; never raise it.
+        val awaitingArt = HubDomain.entries.count { it.icon is TileIcon.Letter }
+
+        assertWithMessage("domains still using a placeholder letter")
+            .that(awaitingArt)
+            .isAtMost(AWAITING_ARTWORK)
     }
 
     @Test
@@ -118,5 +130,10 @@ class HubCatalogTest {
 
         assertThat(daily).isNotEmpty()
         assertThat(underDomains).containsAtLeastElementsIn(daily)
+    }
+
+    private companion object {
+        /** Only The Arts, which has no glyph yet. */
+        const val AWAITING_ARTWORK = 1
     }
 }
