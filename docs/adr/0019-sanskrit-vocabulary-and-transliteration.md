@@ -88,7 +88,8 @@ of them.
 **Point 6 is a latent bug, not just a constraint.** A display name used as a persisted key breaks the
 moment that string is translated — the Hindi build would compute a different key for the same window
 and lose the user's reminder. F1 cannot ship without decoupling them, and this ADR is the first place
-that is written down. It is filed as [#211](https://github.com/imskylab/vedic-mitra/issues/211) rather than fixed here.
+that is written down. It is filed as
+[#211](https://github.com/imskylab/vedic-mitra/issues/211) rather than fixed here.
 
 Four of the app's most-seen labels changed spelling, which existing users will notice. That is the
 cost of having left it undecided, and it is smallest today.
