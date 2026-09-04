@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -79,9 +80,9 @@ private fun ProfileListContent(
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
     ) {
-        Text(text = "Profiles", style = MaterialTheme.typography.titleMedium)
+        Text(text = stringResource(R.string.profile_list_title), style = MaterialTheme.typography.titleMedium)
         Text(
-            text = "The primary profile is you; others are family or friends whose charts you keep.",
+            text = stringResource(R.string.profile_list_subtitle),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -89,7 +90,7 @@ private fun ProfileListContent(
 
         if (uiState.profiles.isEmpty()) {
             Text(
-                text = "No profiles yet. Add yourself first — that becomes your primary profile.",
+                text = stringResource(R.string.profile_list_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 12.dp),
             )
@@ -109,7 +110,7 @@ private fun ProfileListContent(
         Button(onClick = onAddProfile, modifier = Modifier.fillMaxWidth()) {
             Icon(imageVector = Icons.Filled.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Add a profile")
+            Text(text = stringResource(R.string.profile_list_add))
         }
     }
 }
@@ -133,22 +134,44 @@ private fun ProfileRow(
         RadioButton(selected = isPrimary, onClick = null)
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = profile.name.ifBlank { "Unnamed" }, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = profile.name.ifBlank { stringResource(R.string.profile_list_unnamed) },
+                style = MaterialTheme.typography.bodyLarge,
+            )
             Text(text = profile.subtitle(isPrimary), style = MaterialTheme.typography.bodySmall)
         }
         IconButton(onClick = onEdit) {
-            Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit ${profile.name}")
+            Icon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = stringResource(R.string.profile_list_edit_description, profile.name),
+            )
         }
         IconButton(onClick = onDelete) {
-            Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete ${profile.name}")
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = stringResource(R.string.profile_list_delete_description, profile.name),
+            )
         }
     }
 }
 
+/**
+ * The row's second line: relation, then gender, then whether the profile is usable.
+ *
+ * Composable because it reads strings, and built by nesting formatted resources rather than by
+ * joining pieces with a separator in code. A translator can then move the parts around -- some
+ * languages would put "incomplete" first, and none of them are obliged to keep the middle dot.
+ */
+@Composable
 private fun BirthProfile.subtitle(isPrimary: Boolean): String {
-    val relationLabel = if (isPrimary) "Primary · ${relation.displayName}" else relation.displayName
-    val withGender = gender?.let { "$relationLabel · ${it.displayName}" } ?: relationLabel
-    return if (isComplete) withGender else "$withGender · incomplete"
+    val relationLabel = stringResource(relation.labelRes)
+    val withPrimary =
+        if (isPrimary) stringResource(R.string.profile_list_relation_primary, relationLabel) else relationLabel
+    val withGender =
+        gender
+            ?.let { stringResource(R.string.profile_list_relation_gender, withPrimary, stringResource(it.labelRes)) }
+            ?: withPrimary
+    return if (isComplete) withGender else stringResource(R.string.profile_list_relation_incomplete, withGender)
 }
 
 @Preview

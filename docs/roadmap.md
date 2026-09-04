@@ -109,7 +109,13 @@ content added before extraction multiplies the eventual translation debt.
 - [x] [Decouple reminder keys from display names](https://github.com/imskylab/vedic-mitra/issues/211).
       Reminders are keyed on `MuhurtaKind.id` rather than a label, and keys written by earlier
       builds are translated on read so a reminder set before the change survives it
-- [ ] Extract UI strings to `strings.xml` per module (mechanical, large, high value — good first issues)
+- [ ] Extract UI strings to `strings.xml` per module (mechanical, large, high value — good first
+      issues). Scope and patterns settled in
+      [ADR 0021](adr/0021-what-gets-extracted-to-strings-xml.md); `:feature:profile` is the
+      worked example. **`:core:astronomy` is excluded** — extracting it would give the engine an
+      Android dependency and spend F5
+- [ ] Move `PanchangaPrimer` and `PanchangaGlossary` out of `:core:astronomy` — 129 literals of
+      English teaching prose inside a calculation library, blocking both F1 and F5
 - [ ] English as a real locale
 - [ ] Hindi
 - [ ] Sanskrit · Telugu · Tamil · Kannada · Malayalam · Marathi · Gujarati · Bengali · Odia

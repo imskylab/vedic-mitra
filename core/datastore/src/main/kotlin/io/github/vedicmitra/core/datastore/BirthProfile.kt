@@ -14,28 +14,29 @@ import io.github.vedicmitra.core.common.model.GeoCoordinates
 import java.time.LocalDate
 import java.time.LocalTime
 
-/** How a [BirthProfile] relates to the app's user. The primary profile is always [SELF]. */
-enum class ProfileRelation(
-    val displayName: String,
-) {
-    SELF("Self"),
-    SPOUSE("Spouse"),
-    CHILD("Child"),
-    PARENT("Parent"),
-    FRIEND("Friend"),
-    OTHER("Other"),
+/**
+ * How a [BirthProfile] relates to the app's user. The primary profile is always [SELF].
+ *
+ * Persisted by enum name. What each is *called* belongs to the UI layer, not here -- see
+ * `ProfileRelation.labelRes` in `:feature:profile`.
+ */
+enum class ProfileRelation {
+    SELF,
+    SPOUSE,
+    CHILD,
+    PARENT,
+    FRIEND,
+    OTHER,
 }
 
 /**
  * A profile's gender. Optional for a chart, but kundali matching (Guna Milan) pairs one [MALE] and
- * one [FEMALE] profile, so it's captured here.
+ * one [FEMALE] profile, so it's captured here. Named in the UI layer, like [ProfileRelation].
  */
-enum class Gender(
-    val displayName: String,
-) {
-    MALE("Male"),
-    FEMALE("Female"),
-    OTHER("Other"),
+enum class Gender {
+    MALE,
+    FEMALE,
+    OTHER,
 }
 
 /**

@@ -169,6 +169,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **String extraction has started, with a boundary drawn first** (ADR 0021). F1 moves the app's
+  hardcoded literals into `strings.xml`, and it is deliberately shaped as the project's contributor
+  on-ramp — so `:feature:profile` is extracted as a worked example to copy rather than the whole
+  thing being ground through at once.
+
+  Drawing the boundary first mattered. Working alphabetically reaches **`:core:astronomy`**, which
+  holds 396 literals — a third of the codebase's total — and extracting them would give the engine an
+  Android resource dependency. **F5 wants the opposite**: that module is pure Kotlin today and the
+  plan is to lift it to Kotlin Multiplatform for an iOS port and a publishable calculation library.
+  Two roadmap entries pulled against each other on one module and nothing said so.
+
+  Those literals turned out to be two unrelated things: domain vocabulary, which ADR 0019 already
+  settled is *not* translated, and **129 literals of English teaching prose** in `PanchangaPrimer`
+  and `PanchangaGlossary` — UI copy sitting inside a calculation library. The vocabulary stays; the
+  prose moves out, filed separately.
+
+  Two patterns come with the example. A **ViewModel names a string rather than resolving one**
+  (`UiText`, in `:core:ui`), because `stringResource` needs a composition and giving a ViewModel a
+  `Context` resolves against whatever locale was current when it ran rather than when the text is
+  drawn — a ViewModel test now asserts on a resource id, which will not break the next time the copy
+  is reworded. And **display copy leaves the data layer**: `ProfileRelation` and `Gender` carried a
+  `displayName` in `:core:datastore`, which is the same fault as keying a reminder on its label.
+
 - **Sanskrit vocabulary has a written convention, and four of the most-seen labels changed to match
   it** (ADR 0019). The app displays several hundred Sanskrit-derived terms and had never said how
   they should be spelled, so each was decided by whoever typed it. That was survivable at this size
