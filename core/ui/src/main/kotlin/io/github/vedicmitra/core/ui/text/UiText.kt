@@ -52,7 +52,14 @@ sealed interface UiText {
     ) : UiText
 }
 
-/** Resolves [this] against the current composition's locale and configuration. */
+/**
+ * Resolves [this] against the current composition's locale and configuration.
+ *
+ * The spread is suppressed rather than avoided: `stringResource` takes a vararg and there is no
+ * overload that accepts a list, so the copy is unavoidable. It is a handful of elements, made once
+ * per recomposition of a single string.
+ */
+@Suppress("SpreadOperator")
 @Composable
 fun UiText.resolve(): String =
     when (this) {
