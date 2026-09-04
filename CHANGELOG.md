@@ -23,13 +23,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   whole message is "look at the Calendar" costs a tap to learn nothing. Chandas waits until its shape
   is clearer. All three stay on the roadmap.
 
-  **An unbuilt tile is an outline rather than a dimmed fill.** That is a difference in shape, which
-  survives greyscale and high contrast — and colour could not have carried it anyway, since the brand
-  glyphs hold their own maroon and gold and can only be faded, never tinted. No padlock; nothing in
-  this app unlocks anything.
+  **A tile that is not built yet says "Soon", in words, under its label.** Three other treatments
+  were tried first and each failed differently — a plain letter for the icon (which stopped meaning
+  anything once the artwork arrived), a faint outline (which read as a tile that had failed to load),
+  and a single flat "planned" tint (which collided with the devotion category's own colour, making a
+  built domain and four planned ones pixel-identical). Words survive greyscale, colour-blindness,
+  high contrast and a large font scale at once, and are the only cue a reader does not have to learn.
+  Chip colour went back to meaning one thing: which category a domain belongs to, never how far along
+  it is. See ADR 0020. No padlock; nothing in this app unlocks anything.
 
-  Nine of the ten domains carry their own ornamental glyph, drawn in the same line style as the
-  existing artwork. The Arts is the last without one and shows a Devanagari letter until it has one.
+  Nine of the ten domains carry their own ornamental glyph, drawn in the same maroon line style as
+  the existing artwork. The Arts is the last without one and shows a Devanagari letter until it has
+  one.
 
   Tiles also gained a button role and a spoken state, which none of the twelve had. `TileButton`'s
   `enabled` flag is gone — it was dead at every call site, changed only the label colour, and left
