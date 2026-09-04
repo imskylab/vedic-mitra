@@ -474,7 +474,7 @@ private fun HeroCard(
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Text(
-                text = "Today's Panchang",
+                text = "Today's Panchanga",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
@@ -522,7 +522,7 @@ private fun HeroCard(
  * named the day gave way.
  *
  * The day is named by its **sunrise** tithi, which is the convention every published panchanga
- * follows, and that name still appears on the Panchang screen. But a card read at nine in the
+ * follows, and that name still appears on the Panchanga screen. But a card read at nine in the
  * evening was leading with a tithi that ended before breakfast, with the one genuinely in force
  * demoted to small print underneath. The prominence is now the other way round: what is running, and
  * how long it has left, with the handover recorded below it.

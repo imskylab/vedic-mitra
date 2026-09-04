@@ -164,6 +164,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Sanskrit vocabulary has a written convention, and four of the most-seen labels changed to match
+  it** (ADR 0019). The app displays several hundred Sanskrit-derived terms and had never said how
+  they should be spelled, so each was decided by whoever typed it. That was survivable at this size
+  and will not survive F1, where 599 literals move into `strings.xml` and then into ten languages —
+  an unwritten convention gets decided implicitly, once per string, by ten different translators.
+
+  The audit found the vocabulary in better shape than that suggests. The stotra titles keeping their
+  `-am`, *Rahu Kalam* keeping the southern form, *Swati* with a `w` beside *Vishvavasu* with a `v` —
+  those look like drift but are the same word-by-word convention that lets *Diwali* and *Shiva* share
+  a sentence. Popular romanization is conventional per word, not derived by rule, and applying it as
+  a rule would produce *Shiwa*.
+
+  What the audit did surface is that the app speaks in **two registers, divided by role**: Sanskrit
+  for what the engine computes and the tradition names, the popular form for what a person chooses or
+  books. Nobody decided that, and it is right — "Griha Praveshana" is not a thing anyone books. It
+  only caused trouble where the two collided on the same word, which is where the real faults were:
+  a **"Today's Panchang"** tile sitting under the **"Panchanga"** domain, and a **"Muhurat"** tile
+  under **"Muhurta"** — one glance apart on the hub, in both cases.
+
+  Those now read **Panchanga** and **Muhurta** everywhere, and the muhurta category **"Bal Sanskar"**
+  becomes **"Child samskaras"**, in register with its plain-English siblings. Routes keep their
+  `muhurat/` spelling: they are internal identifiers no reader sees.
+
+  No diacritics at the default — *Chaitra Shukla Pratipada*, not *Caitra Śukla Pratipadā*. IAST is
+  what a Sanskritist expects, and renders the most familiar words as apparent misspellings to
+  everyone else. It becomes the transliteration-scheme preference already planned under F1, which
+  turns an irreversible editorial call into something a reader picks.
+
 - **The roadmap is synced to what actually shipped this cycle.** Regional variation and content
   provenance move to in-progress; Kalpa and time reckoning gain their first shipped slices; the
   mantra and stotra entry changes from "provenance owed" to "sources owed", which is a smaller and

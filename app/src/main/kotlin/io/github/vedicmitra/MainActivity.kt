@@ -162,10 +162,10 @@ internal val DESTINATION_LABELS: Map<String, String> =
         ADD_CITY_ROUTE to "Add a city",
         ADD_COORDINATES_ROUTE to "Add coordinates",
         PROFILE_EDIT_ROUTE to "Birth profile",
-        PANCHANG_ROUTE to "Today's Panchang",
+        PANCHANG_ROUTE to "Today's Panchanga",
         FESTIVALS_ROUTE to "Festivals",
         EVENTS_ROUTE to "Events",
-        CALENDAR_ROUTE to "Panchang calendar",
+        CALENDAR_ROUTE to "Panchanga calendar",
         ALARM_ROUTE to "Reminders",
         KUNDALI_ROUTE to "Kundali",
         MATCHMAKING_ROUTE to "Kundali matching",
@@ -174,10 +174,10 @@ internal val DESTINATION_LABELS: Map<String, String> =
         MEDITATION_ROUTE to "Meditation",
         STOTRA_ROUTE to "Stotra",
         DOMAIN_ROUTE to "Shastras",
-        MUHURAT_ROUTE to "Muhurat",
-        MUHURAT_ACTIVITIES_ROUTE to "Muhurat",
-        MUHURAT_RESULTS_ROUTE to "Muhurat",
-        MUHURAT_DAY_ROUTE to "Muhurat",
+        MUHURAT_ROUTE to "Muhurta",
+        MUHURAT_ACTIVITIES_ROUTE to "Muhurta",
+        MUHURAT_RESULTS_ROUTE to "Muhurta",
+        MUHURAT_DAY_ROUTE to "Muhurta",
     )
 
 /**
