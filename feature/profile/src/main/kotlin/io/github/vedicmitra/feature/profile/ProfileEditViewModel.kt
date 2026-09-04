@@ -23,6 +23,7 @@ import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.location.GeocodeResult
 import io.github.vedicmitra.core.location.GeocodingClient
 import io.github.vedicmitra.core.location.TimeZoneResolver
+import io.github.vedicmitra.core.ui.text.UiText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -60,8 +61,8 @@ class ProfileEditViewModel
         private val _uiState = MutableStateFlow(ProfileEditUiState())
         val uiState: StateFlow<ProfileEditUiState> = _uiState.asStateFlow()
 
-        private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 1)
-        val messages: SharedFlow<String> = _messages.asSharedFlow()
+        private val _messages = MutableSharedFlow<UiText>(extraBufferCapacity = 1)
+        val messages: SharedFlow<UiText> = _messages.asSharedFlow()
 
         private val _saved = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
         val saved: SharedFlow<Unit> = _saved.asSharedFlow()
@@ -114,7 +115,8 @@ class ProfileEditViewModel
                             it.copy(
                                 isSearchingPlace = false,
                                 placeResults = result.data,
-                                placeError = if (result.data.isEmpty()) "No matching places found" else null,
+                                placeError =
+                                    if (result.data.isEmpty()) UiText.Res(R.string.profile_edit_place_none) else null,
                             )
                         }
 
@@ -123,7 +125,9 @@ class ProfileEditViewModel
                             it.copy(
                                 isSearchingPlace = false,
                                 placeResults = emptyList(),
-                                placeError = result.cause.message ?: "Search failed",
+                                // The cause's message is an untranslated library string, and
+                                // usually not one a reader can act on. Our own wording, always.
+                                placeError = UiText.Res(R.string.profile_edit_place_search_failed),
                             )
                         }
                 }
@@ -153,12 +157,12 @@ class ProfileEditViewModel
                 val date = state.dateOfBirth.toLocalDateOrNull()
                 val time = state.timeOfBirth.toLocalTimeOrNull()
                 when {
-                    state.name.isBlank() -> _messages.emit("Enter a name")
+                    state.name.isBlank() -> _messages.emit(UiText.Res(R.string.profile_edit_error_name))
                     state.dateOfBirth.isNotBlank() && date == null ->
-                        _messages.emit("Enter the date of birth as YYYY-MM-DD")
+                        _messages.emit(UiText.Res(R.string.profile_edit_error_date_of_birth))
 
                     state.timeOfBirth.isNotBlank() && time == null ->
-                        _messages.emit("Enter the time of birth as HH:MM (24-hour)")
+                        _messages.emit(UiText.Res(R.string.profile_edit_error_time_of_birth))
 
                     else -> {
                         profileRepository.upsert(
@@ -199,7 +203,7 @@ data class ProfileEditUiState(
     val isEditing: Boolean = false,
     val isSearchingPlace: Boolean = false,
     val placeResults: List<GeocodeResult> = emptyList(),
-    val placeError: String? = null,
+    val placeError: UiText? = null,
     val birthCoordinates: GeoCoordinates? = null,
     val birthZoneId: String? = null,
 )

@@ -35,9 +35,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,6 +51,8 @@ import io.github.vedicmitra.core.datastore.ProfileRelation
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.core.location.GeocodeResult
+import io.github.vedicmitra.core.ui.text.UiText
+import io.github.vedicmitra.core.ui.text.resolve
 
 /**
  * Add/edit-profile screen. Collects [ProfileEditViewModel] state, surfaces messages as toasts, and
@@ -60,11 +66,17 @@ fun ProfileEditScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // A UiText is resolved in a composition, and `collect` is not one. Holding the latest message in
+    // state means the toast text is looked up at the locale in force when it is shown -- which is the
+    // point of deferring it -- and the LaunchedEffect below only has to fire it.
+    var message by remember { mutableStateOf<UiText?>(null) }
+    val messageText = message?.resolve()
 
     LaunchedEffect(Unit) {
-        viewModel.messages.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        }
+        viewModel.messages.collect { message = it }
+    }
+    LaunchedEffect(messageText) {
+        messageText?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
     }
     LaunchedEffect(Unit) {
         viewModel.saved.collect { onDone() }
@@ -104,11 +116,14 @@ private fun ProfileEditContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
-            text = if (uiState.isEditing) "Edit profile" else "Add profile",
+            text =
+                stringResource(
+                    if (uiState.isEditing) R.string.profile_edit_title_edit else R.string.profile_edit_title_add,
+                ),
             style = MaterialTheme.typography.titleLarge,
         )
         Text(
-            text = "Relation",
+            text = stringResource(R.string.profile_edit_relation),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -116,12 +131,12 @@ private fun ProfileEditContent(
         OutlinedTextField(
             value = uiState.name,
             onValueChange = onNameChange,
-            label = { Text("Name") },
+            label = { Text(stringResource(R.string.profile_edit_name)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = "Gender",
+            text = stringResource(R.string.profile_edit_gender),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -129,18 +144,18 @@ private fun ProfileEditContent(
         OutlinedTextField(
             value = uiState.dateOfBirth,
             onValueChange = onDateOfBirthChange,
-            label = { Text("Date of birth") },
-            placeholder = { Text("YYYY-MM-DD") },
-            supportingText = { Text("e.g. 1995-03-14") },
+            label = { Text(stringResource(R.string.profile_edit_date_of_birth)) },
+            placeholder = { Text(stringResource(R.string.profile_edit_date_of_birth_placeholder)) },
+            supportingText = { Text(stringResource(R.string.profile_edit_date_of_birth_hint)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             value = uiState.timeOfBirth,
             onValueChange = onTimeOfBirthChange,
-            label = { Text("Time of birth") },
-            placeholder = { Text("HH:MM (24-hour)") },
-            supportingText = { Text("As exact as possible — the chart depends on it") },
+            label = { Text(stringResource(R.string.profile_edit_time_of_birth)) },
+            placeholder = { Text(stringResource(R.string.profile_edit_time_of_birth_placeholder)) },
+            supportingText = { Text(stringResource(R.string.profile_edit_time_of_birth_hint)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -151,7 +166,12 @@ private fun ProfileEditContent(
             onSelect = onSelectPlace,
         )
         Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
-            Text(text = if (uiState.isEditing) "Save changes" else "Add profile")
+            Text(
+                text =
+                    stringResource(
+                        if (uiState.isEditing) R.string.profile_edit_save_edit else R.string.profile_edit_save_add,
+                    ),
+            )
         }
     }
 }
@@ -167,12 +187,15 @@ private fun BirthplaceField(
     OutlinedTextField(
         value = uiState.placeOfBirth,
         onValueChange = onPlaceChange,
-        label = { Text("Place of birth") },
-        placeholder = { Text("City, Country") },
+        label = { Text(stringResource(R.string.profile_edit_place_of_birth)) },
+        placeholder = { Text(stringResource(R.string.profile_edit_place_of_birth_placeholder)) },
         singleLine = true,
         trailingIcon = {
             IconButton(onClick = onSearch) {
-                Icon(imageVector = Icons.Filled.Search, contentDescription = "Search places")
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.profile_edit_place_search_description),
+                )
             }
         },
         supportingText = { Text(birthplaceHint(uiState)) },
@@ -182,7 +205,7 @@ private fun BirthplaceField(
         uiState.isSearchingPlace -> CircularProgressIndicator()
         uiState.placeError != null ->
             Text(
-                text = uiState.placeError,
+                text = uiState.placeError.resolve(),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -209,11 +232,12 @@ private fun PlaceResultRow(
     }
 }
 
+@Composable
 private fun birthplaceHint(uiState: ProfileEditUiState): String =
     if (uiState.birthZoneId != null) {
-        "Located · ${uiState.birthZoneId}"
+        stringResource(R.string.profile_edit_place_located, uiState.birthZoneId)
     } else {
-        "Type a place, then tap search to locate it"
+        stringResource(R.string.profile_edit_place_hint)
     }
 
 /** A dropdown for choosing the profile's [ProfileRelation]. */
@@ -223,10 +247,10 @@ private fun RelationSelector(
     onSelect: (ProfileRelation) -> Unit,
 ) {
     VedicSelectField(
-        label = "Relation",
+        label = stringResource(R.string.profile_edit_relation),
         options = ProfileRelation.entries,
         selected = selected,
-        optionLabel = { it.displayName },
+        optionLabel = { stringResource(it.labelRes) },
         onSelect = onSelect,
     )
 }
@@ -238,10 +262,10 @@ private fun GenderSelector(
     onSelect: (Gender?) -> Unit,
 ) {
     VedicSelectField(
-        label = "Gender (optional)",
+        label = stringResource(R.string.profile_edit_gender_optional),
         options = listOf<Gender?>(null) + Gender.entries,
         selected = selected,
-        optionLabel = { it?.displayName ?: "Not specified" },
+        optionLabel = { stringResource(it?.labelRes ?: R.string.profile_edit_gender_unspecified) },
         onSelect = onSelect,
     )
 }

@@ -22,6 +22,7 @@ import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.location.GeocodeResult
 import io.github.vedicmitra.core.location.GeocodingClient
 import io.github.vedicmitra.core.location.TimeZoneResolver
+import io.github.vedicmitra.core.ui.text.UiText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -108,7 +109,9 @@ class ProfileEditViewModelTest {
 
             viewModel.messages.test {
                 viewModel.save()
-                assertThat(awaitItem()).contains("name")
+                // The id, not the wording. This cannot pass by accident because two messages read
+                // alike, and it will not break the next time the copy is improved.
+                assertThat(awaitItem()).isEqualTo(UiText.Res(R.string.profile_edit_error_name))
                 cancelAndIgnoreRemainingEvents()
             }
             assertThat(repository.profiles.first()).isEmpty()

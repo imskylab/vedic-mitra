@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) 2026 Jayvardhan Potabatti
+  SPDX-License-Identifier: AGPL-3.0-or-later
+
+  Keys are `profile_<screen>_<thing>`, so a translator working one file at a time can tell where a
+  string appears without opening the code. Sanskrit domain terms are not extracted (ADR 0021); there
+  are none on these screens, which is part of why this module went first.
+-->
+<resources>
+
+    <!-- Profiles list -->
+    <string name="profile_list_title">Profiles</string>
+    <string name="profile_list_subtitle">The primary profile is you; others are family or friends whose charts you keep.</string>
+    <string name="profile_list_empty">No profiles yet. Add yourself first — that becomes your primary profile.</string>
+    <string name="profile_list_add">Add a profile</string>
+    <!-- Shown in place of a profile's name when it was saved blank. -->
+    <string name="profile_list_unnamed">Unnamed</string>
+    <!-- %1$s is the profile's name. Spoken by a screen reader, not shown. -->
+    <string name="profile_list_edit_description">Edit %1$s</string>
+    <string name="profile_list_delete_description">Delete %1$s</string>
+
+    <!-- The row's second line, built up in three steps. %1$s is the relation (e.g. Spouse),
+         %2$s the gender. The middle dot is U+00B7 with hair spaces around it. -->
+    <string name="profile_list_relation_primary">Primary · %1$s</string>
+    <string name="profile_list_relation_gender">%1$s · %2$s</string>
+    <string name="profile_list_relation_incomplete">%1$s · incomplete</string>
+
+    <!-- Add / edit profile -->
+    <string name="profile_edit_title_add">Add profile</string>
+    <string name="profile_edit_title_edit">Edit profile</string>
+    <string name="profile_edit_save_add">Add profile</string>
+    <string name="profile_edit_save_edit">Save changes</string>
+
+    <string name="profile_edit_relation">Relation</string>
+    <string name="profile_edit_name">Name</string>
+    <string name="profile_edit_gender">Gender</string>
+    <string name="profile_edit_gender_optional">Gender (optional)</string>
+    <!-- The option that clears the gender. It is optional because only kundali matching needs it. -->
+    <string name="profile_edit_gender_unspecified">Not specified</string>
+
+    <string name="profile_edit_date_of_birth">Date of birth</string>
+    <!-- Do not translate the letters: they are the literal pattern the field accepts. -->
+    <string name="profile_edit_date_of_birth_placeholder" translatable="false">YYYY-MM-DD</string>
+    <string name="profile_edit_date_of_birth_hint">e.g. 1995-03-14</string>
+
+    <string name="profile_edit_time_of_birth">Time of birth</string>
+    <string name="profile_edit_time_of_birth_placeholder">HH:MM (24-hour)</string>
+    <string name="profile_edit_time_of_birth_hint">As exact as possible — the chart depends on it</string>
+
+    <string name="profile_edit_place_of_birth">Place of birth</string>
+    <string name="profile_edit_place_of_birth_placeholder">City, Country</string>
+    <string name="profile_edit_place_search_description">Search places</string>
+    <string name="profile_edit_place_hint">Type a place, then tap search to locate it</string>
+    <!-- %1$s is an IANA time-zone id, e.g. Asia/Kolkata. -->
+    <string name="profile_edit_place_located">Located · %1$s</string>
+    <string name="profile_edit_place_none">No matching places found</string>
+    <string name="profile_edit_place_search_failed">Search failed</string>
+
+    <!-- Validation, shown as a toast when Save is tapped. -->
+    <string name="profile_edit_error_name">Enter a name</string>
+    <string name="profile_edit_error_date_of_birth">Enter the date of birth as YYYY-MM-DD</string>
+    <string name="profile_edit_error_time_of_birth">Enter the time of birth as HH:MM (24-hour)</string>
+
+    <!-- ProfileRelation. Persisted by enum name, so these are free to change. -->
+    <string name="profile_relation_self">Self</string>
+    <string name="profile_relation_spouse">Spouse</string>
+    <string name="profile_relation_child">Child</string>
+    <string name="profile_relation_parent">Parent</string>
+    <string name="profile_relation_friend">Friend</string>
+    <string name="profile_relation_other">Other</string>
+
+    <!-- Gender. Persisted by enum name, so these are free to change. -->
+    <string name="profile_gender_male">Male</string>
+    <string name="profile_gender_female">Female</string>
+    <string name="profile_gender_other">Other</string>
+
+</resources>

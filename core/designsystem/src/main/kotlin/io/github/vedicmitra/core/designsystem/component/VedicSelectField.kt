@@ -39,7 +39,8 @@ import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
  * @param label the field label.
  * @param options the choices, in display order.
  * @param selected the current choice (must be one of [options]).
- * @param optionLabel the display text for an option.
+ * @param optionLabel the display text for an option. Composable so it can read a `stringResource`:
+ *   these labels are user-facing copy, and every one of them is destined for `strings.xml`.
  * @param onSelect called with the chosen option.
  * @param enabled whether the field can be opened.
  * @param leadingContent optional leading content per option (e.g. a marker on the user's own sign).
@@ -50,7 +51,7 @@ fun <T> VedicSelectField(
     label: String,
     options: List<T>,
     selected: T,
-    optionLabel: (T) -> String,
+    optionLabel: @Composable (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
