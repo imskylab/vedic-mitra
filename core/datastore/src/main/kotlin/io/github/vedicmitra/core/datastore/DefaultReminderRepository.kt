@@ -92,16 +92,33 @@ class DefaultReminderRepository
             }
         }
 
+        // All three sets are keyed by the reminder's source key, so all three need the same
+        // translation -- a reminder that survived while its lead time and its ringing/notification
+        // choice did not would be its own bug, and a quiet one: the alarm would come back as a
+        // notification. distinctBy resolves the one case where two old keys collapse into one (the
+        // numbered Dur Muhurtas), keeping the first.
         private fun Preferences.decodeReminders(): List<PersistedReminder> =
-            this[REMINDERS].orEmpty().mapNotNull(ReminderCodec::decode)
+            this[REMINDERS]
+                .orEmpty()
+                .mapNotNull(ReminderCodec::decode)
+                .map { it.copy(id = LegacyReminderKeys.canonical(it.id)) }
+                .distinctBy { it.id }
 
         private fun List<PersistedReminder>.encode(): Set<String> = map(ReminderCodec::encode).toSet()
 
         private fun Preferences.decodeOffsets(): List<MuhurtaOffset> =
-            this[MUHURTA_OFFSETS].orEmpty().mapNotNull(MuhurtaOffsetCodec::decode)
+            this[MUHURTA_OFFSETS]
+                .orEmpty()
+                .mapNotNull(MuhurtaOffsetCodec::decode)
+                .map { it.copy(name = LegacyReminderKeys.canonical(it.name)) }
+                .distinctBy { it.name }
 
         private fun Preferences.decodeAlerts(): List<MuhurtaAlert> =
-            this[MUHURTA_ALERTS].orEmpty().mapNotNull(MuhurtaAlertCodec::decode)
+            this[MUHURTA_ALERTS]
+                .orEmpty()
+                .mapNotNull(MuhurtaAlertCodec::decode)
+                .map { it.copy(name = LegacyReminderKeys.canonical(it.name)) }
+                .distinctBy { it.name }
 
         private companion object {
             val REMINDERS = stringSetPreferencesKey("reminders")

@@ -18,6 +18,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GrahaPosition
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.PanchangaNow
 import io.github.vedicmitra.core.common.model.GeoCoordinates
@@ -131,7 +132,7 @@ class HomeViewModel
                 val location = resolveLocation().coordinates
                 val result =
                     when (target) {
-                        is ReminderTarget.Muhurta -> addReminder.addMuhurta(target.name, location)
+                        is ReminderTarget.Muhurta -> addReminder.addMuhurta(target.kind, location)
                         is ReminderTarget.Observance -> addReminder.addObservance(target.name, target.tithis, location)
                     }
                 _messages.emit(
@@ -219,8 +220,12 @@ sealed interface ReminderTarget {
     /** The item's display name, used in the confirmation message. */
     val name: String
 
-    /** A muhurta window, reminded for by its name (e.g. "Brahma Muhurta"). */
+    /**
+     * A muhurta window, reminded for by its [kind] — never by [name], which is display copy and so
+     * cannot be what a persisted reminder is keyed on.
+     */
     data class Muhurta(
+        val kind: MuhurtaKind,
         override val name: String,
     ) : ReminderTarget
 

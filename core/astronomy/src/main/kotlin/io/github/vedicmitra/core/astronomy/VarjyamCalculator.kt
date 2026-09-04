@@ -84,7 +84,8 @@ internal fun varjyamOf(
     val endMs = nakshatraStartMs + endGhati * GHATI_MINUTES * MILLIS_PER_MINUTE
 
     return Muhurta(
-        name = "Varjyam",
+        kind = MuhurtaKind.VARJYAM,
+        name = MuhurtaKind.VARJYAM.label,
         start = Instant.fromEpochMilliseconds(startMs),
         end = Instant.fromEpochMilliseconds(endMs),
         quality = MuhurtaQuality.INAUSPICIOUS,

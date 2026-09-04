@@ -12,6 +12,7 @@ package io.github.vedicmitra.core.domain
 
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.common.coroutines.DispatcherProvider
 import io.github.vedicmitra.core.common.model.AlertStyle
 import io.github.vedicmitra.core.common.model.GeoCoordinates
@@ -44,17 +45,23 @@ class AddReminderUseCase
         private val reminderRepository: ReminderRepository,
         private val dispatchers: DispatcherProvider,
     ) {
-        /** Schedules a reminder for the next occurrence of the muhurta named [muhurta]. */
+        /**
+         * Schedules a reminder for the next occurrence of [kind].
+         *
+         * Keyed on [MuhurtaKind.id], never on the label: the key is persisted, and a key built from
+         * display copy is orphaned the moment that copy is translated or respelled.
+         */
         suspend fun addMuhurta(
-            muhurta: String,
+            kind: MuhurtaKind,
             location: GeoCoordinates,
         ): AppResult<Unit> =
             withContext(dispatchers.default) {
                 val now = now()
+                val label = kind.label
                 val start =
-                    nextMuhurtaStart(muhurta, location, now)
-                        ?: return@withContext AppResult.Failure(NoSuchElementException("No upcoming $muhurta"))
-                schedule("muhurta:$muhurta", triggerFor(start, now), muhurta, "$muhurta is coming up.")
+                    nextMuhurtaStart(kind, location, now)
+                        ?: return@withContext AppResult.Failure(NoSuchElementException("No upcoming $label"))
+                schedule("muhurta:${kind.id}", triggerFor(start, now), label, "$label is coming up.")
             }
 
         /**
@@ -84,12 +91,12 @@ class AddReminderUseCase
             }
 
         private suspend fun nextMuhurtaStart(
-            name: String,
+            kind: MuhurtaKind,
             location: GeoCoordinates,
             now: Instant,
         ): Instant? {
-            muhurtasAt(now, location).firstOrNull { it.name == name && it.start > now }?.let { return it.start }
-            return muhurtasAt(now + 1.days, location).firstOrNull { it.name == name }?.start
+            muhurtasAt(now, location).firstOrNull { it.kind == kind && it.start > now }?.let { return it.start }
+            return muhurtasAt(now + 1.days, location).firstOrNull { it.kind == kind }?.start
         }
 
         private suspend fun muhurtasAt(

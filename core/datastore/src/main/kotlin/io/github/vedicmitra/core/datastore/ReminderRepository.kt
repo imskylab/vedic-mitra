@@ -23,16 +23,20 @@ interface ReminderRepository {
     val reminders: Flow<List<PersistedReminder>>
 
     /**
-     * Per-muhurta-name lead-time overrides — minutes before that window's start a reminder for it
-     * should fire (0 = at the window start). Sparse: a name absent here has not been customized and
+     * Lead-time overrides per **source key** — minutes before that window's start a reminder for it
+     * should fire (0 = at the window start). Sparse: a key absent here has not been customized and
      * callers should fall back to [DEFAULT_OFFSET_MINUTES].
+     *
+     * The key is the reminder's own id (`muhurta:<kind id>`, `choghadiya:<TYPE>`, `tithi:...`), not
+     * a display name. `name` in the parameter and property names below is historical and misleading:
+     * putting a display name here is what orphaned reminders before [LegacyReminderKeys] existed.
      */
     val offsetMinutesByName: Flow<Map<String, Int>>
 
     /**
-     * Per-muhurta-name alert-style overrides — whether that muhurta's reminder fires as a quiet
-     * notification or a full-screen ringing alarm. Sparse: a name absent here uses the default
-     * [AlertStyle.NOTIFICATION].
+     * Alert-style overrides per **source key** — whether that window's reminder fires as a quiet
+     * notification or a full-screen ringing alarm. Sparse: a key absent here uses the default
+     * [AlertStyle.NOTIFICATION]. Keyed exactly as [offsetMinutesByName] is.
      */
     val alertTypeByName: Flow<Map<String, AlertStyle>>
 
@@ -54,13 +58,13 @@ interface ReminderRepository {
     /** Drops any reminder whose trigger time is at or before [nowEpochMillis] (already fired/stale). */
     suspend fun removePast(nowEpochMillis: Long)
 
-    /** Sets the lead time in minutes for the muhurta named [name] (0 = at the window start). */
+    /** Sets the lead time in minutes for the source key [name] (0 = at the window start). */
     suspend fun setOffsetMinutes(
         name: String,
         minutes: Int,
     )
 
-    /** Sets whether the muhurta named [name] alerts as a notification or a ringing alarm. */
+    /** Sets whether the source key [name] alerts as a notification or a ringing alarm. */
     suspend fun setAlertType(
         name: String,
         alert: AlertStyle,

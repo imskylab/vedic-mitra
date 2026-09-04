@@ -48,7 +48,7 @@ import kotlin.time.Instant
  * tomorrow), so it can always be set and never shows as passed. Every [load] also renews the added
  * reminders onto their next occurrence, rolling fired ones forward.
  *
- * A source is identified by a stable key: `muhurta:<name>` or `choghadiya:<TYPE>`. Lead-time and
+ * A source is identified by a stable key: `muhurta:<kind id>` or `choghadiya:<TYPE>`. Lead-time and
  * alert-style overrides, and the scheduled alarm, are all keyed by it.
  */
 @HiltViewModel
@@ -445,7 +445,9 @@ private fun pluralize(
 /** Builds the day's period windows (muhurtas + Choghadiya) with their stable source keys. */
 private fun periodsOf(snapshot: AstronomySnapshot): List<PeriodWindow> =
     snapshot.muhurtas.map {
-        PeriodWindow("muhurta:${it.name}", it.name, it.start, it.end, it.quality)
+        // Keyed and labelled by kind, not by name: the key must not be display copy, and the two
+        // Saturday Dur Muhurtas would otherwise offer the catalog a numbered label at random.
+        PeriodWindow("muhurta:${it.kind.id}", it.kind.label, it.start, it.end, it.quality)
     } +
         snapshot.choghadiya.map {
             PeriodWindow("choghadiya:${it.name.name}", it.name.label, it.start, it.end, it.quality)
@@ -522,7 +524,7 @@ sealed interface AlarmUiState {
 /**
  * A period the user can add a reminder for.
  *
- * @property key the stable source key (`muhurta:<name>` or `choghadiya:<TYPE>`).
+ * @property key the stable source key (`muhurta:<kind id>` or `choghadiya:<TYPE>`).
  * @property label the display name.
  * @property quality whether the period is auspicious or inauspicious.
  */

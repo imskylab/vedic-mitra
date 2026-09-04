@@ -24,6 +24,7 @@ import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
@@ -100,17 +101,17 @@ class AlarmViewModelTest {
                 viewModel.load()
                 awaitItem() // Ready (empty)
 
-                viewModel.addReminder("muhurta:Abhijit Muhurta")
+                viewModel.addReminder("muhurta:abhijit")
 
                 val ready = awaitItem() as AlarmUiState.Ready
-                assertThat(ready.reminders.map { it.id }).containsExactly("muhurta:Abhijit Muhurta")
-                assertThat(ready.available.map { it.key }).doesNotContain("muhurta:Abhijit Muhurta")
-                assertThat(scheduler.scheduled.single().id).isEqualTo("muhurta:Abhijit Muhurta")
+                assertThat(ready.reminders.map { it.id }).containsExactly("muhurta:abhijit")
+                assertThat(ready.available.map { it.key }).doesNotContain("muhurta:abhijit")
+                assertThat(scheduler.scheduled.single().id).isEqualTo("muhurta:abhijit")
                 assertThat(
                     repository.reminders.value
                         .single()
                         .id,
-                ).isEqualTo("muhurta:Abhijit Muhurta")
+                ).isEqualTo("muhurta:abhijit")
             }
         }
 
@@ -125,15 +126,15 @@ class AlarmViewModelTest {
                 awaitItem() // Loading
                 viewModel.load()
                 awaitItem() // Ready (empty)
-                viewModel.addReminder("muhurta:Rahu Kalam")
+                viewModel.addReminder("muhurta:rahu-kalam")
                 awaitItem() // Ready (one reminder)
 
-                viewModel.removeReminder("muhurta:Rahu Kalam")
+                viewModel.removeReminder("muhurta:rahu-kalam")
 
                 val ready = awaitItem() as AlarmUiState.Ready
                 assertThat(ready.reminders).isEmpty()
-                assertThat(ready.available.map { it.key }).contains("muhurta:Rahu Kalam")
-                assertThat(scheduler.cancelled).containsExactly("muhurta:Rahu Kalam")
+                assertThat(ready.available.map { it.key }).contains("muhurta:rahu-kalam")
+                assertThat(scheduler.cancelled).containsExactly("muhurta:rahu-kalam")
                 assertThat(repository.reminders.value).isEmpty()
             }
         }
@@ -159,7 +160,7 @@ class AlarmViewModelTest {
             val repository = FakeReminderRepository()
             repository.upsert(
                 PersistedReminder(
-                    id = "muhurta:Abhijit Muhurta",
+                    id = "muhurta:abhijit",
                     triggerAtEpochMillis = 1L,
                     title = "Abhijit Muhurta",
                     body = "old body",
@@ -173,7 +174,7 @@ class AlarmViewModelTest {
                 viewModel.load()
                 awaitItem() // Ready
 
-                val renewed = scheduler.scheduled.last { it.id == "muhurta:Abhijit Muhurta" }
+                val renewed = scheduler.scheduled.last { it.id == "muhurta:abhijit" }
                 assertThat(renewed.triggerAt.toEpochMilliseconds()).isGreaterThan(before)
                 assertThat(
                     repository.reminders.value
@@ -194,7 +195,7 @@ class AlarmViewModelTest {
                 awaitItem() // Loading
                 viewModel.load()
                 awaitItem() // Ready (empty)
-                viewModel.addReminder("muhurta:Abhijit Muhurta")
+                viewModel.addReminder("muhurta:abhijit")
                 val added = awaitItem() as AlarmUiState.Ready
                 val startMillis =
                     added.reminders
@@ -202,7 +203,7 @@ class AlarmViewModelTest {
                         .start
                         .toEpochMilliseconds()
 
-                viewModel.setOffsetMinutes("muhurta:Abhijit Muhurta", 30)
+                viewModel.setOffsetMinutes("muhurta:abhijit", 30)
                 cancelAndIgnoreRemainingEvents()
 
                 val expectedTrigger = startMillis - 30 * MILLIS_PER_MINUTE
@@ -212,7 +213,7 @@ class AlarmViewModelTest {
                         .triggerAt
                         .toEpochMilliseconds(),
                 ).isEqualTo(expectedTrigger)
-                assertThat(repository.offsetMinutesByName.value).containsEntry("muhurta:Abhijit Muhurta", 30)
+                assertThat(repository.offsetMinutesByName.value).containsEntry("muhurta:abhijit", 30)
             }
         }
 
@@ -227,10 +228,10 @@ class AlarmViewModelTest {
                 awaitItem() // Loading
                 viewModel.load()
                 awaitItem() // Ready (empty)
-                viewModel.addReminder("muhurta:Abhijit Muhurta")
+                viewModel.addReminder("muhurta:abhijit")
                 awaitItem() // Ready with the reminder
 
-                viewModel.renameReminder("muhurta:Abhijit Muhurta", "Study time")
+                viewModel.renameReminder("muhurta:abhijit", "Study time")
                 val renamed = awaitItem() as AlarmUiState.Ready
                 assertThat(renamed.reminders.single().displayName).isEqualTo("Study time")
 
@@ -262,7 +263,7 @@ class AlarmViewModelTest {
                 viewModel.load()
                 awaitItem() // Ready (empty)
 
-                viewModel.addReminder("muhurta:Sandhya")
+                viewModel.addReminder("muhurta:brahma")
 
                 val windowStart =
                     (awaitItem() as AlarmUiState.Ready)
@@ -293,11 +294,11 @@ class AlarmViewModelTest {
                 viewModel.load()
                 awaitItem() // Ready
 
-                viewModel.setAlertType("muhurta:Rahu Kalam", AlertStyle.ALARM)
+                viewModel.setAlertType("muhurta:rahu-kalam", AlertStyle.ALARM)
                 cancelAndIgnoreRemainingEvents()
             }
 
-            assertThat(repository.alertTypeByName.value).containsEntry("muhurta:Rahu Kalam", AlertStyle.ALARM)
+            assertThat(repository.alertTypeByName.value).containsEntry("muhurta:rahu-kalam", AlertStyle.ALARM)
         }
 
     @Test
@@ -420,6 +421,7 @@ private class FakeAstronomyEngine(
                 buildList {
                     add(
                         Muhurta(
+                            kind = MuhurtaKind.ABHIJIT,
                             name = "Abhijit Muhurta",
                             start = instant + 2.hours,
                             end = instant + 3.hours,
@@ -428,6 +430,7 @@ private class FakeAstronomyEngine(
                     )
                     add(
                         Muhurta(
+                            kind = MuhurtaKind.RAHU_KALAM,
                             name = "Rahu Kalam",
                             start = instant - 1.hours,
                             end = instant,
@@ -438,7 +441,8 @@ private class FakeAstronomyEngine(
                         // Starts inside the default 10-minute lead time.
                         add(
                             Muhurta(
-                                name = "Sandhya",
+                                kind = MuhurtaKind.BRAHMA,
+                                name = "Brahma Muhurta",
                                 start = instant + 1.minutes,
                                 end = instant + 2.minutes,
                                 quality = MuhurtaQuality.AUSPICIOUS,
