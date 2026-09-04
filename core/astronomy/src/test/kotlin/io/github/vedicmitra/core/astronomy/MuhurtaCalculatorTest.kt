@@ -11,6 +11,7 @@
 package io.github.vedicmitra.core.astronomy
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 import kotlin.time.Instant
 
@@ -45,6 +46,27 @@ class MuhurtaCalculatorTest {
                 assertThat(muhurta.end.toEpochMilliseconds()).isEqualTo(segment * fifteenth)
                 assertThat(muhurta.quality).isEqualTo(MuhurtaQuality.INAUSPICIOUS)
             }
+        }
+    }
+
+    @Test
+    fun `every window carries a kind, and the same window keeps it across weekdays`() {
+        // The kind is what a reminder is keyed on, so it has to be the thing that does not vary.
+        // Saturday's two Dur Muhurtas are the case that matters: they are named apart for display,
+        // and used to be keyed apart too, so a reminder set on any other weekday did not match here.
+        val byWeekday = (0..6).map { muhurtasOf(sunTimes, it) }
+
+        byWeekday.forEach { day ->
+            day.forEach { muhurta ->
+                assertWithMessage("${muhurta.name} should be named for its kind")
+                    .that(muhurta.name)
+                    .startsWith(muhurta.kind.label)
+            }
+        }
+        byWeekday.forEach { day ->
+            assertWithMessage("every weekday has exactly one Dur Muhurta kind")
+                .that(day.filter { it.kind == MuhurtaKind.DUR_MUHURTA }.map { it.kind }.toSet())
+                .containsExactly(MuhurtaKind.DUR_MUHURTA)
         }
     }
 

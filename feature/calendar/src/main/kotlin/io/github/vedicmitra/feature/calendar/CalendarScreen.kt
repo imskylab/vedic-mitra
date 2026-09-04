@@ -73,6 +73,7 @@ import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
@@ -712,6 +713,7 @@ private fun CalendarContentPreview() {
             muhurtas =
                 listOf(
                     Muhurta(
+                        kind = MuhurtaKind.BRAHMA,
                         name = "Brahma Muhurta",
                         start = Instant.fromEpochMilliseconds(1_785_884_400_000L),
                         end = Instant.fromEpochMilliseconds(1_785_887_280_000L),

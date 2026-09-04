@@ -232,6 +232,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A muhurta reminder was keyed on its own label, so translating the label would have orphaned it.**
+  Reminder identity was built as `"muhurta:$name"` from the **display** name — `"muhurta:Brahma
+  Muhurta"`. That made a piece of UI copy into persisted state. Translate the label for a Hindi
+  build, or merely respell it, and the same window computes a different key: the reminder is not
+  renamed but lost. It stops being renewed, the Reminders screen cannot reconcile it, and to a user
+  it reads as the alarm feature quietly breaking. It blocked every locale, not only Hindi, and it is
+  why [ADR 0019](docs/adr/0019-sanskrit-vocabulary-and-transliteration.md) had to freeze those labels.
+
+  Windows now have an identity separate from their name — `MuhurtaKind`, in `:core:astronomy`
+  alongside the window itself — and reminders are keyed on that. Keys written by earlier builds are
+  translated on read, so a reminder set before this change survives it, and so do its lead time and
+  its ringing-alarm choice, which are stored separately under the same key. A reminder that came back
+  while its ALARM setting did not would be the same bug wearing a different hat.
+
+  This also fixes something that was already wrong before translation entered into it. **Saturday's
+  two Dur Muhurtas were named "Dur Muhurta 1" and "Dur Muhurta 2"**, and so keyed differently from
+  the plain "Dur Muhurta" of every other weekday — meaning a reminder set on a Sunday silently failed
+  to match on a Saturday. One kind, one key; the occurrences keep their numbers on screen.
+
 - **Tapping a limb on the calendar now explains it — which 0.9.0 said it already did.** The eleven
   primer explanations shipped in that release reached no user at all. `VedicCycleRow` has always
   accepted an `onClick`; `CalendarScreen` never passed one. The glossary the other detail sheets

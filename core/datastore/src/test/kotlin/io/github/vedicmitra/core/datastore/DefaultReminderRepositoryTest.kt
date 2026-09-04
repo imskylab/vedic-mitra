@@ -166,6 +166,47 @@ class DefaultReminderRepositoryTest {
                 .containsExactly("Brahma Muhurta", AlertStyle.NOTIFICATION, "Rahu Kalam", AlertStyle.NOTIFICATION)
         }
 
+    @Test
+    fun `a reminder written under the old label-derived key comes back under its kind`() =
+        runTest {
+            // What an upgrading device has on disk. Before this, the key it was stored under no
+            // longer matched anything the app computed, so the reminder stopped being renewed and
+            // the Reminders screen could not reconcile it -- silently, and looking like a fault in
+            // the alarm feature rather than a rename.
+            val repository = DefaultReminderRepository(newDataStore())
+
+            repository.upsert(reminder("muhurta:Brahma Muhurta", triggerAt = 100L))
+
+            assertThat(repository.reminders.first().map { it.id }).containsExactly("muhurta:brahma")
+        }
+
+    @Test
+    fun `the lead time and the alert style survive the same way`() =
+        runTest {
+            // These are keyed by the same string and stored separately, so a reminder that came back
+            // while its ALARM setting did not would be its own bug -- and a quiet one, since the
+            // alarm would simply return as a notification.
+            val repository = DefaultReminderRepository(newDataStore())
+
+            repository.setOffsetMinutes("muhurta:Rahu Kalam", 45)
+            repository.setAlertType("muhurta:Rahu Kalam", AlertStyle.ALARM)
+
+            assertThat(repository.offsetMinutesByName.first()).containsExactly("muhurta:rahu-kalam", 45)
+            assertThat(repository.alertTypeByName.first()).containsExactly("muhurta:rahu-kalam", AlertStyle.ALARM)
+        }
+
+    @Test
+    fun `the two numbered Dur Muhurtas do not come back as two reminders`() =
+        runTest {
+            // They translate to one key, so a device holding both must not end up with a duplicate.
+            val repository = DefaultReminderRepository(newDataStore())
+
+            repository.upsert(reminder("muhurta:Dur Muhurta 1", triggerAt = 100L))
+            repository.upsert(reminder("muhurta:Dur Muhurta 2", triggerAt = 200L))
+
+            assertThat(repository.reminders.first().map { it.id }).containsExactly("muhurta:dur-muhurta")
+        }
+
     private fun reminder(
         id: String,
         triggerAt: Long,

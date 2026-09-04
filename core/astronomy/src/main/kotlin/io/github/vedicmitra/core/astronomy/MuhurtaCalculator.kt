@@ -75,11 +75,13 @@ internal fun muhurtasOf(
     val fifteenth = dayMillis / 15
 
     fun window(
+        kind: MuhurtaKind,
         name: String,
         quality: MuhurtaQuality,
         startMs: Long,
         endMs: Long,
     ) = Muhurta(
+        kind = kind,
         name = name,
         start = Instant.fromEpochMilliseconds(startMs),
         end = Instant.fromEpochMilliseconds(endMs),
@@ -87,10 +89,12 @@ internal fun muhurtasOf(
     )
 
     fun daySegment(
-        name: String,
+        kind: MuhurtaKind,
         oneBasedSegment: Int,
         eighthOrFifteenth: Long,
+        name: String = kind.label,
     ) = window(
+        kind = kind,
         name = name,
         quality = MuhurtaQuality.INAUSPICIOUS,
         startMs = sunriseMs + (oneBasedSegment - 1) * eighthOrFifteenth,
@@ -100,14 +104,21 @@ internal fun muhurtasOf(
     val durMuhurtaSegments = DUR_MUHURTA_SEGMENTS[dayOfWeek]
     val durMuhurtas =
         durMuhurtaSegments.mapIndexed { index, segment ->
-            val name = if (durMuhurtaSegments.size == 1) "Dur Muhurta" else "Dur Muhurta ${index + 1}"
-            daySegment(name, segment, fifteenth)
+            // Numbered only when there are two, and only for display -- both are DUR_MUHURTA.
+            val name =
+                if (durMuhurtaSegments.size == 1) {
+                    MuhurtaKind.DUR_MUHURTA.label
+                } else {
+                    "${MuhurtaKind.DUR_MUHURTA.label} ${index + 1}"
+                }
+            daySegment(MuhurtaKind.DUR_MUHURTA, segment, fifteenth, name)
         }
     val abhijit =
         if (ABHIJIT_SEGMENT !in durMuhurtaSegments) {
             listOf(
                 window(
-                    name = "Abhijit Muhurta",
+                    kind = MuhurtaKind.ABHIJIT,
+                    name = MuhurtaKind.ABHIJIT.label,
                     quality = MuhurtaQuality.AUSPICIOUS,
                     startMs = sunriseMs + 7 * fifteenth,
                     endMs = sunriseMs + 8 * fifteenth,
@@ -120,16 +131,17 @@ internal fun muhurtasOf(
     return buildList {
         add(
             window(
-                name = "Brahma Muhurta",
+                kind = MuhurtaKind.BRAHMA,
+                name = MuhurtaKind.BRAHMA.label,
                 quality = MuhurtaQuality.AUSPICIOUS,
                 startMs = sunriseMs - BRAHMA_START_BEFORE_SUNRISE_MIN * MILLIS_PER_MINUTE,
                 endMs = sunriseMs - BRAHMA_END_BEFORE_SUNRISE_MIN * MILLIS_PER_MINUTE,
             ),
         )
         addAll(abhijit)
-        add(daySegment("Rahu Kalam", RAHU_KALAM_SEGMENT[dayOfWeek], eighth))
-        add(daySegment("Yamaganda", YAMAGANDA_SEGMENT[dayOfWeek], eighth))
-        add(daySegment("Gulika Kalam", GULIKA_SEGMENT[dayOfWeek], eighth))
+        add(daySegment(MuhurtaKind.RAHU_KALAM, RAHU_KALAM_SEGMENT[dayOfWeek], eighth))
+        add(daySegment(MuhurtaKind.YAMAGANDA, YAMAGANDA_SEGMENT[dayOfWeek], eighth))
+        add(daySegment(MuhurtaKind.GULIKA_KALAM, GULIKA_SEGMENT[dayOfWeek], eighth))
         addAll(durMuhurtas)
     }
 }

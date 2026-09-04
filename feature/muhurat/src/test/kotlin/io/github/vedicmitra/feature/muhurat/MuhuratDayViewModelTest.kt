@@ -21,6 +21,7 @@ import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
@@ -83,7 +84,7 @@ class MuhuratDayViewModelTest {
                 daySnapshot(
                     muhurtas =
                         listOf(
-                            muhurta("Rahu Kalam", 3_000L, 4_000L, MuhurtaQuality.INAUSPICIOUS),
+                            muhurta("Rahu Kalam", 3_000L, 4_000L, MuhurtaQuality.INAUSPICIOUS, MuhurtaKind.RAHU_KALAM),
                             muhurta("Abhijit Muhurta", 1_000L, 2_000L, MuhurtaQuality.AUSPICIOUS),
                         ),
                 )
@@ -148,8 +149,10 @@ private fun muhurta(
     startMillis: Long,
     endMillis: Long,
     quality: MuhurtaQuality,
+    kind: MuhurtaKind = MuhurtaKind.ABHIJIT,
 ): Muhurta =
     Muhurta(
+        kind = kind,
         name = name,
         start = Instant.fromEpochMilliseconds(startMillis),
         end = Instant.fromEpochMilliseconds(endMillis),

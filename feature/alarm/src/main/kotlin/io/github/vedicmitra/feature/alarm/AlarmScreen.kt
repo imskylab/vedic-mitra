@@ -666,7 +666,7 @@ private fun AlarmContentPreview() {
     val reminders =
         listOf(
             ReminderItem(
-                id = "muhurta:Abhijit Muhurta",
+                id = "muhurta:abhijit",
                 name = "Abhijit Muhurta",
                 start = Instant.fromEpochMilliseconds(1_705_300_140_000L),
                 end = Instant.fromEpochMilliseconds(1_705_302_960_000L),
@@ -699,8 +699,8 @@ private fun AlarmContentPreview() {
         )
     val available =
         listOf(
-            SourceOption("muhurta:Brahma Muhurta", "Brahma Muhurta", MuhurtaQuality.AUSPICIOUS),
-            SourceOption("muhurta:Rahu Kalam", "Rahu Kalam", MuhurtaQuality.INAUSPICIOUS),
+            SourceOption("muhurta:brahma", "Brahma Muhurta", MuhurtaQuality.AUSPICIOUS),
+            SourceOption("muhurta:rahu-kalam", "Rahu Kalam", MuhurtaQuality.INAUSPICIOUS),
         )
     VedicMitraTheme {
         AlarmContent(

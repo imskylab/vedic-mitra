@@ -74,6 +74,7 @@ import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
@@ -790,7 +791,7 @@ private fun AstronomySnapshot.periodRows(quality: MuhurtaQuality): List<SectionR
     muhurtas
         .filter { it.quality == quality }
         .sortedBy { it.start }
-        .map { SectionRow(it.name, formatRange(it.start, it.end), ReminderTarget.Muhurta(it.name)) }
+        .map { SectionRow(it.name, formatRange(it.start, it.end), ReminderTarget.Muhurta(it.kind, it.name)) }
 
 /** A festival/observance as a row; observances also carry a [ReminderTarget] so they can be reminded for. */
 private fun Festival.toEventRow(): SectionRow =
@@ -877,18 +878,21 @@ private fun sampleHomeState(): HomeUiState {
             muhurtas =
                 listOf(
                     Muhurta(
+                        kind = MuhurtaKind.BRAHMA,
                         name = "Brahma Muhurta",
                         start = Instant.fromEpochMilliseconds(1_705_280_400_000L),
                         end = Instant.fromEpochMilliseconds(1_705_282_200_000L),
                         quality = MuhurtaQuality.AUSPICIOUS,
                     ),
                     Muhurta(
+                        kind = MuhurtaKind.ABHIJIT,
                         name = "Abhijit Muhurta",
                         start = Instant.fromEpochMilliseconds(1_705_300_140_000L),
                         end = Instant.fromEpochMilliseconds(1_705_302_960_000L),
                         quality = MuhurtaQuality.AUSPICIOUS,
                     ),
                     Muhurta(
+                        kind = MuhurtaKind.RAHU_KALAM,
                         name = "Rahu Kalam",
                         start = Instant.fromEpochMilliseconds(1_705_287_540_000L),
                         end = Instant.fromEpochMilliseconds(1_705_292_265_000L),

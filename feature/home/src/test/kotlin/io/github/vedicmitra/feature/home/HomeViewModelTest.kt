@@ -22,6 +22,7 @@ import io.github.vedicmitra.core.astronomy.Maasa
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.MoonTimes
 import io.github.vedicmitra.core.astronomy.Muhurta
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
@@ -123,6 +124,7 @@ class HomeViewModelTest {
             val now = System.currentTimeMillis()
             val active =
                 Muhurta(
+                    kind = MuhurtaKind.ABHIJIT,
                     name = "Abhijit Muhurta",
                     start = Instant.fromEpochMilliseconds(now - 60_000L),
                     end = Instant.fromEpochMilliseconds(now + 3_600_000L),
@@ -195,9 +197,9 @@ class HomeViewModelTest {
                     FakePreferences(),
                 )
 
-            viewModel.setReminder(ReminderTarget.Muhurta("Abhijit Muhurta"))
+            viewModel.setReminder(ReminderTarget.Muhurta(MuhurtaKind.ABHIJIT, "Abhijit Muhurta"))
 
-            coVerify { addReminder.addMuhurta("Abhijit Muhurta", SOMEWHERE) }
+            coVerify { addReminder.addMuhurta(MuhurtaKind.ABHIJIT, SOMEWHERE) }
         }
 
     private fun resolveTo(
