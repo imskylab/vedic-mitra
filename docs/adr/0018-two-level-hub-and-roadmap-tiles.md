@@ -141,3 +141,16 @@ the icon style was the third of three, and the one a reader was least likely to 
 `HubCatalogTest` keeps the half of the rule that still holds — nothing that ships falls back to a
 placeholder letter — and adds a ratchet on the number of domains still awaiting artwork, so a new
 domain cannot quietly arrive without any.
+
+## Superseded — 2026-09-04
+
+**Points 4 and 5, and both amendments above, are superseded by
+[ADR 0020](0020-planned-tiles-say-so-in-words.md).** A planned tile now says "Soon" in words, and
+every chip takes its category's colour whether or not the domain is built.
+
+The rest of this ADR stands: the two-level hub, the tiles mirroring the roadmap including unbuilt
+domains, the per-domain note in place of a uniform "coming soon", and the navigation decisions.
+
+This is the third treatment for a single cue in three days. Rather than amend a third time, the
+question was moved to its own ADR — 0020 records why each attempt failed, which is more useful than
+another paragraph here saying the last one was wrong.

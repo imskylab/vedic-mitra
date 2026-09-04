@@ -56,10 +56,10 @@ enum class DomainStatus {
  * existed for the unbuilt domains. It no longer does: they have their own glyphs now, and a
  * [Letter] means only that a domain is still waiting for art.
  *
- * Status is carried by the tile's **outline instead of a filled chip**, which is a difference in
- * shape and so survives greyscale and high contrast. That was always the primary cue; it now stands
- * alone with the icon's fade. Colour never could have carried it — the glyphs hold their own maroon
- * and gold and are drawn with `Color.Unspecified`, so they can be faded but never tinted.
+ * The icon carries no status at all, and neither does the chip's colour. A domain that is not built
+ * yet says so in a **"Soon"** caption under its label (ADR 0020) — words being the only cue that
+ * survives greyscale, colour-blindness, high contrast and a large font scale at once. The chip's
+ * tint says only which [HubCategory] the domain belongs to.
  */
 sealed interface TileIcon {
     /** An ornate cultural glyph from [VedicIcons]. */

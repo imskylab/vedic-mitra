@@ -86,9 +86,9 @@ class HubCatalogTest {
     @Test
     fun `a built domain always has artwork`() {
         // The icon style used to say what was built -- ornate meant shipped, a letter meant not yet
-        // -- because no artwork existed for the unbuilt domains. It does now, so that cue is gone
-        // and the outline container carries status alone. What still has to hold is the weaker half:
-        // nothing that ships falls back to a placeholder letter.
+        // -- because no artwork existed for the unbuilt domains. It does now, so that cue is gone;
+        // status is carried by the "Soon" caption instead (ADR 0020). What still has to hold is the
+        // weaker half: nothing that ships falls back to a placeholder letter.
         HubDomain.entries.filter { it.isOpenable }.forEach { domain ->
             assertWithMessage("${domain.id} ${domain.label} icon")
                 .that(domain.icon)

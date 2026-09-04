@@ -11,7 +11,6 @@
 package io.github.vedicmitra.feature.home.hub
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +28,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
@@ -42,8 +41,11 @@ import androidx.compose.ui.unit.dp
 /** Tiles per row. Three keeps a label readable at a large font scale. */
 private const val GRID_COLUMNS = 3
 
-/** How far a not-yet-built tile's icon fades. Enough to read as inactive, not so far it disappears. */
-private const val PLANNED_ALPHA = 0.55f
+/**
+ * What a tile says when its domain has no screen yet. Sentence case, not a shouty badge: the app's
+ * voice is factual throughout, and this is a fact about the app rather than a promise about a date.
+ */
+private const val PLANNED_CAPTION = "Soon"
 
 /** A grid of [tiles], [GRID_COLUMNS] per row. */
 @Composable
@@ -79,10 +81,19 @@ internal fun SectionLabel(text: String) {
 /**
  * One tile.
  *
- * A tile for something not yet built is drawn as an **outline** rather than a filled chip, with a
- * faded icon and a spoken state. Outline-versus-fill is a difference in shape, which is what makes
- * the status readable without relying on colour — and colour could not carry it anyway, since the
- * brand glyphs hold their own maroon and gold and are drawn with `Color.Unspecified`.
+ * Every tile is a filled chip at full strength, in its **category's** colour — the chip says what
+ * kind of thing this is, never how far along it is. A domain that is not built yet says so in
+ * words, in a **"Soon"** caption under its label.
+ *
+ * Words rather than a treatment, because every non-verbal cue this tile could carry fails for
+ * someone. Colour fails in greyscale and for colour blindness; a fade reads as broken rather than
+ * planned, and cannot tint the brand glyphs anyway since they hold their own maroon and are drawn
+ * with `Color.Unspecified`; an outline reads as a rendering fault beside solid chips. A caption
+ * survives all of it, and survives a large font scale by growing with everything else.
+ *
+ * The caption is hidden from accessibility services on purpose: the tile already carries
+ * `stateDescription = "Not built yet"`, and without clearing it a screen reader would announce the
+ * same fact twice.
  *
  * No padlock, deliberately: nothing in this app unlocks, and a lock reads as a paywall.
  */
@@ -93,12 +104,6 @@ private fun Tile(
 ) {
     val built = tile.action !is TileAction.NotYet
     val shape = RoundedCornerShape(15.dp)
-    val chip =
-        if (built) {
-            Modifier.background(tile.category.container(), shape)
-        } else {
-            Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
-        }
     Column(
         modifier =
             Modifier
@@ -109,9 +114,13 @@ private fun Tile(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier.size(52.dp).clip(shape).then(chip),
+            modifier =
+                Modifier
+                    .size(52.dp)
+                    .clip(shape)
+                    .background(tile.category.container(), shape),
             contentAlignment = Alignment.Center,
-        ) { TileGlyph(tile, if (built) 1f else PLANNED_ALPHA) }
+        ) { TileGlyph(tile) }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = tile.label,
@@ -119,24 +128,30 @@ private fun Tile(
             color = if (built) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        if (!built) {
+            Text(
+                text = PLANNED_CAPTION,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.clearAndSetSemantics {},
+            )
+        }
     }
 }
 
 /** The tile's icon, in whichever of the three styles it carries. */
 @Composable
-private fun TileGlyph(
-    tile: HubTile,
-    alpha: Float,
-) {
-    val tint = tile.category.onContainer().copy(alpha = alpha)
+private fun TileGlyph(tile: HubTile) {
+    val tint = tile.category.onContainer()
     when (val icon = tile.icon) {
-        // The duotone glyphs are drawn in their own colours, so they fade rather than tint.
+        // The brand glyphs are drawn in their own maroon, so they are never tinted.
         is TileIcon.Glyph ->
             Icon(
                 painter = painterResource(icon.res),
                 contentDescription = null,
                 tint = Color.Unspecified,
-                modifier = Modifier.size(38.dp).alpha(alpha),
+                modifier = Modifier.size(38.dp),
             )
 
         is TileIcon.Symbol ->
