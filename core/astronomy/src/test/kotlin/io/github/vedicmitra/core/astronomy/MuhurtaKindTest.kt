@@ -27,14 +27,16 @@ class MuhurtaKindTest {
         // which is the bug this enum exists to fix.
         val ids = MuhurtaKind.entries.associate { it.name to it.id }
 
-        assertThat(ids).containsExactly(
-            "BRAHMA", "brahma",
-            "ABHIJIT", "abhijit",
-            "RAHU_KALAM", "rahu-kalam",
-            "YAMAGANDA", "yamaganda",
-            "GULIKA_KALAM", "gulika-kalam",
-            "DUR_MUHURTA", "dur-muhurta",
-            "VARJYAM", "varjyam",
+        assertThat(ids).containsExactlyEntriesIn(
+            mapOf(
+                "BRAHMA" to "brahma",
+                "ABHIJIT" to "abhijit",
+                "RAHU_KALAM" to "rahu-kalam",
+                "YAMAGANDA" to "yamaganda",
+                "GULIKA_KALAM" to "gulika-kalam",
+                "DUR_MUHURTA" to "dur-muhurta",
+                "VARJYAM" to "varjyam",
+            ),
         )
     }
 
