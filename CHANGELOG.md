@@ -32,9 +32,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Chip colour went back to meaning one thing: which category a domain belongs to, never how far along
   it is. See ADR 0020. No padlock; nothing in this app unlocks anything.
 
-  Nine of the ten domains carry their own ornamental glyph, drawn in the same maroon line style as
-  the existing artwork. The Arts is the last without one and shows a Devanagari letter until it has
-  one.
+  **All ten domains carry their own ornamental glyph**, drawn in the same maroon line style. The
+  Arts was the last on a Devanagari placeholder and now has a lotus, which retires the ratchet that
+  had been counting the domains still waiting for art — it is an invariant now, so a new domain
+  cannot arrive without any.
 
   Tiles also gained a button role and a spoken state, which none of the twelve had. `TileButton`'s
   `enabled` flag is gone — it was dead at every call site, changed only the label colour, and left
