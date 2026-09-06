@@ -84,6 +84,10 @@ object VedicIcons {
     @get:DrawableRes
     val mantra: Int = R.drawable.ic_glyph_mantra
 
+    /** A stylised lotus in bloom — the Arts (architecture, sculpture, music and drama). */
+    @get:DrawableRes
+    val arts: Int = R.drawable.ic_glyph_arts
+
     /**
      * An Om coin dropping into a donation box (daana-patra) — Support.
      *

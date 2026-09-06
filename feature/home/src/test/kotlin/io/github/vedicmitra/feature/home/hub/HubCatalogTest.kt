@@ -84,28 +84,16 @@ class HubCatalogTest {
     }
 
     @Test
-    fun `a built domain always has artwork`() {
-        // The icon style used to say what was built -- ornate meant shipped, a letter meant not yet
-        // -- because no artwork existed for the unbuilt domains. It does now, so that cue is gone;
-        // status is carried by the "Soon" caption instead (ADR 0020). What still has to hold is the
-        // weaker half: nothing that ships falls back to a placeholder letter.
-        HubDomain.entries.filter { it.isOpenable }.forEach { domain ->
+    fun `every domain has artwork`() {
+        // This was a ratchet -- a pinned count of the domains still on a placeholder letter, lowered
+        // as each glyph landed. It reached zero when The Arts got its lotus, so it is an invariant
+        // now: a new domain cannot arrive without art. A letter is still a legal TileIcon (the Stotra
+        // tile is an Om), just not for a domain.
+        HubDomain.entries.forEach { domain ->
             assertWithMessage("${domain.id} ${domain.label} icon")
                 .that(domain.icon)
                 .isInstanceOf(TileIcon.Glyph::class.java)
         }
-    }
-
-    @Test
-    fun `the domains still waiting for artwork can shrink but never grow`() {
-        // A Devanagari letter is now a placeholder, not a statement. Pinning the count keeps it that
-        // way: a new domain cannot quietly ship without art, and each one that gets drawn brings the
-        // bound down. Lower it as artwork lands; never raise it.
-        val awaitingArt = HubDomain.entries.count { it.icon is TileIcon.Letter }
-
-        assertWithMessage("domains still using a placeholder letter")
-            .that(awaitingArt)
-            .isAtMost(AWAITING_ARTWORK)
     }
 
     @Test
@@ -130,10 +118,5 @@ class HubCatalogTest {
 
         assertThat(daily).isNotEmpty()
         assertThat(underDomains).containsAtLeastElementsIn(daily)
-    }
-
-    private companion object {
-        /** Only The Arts, which has no glyph yet. */
-        const val AWAITING_ARTWORK = 1
     }
 }

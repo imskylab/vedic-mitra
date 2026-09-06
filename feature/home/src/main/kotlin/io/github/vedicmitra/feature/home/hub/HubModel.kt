@@ -224,7 +224,7 @@ enum class HubDomain(
         id = "K7",
         label = "The Arts",
         status = DomainStatus.EXPLORING,
-        icon = TileIcon.Letter("शि"),
+        icon = TileIcon.Glyph(VedicIcons.arts),
         category = HubCategory.DEVOTION,
         blurb = "Architecture, sculpture, music and drama.",
         note = "The arts — still being explored; they need audio and images the app cannot carry yet.",
