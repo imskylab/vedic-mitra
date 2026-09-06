@@ -159,6 +159,7 @@ enum class HubDomain(
         category = HubCategory.DAILY,
         blurb = "The five limbs of the day, and the calendar they sit in.",
     ),
+
     // Labelled Kundali, not Jyotisha. What it holds -- charts, dashas, matching -- is *hora*, one
     // skandha of Jyotisha; Panchanga and Muhurta beside it are the other two. Calling this one by
     // the parent's name made it the sibling of its own children. Kundali is also what a reader
