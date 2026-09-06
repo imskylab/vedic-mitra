@@ -215,6 +215,10 @@ The month scheme is now settled. The solar calendars are the larger remaining ha
 - [ ] Tamil, Malayalam, Bengali and Odia solar calendars
 - [ ] Regional festival sets and regional variants of shared festivals
 - [ ] Regional Panchang support (per-tradition conventions surfaced, not hidden)
+- [ ] [Name the convention behind a festival date](https://github.com/imskylab/vedic-mitra/issues/228).
+      Which civil day a festival falls on when its tithi spans two sunrises is a *nirnaya* rule, not a
+      computation. The app answers it at sunrise and says so only in a source comment — the same
+      silence ADR 0017 fixed for month naming
 - [ ] Say which tradition is being followed on the *other* screens where conventions differ —
       ayana and ritu both have a "Vedic" reading this app does not use, named in their KDoc but not
       on screen

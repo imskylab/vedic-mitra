@@ -187,7 +187,8 @@ exactly the reader who would never think to look in Settings.
 **The rule.** Where a date depends on a rule of judgement and not only on a position of the Sun and
 Moon, the rule is part of the claim and has to be visible with it. A festival date printed bare
 asserts more certainty than the app has. This is an open gap, not a solved one: the month scheme is
-named on every reading, and festival dates are not.
+named on every reading, and festival dates are not — filed as
+[#228](https://github.com/imskylab/vedic-mitra/issues/228).
 
 ## Red lines
 
