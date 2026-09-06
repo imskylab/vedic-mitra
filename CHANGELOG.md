@@ -9,12 +9,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **The hub is two levels, and every shastra on the roadmap has a tile — built or not.** The map was
+- **The hub is two levels, and every domain on the roadmap has a tile — built or not.** The map was
   redrawn in ADR 0016 and none of it was visible in the app: twelve tiles for twelve built features,
   with no way to see that Vastu, Ayurveda or Chandas were intended.
 
   The landing now carries **Today** — the three destinations opened daily, kept one tap away — and
-  **Shastras**, the ten domains that are places to go. A built domain opens a screen listing what it
+  **Explore**, the ten domains that are places to go. A built domain opens a screen listing what it
   holds; one that is not built says where it stands, in its own words rather than a uniform "coming
   soon".
 
@@ -186,6 +186,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   That last check now covers the glossary too, which was previously held to the house voice only by
   hand. A new test also catches a concept wired to another concept's strings, which compiles
   perfectly and shows the wrong explanation.
+
+- **The hub's grid is called "Explore", not "Shastras" — because most of these are not shastras.**
+  The label was making a claim the tiles could not support. Panchanga is an *output* of Jyotisha
+  rather than a discipline; Muhurta and the tile formerly called Jyotisha are two *skandhas* of that
+  one Vedanga; Festivals & Vrata belongs to Dharmashastra; Mantra & Stotra is a practice; and Yoga is
+  a darshana, on a separate axis from the Veda's limbs altogether.
+
+  **The Jyotisha tile is now "Kundali".** What it holds — charts, dashas, matching — is *hora*, one
+  branch of Jyotisha, with Panchanga and Muhurta beside it as the other two. Naming it for the parent
+  made it the sibling of its own children.
+
+  `docs/roadmap.md` gains the tradition's actual taxonomy — the eighteen vidyas, the darshanas as a
+  separate axis, Jyotisha's skandhas — and a table saying where each of the app's domains really
+  sits. It also answers a question that had no answer before: **where a newly proposed domain goes**,
+  including why the purely philosophical ones should expect to be declined rather than left
+  permanently open.
+
+  Two things this makes visible that the grid did not: four of the ten domains are Jyotisha or its
+  output, so this is a Jyotisha app with adjacent disciplines around it; and festivals are not
+  muhurta — muhurta chooses a time for an act, whereas a vrata's time is given and the act is what is
+  due.
 
 - **Settings shows its choices instead of hiding them in dropdowns.** Theme and month scheme were
   `VedicSelectField` dropdowns, so the options existed only once you opened one — and the month

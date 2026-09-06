@@ -5,8 +5,8 @@
 # Vedic Mitra
 
 > Bringing the Vedic tradition back into everyday use — an offline, exhaustive companion for
-> panchanga, muhurta and the shastras that hang off them. Kotlin, Jetpack Compose, Clean
-> Architecture.
+> panchanga, muhurta and the practices that reckon their time by them. Kotlin, Jetpack Compose,
+> Clean Architecture.
 
 [![CI](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml/badge.svg)](https://github.com/imskylab/vedic-mitra/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
@@ -44,7 +44,7 @@
   </tr>
 </table>
 
-> **Status:** The **panchanga, muhurta and jyotisha** domains are largely built; the wider shastra
+> **Status:** The **panchanga, muhurta and kundali** domains are largely built; the wider domain
 > map in [docs/roadmap.md](docs/roadmap.md) is mostly open. The app computes
 > today's Panchang (tithi, nakshatra, yoga, karana, paksha, vara, ayana, ritu, maasa in either the
 > amanta or purnimanta scheme, samvatsara and the Vikrama/Shaka/Kali years),
@@ -74,8 +74,8 @@ within reach of an ordinary weekday.
 Much of this was never really lost. It was made **inconvenient**. Knowing when a tithi turns, which
 month it is under which reckoning, when a season changes, what a text actually says — all of it was
 once common knowledge and is now specialist. The aim is a single exhaustive place for it: the
-panchanga first, because it is the thread every other practice hangs from, and then the shastras
-that depend on it — timing, chart, ritual, routine, recitation, craft.
+panchanga first, because it is the thread every other practice hangs from, and then everything that
+reckons its time by it — timing, chart, ritual, routine, recitation, craft.
 
 **An app does not revive a practice by listing it.** It does so by making it doable: saying what a
 tradition holds, saying *when* it applies, and keeping a private record that you kept it. Knowing
@@ -152,7 +152,7 @@ UI (Compose)  →  ViewModel (MVVM)  →  UseCase / Domain  →  Repository  →
 | `:core:notifications` | `NotificationManagerCompat`-backed channels and notification posting. |
 | `:core:location` | Device location via Play Services fused provider, plus offline coordinate → time-zone resolution. |
 | `:core:datastore` | Persisted preferences and birth profiles on Jetpack DataStore. |
-| `:feature:home` | Landing hub: today's panchanga hero, the daily shortcuts, and a tile per shastra. |
+| `:feature:home` | Landing hub: today's panchanga hero, the daily shortcuts, and a tile per domain. |
 | `:feature:calendar` | Browsable monthly panchang grid; tap a day for its full panchang. |
 | `:feature:alarm` | Reminders: schedule notifications for muhurta windows, Choghadiya and custom tithis. |
 | `:feature:location` | Location picking: GPS, city search, manual coordinates, saved locations. |
@@ -191,13 +191,18 @@ so a contributor can pick up one area without knowing what came before it. Statu
 reflect what is actually implemented, verified against the code.
 
 Vedic Mitra aims to be a single, offline, honest place for the practices and knowledge of the Indian
-tradition — the panchanga first, and then the shastras that hang off it. The engine's knowledge of
-*when* is what ties them together: a seasonal routine needs the ritu, a ritual needs its muhurta, a
-vrata needs its tithi, and the app already computes all three.
+tradition — the panchanga first, and then everything that reckons its time by it. The engine's
+knowledge of *when* is what ties them together: a seasonal routine needs the ritu, a ritual needs its
+muhurta, a vrata needs its tithi, and the app already computes all three.
+
+These domains are how the *app* is organised; they are not the tradition's own categories, and the
+roadmap's [taxonomy section](docs/roadmap.md#the-traditions-own-taxonomy) says where each actually
+sits — Panchanga is an output of Jyotisha rather than a discipline, Muhurta and Kundali are two of
+its skandhas, and Yoga is a darshana on a different axis altogether.
 
 | | Domains |
 | --- | --- |
-| **Built** | Panchanga · Jyotisha (reporting gaps remain) · Muhurta · Festivals and observances |
+| **Built** | Panchanga · Kundali (reporting gaps remain) · Muhurta · Festivals and observances |
 | **In progress** | Regional variation (month scheme settled; solar calendars next) · Content sources (required and enforced; 38 entries still to identify) |
 | **Next** | Dharma and the samskaras |
 | **Open for contribution** | Localization · Vastu · Chandas · Ayurveda (bounded) · Yoga · Accessibility · Kalpa (sankalpa frame shipped) · Time reckoning (era years shipped) |

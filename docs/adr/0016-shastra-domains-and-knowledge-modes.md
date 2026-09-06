@@ -93,3 +93,19 @@ grown to roughly 370 lines of roadmap.
 
 **This ADR does not commit to building the declined domains later.** Reversing a decline needs a new
 ADR, per ADR 0001.
+
+## Note — 2026-09-05
+
+**The word "shastra" is no longer used for these domains.** The decisions here stand; the naming was
+imprecise and has been corrected in `docs/roadmap.md`, which now carries the tradition's actual
+taxonomy and a map from each domain to where it really sits.
+
+The domains are not peers: Panchanga is an *output* of Jyotisha rather than a discipline, Muhurta and
+the domain this ADR called Jyotisha are two *skandhas* of that one Vedanga (the latter is now labelled
+**Kundali**, since what it holds is *hora*), Festivals & Vrata is Dharmashastra, and Yoga is a
+darshana on a separate axis. The hub's grid is labelled **Explore** rather than *Shastras* for the
+same reason.
+
+Point 4 above is unaffected in substance and was already reversed on its own terms by
+[ADR 0018](0018-two-level-hub-and-roadmap-tiles.md): the map became the navigation. What has changed
+since is only that it stopped claiming to be a taxonomy it never was.

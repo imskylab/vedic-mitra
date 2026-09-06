@@ -320,7 +320,7 @@ private fun HubView(
         // list two taps away, every time, which is a poor trade for the tidiness.
         SectionLabel("TODAY")
         TileGrid(HubCatalog.today, onTile)
-        SectionLabel("SHASTRAS")
+        SectionLabel("EXPLORE")
         TileGrid(HubCatalog.domains, onTile)
         if (uiState.usingDefaultLocation) {
             Text(
