@@ -8,7 +8,6 @@
  * LICENSING.md.
  */
 
-
 package io.github.vedicmitra.core.ui.panchanga
 
 import androidx.annotation.StringRes
