@@ -67,6 +67,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.DayRule
+import io.github.vedicmitra.core.astronomy.Festival
+import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
 import io.github.vedicmitra.core.astronomy.LimbStep
@@ -95,6 +98,7 @@ import io.github.vedicmitra.core.designsystem.component.VedicCycleHeader
 import io.github.vedicmitra.core.designsystem.component.VedicCycleRow
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.core.ui.panchanga.PanchangaPrimer
+import io.github.vedicmitra.core.ui.panchanga.explanationRes
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -360,7 +364,7 @@ private fun RowScope.DayCell(
 private fun DetailCard(
     date: LocalDate,
     snapshot: AstronomySnapshot,
-    festival: String?,
+    festival: Festival?,
     reckoning: MaasaReckoning,
     modifier: Modifier = Modifier,
 ) {
@@ -383,10 +387,18 @@ private fun DetailCard(
             )
             festival?.let {
                 Text(
-                    text = it,
+                    text = it.name,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.tertiary,
                     fontWeight = FontWeight.Bold,
+                )
+                // Naming a festival on a day is a claim about which day it falls on, and that half
+                // is a rule rather than a derivation. Same reasoning as the month scheme beside the
+                // Maasa row below (ADR 0017): say the convention where the reading is, every time.
+                Text(
+                    text = stringResource(it.dayRule.explanationRes),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
@@ -672,6 +684,13 @@ private fun formatTime(instant: Instant?): String {
 @Composable
 private fun CalendarContentPreview() {
     val month = YearMonth.of(2026, 8)
+
+    fun previewFestival(
+        name: String,
+        type: FestivalType,
+        rule: DayRule,
+    ) = Festival(name, Instant.fromEpochMilliseconds(1_785_888_000_000L), type, rule)
+
     val days =
         (1..month.lengthOfMonth()).map { day ->
             CalendarDay(
@@ -680,12 +699,14 @@ private fun CalendarContentPreview() {
                 moonPhase = MoonPhase.WAXING_GIBBOUS,
                 festival =
                     when (day) {
-                        5 -> "Ganesh Chaturthi"
-                        15 -> "Purnima"
+                        // Shivaratri's rule, so the preview shows the longer night-timed line too.
+                        5 -> previewFestival("Ganesh Chaturthi", FestivalType.FESTIVAL, DayRule.SUNRISE_TITHI)
+                        15 -> previewFestival("Maha Shivaratri", FestivalType.FESTIVAL, DayRule.NIGHT_NISHITA)
                         else -> null
                     },
             )
         }
+
     val sample =
         AstronomySnapshot(
             instant = Instant.fromEpochMilliseconds(1_785_911_400_000L),

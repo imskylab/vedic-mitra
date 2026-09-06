@@ -15,6 +15,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
+import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.MoonPhase
 import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.common.model.GeoCoordinates
@@ -174,12 +175,14 @@ class CalendarViewModel
  * @property tithi the day's lunar day (shown in the cell).
  * @property moonPhase the day's moon phase.
  * @property festival the notable festival/observance/Sankranti on this day, or `null` if none.
+ *   Carries its own [io.github.vedicmitra.core.astronomy.DayRule], because the day it names was
+ *   chosen by a rule rather than derived outright.
  */
 data class CalendarDay(
     val date: LocalDate,
     val tithi: Tithi,
     val moonPhase: MoonPhase,
-    val festival: String? = null,
+    val festival: Festival? = null,
 )
 
 /**

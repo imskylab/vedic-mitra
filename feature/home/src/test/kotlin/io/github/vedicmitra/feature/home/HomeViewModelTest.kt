@@ -14,6 +14,7 @@ import com.google.common.truth.Truth.assertThat
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.DayRule
 import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
@@ -75,7 +76,13 @@ class HomeViewModelTest {
     @Test
     fun `computes for the resolved location and lists upcoming festivals`() =
         runTest {
-            val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
+            val festival =
+                Festival(
+                    "Diwali",
+                    Instant.fromEpochMilliseconds(1_762_560_000_000L),
+                    FestivalType.FESTIVAL,
+                    DayRule.NIGHT_PRADOSH,
+                )
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(festival))
             val coordinates = GeoCoordinates(latitude = 12.9716, longitude = 77.5946)
             val viewModel =
@@ -100,8 +107,19 @@ class HomeViewModelTest {
     fun `splits named festivals and lunar observances into separate lists`() =
         runTest {
             val observance =
-                Festival("Ekadashi", Instant.fromEpochMilliseconds(1_760_000_000_000L), FestivalType.OBSERVANCE)
-            val festival = Festival("Diwali", Instant.fromEpochMilliseconds(1_762_560_000_000L), FestivalType.FESTIVAL)
+                Festival(
+                    "Ekadashi",
+                    Instant.fromEpochMilliseconds(1_760_000_000_000L),
+                    FestivalType.OBSERVANCE,
+                    DayRule.SUNRISE_TITHI,
+                )
+            val festival =
+                Festival(
+                    "Diwali",
+                    Instant.fromEpochMilliseconds(1_762_560_000_000L),
+                    FestivalType.FESTIVAL,
+                    DayRule.NIGHT_PRADOSH,
+                )
             val engine = FakeEngine(AppResult.Success(snapshot()), festivals = listOf(observance, festival))
             val viewModel =
                 HomeViewModel(

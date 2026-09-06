@@ -170,6 +170,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A festival date says how its day was chosen.** Jyotisha supplies the arithmetic; which civil day
+  a festival falls on when its tithi spans two sunrises is a *nirnaya* rule, and traditions answer it
+  differently. `FestivalCalculator` has always answered at sunrise and said so **only in a source
+  comment**, so the date reached the reader looking as derived as a tithi boundary — which really is
+  computed, and really is oracle-validated.
+
+  `Festival` now carries a `DayRule`, and every screen that prints a date shows it. The three
+  festivals traditionally timed to a moment of night — Krishna Janmashtami to midnight, Maha
+  Shivaratri to nishita, Diwali to pradosh — **name that moment**, because those are the ones a
+  reader's almanac is most likely to place a day either side. The note sits under the list untapped,
+  on ADR 0017's reasoning: the reader who disagrees with the app is exactly the reader who would never
+  think to look in Settings.
+
+  `AstronomyEngine.festivalOn` returns the `Festival` rather than its name, so the calendar's day card
+  gets the rule with it. Recovering a rule from a display name would have been a lookup keyed on
+  copy — the thing "a claim is not its own key" forbids.
+
+  **Not** offered: the other conventions. Timing to nishita or pradosh is a second calculation rather
+  than a relabelling, and needs its own decision.
+
 - **"A fixed date is not a chosen one" is a knowledge standard.** Muhurta is *elective* — the act is
   chosen and a time is found for it. A vrata or utsava is *fixed* — the time is given and the act is
   what is due. Blurring them would invert the relationship, and offering a "better day" for Diwali is

@@ -15,10 +15,16 @@ package io.github.vedicmitra.core.astronomy
 import kotlin.time.Instant
 
 // A named festival: the amanta [maasa] and the global tithi number (1..30) on which it falls.
+//
+// [dayRule] is how the day was chosen, carried through to the model so a screen can say so. It is
+// SUNRISE_TITHI for almost everything; the three exceptions are the festivals a reader's almanac is
+// most likely to place a day either side of ours, and they are named rather than lumped together
+// because "traditionally timed to midnight" and "to pradosh" are different facts.
 private data class FestivalRule(
     val name: String,
     val maasa: String,
     val tithi: Int,
+    val dayRule: DayRule = DayRule.SUNRISE_TITHI,
 )
 
 // Major festivals as amanta maasa + tithi rules, keyed off the tithi prevailing at sunrise. Krishna
@@ -34,12 +40,12 @@ private val FESTIVAL_RULES =
         FestivalRule("Buddha Purnima", "Vaishakha", 15),
         FestivalRule("Guru Purnima", "Ashadha", 15),
         FestivalRule("Raksha Bandhan", "Shravana", 15),
-        FestivalRule("Krishna Janmashtami", "Shravana", 23),
+        FestivalRule("Krishna Janmashtami", "Shravana", 23, DayRule.NIGHT_MIDNIGHT),
         FestivalRule("Ganesh Chaturthi", "Bhadrapada", 4),
         FestivalRule("Navaratri begins", "Ashwina", 1),
         FestivalRule("Vijayadashami", "Ashwina", 10),
-        FestivalRule("Diwali", "Kartika", 30),
-        FestivalRule("Maha Shivaratri", "Magha", 29),
+        FestivalRule("Diwali", "Kartika", 30, DayRule.NIGHT_PRADOSH),
+        FestivalRule("Maha Shivaratri", "Magha", 29, DayRule.NIGHT_NISHITA),
         FestivalRule("Holi", "Phalguna", 15),
     )
 
@@ -82,12 +88,19 @@ internal fun upcomingFestivals(
         val rashi = source.sunRashi(sunrise)
 
         if (previousRashi != null && rashi != previousRashi) {
-            addUnique(results, seen, "${RASHI_NAMES[rashi]} Sankranti", sunrise, FestivalType.SANKRANTI)
+            addUnique(
+                results,
+                seen,
+                "${RASHI_NAMES[rashi]} Sankranti",
+                sunrise,
+                FestivalType.SANKRANTI,
+                DayRule.SUNRISE_INGRESS,
+            )
         }
         previousRashi = rashi
 
         namedFestivalAt(tithi) { source.maasa(sunrise) }
-            ?.let { addUnique(results, seen, it, sunrise, FestivalType.FESTIVAL) }
+            ?.let { addUnique(results, seen, it.name, sunrise, FestivalType.FESTIVAL, it.dayRule) }
         observanceAt(tithi)?.let { addUnique(results, seen, it, sunrise, FestivalType.OBSERVANCE) }
         day++
     }
@@ -131,12 +144,12 @@ internal fun nextTithiOccurrence(
 private inline fun namedFestivalAt(
     tithi: Int,
     maasaProvider: () -> Maasa,
-): String? {
+): FestivalRule? {
     val candidates = FESTIVAL_RULES.filter { it.tithi == tithi }
     if (candidates.isEmpty()) return null
     val maasa = maasaProvider()
     if (maasa.adhika) return null
-    return candidates.firstOrNull { it.maasa == maasa.name }?.name
+    return candidates.firstOrNull { it.maasa == maasa.name }
 }
 
 // The recurring monthly observance for a sunrise tithi (global 1..30), or null. Krishna tithis are
@@ -184,12 +197,22 @@ fun observanceTithis(name: String): Set<Int>? =
 internal fun festivalOn(
     dayEpochMillis: Long,
     source: FestivalPanchangaSource,
-): String? {
+): Festival? {
     val sunrise = source.sunrise(dayEpochMillis) ?: (dayEpochMillis + FALLBACK_SUNRISE_OFFSET_MILLIS)
     val tithi = source.tithiNumber(sunrise)
-    return namedFestivalAt(tithi) { source.maasa(sunrise) }
-        ?: observanceAt(tithi)
-        ?: sankrantiOn(dayEpochMillis, sunrise, source)
+    val at = Instant.fromEpochMilliseconds(sunrise)
+
+    // Returns the whole Festival rather than its name: the calendar asserts "this day is Diwali",
+    // which is the same claim the lists make and needs the same convention attached to it. Resolving
+    // a bare name back to its rule would mean a lookup keyed on display copy, which is exactly what
+    // knowledge-standards.md forbids.
+    namedFestivalAt(tithi) { source.maasa(sunrise) }?.let {
+        return Festival(it.name, at, FestivalType.FESTIVAL, it.dayRule)
+    }
+    observanceAt(tithi)?.let { return Festival(it, at, FestivalType.OBSERVANCE, DayRule.SUNRISE_TITHI) }
+    return sankrantiOn(dayEpochMillis, sunrise, source)?.let {
+        Festival(it, at, FestivalType.SANKRANTI, DayRule.SUNRISE_INGRESS)
+    }
 }
 
 /** "<Rashi> Sankranti" if the Sun entered a new rashi at [sunrise] versus the previous day, else null. */
@@ -211,8 +234,16 @@ private fun addUnique(
     name: String,
     sunriseMillis: Long,
     type: FestivalType,
+    dayRule: DayRule = DayRule.SUNRISE_TITHI,
 ) {
     if (seen.add(name)) {
-        results.add(Festival(name = name, atSunrise = Instant.fromEpochMilliseconds(sunriseMillis), type = type))
+        results.add(
+            Festival(
+                name = name,
+                atSunrise = Instant.fromEpochMilliseconds(sunriseMillis),
+                type = type,
+                dayRule = dayRule,
+            ),
+        )
     }
 }

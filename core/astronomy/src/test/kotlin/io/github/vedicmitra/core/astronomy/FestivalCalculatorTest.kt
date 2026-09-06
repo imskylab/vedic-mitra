@@ -11,6 +11,7 @@
 package io.github.vedicmitra.core.astronomy
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 import kotlin.time.Instant
 
@@ -61,7 +62,7 @@ class FestivalCalculatorTest {
         // The deliberate asymmetry: upcomingFestivals emits both, festivalOn picks one.
         val source = source(tithis = listOf(14, 15), maasas = listOf(maasa("Ashadha"), maasa("Ashadha")))
 
-        assertThat(festivalOn(DAY_MILLIS, source)).isEqualTo("Guru Purnima")
+        assertThat(festivalOn(DAY_MILLIS, source)?.name).isEqualTo("Guru Purnima")
     }
 
     @Test
@@ -128,16 +129,62 @@ class FestivalCalculatorTest {
     fun `festivalOn names a festival, else an observance, else a Sankranti, else nothing`() {
         // Day index 1 is queried so the Sankranti check's previous-day lookup stays in range.
         val festival = source(tithis = listOf(3, 4), maasas = listOf(maasa("Bhadrapada"), maasa("Bhadrapada")))
-        assertThat(festivalOn(DAY_MILLIS, festival)).isEqualTo("Ganesh Chaturthi")
+        assertThat(festivalOn(DAY_MILLIS, festival)?.name).isEqualTo("Ganesh Chaturthi")
 
         val observance = source(tithis = listOf(10, 11))
-        assertThat(festivalOn(DAY_MILLIS, observance)).isEqualTo("Ekadashi")
+        assertThat(festivalOn(DAY_MILLIS, observance)?.name).isEqualTo("Ekadashi")
 
         val sankranti = source(tithis = listOf(5, 6), rashis = listOf(8, 9))
-        assertThat(festivalOn(DAY_MILLIS, sankranti)).isEqualTo("Makara Sankranti")
+        assertThat(festivalOn(DAY_MILLIS, sankranti)?.name).isEqualTo("Makara Sankranti")
 
         val ordinary = source(tithis = listOf(5, 6))
         assertThat(festivalOn(DAY_MILLIS, ordinary)).isNull()
+    }
+
+    @Test
+    fun `a festival carries the rule that chose its day`() {
+        // The rule is half the claim: which civil day a festival falls on, when its tithi spans two
+        // sunrises, is settled by convention rather than by the arithmetic. A date printed without
+        // it asserts more certainty than the app has -- see knowledge-standards.md, #228.
+        val ganesha = source(tithis = listOf(3, 4), maasas = listOf(maasa("Bhadrapada"), maasa("Bhadrapada")))
+        assertThat(festivalOn(DAY_MILLIS, ganesha)?.dayRule).isEqualTo(DayRule.SUNRISE_TITHI)
+
+        val ekadashi = source(tithis = listOf(10, 11))
+        assertThat(festivalOn(DAY_MILLIS, ekadashi)?.dayRule).isEqualTo(DayRule.SUNRISE_TITHI)
+
+        val sankranti = source(tithis = listOf(5, 6), rashis = listOf(8, 9))
+        assertThat(festivalOn(DAY_MILLIS, sankranti)?.dayRule).isEqualTo(DayRule.SUNRISE_INGRESS)
+    }
+
+    @Test
+    fun `the night-timed festivals are marked, and only those`() {
+        // These three are judged at sunrise here but traditionally timed to a moment of night, so
+        // they are the ones a reader's almanac is most likely to place a day either side. If one
+        // ever loses its rule the app goes back to printing a bare date for exactly the festivals
+        // where the convention matters most.
+        val nightTimed =
+            mapOf(
+                Triple("Krishna Janmashtami", "Shravana", 23) to DayRule.NIGHT_MIDNIGHT,
+                Triple("Maha Shivaratri", "Magha", 29) to DayRule.NIGHT_NISHITA,
+                Triple("Diwali", "Kartika", 30) to DayRule.NIGHT_PRADOSH,
+            )
+
+        nightTimed.forEach { (rule, expected) ->
+            val (name, month, tithi) = rule
+            val source =
+                source(
+                    tithis = listOf(tithi - 1, tithi),
+                    maasas = listOf(maasa(month), maasa(month)),
+                )
+            val festival = festivalOn(DAY_MILLIS, source)
+
+            assertWithMessage(name).that(festival?.name).isEqualTo(name)
+            assertWithMessage("$name rule").that(festival?.dayRule).isEqualTo(expected)
+            assertWithMessage("$name is night-timed").that(festival?.dayRule?.isNightTimed).isTrue()
+        }
+
+        assertThat(DayRule.SUNRISE_TITHI.isNightTimed).isFalse()
+        assertThat(DayRule.SUNRISE_INGRESS.isNightTimed).isFalse()
     }
 
     private fun source(
