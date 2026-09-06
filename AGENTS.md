@@ -5,9 +5,9 @@ repository. Follow it precisely; it encodes the architecture and conventions the
 on. When a request conflicts with these rules, surface the conflict rather than silently breaking
 them.
 
-> **Project state:** the **panchanga, jyotisha and muhurta** domains are largely built — natal
+> **Project state:** the **panchanga, kundali and muhurta** domains are largely built — natal
 > charts, seventeen divisional charts, three dasha systems to three levels, ashtakavarga,
-> matchmaking and electional muhurta all ship. The wider shastra map in
+> matchmaking and electional muhurta all ship. The wider domain map in
 > [docs/roadmap.md](docs/roadmap.md) is mostly open, and the app is **not yet localized**. The core
 > capability modules are **no longer contracts-only** — the
 > astronomy engine (`:core:astronomy`), exact-alarm scheduler (`:core:scheduler`), notifications

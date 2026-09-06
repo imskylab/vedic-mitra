@@ -8,7 +8,7 @@
 Vedic Mitra exists to bring the Vedic tradition back into everyday use — to put its practices and
 its knowledge back within reach rather than archive them. Much of this was not lost so much as made
 inconvenient, and the aim is a single exhaustive place for it: the panchanga first, because it is
-the thread every other practice hangs from, and then the shastras that depend on it.
+the thread every other practice hangs from, and then everything that reckons its time by it.
 
 This map is deliberately larger than one person will finish. That is the point of writing it down.
 
@@ -45,7 +45,7 @@ as written — an ADR records what was decided at the time, and rewriting one to
 would defeat the point. Translate roughly: Phase 7 is F2 and the location work, Phase 9 is F4 and
 the UI items under C1, Phase 11 is K5 and K6.
 
-**The shastras are the navigation, and this reversed a decision.** The first version of this map said
+**The domains are the navigation, and this reversed a decision.** The first version of this map said
 they were "the contribution map, not the navigation" — that nobody opens an app thinking "I need
 Gandharva Veda", so the hub should stay task-shaped. That reasoning still holds for the *questions* a
 reader arrives with, which is why the daily destinations sit one tap from the landing and the
@@ -60,6 +60,77 @@ A few are deliberately untiled: the foundations have nothing to open, K8 is a la
 section, and Kala and Kalpa shipped *into the calendar's day detail* rather than into destinations of
 their own — a tile whose whole message is "look at the Calendar" costs a tap to learn nothing.
 `HubCatalogTest` pins the rest together, so a domain added here without a tile fails the build.
+
+## The tradition's own taxonomy
+
+This app's domains are **not** the tradition's categories, and the hub does not claim they are — its
+grid is labelled *Explore*, not *Shastras*, because most of these are not shastras. This section says
+what the real taxonomy is, so that the difference is a stated choice rather than a mistake, and so
+there is a principle for placing whatever gets proposed next.
+
+The canonical enumeration is the **eighteen vidyas** (*ashtadasha vidya*), given at Vishnu Purana 3.6
+and Yajnavalkya Smriti 1.3:
+
+| | |
+| --- | --- |
+| **4 Vedas** | Rig · Yajur · Sama · Atharva |
+| **6 Vedangas** | Shiksha · Chandas · Vyakarana · Nirukta · **Jyotisha** · **Kalpa** |
+| **4 Upangas** | Mimamsa · Nyaya · Purana · **Dharmashastra** |
+| **4 Upavedas** | **Ayurveda** · Dhanurveda · **Gandharvaveda** · **Sthapatyaveda** |
+
+Lists differ on the fourth Upaveda — Arthashastra appears in place of Sthapatyaveda in several. On a
+separate axis entirely sit the six **darshanas**: Nyaya, Vaisheshika, Samkhya, **Yoga**, Mimamsa,
+Vedanta. A darshana is a philosophical system, not a limb of the Veda, which is why Yoga does not
+slot under anything above.
+
+**Jyotisha divides further**, into *skandhas*: **Siddhanta** (or Ganita — mathematical astronomy,
+which is what produces a panchanga), **Samhita** (mundane and calendrical), and **Hora** (natal
+horoscopy). Muhurta sits under Samhita in most classifications and is treated as a fourth skandha in
+some.
+
+### Where this app's domains actually sit
+
+| Tile | Sits under | Kind |
+| --- | --- | --- |
+| Panchanga | Jyotisha → Siddhanta | an **output**, not a discipline |
+| Kundali | Jyotisha → **Hora** | one skandha |
+| Muhurta | Jyotisha → **Samhita** | one skandha |
+| Festivals & Vrata | **Dharmashastra** (the *nibandha* digests) | Upanga |
+| Dharma & Samskara | **Dharmashastra** + **Kalpa** (grihya) | Upanga + Vedanga |
+| Mantra & Stotra | Kalpa / Agama | a **practice**, not a discipline |
+| Ayurveda | **Ayurveda** | Upaveda |
+| Vastu | **Sthapatyaveda** | Upaveda |
+| The Arts | **Gandharvaveda** + Shilpa | Upaveda |
+| Yoga | **Yoga darshana** | darshana |
+
+Two things this makes visible, both worth stating plainly.
+
+**Four of the ten are one Vedanga.** Panchanga, Kundali and Muhurta are Jyotisha or its output, and
+Festivals takes its dates from it. This is a Jyotisha app with adjacent disciplines around it. That
+is a coherent thing to be, and it is what got built — but the grid gives ten equal-looking tiles, so
+the weighting is worth knowing.
+
+**Festivals are not muhurta, and the distinction is not pedantic.** Muhurta is *elective*: the act is
+chosen and a time is found for it. A vrata or utsava is *fixed*: the time is given and the act is
+what is due. Filing festivals under Muhurta would invert that. What Jyotisha does supply is the
+arithmetic; which calendar day a festival therefore falls on — the *nirnaya* question, when a tithi
+spans two sunrises — is settled by Dharmashastra rule, not by the computation. The app sits on that
+hinge every time it prints a festival date.
+
+### Where a new proposal goes
+
+- **Is it a place a reader goes?** If not, it is a foundation (Part I) or a layer, not a domain. K8
+  Nirukta/Vyakarana is a glossary reachable from any term for exactly this reason.
+- **Does it fit an existing domain's screen?** Then it is an item under that domain, not a new one.
+  Muhurta belongs to Jyotisha and still has its own tile — because a tile answers "what do I want to
+  do", and the taxonomy answers "what is this". Those need not agree, but the disagreement should be
+  deliberate.
+- **Is it practice-shaped?** The purely philosophical Upangas and darshanas — Nyaya, Vaisheshika,
+  Samkhya, Mimamsa, Vedanta — are not, and an app that computes and cites has little honest to say
+  about them beyond what a book says better. Expect these to be **Declined**, with the reason, rather
+  than left permanently *Open*.
+- **Say which mode it is** — Compute, Cite, Track or Teach — before proposing it. A domain nobody can
+  place in a mode is a domain nobody can hold to a standard.
 
 ## Where to start
 

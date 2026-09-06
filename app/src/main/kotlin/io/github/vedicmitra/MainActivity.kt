@@ -173,7 +173,7 @@ internal val DESTINATION_LABELS: Map<String, String> =
         JAPA_ROUTE to "Japa",
         MEDITATION_ROUTE to "Meditation",
         STOTRA_ROUTE to "Stotra",
-        DOMAIN_ROUTE to "Shastras",
+        DOMAIN_ROUTE to "Explore",
         MUHURAT_ROUTE to "Muhurta",
         MUHURAT_ACTIVITIES_ROUTE to "Muhurta",
         MUHURAT_RESULTS_ROUTE to "Muhurta",
@@ -519,10 +519,10 @@ internal fun routeOf(target: HubTarget): String =
     }
 
 /**
- * The hub's second level — one screen per shastra, addressed by the domain's own enum name.
+ * The hub's second level — one screen per domain, addressed by the domain's own enum name.
  *
  * One parameterised route rather than a constant per domain, so every level-two screen shares the
- * "Shastras" subtitle; the domain's own name is drawn on the screen. That is the trade the four
+ * "Explore" subtitle; the domain's own name is drawn on the screen. That is the trade the four
  * muhurat steps already make, and it keeps the argument name declared once, here, since the screen
  * reads it in this lambda rather than from a ViewModel.
  */

@@ -113,11 +113,18 @@ data class HubTile(
 )
 
 /**
- * A shastra the app either covers or intends to.
+ * An area of the tradition the app either covers or intends to.
  *
- * These are the roadmap's domains that are, or would be, **places a reader goes** — which is what a
- * tile is for. Every other kind of roadmap entry is deliberately absent, and the omissions are
- * decisions rather than oversights:
+ * Deliberately **not** called a shastra. These are not peers in the traditional taxonomy and saying
+ * so would be a false claim: Panchanga is an *output* of Jyotisha rather than a discipline, Muhurta
+ * and this enum's [JYOTISHA] are two *skandhas* of the one Vedanga, Yoga is a darshana on an
+ * entirely different axis, and Mantra & Stotra is a practice. The section is called **Explore** for
+ * the same reason. `docs/roadmap.md` carries the actual taxonomy, and the map from these entries to
+ * it.
+ *
+ * What they are instead is the roadmap's domains that are, or would be, **places a reader goes** —
+ * which is what a tile is for. Every other kind of roadmap entry is deliberately absent, and the
+ * omissions are decisions rather than oversights:
  *
  * - The **foundations** (F1–F6 — localization, accessibility, content provenance, the portable
  *   engine) are engineering concerns with nothing for a reader to open.
@@ -152,13 +159,17 @@ enum class HubDomain(
         category = HubCategory.DAILY,
         blurb = "The five limbs of the day, and the calendar they sit in.",
     ),
+    // Labelled Kundali, not Jyotisha. What it holds -- charts, dashas, matching -- is *hora*, one
+    // skandha of Jyotisha; Panchanga and Muhurta beside it are the other two. Calling this one by
+    // the parent's name made it the sibling of its own children. Kundali is also what a reader
+    // choosing it would say, which ADR 0019 rule 4 makes the right register for a tile.
     JYOTISHA(
         id = "C2",
-        label = "Jyotisha",
+        label = "Kundali",
         status = DomainStatus.BUILT,
         icon = TileIcon.Glyph(VedicIcons.kundali),
         category = HubCategory.ASTROLOGY,
-        blurb = "Birth charts, dashas, and what a day reads like against them.",
+        blurb = "Hora — birth charts, dashas, and what a day reads like against them.",
     ),
     MUHURTA(
         id = "C3",
