@@ -5,7 +5,7 @@
 
   The panchanga explanatory copy, moved out of :core:astronomy so the engine keeps no Android
   dependency (ADR 0021, #215). Sanskrit terms inside the prose are deliberately left as they
-  are -- they are the same words in every script, see ADR 0019.
+  are: they are the same words in every script, see ADR 0019.
 
   Voice, enforced by PanchangaProseTest: brief, factual, third person, no instructions to the
   reader. Traditional claims are attributed ("traditionally", "is said to") rather than
