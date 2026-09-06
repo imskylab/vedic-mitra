@@ -35,7 +35,9 @@ import io.github.vedicmitra.core.common.model.MaasaReckoning
  *
  * @property displayName what the row is called.
  * @property cycleLength how many values the loop holds before it repeats.
- * @property concept the idea a reader tapping this row wants explained, in [PanchangaPrimer]. Held
+ * @property concept the idea a reader tapping this row wants explained. The copy lives in
+ *   `:core:ui`'s `PanchangaPrimer`, not here -- the engine names the idea, the UI layer
+ *   explains it (ADR 0021). Held
  *   here rather than resolved in the UI so that the mapping is total by construction: a limb cannot
  *   be added without naming the concept that explains it, and a concept cannot be named without
  *   copy, because [PanchangaConcept] is closed and covered by a test over `entries`.

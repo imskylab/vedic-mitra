@@ -170,6 +170,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The panchanga explanations left the engine.** `PanchangaPrimer` and `PanchangaGlossary` held 129
+  literals of English teaching prose inside `:core:astronomy` — copy, in the app's voice, in a
+  calculation library. They are now string resources in `:core:ui`, which unblocks two roadmap items
+  at once: the prose can be translated, and the engine keeps the no-Android-dependency property that
+  F5's portable-engine work depends on.
+
+  `PanchangaConcept` stays in the engine. `LimbCycle` names one per row, so the engine has to say
+  *which* idea a row is about — it just has no business holding the sentences that explain it.
+
+  The copy guardrails survived the move and got stronger. They used to measure Kotlin constants;
+  they now **parse `strings.xml` itself**, so it is the shipped string that is checked — still
+  enforcing that every concept has copy, that a one-liner fits in 72 characters, that a body is a
+  paragraph and ends in a full stop, and that nothing addresses the reader in the second person.
+  That last check now covers the glossary too, which was previously held to the house voice only by
+  hand. A new test also catches a concept wired to another concept's strings, which compiles
+  perfectly and shows the wrong explanation.
+
 - **Settings shows its choices instead of hiding them in dropdowns.** Theme and month scheme were
   `VedicSelectField` dropdowns, so the options existed only once you opened one — and the month
   scheme's whole point is the *difference* between amanta and purnimanta, which a closed dropdown

@@ -8,9 +8,10 @@
  * LICENSING.md.
  */
 
-package io.github.vedicmitra.core.astronomy
+package io.github.vedicmitra.core.ui.panchanga
 
 import com.google.common.truth.Truth.assertThat
+import io.github.vedicmitra.core.ui.R
 import org.junit.Test
 
 class PanchangaGlossaryTest {
@@ -48,18 +49,18 @@ class PanchangaGlossaryTest {
         )
 
     @Test
-    fun `every surfaced panchanga item has a non-blank significance blurb`() {
+    fun `every surfaced panchanga item has a significance blurb`() {
         surfacedNames.forEach { name ->
-            val blurb = PanchangaGlossary.significanceOf(name)
-            assertThat(blurb).isNotNull()
-            assertThat(blurb!!.isNotBlank()).isTrue()
+            assertThat(PanchangaGlossary.significanceOf(name)).isNotNull()
         }
     }
 
     @Test
     fun `any Sankranti resolves to a blurb, with Makara called out specially`() {
-        assertThat(PanchangaGlossary.significanceOf("Simha Sankranti")).isNotNull()
-        assertThat(PanchangaGlossary.significanceOf("Makara Sankranti")).contains("Uttarayana")
+        assertThat(PanchangaGlossary.significanceOf("Simha Sankranti"))
+            .isEqualTo(R.string.glossary_sankranti_generic)
+        assertThat(PanchangaGlossary.significanceOf("Makara Sankranti"))
+            .isEqualTo(R.string.glossary_sankranti_makara)
         assertThat(PanchangaGlossary.significanceOf("Simha Sankranti"))
             .isNotEqualTo(PanchangaGlossary.significanceOf("Makara Sankranti"))
     }
@@ -77,6 +78,7 @@ class PanchangaGlossaryTest {
         // no longer matched the key. [surfacedNames] could not catch it: it lists the unnumbered
         // name, which always resolved.
         val plain = PanchangaGlossary.significanceOf("Dur Muhurta")
+
         assertThat(plain).isNotNull()
         assertThat(PanchangaGlossary.significanceOf("Dur Muhurta 1")).isEqualTo(plain)
         assertThat(PanchangaGlossary.significanceOf("Dur Muhurta 2")).isEqualTo(plain)
@@ -87,5 +89,15 @@ class PanchangaGlossaryTest {
         // The fallback must rescue a real entry, never manufacture one for a name that has none.
         assertThat(PanchangaGlossary.significanceOf("Not A Panchanga Thing 2")).isNull()
         assertThat(PanchangaGlossary.significanceOf("12")).isNull()
+    }
+
+    @Test
+    fun `no two items share a blurb`() {
+        // Each of these explains one named thing. Two names resolving to the same resource means a
+        // copy-paste in the map -- one of them is now showing the other's explanation. The two
+        // Sankranti blurbs are deliberately shared and are not in this list.
+        val ids = surfacedNames.map { PanchangaGlossary.significanceOf(it) }
+
+        assertThat(ids).containsNoDuplicates()
     }
 }
