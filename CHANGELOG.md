@@ -187,6 +187,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   hand. A new test also catches a concept wired to another concept's strings, which compiles
   perfectly and shows the wrong explanation.
 
+- **"A claim is not its own key" is now a knowledge standard**, after the same fault appeared four
+  times. Identity built from display copy breaks the moment that copy is reworded or translated —
+  which is an engineering bug everywhere else, and something worse here: a citation keyed on its own
+  display name does not error when the lookup misses, it falls through and the app says **"no
+  significance known"**, asserting in its own voice that it does not know something it does. A
+  **Cite** claim silently becomes a denial of knowledge, and neither a declared mode nor a `source`
+  field catches it.
+
+  The four: reminder keys (fixed), Dur Muhurta's display numbering (which broke reminder keys *and*,
+  separately, the glossary lookup), `ProfileRelation`/`Gender` carrying English in `:core:datastore`
+  (fixed), and `PanchangaGlossary`, which is still keyed on display names and is now filed as #225 —
+  the last one blocking a translated build.
+
+  The standard names the tell, too: normalising display text to make a lookup succeed — stripping a
+  numeric suffix, lowercasing — means the key *is* display copy and the normalisation is a patch over
+  the fault.
+
 - **The hub's grid is called "Explore", not "Shastras" — because most of these are not shastras.**
   The label was making a claim the tiles could not support. Panchanga is an *output* of Jyotisha
   rather than a discipline; Muhurta and the tile formerly called Jyotisha are two *skandhas* of that

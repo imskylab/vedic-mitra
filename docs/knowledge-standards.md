@@ -124,6 +124,41 @@ value untapped, bodies that are a paragraph and end in a full stop, and no secon
 Every new domain gets its own primer with the same test shape. **A domain the app cannot explain in
 plain language is a domain it is not ready to ship.**
 
+## A claim is not its own key
+
+**Nothing durable may be keyed on the words a reader sees.** Not a lookup, not a stored id, not a
+persisted reference. Display copy is the most changeable thing in the app — it gets reworded,
+corrected, and eventually translated into ten languages — and anything whose identity is built from
+it breaks silently the first time it changes.
+
+This is in *this* document, rather than filed under engineering, because of **how** it fails. When a
+citation is keyed on its own display name, a translated build does not show a missing blurb or throw
+an error. It falls through to the fallback, and the app says **"no significance known"** — asserting,
+in its own voice, that it does not know something it demonstrably does. A **Cite** claim silently
+becomes a denial of knowledge. No mode declaration or `source` field protects against that, because
+the claim is not wrong; it has simply stopped being reachable.
+
+It has happened four times:
+
+| Where | What broke | |
+| --- | --- | --- |
+| Reminder keys | `"muhurta:$name"` from the display name. Translating a label orphans a reminder the user set — it stops being renewed and cannot be reconciled | fixed, [#211](https://github.com/imskylab/vedic-mitra/issues/211) |
+| Dur Muhurta, twice over | Saturday's two windows are *displayed* numbered, so the name stopped matching. It broke reminder keys **and**, separately, the glossary lookup | fixed once, worked around once |
+| `ProfileRelation` · `Gender` | English `displayName` on a `:core:datastore` enum — a module that persists values and knows nothing of a locale | fixed, #214 |
+| `PanchangaGlossary` | Keyed on the exact string each item is shown with | open, [#225](https://github.com/imskylab/vedic-mitra/issues/225) |
+
+**The tell:** if you are normalising display text to make a lookup succeed — stripping a numeric
+suffix, lowercasing, trimming an honorific — the key is display copy and the normalisation is a
+patch over the real fault. `PanchangaGlossary.withoutOrdinalSuffix` is exactly this, and it is
+labelled as such rather than left to look like a feature.
+
+**What to do instead.** Give the thing a stable identity that display copy *hangs off*, never the
+reverse: an enum entry, or an id that no editorial decision can move. `MuhurtaKind` is the worked
+example — `MuhurtaKindTest` asserts that an id is never equal to its own label, on the reasoning that
+an id which reads like a name is one somebody will eventually improve. Where an identity has already
+been persisted, changing it is a **migration**, not a rename; `LegacyReminderKeys` is what that looks
+like.
+
 ## Red lines
 
 These hold regardless of which mode a feature is in.

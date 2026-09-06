@@ -25,9 +25,13 @@ import io.github.vedicmitra.core.ui.R
  * Every key below is the exact string an item is *shown with*. That is the same mistake as keying a
  * reminder on its label, fixed for muhurtas in #211: translate a display name and the lookup stops
  * matching, so every row silently falls back to "no significance known" instead of showing the
- * blurb. Extracting the values here does not fix it -- the keys are the problem, and giving
- * festivals and observances stable identities is its own change. Filed; do not add entries keyed on
- * anything new until it lands.
+ * blurb -- the app asserting, in its own voice, that it does not know something it does. Extracting
+ * the values here does not fix it: the keys are the problem, and giving festivals and observances
+ * stable identities is its own change, filed as #225. Do not add entries keyed on anything new until
+ * it lands.
+ *
+ * The general rule this breaks is in `docs/knowledge-standards.md`, under "A claim is not its own
+ * key" -- this is the fourth instance, and the last one blocking a translated build.
  *
  * Sankrantis share one blurb resolved by the "&lt;Rashi&gt; Sankranti" naming, with Makara
  * Sankranti called out specially.

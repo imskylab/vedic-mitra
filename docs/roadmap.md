@@ -189,10 +189,11 @@ content added before extraction multiplies the eventual translation debt.
       English teaching prose inside a calculation library, blocking both F1 and F5. Now in
       `:core:ui` as string resources; `PanchangaConcept` stays in the engine, which names an idea
       without holding the words that explain it
-- [ ] Give festivals and observances stable identities. `PanchangaGlossary` is keyed on the name an
-      item is *displayed* with, so a translated label matches nothing and every row falls back to
-      "no significance known" — the same fault as the reminder keys, and the last one blocking a
-      translated glossary
+- [ ] [Give festivals and observances stable identities](https://github.com/imskylab/vedic-mitra/issues/225).
+      `PanchangaGlossary` is keyed on the name an item is *displayed* with, so a translated label
+      matches nothing and every row falls back to "no significance known" — the same fault as the
+      reminder keys, and the last one blocking a translated glossary. See
+      [A claim is not its own key](knowledge-standards.md#a-claim-is-not-its-own-key)
 - [ ] English as a real locale
 - [ ] Hindi
 - [ ] Sanskrit · Telugu · Tamil · Kannada · Malayalam · Marathi · Gujarati · Bengali · Odia
