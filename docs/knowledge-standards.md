@@ -86,7 +86,7 @@ stands — and write down every narrowing in KDoc beside the code.
    text and — where recensions differ — the recension. A source that lives in a code comment is not
    available to the reader who needs it.
 2. **The app's voice never asserts it.** The existing rule stands: traditional claims are attributed
-   ("traditionally", "is said to"), never stated as fact. `PanchangaPrimerTest` already enforces the
+   ("traditionally", "is said to"), never stated as fact. `PanchangaProseTest` already enforces the
    related half of this by failing any copy that addresses the reader as "you".
 3. **Disagreement is reported, not resolved.** Where authorities differ, say so, and say which one
    this screen follows. `Drishti` is the precedent: it reports `false` for node aspects because
@@ -119,8 +119,9 @@ closed enum, a total map read with `getValue`, and a test that iterates `entries
 concept without writing its copy breaks the build.** That is what keeps explanatory text a
 first-class part of a feature instead of the thing that gets cut when time runs short.
 
-`PanchangaPrimerTest` also asserts the writing itself — one-liners short enough to sit beside a
+`PanchangaProseTest` also asserts the writing itself — one-liners short enough to sit beside a
 value untapped, bodies that are a paragraph and end in a full stop, and no second person anywhere.
+It reads `strings.xml` rather than a Kotlin constant, so it measures the string that actually ships.
 Every new domain gets its own primer with the same test shape. **A domain the app cannot explain in
 plain language is a domain it is not ready to ship.**
 
@@ -158,6 +159,35 @@ example — `MuhurtaKindTest` asserts that an id is never equal to its own label
 an id which reads like a name is one somebody will eventually improve. Where an identity has already
 been persisted, changing it is a **migration**, not a rename; `LegacyReminderKeys` is what that looks
 like.
+
+## A fixed date is not a chosen one
+
+Muhurta is **elective**: the act is chosen, and a time is found for it. A vrata or utsava is
+**fixed**: the time is given, and the act is what is due. The app must not blur the two. Filing
+festivals under Muhurta would invert the relationship, and offering to find a "better day" for Diwali
+is not a feature — it is a category error about what the day is.
+
+The subtler half is what the app claims when it *prints* a festival date.
+
+Jyotisha supplies the arithmetic, and the arithmetic is not the whole answer. Which civil day a
+festival falls on when its tithi spans two sunrises is a **nirnaya** question, settled by
+Dharmashastra rule rather than by the computation — and traditions answer it differently.
+`FestivalCalculator` picks one answer, the tithi prevailing at sunrise, and says so **only in a source
+comment**. Its own comment concedes that some observances are judged at nishita or pradosh instead
+and "may differ by a day".
+
+So a festival date is a **Compute** claim resting on a **Cite**-able convention, and the app
+currently shows the first and hides the second. That is the exact failure
+[ADR 0017](adr/0017-purnimanta-month-naming.md) found in month naming: the calculation was right, and
+the silence around it was the fault. A reader whose almanac disagreed had no way to tell whether the
+app was wrong or simply following the other convention. The remedy there was to name the scheme on
+**every** reading, not only when it was the non-default one — because the reader who disagrees is
+exactly the reader who would never think to look in Settings.
+
+**The rule.** Where a date depends on a rule of judgement and not only on a position of the Sun and
+Moon, the rule is part of the claim and has to be visible with it. A festival date printed bare
+asserts more certainty than the app has. This is an open gap, not a solved one: the month scheme is
+named on every reading, and festival dates are not.
 
 ## Red lines
 

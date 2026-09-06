@@ -154,3 +154,14 @@ domains, the per-domain note in place of a uniform "coming soon", and the naviga
 This is the third treatment for a single cue in three days. Rather than amend a third time, the
 question was moved to its own ADR — 0020 records why each attempt failed, which is more useful than
 another paragraph here saying the last one was wrong.
+
+## Renamed — 2026-09-06
+
+**The grid this ADR calls "Shastras" ships as "Explore".** The prose above is left as written, per
+the convention the roadmap states for older ADRs: a decision records what was decided at the time,
+and editing one to match a later map defeats the point. This note is the pointer, not a rewrite.
+
+The reasoning is in [ADR 0016](0016-shastra-domains-and-knowledge-modes.md), which was amended when
+the taxonomy was worked through properly: most of these domains are not shastras. Four of the ten are
+Jyotisha or its output, one is a darshana, three are Upavedas — calling the grid *Shastras* asserted
+a classification the app had not earned. The level-two route's subtitle changed with it.
