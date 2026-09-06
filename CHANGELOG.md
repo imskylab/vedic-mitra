@@ -170,6 +170,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **"A fixed date is not a chosen one" is a knowledge standard.** Muhurta is *elective* — the act is
+  chosen and a time is found for it. A vrata or utsava is *fixed* — the time is given and the act is
+  what is due. Blurring them would invert the relationship, and offering a "better day" for Diwali is
+  a category error rather than a feature.
+
+  The subtler half is what the app claims when it **prints** a festival date. Jyotisha supplies the
+  arithmetic, but which civil day a festival falls on when its tithi spans two sunrises is a *nirnaya*
+  question — Dharmashastra rule, not computation, and traditions answer it differently.
+  `FestivalCalculator` picks one answer, the tithi prevailing at sunrise, and says so only in a source
+  comment; its own comment concedes some observances are judged at nishita or pradosh and "may differ
+  by a day".
+
+  So a festival date is a Compute claim resting on a Cite-able convention, and the app shows the first
+  while hiding the second — the exact failure ADR 0017 found in month naming, where the calculation
+  was right and the silence around it was the fault. Recorded as an **open gap**, not a fix: the month
+  scheme is named on every reading and festival dates still are not.
+
 - **The panchanga explanations left the engine.** `PanchangaPrimer` and `PanchangaGlossary` held 129
   literals of English teaching prose inside `:core:astronomy` — copy, in the app's voice, in a
   calculation library. They are now string resources in `:core:ui`, which unblocks two roadmap items
