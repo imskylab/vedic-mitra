@@ -944,11 +944,13 @@ private fun sampleHomeState(): HomeUiState {
                     name = "Ganesh Chaturthi",
                     atSunrise = Instant.fromEpochMilliseconds(1_757_808_000_000L),
                     type = FestivalType.FESTIVAL,
+                    dayRule = DayRule.SUNRISE_TITHI,
                 ),
                 Festival(
                     name = "Makara Sankranti",
                     atSunrise = Instant.fromEpochMilliseconds(1_768_003_200_000L),
                     type = FestivalType.SANKRANTI,
+                    dayRule = DayRule.SUNRISE_INGRESS,
                 ),
             ),
         events =
@@ -957,11 +959,13 @@ private fun sampleHomeState(): HomeUiState {
                     name = "Purnima",
                     atSunrise = Instant.fromEpochMilliseconds(1_757_030_400_000L),
                     type = FestivalType.OBSERVANCE,
+                    dayRule = DayRule.SUNRISE_TITHI,
                 ),
                 Festival(
                     name = "Amavasya",
                     atSunrise = Instant.fromEpochMilliseconds(1_758_240_000_000L),
                     type = FestivalType.OBSERVANCE,
+                    dayRule = DayRule.SUNRISE_TITHI,
                 ),
             ),
         planets =
