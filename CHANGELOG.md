@@ -170,6 +170,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Settings shows its choices instead of hiding them in dropdowns.** Theme and month scheme were
+  `VedicSelectField` dropdowns, so the options existed only once you opened one — and the month
+  scheme's whole point is the *difference* between amanta and purnimanta, which a closed dropdown
+  cannot show. Both are radio groups now, with every option visible and the trade-off legible.
+
+  The dynamic-colour switch moves onto the theme group's heading line, under a new **Appearance**
+  header, since both settle how the app looks. Only a label and a switch share that line, so it holds
+  at a large font scale; the radios themselves stay full-width.
+
+  The rows carry proper single-choice semantics, which the dropdowns never did: the whole row is the
+  target rather than a 20dp circle, and the group is a `selectableGroup`, so a screen reader
+  announces "2 of 3" instead of reading each option in isolation.
+
 - **String extraction has started, with a boundary drawn first** (ADR 0021). F1 moves the app's
   hardcoded literals into `strings.xml`, and it is deliberately shaped as the project's contributor
   on-ramp — so `:feature:profile` is extracted as a worked example to copy rather than the whole

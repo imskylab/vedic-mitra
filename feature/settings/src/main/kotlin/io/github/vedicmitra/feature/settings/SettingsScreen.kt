@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -33,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.datastore.DarkThemeConfig
 import io.github.vedicmitra.core.datastore.ThemeSettings
-import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 
 /**
@@ -94,37 +95,52 @@ private fun SettingsContent(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
     ) {
-        VedicSelectField(
-            label = "Theme",
-            options = DarkThemeConfig.entries,
-            selected = state.settings.darkThemeConfig,
-            optionLabel = { it.label },
-            onSelect = onDarkThemeConfigChange,
-        )
+        SettingsSectionHeader(text = "Appearance")
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        // The dynamic-colour switch shares the theme group's heading line rather than taking a row
+        // of its own: both settle how the app looks, and the switch is one control against the
+        // three-option group below it. Only a label and a switch share the line, so it survives a
+        // large font scale -- putting the radios themselves up here would not.
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(text = "Dynamic colour", modifier = Modifier.weight(1f))
+            Text(
+                text = "Theme",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Text(text = "Dynamic colour", style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.width(8.dp))
             Switch(checked = state.settings.useDynamicColor, onCheckedChange = onDynamicColorChange)
+        }
+        Column(modifier = Modifier.selectableGroup()) {
+            DarkThemeConfig.entries.forEach { config ->
+                SettingsRadioRow(
+                    label = config.label,
+                    selected = config == state.settings.darkThemeConfig,
+                    onClick = { onDarkThemeConfigChange(config) },
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SettingsSectionHeader(text = "Panchanga")
-        VedicSelectField(
-            label = "Month scheme",
-            options = MaasaReckoning.entries,
-            selected = state.maasaReckoning,
-            optionLabel = { it.label },
-            onSelect = onMaasaReckoningChange,
+        Text(
+            text = "Month scheme",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 8.dp),
         )
+        Column(modifier = Modifier.selectableGroup()) {
+            MaasaReckoning.entries.forEach { reckoning ->
+                SettingsRadioRow(
+                    label = reckoning.label,
+                    selected = reckoning == state.maasaReckoning,
+                    onClick = { onMaasaReckoningChange(reckoning) },
+                )
+            }
+        }
         Text(
             text =
                 "Both schemes describe the same days. They differ only in what the dark fortnight " +
