@@ -57,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,7 +80,6 @@ import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
 import io.github.vedicmitra.core.astronomy.PanchangaConcept
 import io.github.vedicmitra.core.astronomy.PanchangaLimb
-import io.github.vedicmitra.core.astronomy.PanchangaPrimer
 import io.github.vedicmitra.core.astronomy.Ritu
 import io.github.vedicmitra.core.astronomy.Samvatsara
 import io.github.vedicmitra.core.astronomy.SankalpaFrame
@@ -94,6 +94,7 @@ import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.designsystem.component.VedicCycleHeader
 import io.github.vedicmitra.core.designsystem.component.VedicCycleRow
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.core.ui.panchanga.PanchangaPrimer
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -462,13 +463,13 @@ private fun PrimerSheet(
                     .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = entry.title, style = MaterialTheme.typography.headlineSmall)
+            Text(text = stringResource(entry.title), style = MaterialTheme.typography.headlineSmall)
             Text(
-                text = entry.oneLine,
+                text = stringResource(entry.oneLine),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(text = entry.body, style = MaterialTheme.typography.bodyLarge)
+            Text(text = stringResource(entry.body), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -513,7 +514,7 @@ private fun SankalpaCard(
                 }
             }
             Text(
-                text = PanchangaPrimer.of(PanchangaConcept.SANKALPA).oneLine,
+                text = stringResource(PanchangaPrimer.of(PanchangaConcept.SANKALPA).oneLine),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier =

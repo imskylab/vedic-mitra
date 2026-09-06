@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -78,7 +79,6 @@ import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.Nakshatra
 import io.github.vedicmitra.core.astronomy.Paksha
-import io.github.vedicmitra.core.astronomy.PanchangaGlossary
 import io.github.vedicmitra.core.astronomy.PanchangaNow
 import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.astronomy.Ritu
@@ -92,6 +92,7 @@ import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.core.ui.panchanga.PanchangaGlossary
 import io.github.vedicmitra.feature.home.hub.HubCatalog
 import io.github.vedicmitra.feature.home.hub.HubDomain
 import io.github.vedicmitra.feature.home.hub.HubTarget
@@ -750,8 +751,13 @@ private fun RowDetailSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            // A null here is the glossary saying it has no entry, which is ordinary -- most rows
+            // are values rather than named items. It is also what a translated display name would
+            // produce for every row, since the glossary is still keyed on English labels; see its
+            // KDoc.
+            val significance = PanchangaGlossary.significanceOf(row.label)
             Text(
-                text = PanchangaGlossary.significanceOf(row.label) ?: "More details coming soon.",
+                text = if (significance != null) stringResource(significance) else "More details coming soon.",
                 style = MaterialTheme.typography.bodyLarge,
             )
             row.reminderTarget?.let { target ->

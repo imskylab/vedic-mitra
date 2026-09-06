@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) 2026 Jayvardhan Potabatti
+  SPDX-License-Identifier: AGPL-3.0-or-later
+
+  The panchanga explanatory copy, moved out of :core:astronomy so the engine keeps no Android
+  dependency (ADR 0021, #215). Sanskrit terms inside the prose are deliberately left as they
+  are -- they are the same words in every script, see ADR 0019.
+
+  Voice, enforced by PanchangaProseTest: brief, factual, third person, no instructions to the
+  reader. Traditional claims are attributed ("traditionally", "is said to") rather than
+  asserted. A primer one-liner is shown without tapping, so it is capped at 72 characters.
+-->
+<resources>
+
+    <!-- Primer: the panchanga ideas, keyed by PanchangaConcept. -->
+
+    <!-- PANCHANGA -->
+    <string name="primer_panchanga_title">Panchanga</string>
+    <string name="primer_panchanga_one_line">Five measures of the day — literally, \"five limbs\".</string>
+    <string name="primer_panchanga_body">
+        A panchanga describes a day with five values: the tithi, the vara, the nakshatra, the yoga and the karana. All
+        five come from where the Sun and the Moon actually are, so all five change at their own pace and none of them
+        lines up neatly with the calendar. Reading a day means reading the five together rather than any one alone.
+    </string>
+
+    <!-- TITHI -->
+    <string name="primer_tithi_title">Tithi</string>
+    <string name="primer_tithi_one_line">The lunar day — how far the Moon has pulled ahead of the Sun.</string>
+    <string name="primer_tithi_body">
+        A tithi is the time the Moon takes to gain another 12° on the Sun, so a lunar month holds thirty of them. The
+        Moon\'s speed varies, so a tithi runs anywhere from about 19 to 26 hours — which is why it starts and ends at
+        a different clock time each day instead of at midnight. A day is named after whichever tithi is running at
+        sunrise.
+    </string>
+
+    <!-- PAKSHA -->
+    <string name="primer_paksha_title">Paksha</string>
+    <string name="primer_paksha_one_line">The fortnight — waxing towards full, or waning towards new.</string>
+    <string name="primer_paksha_body">
+        The thirty tithis of a lunar month split into two fortnights of fifteen. Shukla paksha runs from the new moon
+        to the full moon, with the lit part of the Moon growing each night; Krishna paksha runs from full back to new
+        as it shrinks. The same tithi name occurs once in each, so the paksha is what tells them apart.
+    </string>
+
+    <!-- VARA -->
+    <string name="primer_vara_title">Vara</string>
+    <string name="primer_vara_one_line">The weekday — but counted from sunrise, not from midnight.</string>
+    <string name="primer_vara_body">
+        The seven varas are the familiar weekdays, each named for a graha. The difference is where the day begins: a
+        vara runs sunrise to sunrise, so the hours after midnight still belong to the previous day. This is also why
+        the windows measured from sunrise — Rahu Kalam among them — shift by a few minutes daily and sit differently
+        in summer than in winter.
+    </string>
+
+    <!-- NAKSHATRA -->
+    <string name="primer_nakshatra_title">Nakshatra</string>
+    <string name="primer_nakshatra_one_line">One of 27 equal segments of the Moon\'s path, each 13°20\' wide.</string>
+    <string name="primer_nakshatra_body">
+        The Moon\'s circuit is divided into twenty-seven nakshatras rather than the twelve rashis, so it crosses
+        roughly one a day. Each carries a traditional name and character. The nakshatra the Moon occupied at birth is
+        the janma nakshatra, which is what most matching and dasha calculations are built from.
+    </string>
+
+    <!-- PADA -->
+    <string name="primer_pada_title">Pada</string>
+    <string name="primer_pada_one_line">A quarter of a nakshatra — 3°20\' of the Moon\'s path.</string>
+    <string name="primer_pada_body">
+        Each nakshatra divides into four padas, giving 108 in all. The pada is what connects a nakshatra to a navamsha
+        sign, so it matters for chart work even though it is rarely quoted on its own. The Moon spends roughly six
+        hours in each.
+    </string>
+
+    <!-- YOGA -->
+    <string name="primer_yoga_title">Yoga</string>
+    <string name="primer_yoga_one_line">A 27-part cycle from the Sun\'s and Moon\'s positions added together.</string>
+    <string name="primer_yoga_body">
+        Yoga is found by adding the Sun\'s and Moon\'s longitudes and dividing the total into twenty-seven parts — it
+        is not a posture or a practice, despite the shared word. Where the tithi measures the gap between the two
+        bodies, the yoga measures how far the pair has travelled as a whole, so it turns over roughly once a day.
+    </string>
+
+    <!-- KARANA -->
+    <string name="primer_karana_title">Karana</string>
+    <string name="primer_karana_one_line">Half a tithi — the quickest of the five limbs.</string>
+    <string name="primer_karana_body">
+        Each tithi divides into two karanas, so a lunar month holds sixty of them, each lasting about half a day. They
+        are drawn from eleven names: seven that repeat around the month, and four fixed ones that occur once each. It
+        is the fastest limb to change, so it is the one most likely to differ between morning and evening.
+    </string>
+
+    <!-- LUNAR_MONTH -->
+    <string name="primer_lunar_month_title">Lunar month</string>
+    <string name="primer_lunar_month_one_line">
+        Thirty tithis — about 29.5 days, so it drifts against the calendar.
+    </string>
+    <string name="primer_lunar_month_body">
+        A lunar month runs from one new moon to the next, roughly 29.5 days, which is about a day short of most
+        calendar months. That shortfall is why festivals fixed to a tithi land on a different date each year, and why
+        the lunar and solar years need an extra month (adhika maasa) every few years to stay in step.
+    </string>
+
+    <!-- SUNRISE_DAY -->
+    <string name="primer_sunrise_day_title">The day begins at sunrise</string>
+    <string name="primer_sunrise_day_one_line">Traditionally the day starts at sunrise, not at midnight.</string>
+    <string name="primer_sunrise_day_body">
+        Almost everything a panchanga measures is counted from sunrise: the day\'s name, the eight equal parts that
+        place Rahu Kalam, the fifteen that place Abhijit. Two consequences catch people out. The hours just after
+        midnight still belong to yesterday\'s vara, and the day\'s tithi can change at any hour — often in the middle
+        of the afternoon.
+    </string>
+
+    <!-- MOON_PHASE -->
+    <string name="primer_moon_phase_title">Moon phase</string>
+    <string name="primer_moon_phase_one_line">How much of the Moon is lit — a picture of the tithi.</string>
+    <string name="primer_moon_phase_body">
+        The phase and the tithi measure the same thing from different ends: both follow the angle between the Sun and
+        the Moon. New moon opens Shukla paksha, full moon closes it, and the shape in the sky is a rough check on the
+        number — a half-lit Moon means the eighth tithi of a fortnight, give or take a few hours.
+    </string>
+
+    <!-- RASHI -->
+    <string name="primer_rashi_title">Rashi</string>
+    <string name="primer_rashi_one_line">A zodiac sign — one twelfth of the sky, thirty degrees wide.</string>
+    <string name="primer_rashi_body">
+        The twelve rashis divide the ecliptic into equal thirty-degree stretches, measured here against the stars
+        rather than against the equinox, which is what makes them sidereal. The Moon crosses one in about two and a
+        quarter days; the Sun takes roughly a month, and its move into the next one is the sankranti.
+    </string>
+
+    <!-- RITU -->
+    <string name="primer_ritu_title">Ritu</string>
+    <string name="primer_ritu_one_line">One of six seasons, each two months of the Sun\'s journey.</string>
+    <string name="primer_ritu_body">
+        The year divides into six ritus of sixty degrees of solar longitude each — Vasanta, Grishma, Varsha, Sharad,
+        Hemanta and Shishira — so each runs about two months. They are read from where the Sun actually is rather than
+        from a fixed date, which is why a ritu can begin a few days either side of the same day each year. Traditional
+        daily routine is said to shift with them.
+    </string>
+
+    <!-- SANKALPA -->
+    <string name="primer_sankalpa_title">Sankalpa</string>
+    <string name="primer_sankalpa_one_line">The ten measures that fix when and where a moment is.</string>
+    <string name="primer_sankalpa_body">
+        A sankalpa traditionally opens by naming the place and then the time — the year, the ayana, the season, the
+        month, the fortnight, the tithi, the weekday, the nakshatra, the yoga and the karana, in that order. Those ten
+        are the same values a panchanga reports, which is much of why it reports them. The order varies by region and
+        tradition.
+    </string>
+
+    <!-- Glossary: named items, keyed by the name each is displayed with. -->
+
+    <string name="glossary_brahma_muhurta">
+        The roughly 48 minutes before sunrise — traditionally the most auspicious time for meditation, japa, and
+        study, when the mind is calm and sattvic.
+    </string>
+
+    <string name="glossary_abhijit_muhurta">
+        A short \'victory\' window around solar noon, auspicious for beginning important tasks; it is said to remove
+        obstacles (but is skipped on Wednesdays).
+    </string>
+
+    <string name="glossary_rahu_kalam">
+        An inauspicious period of about 90 minutes ruled by Rahu, traditionally avoided for starting new or important
+        undertakings.
+    </string>
+
+    <string name="glossary_yamaganda">
+        An inauspicious daytime period associated with Yama; new ventures and travel are traditionally avoided during
+        it.
+    </string>
+
+    <string name="glossary_gulika_kalam">
+        A period ruled by Gulika (Mandi), a son of Saturn. It is avoided for auspicious beginnings, though acts
+        started in it are said to recur.
+    </string>
+
+    <string name="glossary_dur_muhurta">
+        A short inauspicious segment of the day; important or auspicious activities are traditionally postponed until
+        it passes.
+    </string>
+
+    <string name="glossary_varjyam">
+        A \'to-be-avoided\' window tied to the current nakshatra; new or auspicious activities are traditionally
+        deferred until it ends.
+    </string>
+
+    <string name="glossary_ekadashi">
+        The eleventh lunar day of each fortnight, sacred to Vishnu. Many keep a fast (vrat) for health, discipline,
+        and spiritual merit.
+    </string>
+
+    <string name="glossary_purnima">
+        The full-moon day, considered auspicious for worship, charity, and vrats; several major festivals fall on a
+        Purnima.
+    </string>
+
+    <string name="glossary_amavasya">
+        The new-moon day, traditionally set aside for honouring ancestors (tarpana) and for quiet reflection.
+    </string>
+
+    <string name="glossary_sankashti_chaturthi">
+        The fourth lunar day of the waning fortnight, dedicated to Ganesha. Devotees fast until moonrise to seek the
+        removal of obstacles.
+    </string>
+
+    <string name="glossary_vinayaka_chaturthi">
+        The fourth lunar day of the waxing fortnight, dedicated to Ganesha and observed with worship for wisdom and
+        success.
+    </string>
+
+    <string name="glossary_pradosh">
+        The twilight window of the thirteenth lunar day, sacred to Shiva; worship at dusk is held to be especially
+        fruitful.
+    </string>
+
+    <string name="glossary_masik_shivaratri">
+        The monthly night of Shiva, on the fourteenth day of the waning fortnight, observed with worship and a night
+        vigil.
+    </string>
+
+    <string name="glossary_ugadi_gudi_padwa">
+        The lunar new year of the Deccan and Maharashtra (Chaitra Shukla Pratipada), welcoming the new samvatsara with
+        festivity and fresh beginnings.
+    </string>
+
+    <string name="glossary_rama_navami">
+        The birth of Lord Rama on Chaitra Shukla Navami, marked by worship, readings of the Ramayana, and processions.
+    </string>
+
+    <string name="glossary_akshaya_tritiya">
+        An \'imperishable\' day (Vaishakha Shukla Tritiya) believed to bring lasting merit and prosperity; favoured
+        for new ventures and purchases.
+    </string>
+
+    <string name="glossary_buddha_purnima">
+        The Vaishakha full moon marking the birth — and by tradition the enlightenment and passing — of Gautama
+        Buddha.
+    </string>
+
+    <string name="glossary_guru_purnima">
+        The Ashadha full moon honouring one\'s guru and the sage Vyasa, observed with gratitude and learning.
+    </string>
+
+    <string name="glossary_raksha_bandhan">
+        The Shravana full moon when sisters tie a rakhi on their brothers\' wrists, a symbol of protection and
+        affection.
+    </string>
+
+    <string name="glossary_krishna_janmashtami">
+        The birth of Lord Krishna on Shravana Krishna Ashtami, celebrated with fasting, midnight worship, and
+        festivity.
+    </string>
+
+    <string name="glossary_ganesh_chaturthi">
+        The birthday of Ganesha (Bhadrapada Shukla Chaturthi), welcomed with clay idols and worship, and closed with a
+        ceremonial immersion.
+    </string>
+
+    <string name="glossary_navaratri_begins">
+        The first of nine nights honouring the Divine Mother (Durga), from Ashwina Shukla Pratipada, with fasting,
+        dance, and worship.
+    </string>
+
+    <string name="glossary_vijayadashami">
+        Dussehra — the tenth day celebrating the victory of good over evil (Rama over Ravana, Durga over Mahishasura).
+    </string>
+
+    <string name="glossary_diwali">
+        The festival of lights on Kartika Amavasya, honouring Lakshmi with lamps, a cleaned home, and the celebration
+        of prosperity.
+    </string>
+
+    <string name="glossary_maha_shivaratri">
+        The \'great night of Shiva\' in Magha, observed with fasting, a night vigil, and worship of the Shiva linga.
+    </string>
+
+    <string name="glossary_holi">
+        The spring festival of colours on the Phalguna full moon, preceded by Holika Dahan, celebrating joy and the
+        triumph of devotion.
+    </string>
+
+    <string name="glossary_sankranti_generic">
+        The Sun\'s entry into a new rashi (zodiac sign). Each Sankranti is considered auspicious for bathing in sacred
+        rivers, charity, and worship.
+    </string>
+
+    <string name="glossary_sankranti_makara">
+        The Sun\'s entry into Makara (Capricorn), marking the start of Uttarayana — its northward journey. Celebrated
+        across India as a harvest festival (Makar Sankranti, Pongal, Lohri).
+    </string>
+
+</resources>

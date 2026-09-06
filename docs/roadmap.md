@@ -114,8 +114,14 @@ content added before extraction multiplies the eventual translation debt.
       [ADR 0021](adr/0021-what-gets-extracted-to-strings-xml.md); `:feature:profile` is the
       worked example. **`:core:astronomy` is excluded** — extracting it would give the engine an
       Android dependency and spend F5
-- [ ] Move `PanchangaPrimer` and `PanchangaGlossary` out of `:core:astronomy` — 129 literals of
-      English teaching prose inside a calculation library, blocking both F1 and F5
+- [x] Move `PanchangaPrimer` and `PanchangaGlossary` out of `:core:astronomy` — 129 literals of
+      English teaching prose inside a calculation library, blocking both F1 and F5. Now in
+      `:core:ui` as string resources; `PanchangaConcept` stays in the engine, which names an idea
+      without holding the words that explain it
+- [ ] Give festivals and observances stable identities. `PanchangaGlossary` is keyed on the name an
+      item is *displayed* with, so a translated label matches nothing and every row falls back to
+      "no significance known" — the same fault as the reminder keys, and the last one blocking a
+      translated glossary
 - [ ] English as a real locale
 - [ ] Hindi
 - [ ] Sanskrit · Telugu · Tamil · Kannada · Malayalam · Marathi · Gujarati · Bengali · Odia
