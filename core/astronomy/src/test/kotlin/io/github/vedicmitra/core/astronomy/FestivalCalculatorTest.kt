@@ -62,7 +62,7 @@ class FestivalCalculatorTest {
         // The deliberate asymmetry: upcomingFestivals emits both, festivalOn picks one.
         val source = source(tithis = listOf(14, 15), maasas = listOf(maasa("Ashadha"), maasa("Ashadha")))
 
-        assertThat(festivalOn(DAY_MILLIS, source)).isEqualTo("Guru Purnima")
+        assertThat(festivalOn(DAY_MILLIS, source)?.name).isEqualTo("Guru Purnima")
     }
 
     @Test
