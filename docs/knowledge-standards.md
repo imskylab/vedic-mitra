@@ -186,9 +186,17 @@ exactly the reader who would never think to look in Settings.
 
 **The rule.** Where a date depends on a rule of judgement and not only on a position of the Sun and
 Moon, the rule is part of the claim and has to be visible with it. A festival date printed bare
-asserts more certainty than the app has. This is an open gap, not a solved one: the month scheme is
-named on every reading, and festival dates are not — filed as
-[#228](https://github.com/imskylab/vedic-mitra/issues/228).
+asserts more certainty than the app has.
+
+`Festival.dayRule` is what that looks like ([#228](https://github.com/imskylab/vedic-mitra/issues/228)).
+The rule rides on the model rather than being recovered from the name, so every screen that prints a
+date can say how the day was chosen — and the three festivals traditionally timed to a moment of
+night, where a reader's almanac is most likely to differ, name that moment instead of giving the
+generic line. It is shown **untapped**, on ADR 0017's reasoning: a convention that only appears on
+tap is one most readers never meet.
+
+What this does *not* do is offer the other conventions. Timing an observance to nishita or pradosh is
+a second calculation, not a relabelling, and would need its own decision.
 
 ## Red lines
 

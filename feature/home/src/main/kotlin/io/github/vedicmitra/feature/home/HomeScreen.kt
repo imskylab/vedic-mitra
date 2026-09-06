@@ -65,6 +65,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
+import io.github.vedicmitra.core.astronomy.DayRule
 import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
@@ -93,6 +94,8 @@ import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.core.ui.panchanga.PanchangaGlossary
+import io.github.vedicmitra.core.ui.panchanga.explanationRes
+import io.github.vedicmitra.core.ui.panchanga.festivalDatesNoteRes
 import io.github.vedicmitra.feature.home.hub.HubCatalog
 import io.github.vedicmitra.feature.home.hub.HubDomain
 import io.github.vedicmitra.feature.home.hub.HubTarget
@@ -240,7 +243,7 @@ fun FestivalsScreen(
     HomeDataEffects(viewModel)
     HomeDataGate(uiState, modifier) {
         EventListView(
-            rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+            rows = uiState.festivals.map { it.toEventRow() },
             onSetReminder = viewModel::setReminder,
             modifier = modifier,
         )
@@ -311,7 +314,7 @@ private fun HubView(
             ExpandableSection(
                 title = "UPCOMING FESTIVALS",
                 accent = MaterialTheme.colorScheme.primary,
-                rows = uiState.festivals.map { SectionRow(it.name, formatDate(it.atSunrise)) },
+                rows = uiState.festivals.map { it.toEventRow() },
                 onRowClick = { selectedRow = it },
             )
         }
@@ -421,6 +424,16 @@ private fun EventListView(
             )
         } else {
             rows.forEach { row -> SectionRowLine(row, onClick = { selectedRow = row }) }
+            // Shown untapped, on the same reasoning as a primer one-liner and as ADR 0017's month
+            // scheme: a convention that only appears on tap is one most readers never meet.
+            if (rows.any { it.dayRule != null }) {
+                Text(
+                    text = stringResource(festivalDatesNoteRes),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+            }
         }
     }
     selectedRow?.let { row -> RowDetailSheet(row, onSetReminder = onSetReminder) { selectedRow = null } }
@@ -755,6 +768,13 @@ private fun RowDetailSheet(
             // are values rather than named items. It is also what a translated display name would
             // produce for every row, since the glossary is still keyed on English labels; see its
             // KDoc.
+            row.dayRule?.let { rule ->
+                Text(
+                    text = stringResource(rule.explanationRes),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             val significance = PanchangaGlossary.significanceOf(row.label)
             Text(
                 text = if (significance != null) stringResource(significance) else "More details coming soon.",
@@ -783,6 +803,7 @@ private data class SectionRow(
     val label: String,
     val trailing: String,
     val reminderTarget: ReminderTarget? = null,
+    val dayRule: DayRule? = null,
 )
 
 /** A graha's rashi as a row: "Guru · Karka" with its next pravesh date, or an em dash if none. */
@@ -805,6 +826,7 @@ private fun Festival.toEventRow(): SectionRow =
         label = name,
         trailing = formatDate(atSunrise),
         reminderTarget = observanceTithis(name)?.let { ReminderTarget.Observance(name, it) },
+        dayRule = dayRule,
     )
 
 private const val AFTERNOON_FROM_HOUR = 12

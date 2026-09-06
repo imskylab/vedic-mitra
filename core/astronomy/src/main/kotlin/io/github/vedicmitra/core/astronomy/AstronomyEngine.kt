@@ -85,11 +85,15 @@ interface AstronomyEngine {
      * The single most notable entry on the day containing [instant] for [location] — a named
      * festival, else a recurring observance, else a Sankranti — or `null` for an ordinary day. Used
      * to highlight days in the calendar. The default no-op lets test doubles ignore it.
+     *
+     * Returns the whole [Festival], not its name: naming a festival on a day is a claim about which
+     * day it falls on, and [Festival.dayRule] is the half of that claim the caller has to be able to
+     * show.
      */
     suspend fun festivalOn(
         instant: Instant,
         location: GeoCoordinates,
-    ): AppResult<String?> = AppResult.Success<String?>(null)
+    ): AppResult<Festival?> = AppResult.Success<Festival?>(null)
 
     /**
      * The panchanga limbs **as of [instant]**, with the window each one is in.

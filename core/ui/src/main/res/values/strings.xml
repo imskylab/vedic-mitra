@@ -13,6 +13,32 @@
 -->
 <resources>
 
+    <!--
+      How a festival's day was chosen, keyed by DayRule (#228). Not disclaimers: the date is not in
+      doubt, the rule behind it is one of several, and a reader whose almanac disagrees is owed the
+      means to tell which. Say what the rule is, never that the app might be wrong.
+    -->
+    <string name="festival_rule_list_note">
+        Dates are judged by the tithi running at sunrise. Where a tithi spans two sunrises, traditions
+        differ on which day carries the festival.
+    </string>
+    <string name="festival_rule_sunrise_tithi">Judged by the tithi running at sunrise.</string>
+    <string name="festival_rule_night_midnight">
+        Judged here by the tithi running at sunrise. It is traditionally timed to midnight, so an
+        almanac following that timing can place it a day either side.
+    </string>
+    <string name="festival_rule_night_nishita">
+        Judged here by the tithi running at sunrise. It is traditionally timed to nishita, the middle
+        of the night, so an almanac following that timing can place it a day either side.
+    </string>
+    <string name="festival_rule_night_pradosh">
+        Judged here by the tithi running at sunrise. It is traditionally timed to pradosh, the hour
+        after sunset, so an almanac following that timing can place it a day either side.
+    </string>
+    <string name="festival_rule_sunrise_ingress">
+        The day the Sun entered a new rashi, taken between one sunrise and the next.
+    </string>
+
     <!-- Primer: the panchanga ideas, keyed by PanchangaConcept. -->
 
     <!-- PANCHANGA -->
