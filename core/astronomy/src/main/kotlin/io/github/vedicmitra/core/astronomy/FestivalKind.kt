@@ -8,8 +8,6 @@
  * LICENSING.md.
  */
 
-// The tithi numbers below are the domain, not constants waiting to be named -- as in every other
-// rule table in this module.
 @file:Suppress("MagicNumber")
 
 package io.github.vedicmitra.core.astronomy
@@ -31,6 +29,9 @@ package io.github.vedicmitra.core.astronomy
  * live in two `when` blocks — one keyed by tithi, one keyed by *name* — which had to be kept in step
  * by hand and gave the name a second job it should never have had. They are one property here, and
  * both directions are derived from it.
+ *
+ * The tithi numbers below are the domain rather than constants waiting to be named, so this file
+ * carries the module's usual `MagicNumber` suppression.
  *
  * @property monthlyTithis the global tithis (1..30) this observance recurs on, or `null` if it is not
  *   a recurring observance. Krishna tithis are 15 + their number in the fortnight.
