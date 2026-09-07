@@ -275,10 +275,15 @@ The debug APK is written to `app/build/outputs/apk/debug/`.
 ### Release builds (installable, updatable)
 
 For a signed release that **updates** an already-installed copy in place, see
-**[docs/RELEASING.md](docs/RELEASING.md)**. In short: create a release keystore once with `keytool`,
+**[docs/RELEASING.md](docs/RELEASING.md)**. Set up once: create a release keystore with `keytool` and
 copy [`keystore.properties.example`](keystore.properties.example) to `keystore.properties` (both the
-keystore and this file are gitignored), bump [`version.properties`](version.properties), then build
-`:app:assembleRelease` (APK) or `:app:bundleRelease` (AAB for Play). The design is recorded in
+keystore and this file are gitignored).
+
+After that, cutting a release is: close the changelog, write `docs/releases/<version>.md`, and run
+[`release.bat`](release.bat) from `main`. It bumps the version, commits all three as one commit,
+pushes, tags, builds `:app:assembleRelease`, and publishes the release with the note attached —
+refusing to start if it is on the wrong branch, out of step with the remote, or missing either
+document. The design is recorded in
 [ADR 0010](docs/adr/0010-release-signing-and-versioning.md).
 
 > The `v*` tag [release workflow](.github/workflows/release.yml) currently attaches a **debug-signed**
