@@ -140,7 +140,7 @@ private fun Tile(
     }
 }
 
-/** The tile's icon, in whichever of the three styles it carries. */
+/** The tile's icon, in whichever of the two styles it carries. */
 @Composable
 private fun TileGlyph(tile: HubTile) {
     val tint = tile.category.onContainer()
@@ -152,14 +152,6 @@ private fun TileGlyph(tile: HubTile) {
                 contentDescription = null,
                 tint = Color.Unspecified,
                 modifier = Modifier.size(38.dp),
-            )
-
-        is TileIcon.Symbol ->
-            Icon(
-                imageVector = icon.vector,
-                contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(42.dp),
             )
 
         is TileIcon.Letter ->

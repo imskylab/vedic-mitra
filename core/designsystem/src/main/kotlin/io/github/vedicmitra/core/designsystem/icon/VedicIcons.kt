@@ -24,21 +24,26 @@ import io.github.vedicmitra.core.designsystem.R
  * not a drawable, so it renders identically on every device rather than as a hand-approximated path.
  */
 object VedicIcons {
-    /** A rolled almanac scroll — the Panchang. */
+    /** A seated scholar reading an almanac scroll, framed in a lotus mandala — the Panchang. */
     @get:DrawableRes
     val panchang: Int = R.drawable.ic_glyph_panchang
 
-    /** A clock with an auspicious star — an electional Muhurat. */
+    /** A mangal kalash crowned with a coconut and mango leaves — an electional Muhurat. */
     @get:DrawableRes
     val muhurat: Int = R.drawable.ic_glyph_muhurat
 
-    /** A marigold worship flower — Festivals. */
+    /** A wheel of deities and festival symbols around a sun and Om — Festivals & Vrata. */
     @get:DrawableRes
     val festivals: Int = R.drawable.ic_glyph_festivals
 
     /** The North-Indian birth-chart diamond — Kundali. */
     @get:DrawableRes
     val kundali: Int = R.drawable.ic_glyph_kundali
+
+    /** A twelve-rashi zodiac wheel around a sun and Om — Jyotisha, the domain (the chart glyph
+     *  [kundali] stays the Kundali screen's own icon). */
+    @get:DrawableRes
+    val jyotisha: Int = R.drawable.ic_glyph_jyotisha
 
     /** A mala (prayer-bead ring) — Japa. */
     @get:DrawableRes
@@ -68,7 +73,8 @@ object VedicIcons {
     @get:DrawableRes
     val vastu: Int = R.drawable.ic_glyph_vastu
 
-    /** A balance over an open book, framed in a lotus — Dharma and the samskaras. */
+    /** A dharma chakra around a sun and Om, with yajna fire, Shiva linga, Lakshmi and the scales of
+     *  justice — Dharma and the samskaras. */
     @get:DrawableRes
     val dharma: Int = R.drawable.ic_glyph_dharma
 
@@ -87,6 +93,10 @@ object VedicIcons {
     /** A stylised lotus in bloom — the Arts (architecture, sculpture, music and drama). */
     @get:DrawableRes
     val arts: Int = R.drawable.ic_glyph_arts
+
+    /** A temple bell (ghanta) with a lotus and Om — Reminders. */
+    @get:DrawableRes
+    val reminders: Int = R.drawable.ic_glyph_reminders
 
     /**
      * An Om coin dropping into a donation box (daana-patra) — Support.
