@@ -50,16 +50,46 @@ keyPassword=<your key password>
 reads `keystore.properties` only if it exists; without it, `assembleDebug`, tests, and CI still work
 and release builds are simply left unsigned.
 
-## Each release: bump the version
+## Cutting a release
 
-Edit the committed [`version.properties`](../version.properties):
+[`release.bat`](../release.bat) is the process. Prepare two documents, then run it.
 
-```properties
-VERSION_CODE=2      # strictly greater than the last released value — never reuse
-VERSION_NAME=0.2.0  # human-facing, semantic versioning recommended
-```
+**1. Close the changelog.** Rename `## [Unreleased]` to `## [<version>] - <date>`, add a fresh empty
+`## [Unreleased]` above it, and add the compare link at the foot of the file.
 
-## Build the artifacts
+**2. Write `docs/releases/<version>.md`.** It becomes the body of the GitHub release. Follow the
+previous ones: what changed and *why it mattered*, in the app's voice, admissions included.
+
+**3. Leave both uncommitted, and run `release.bat` from `main`.** It bumps
+[`version.properties`](../version.properties), commits all three as a **single** `chore(release):`
+commit, pushes, tags that commit, builds the signed APK, and publishes the release with the note
+attached. Every step asks first.
+
+The version bump, the closed changelog and the release note describe one event, so they land as one
+commit — and it is the commit the tag points at, which is what makes the release reproducible from
+the tag.
+
+### What it refuses to do
+
+Each of these is a mistake that has actually happened:
+
+- **Run from anywhere but `main`.** 0.10.0 was tagged and built from a feature branch that happened
+  to be checked out; `git push origin main` then pushed a `main` ref that had never moved, so the tag
+  pointed at a commit no branch contained and `main` kept the old version.
+- **Run when `main` is not level with `origin/main`**, in either direction.
+- **Release a version with no `docs/releases/<version>.md`**, or with no `## [<version>]` heading in
+  the changelog — a half-prepared release stops before it is tagged rather than after.
+- **Tag a commit it has not confirmed is on `origin/main`.** It re-fetches after pushing and checks.
+
+It stages exactly three paths. Anything else in progress is listed and left alone.
+
+> `release.bat` must stay CRLF — `.gitattributes` enforces it. Saved with LF, `cmd` mis-parses every
+> multi-line `( )` block: the echoes still run but a `goto` inside one silently does not, so a guard
+> prints its error and then carries on releasing anyway.
+
+## Building the artifacts by hand
+
+`release.bat` does this for you; these are the underlying commands.
 
 Two distribution outputs, both signed with the keystore above:
 
