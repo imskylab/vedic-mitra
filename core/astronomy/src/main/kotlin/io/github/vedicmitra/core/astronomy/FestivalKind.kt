@@ -8,6 +8,10 @@
  * LICENSING.md.
  */
 
+// The tithi numbers below are the domain, not constants waiting to be named -- as in every other
+// rule table in this module.
+@file:Suppress("MagicNumber")
+
 package io.github.vedicmitra.core.astronomy
 
 /**

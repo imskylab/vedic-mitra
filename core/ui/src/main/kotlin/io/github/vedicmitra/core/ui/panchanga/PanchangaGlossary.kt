@@ -47,7 +47,16 @@ object PanchangaGlossary {
             MuhurtaKind.VARJYAM -> R.string.glossary_varjyam
         }
 
-    /** The significance blurb for the festival, observance or Sankranti [kind]. */
+    /**
+     * The significance blurb for the festival, observance or Sankranti [kind].
+     *
+     * Detekt counts twenty-two branches and calls it complex. It is the opposite: a flat, exhaustive
+     * `when` over an enum, with no logic in it at all. The exhaustiveness is the point -- adding a
+     * kind without writing its copy stops compiling, which is a stronger guarantee than the map
+     * lookup this replaced, where a missing entry degraded to a fallback at runtime and told the
+     * reader the app knew nothing about the thing it was showing them.
+     */
+    @Suppress("CyclomaticComplexMethod")
     @StringRes
     fun significanceOf(kind: FestivalKind): Int =
         when (kind) {
