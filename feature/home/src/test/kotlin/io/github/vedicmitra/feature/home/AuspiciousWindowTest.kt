@@ -32,7 +32,7 @@ class AuspiciousWindowTest {
     fun `a caution running now beats an auspicious window running alongside it`() {
         // Varjyam can run straight through Brahma Muhurta. A warning not shown is a worse failure
         // than a favourable window not shown, which is why this reverses the earlier preference.
-        val window = activeOrNextMuhurta(listOf(brahma(-1.hours, 1.hours), varjyam(-10.minutes, 20.minutes)), now)
+        val window = activeOrNextMuhurta(listOf(brahma(-1.hours, 2.hours), varjyam(-10.minutes, 20.minutes)), now)
 
         assertThat(window?.name).isEqualTo("Varjyam")
         assertThat(window?.quality).isEqualTo(MuhurtaQuality.INAUSPICIOUS)
@@ -43,7 +43,7 @@ class AuspiciousWindowTest {
     fun `an active window reports its end, so the countdown is time remaining`() {
         val end = now + 40.minutes
 
-        val window = activeOrNextMuhurta(listOf(abhijit(-20.minutes, 40.minutes)), now)
+        val window = activeOrNextMuhurta(listOf(abhijit(-20.minutes, 60.minutes)), now)
 
         assertThat(window?.isActive).isTrue()
         assertThat(window?.boundary).isEqualTo(end)
@@ -56,7 +56,7 @@ class AuspiciousWindowTest {
         val windows =
             listOf(
                 rahuKalam(-1.hours, 2.hours),
-                varjyam(-30.minutes, 15.minutes),
+                varjyam(-30.minutes, 45.minutes),
                 gulika(-10.minutes, 45.minutes),
             )
 
