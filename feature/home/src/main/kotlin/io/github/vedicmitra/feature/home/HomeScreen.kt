@@ -309,7 +309,7 @@ private fun HubView(
     ) {
         Header(uiState.locationLabel, onNavigateToLocation)
         HeroCard(snapshot, uiState.nowPanchanga, uiState.maasaReckoning) { onOpen(HubTarget.PANCHANG) }
-        uiState.auspicious?.let { AuspiciousCard(it) }
+        uiState.snapshot?.let { AuspiciousStrip(it.muhurtas) }
         if (uiState.festivals.isNotEmpty()) {
             ExpandableSection(
                 title = "UPCOMING FESTIVALS",
@@ -603,6 +603,28 @@ private fun formatRemaining(remaining: Duration): String {
 private const val MINUTE_MILLIS = 60_000L
 private const val MINUTES_PER_HOUR = 60L
 
+/**
+ * The strip, re-resolved once a minute.
+ *
+ * It re-runs [activeOrNextMuhurta] rather than only re-counting the remaining time, because the
+ * window itself changes: one ends, the next becomes current. Counting alone would leave a card
+ * reading "ends in moments" for the rest of the evening -- `load()` only runs on `ON_RESUME`, so
+ * nothing else would correct it while Home stays open.
+ *
+ * Once a minute for the same reason the tithi countdown ticks at that rate: a faster tick redraws
+ * the same minute over and over.
+ */
+@Composable
+private fun AuspiciousStrip(muhurtas: List<Muhurta>) {
+    val window by produceState(initialValue = activeOrNextMuhurta(muhurtas, systemNow()), muhurtas) {
+        while (true) {
+            value = activeOrNextMuhurta(muhurtas, systemNow())
+            delay(MINUTE_MILLIS)
+        }
+    }
+    window?.let { AuspiciousCard(it) }
+}
+
 @Composable
 private fun AuspiciousCard(window: AuspiciousWindow) {
     val auspicious = window.quality == MuhurtaQuality.AUSPICIOUS
@@ -610,14 +632,24 @@ private fun AuspiciousCard(window: AuspiciousWindow) {
         if (auspicious) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
     val onContainer =
         if (auspicious) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+    // Four states in two parallel pairs, so "now" and "next" read as the same fact at different
+    // distances. An upcoming caution had no wording at all before -- it was simply never shown.
     val heading =
         when {
             window.isActive && auspicious -> "Auspicious now"
             window.isActive -> "Caution now"
-            else -> "Next auspicious"
+            auspicious -> "Auspicious next"
+            else -> "Caution next"
         }
+    // A countdown for what is running, a clock time for what is not: "ends in 24m" answers how long
+    // is left, which is the question about a window you are inside; "starts at 13:30" answers when,
+    // which is the question about one you are not.
     val boundaryLabel =
-        if (window.isActive) "ends ${formatTime(window.boundary)}" else "from ${formatTime(window.boundary)}"
+        if (window.isActive) {
+            "ends in ${formatRemaining(window.boundary - systemNow())}"
+        } else {
+            "starts at ${formatTime(window.boundary)}"
+        }
     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = container)) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
@@ -625,6 +657,22 @@ private fun AuspiciousCard(window: AuspiciousWindow) {
                 Text(text = window.name, style = MaterialTheme.typography.titleMedium, color = onContainer)
             }
             Text(text = boundaryLabel, style = MaterialTheme.typography.bodyMedium, color = onContainer)
+        }
+    }
+}
+
+// All four states. The old preview only ever exercised "Auspicious now", which is why the upcoming
+// wording went unexamined for as long as it did.
+@Preview
+@Composable
+private fun AuspiciousCardPreview() {
+    val boundary = Instant.fromEpochMilliseconds(1_705_302_960_000L)
+    VedicMitraTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(8.dp)) {
+            AuspiciousCard(AuspiciousWindow("Abhijit Muhurta", MuhurtaQuality.AUSPICIOUS, boundary, isActive = true))
+            AuspiciousCard(AuspiciousWindow("Rahu Kalam", MuhurtaQuality.INAUSPICIOUS, boundary, isActive = true))
+            AuspiciousCard(AuspiciousWindow("Brahma Muhurta", MuhurtaQuality.AUSPICIOUS, boundary, isActive = false))
+            AuspiciousCard(AuspiciousWindow("Gulika Kalam", MuhurtaQuality.INAUSPICIOUS, boundary, isActive = false))
         }
     }
 }
@@ -931,13 +979,6 @@ private fun sampleHomeState(): HomeUiState {
     return HomeUiState(
         isLoading = false,
         snapshot = sample,
-        auspicious =
-            AuspiciousWindow(
-                name = "Abhijit Muhurta",
-                quality = MuhurtaQuality.AUSPICIOUS,
-                boundary = Instant.fromEpochMilliseconds(1_705_302_960_000L),
-                isActive = true,
-            ),
         festivals =
             listOf(
                 Festival(

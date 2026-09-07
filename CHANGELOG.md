@@ -170,6 +170,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The home strip shows whatever is next, not only whatever is favourable.** It could previously
+  preview an *auspicious* window and nothing else, so an approaching Rahu Kalam was invisible until
+  it began — and the card disappeared altogether once the day's last favourable window had passed.
+  It now shows the muhurta running now, else the next one to open, whichever quality that is.
+
+  Two rules decide what wins, and both go the way that costs the reader least. **A caution running
+  now beats a favourable window running alongside it** — Varjyam can run straight through Brahma
+  Muhurta, and a warning not shown is a worse failure than a favourable window not shown. **Among
+  several running, the one ending soonest wins**, so the countdown belongs to the boundary that
+  arrives first rather than to whichever window the engine happened to emit first.
+
+  The wording follows the question being asked: **"ends in 24m"** for a window you are inside, where
+  what matters is how long is left, and **"starts at 13:30"** for one you are not, where what matters
+  is when. The headings pair up — *Auspicious now* / *Caution now*, *Auspicious next* / *Caution
+  next*.
+
+  It also **re-resolves once a minute instead of once per screen load**, which fixes a quieter bug:
+  the card was computed on resume only, so Home left open across a boundary kept showing a window
+  that had already ended. Choghadiya is deliberately still excluded — those periods tile the whole
+  day, so one is always running, and including them would mean the "next window" case could never
+  occur.
+
 - **A festival date says how its day was chosen.** Jyotisha supplies the arithmetic; which civil day
   a festival falls on when its tithi spans two sunrises is a *nirnaya* rule, and traditions answer it
   differently. `FestivalCalculator` has always answered at sunrise and said so **only in a source

@@ -137,8 +137,11 @@ class HomeViewModelTest {
         }
 
     @Test
-    fun `marks an auspicious muhurta active now as the current window`() =
+    fun `the snapshot carries the muhurtas the strip resolves from`() =
         runTest {
+            // The strip used to be resolved here and held in the UI state. It is now re-resolved on
+            // a timer from the snapshot, so what this has to guarantee is that the muhurtas reach
+            // the state at all -- which choice it makes among them is AuspiciousWindowTest's job.
             val now = System.currentTimeMillis()
             val active =
                 Muhurta(
@@ -159,11 +162,7 @@ class HomeViewModelTest {
 
             viewModel.load()
 
-            val window = viewModel.uiState.value.auspicious
-            assertThat(window).isNotNull()
-            assertThat(window?.name).isEqualTo("Abhijit Muhurta")
-            assertThat(window?.isActive).isTrue()
-            assertThat(window?.quality).isEqualTo(MuhurtaQuality.AUSPICIOUS)
+            assertThat(viewModel.uiState.value.snapshot?.muhurtas).containsExactly(active)
         }
 
     @Test
