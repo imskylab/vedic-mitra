@@ -265,16 +265,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **The hub's grid is called "Explore", not "Shastras" — because most of these are not shastras.**
   The label was making a claim the tiles could not support. Panchanga is an *output* of Jyotisha
-  rather than a discipline; Muhurta and the tile formerly called Jyotisha are two *skandhas* of that
-  one Vedanga; Festivals & Vrata belongs to Dharmashastra; Mantra & Stotra is a practice; and Yoga is
+  rather than a discipline; Muhurta and the Jyotish tile are two *skandhas* of that one Vedanga;
+  Festivals & Vrata belongs to Dharmashastra; Mantra & Stotra is a practice; and Yoga is
   a darshana, on a separate axis from the Veda's limbs altogether.
 
-  **The Jyotisha tile is now "Astrology".** What it holds — charts, dashas, matching — is *hora*, one
-  branch of Jyotisha, with Panchanga and Muhurta beside it as the other two, so naming it for the
-  parent made it the sibling of its own children. *Kundali* is no better: that is the name of the
-  screen **inside** this domain, and a tile sharing its name with one of its own children reads as a
-  mistake. Astrology is the plain word a reader choosing it would use, which is the register a tile
-  wants; the blurb still names the skandha, so nothing about the taxonomy is lost.
+  **That tile is labelled "Jyotish"** — the popular spelling, not the Sanskrit *Jyotisha*, because a
+  tile is a thing a person chooses and that is the register they choose it in. It is not *Kundali*
+  either: that is the name of the screen **inside** this domain, and a tile sharing its name with one
+  of its own children reads as a mistake. What the tile holds is *hora*, one branch of Jyotisha, with
+  Panchanga and Muhurta beside it as the other two — so it carries the parent's name while holding
+  one branch of it, and the blurb opens with "Hora" to say so.
 
   `docs/roadmap.md` gains the tradition's actual taxonomy — the eighteen vidyas, the darshanas as a
   separate axis, Jyotisha's skandhas — and a table saying where each of the app's domains really
