@@ -152,13 +152,18 @@ enum class HubDomain(
         blurb = "The five limbs of the day, and the calendar they sit in.",
     ),
 
-    // Labelled Kundali, not Jyotisha. What it holds -- charts, dashas, matching -- is *hora*, one
-    // skandha of Jyotisha; Panchanga and Muhurta beside it are the other two. Calling this one by
-    // the parent's name made it the sibling of its own children. Kundali is also what a reader
-    // choosing it would say, which ADR 0019 rule 4 makes the right register for a tile.
+    // Labelled Astrology, and neither Jyotisha nor Kundali. What it holds -- charts, dashas,
+    // matching -- is *hora*, one skandha of Jyotisha; Panchanga and Muhurta beside it are the other
+    // two, so the parent's name would make this the sibling of its own children. Kundali is the
+    // other half of the problem: it is the name of the screen *inside* this domain, and a tile
+    // sharing its name with one of its own children reads as a mistake.
+    //
+    // Astrology is the plain word a reader choosing it would use, which ADR 0019 rule 4 makes the
+    // right register for a tile -- the popular form for what a person picks, the Sanskrit for what
+    // the engine computes. The blurb still names the skandha, so the taxonomy is not lost.
     JYOTISHA(
         id = "C2",
-        label = "Kundali",
+        label = "Astrology",
         status = DomainStatus.BUILT,
         icon = TileIcon.Glyph(VedicIcons.jyotisha),
         category = HubCategory.ASTROLOGY,

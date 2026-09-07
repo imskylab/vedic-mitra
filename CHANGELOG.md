@@ -269,9 +269,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   one Vedanga; Festivals & Vrata belongs to Dharmashastra; Mantra & Stotra is a practice; and Yoga is
   a darshana, on a separate axis from the Veda's limbs altogether.
 
-  **The Jyotisha tile is now "Kundali".** What it holds — charts, dashas, matching — is *hora*, one
-  branch of Jyotisha, with Panchanga and Muhurta beside it as the other two. Naming it for the parent
-  made it the sibling of its own children.
+  **The Jyotisha tile is now "Astrology".** What it holds — charts, dashas, matching — is *hora*, one
+  branch of Jyotisha, with Panchanga and Muhurta beside it as the other two, so naming it for the
+  parent made it the sibling of its own children. *Kundali* is no better: that is the name of the
+  screen **inside** this domain, and a tile sharing its name with one of its own children reads as a
+  mistake. Astrology is the plain word a reader choosing it would use, which is the register a tile
+  wants; the blurb still names the skandha, so nothing about the taxonomy is lost.
 
   `docs/roadmap.md` gains the tradition's actual taxonomy — the eighteen vidyas, the darshanas as a
   separate axis, Jyotisha's skandhas — and a table saying where each of the app's domains really
