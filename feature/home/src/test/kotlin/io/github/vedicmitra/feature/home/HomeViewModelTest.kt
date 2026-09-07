@@ -162,7 +162,10 @@ class HomeViewModelTest {
 
             viewModel.load()
 
-            assertThat(viewModel.uiState.value.snapshot?.muhurtas).containsExactly(active)
+            assertThat(
+                viewModel.uiState.value.snapshot
+                    ?.muhurtas,
+            ).containsExactly(active)
         }
 
     @Test

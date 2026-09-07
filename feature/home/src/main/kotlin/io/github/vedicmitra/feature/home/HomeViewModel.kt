@@ -139,7 +139,7 @@ class HomeViewModel
             }
         }
 
-                /** All upcoming festivals, observances and Sankrantis within the window, in date order. */
+        /** All upcoming festivals, observances and Sankrantis within the window, in date order. */
         private suspend fun upcomingEntries(
             now: Instant,
             coordinates: GeoCoordinates,
