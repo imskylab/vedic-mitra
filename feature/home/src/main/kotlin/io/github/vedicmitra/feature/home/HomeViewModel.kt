@@ -19,7 +19,6 @@ import io.github.vedicmitra.core.astronomy.Festival
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GrahaPosition
 import io.github.vedicmitra.core.astronomy.MuhurtaKind
-import io.github.vedicmitra.core.astronomy.MuhurtaQuality
 import io.github.vedicmitra.core.astronomy.PanchangaNow
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
@@ -108,7 +107,6 @@ class HomeViewModel
                                 isLoading = false,
                                 snapshot = snapshot.data,
                                 nowPanchanga = nowPanchanga,
-                                auspicious = auspiciousWindow(snapshot.data, now),
                                 festivals = festivals,
                                 events = events,
                                 planets = planets,
@@ -139,23 +137,6 @@ class HomeViewModel
                     if (result is AppResult.Success) "Reminder set for ${target.name}" else "Couldn't set the reminder",
                 )
             }
-        }
-
-        /** The auspicious/inauspicious muhurta in effect now, else the next auspicious one. */
-        private fun auspiciousWindow(
-            snapshot: AstronomySnapshot,
-            now: Instant,
-        ): AuspiciousWindow? {
-            val active = snapshot.muhurtas.filter { now >= it.start && now < it.end }
-            val current = active.firstOrNull { it.quality == MuhurtaQuality.AUSPICIOUS } ?: active.firstOrNull()
-            if (current != null) {
-                return AuspiciousWindow(current.name, current.quality, boundary = current.end, isActive = true)
-            }
-            val next =
-                snapshot.muhurtas
-                    .filter { it.start > now && it.quality == MuhurtaQuality.AUSPICIOUS }
-                    .minByOrNull { it.start } ?: return null
-            return AuspiciousWindow(next.name, next.quality, boundary = next.start, isActive = false)
         }
 
         /** All upcoming festivals, observances and Sankrantis within the window, in date order. */
@@ -199,22 +180,6 @@ class HomeViewModel
         }
     }
 
-/**
- * The auspicious window shown on Home: the one active now (its end), or the next auspicious one (its
- * start).
- *
- * @property name the muhurta's name (e.g. "Abhijit Muhurta", "Rahu Kalam").
- * @property quality whether it is auspicious or inauspicious.
- * @property boundary the end (when [isActive]) or the start (when upcoming).
- * @property isActive whether the window is in effect right now.
- */
-data class AuspiciousWindow(
-    val name: String,
-    val quality: MuhurtaQuality,
-    val boundary: Instant,
-    val isActive: Boolean,
-)
-
 /** A home-list item the user can set a reminder for, carrying what [HomeViewModel.setReminder] needs. */
 sealed interface ReminderTarget {
     /** The item's display name, used in the confirmation message. */
@@ -241,7 +206,6 @@ sealed interface ReminderTarget {
  *
  * @property isLoading whether today's content is being computed.
  * @property snapshot today's panchanga, or `null` before it loads or on error.
- * @property auspicious the auspicious-now / next-auspicious window, or `null` if none.
  * @property festivals upcoming named festivals and Sankrantis, in date order.
  * @property events upcoming lunar observances (Amavasya, Purnima, Ekadashi), in date order.
  * @property planets the grahas' current rashi positions with their next pravesh (ingress).
@@ -253,7 +217,6 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val snapshot: AstronomySnapshot? = null,
     val nowPanchanga: PanchangaNow? = null,
-    val auspicious: AuspiciousWindow? = null,
     val festivals: List<Festival> = emptyList(),
     val events: List<Festival> = emptyList(),
     val planets: List<GrahaPosition> = emptyList(),
