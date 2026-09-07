@@ -11,89 +11,76 @@
 package io.github.vedicmitra.core.ui.panchanga
 
 import androidx.annotation.StringRes
+import io.github.vedicmitra.core.astronomy.FestivalKind
+import io.github.vedicmitra.core.astronomy.MuhurtaKind
 import io.github.vedicmitra.core.ui.R
 
 /**
- * Short significance blurbs for the panchanga items the app surfaces -- muhurtas, recurring
+ * Short significance blurbs for the panchanga items the app surfaces — muhurtas, recurring
  * observances, named festivals, and Sankrantis.
  *
- * Here rather than in `:core:astronomy` for the same reason as [PanchangaPrimer]: it is copy, and
- * the engine must stay free of Android resources (ADR 0021).
+ * Here rather than in `:core:astronomy` for the same reason as [PanchangaPrimer]: it is copy, and the
+ * engine must stay free of Android resources (ADR 0021).
  *
- * ## Keyed by display name, which is a known fault
+ * **Keyed on identity, never on the name an item is shown with.** That distinction is the whole
+ * point of this object's shape. A lookup keyed on display copy does not fail loudly when the copy
+ * changes — it falls through to the caller's fallback, so the app says "no significance known" about
+ * something it demonstrably knows, in its own voice. A **Cite** claim silently becomes a denial of
+ * knowledge, which no mode declaration or `source` field can protect against. See
+ * `docs/knowledge-standards.md`, "A claim is not its own key".
  *
- * Every key below is the exact string an item is *shown with*. That is the same mistake as keying a
- * reminder on its label, fixed for muhurtas in #211: translate a display name and the lookup stops
- * matching, so every row silently falls back to "no significance known" instead of showing the
- * blurb -- the app asserting, in its own voice, that it does not know something it does. Extracting
- * the values here does not fix it: the keys are the problem, and giving festivals and observances
- * stable identities is its own change, filed as #225. Do not add entries keyed on anything new until
- * it lands.
- *
- * The general rule this breaks is in `docs/knowledge-standards.md`, under "A claim is not its own
- * key" -- this is the fourth instance, and the last one blocking a translated build.
- *
- * Sankrantis share one blurb resolved by the "&lt;Rashi&gt; Sankranti" naming, with Makara
- * Sankranti called out specially.
+ * The two overloads take the two identities that exist: [MuhurtaKind] for the day's windows and
+ * [FestivalKind] for everything on a calendar. Both are total — every entry of both enums has a
+ * blurb, and a test iterates them, so adding a kind without writing its copy breaks the build.
  */
 object PanchangaGlossary {
-    private const val SANKRANTI_SUFFIX = " Sankranti"
-
-    /** The significance blurb for the item shown as [name], or `null` if none is known. */
+    /** The significance blurb for the muhurta window [kind]. */
     @StringRes
-    fun significanceOf(name: String): Int? =
-        ENTRIES[name] ?: ENTRIES[name.withoutOrdinalSuffix()] ?: sankrantiSignificanceOf(name)
-
-    /**
-     * `"Dur Muhurta 2"` -> `"Dur Muhurta"`.
-     *
-     * A window that occurs twice in a day is displayed numbered, so the display name stops matching
-     * the entry. Saturday is the only weekday with two Dur Muhurtas, and on Saturdays both rows were
-     * falling through to the caller's "no significance known" fallback.
-     */
-    private fun String.withoutOrdinalSuffix(): String = ORDINAL_SUFFIX.replace(this, "")
-
-    private val ORDINAL_SUFFIX = Regex(" \\d+$")
-
-    @StringRes
-    private fun sankrantiSignificanceOf(name: String): Int? =
-        when {
-            !name.endsWith(SANKRANTI_SUFFIX) -> null
-            name.startsWith("Makara") -> R.string.glossary_sankranti_makara
-            else -> R.string.glossary_sankranti_generic
+    fun significanceOf(kind: MuhurtaKind): Int =
+        when (kind) {
+            MuhurtaKind.BRAHMA -> R.string.glossary_brahma_muhurta
+            MuhurtaKind.ABHIJIT -> R.string.glossary_abhijit_muhurta
+            MuhurtaKind.RAHU_KALAM -> R.string.glossary_rahu_kalam
+            MuhurtaKind.YAMAGANDA -> R.string.glossary_yamaganda
+            MuhurtaKind.GULIKA_KALAM -> R.string.glossary_gulika_kalam
+            MuhurtaKind.DUR_MUHURTA -> R.string.glossary_dur_muhurta
+            MuhurtaKind.VARJYAM -> R.string.glossary_varjyam
         }
 
-    private val ENTRIES: Map<String, Int> =
-        mapOf(
-            // Muhurtas -- daily auspicious/inauspicious windows.
-            "Brahma Muhurta" to R.string.glossary_brahma_muhurta,
-            "Abhijit Muhurta" to R.string.glossary_abhijit_muhurta,
-            "Rahu Kalam" to R.string.glossary_rahu_kalam,
-            "Yamaganda" to R.string.glossary_yamaganda,
-            "Gulika Kalam" to R.string.glossary_gulika_kalam,
-            "Dur Muhurta" to R.string.glossary_dur_muhurta,
-            "Varjyam" to R.string.glossary_varjyam,
-            // Recurring lunar observances.
-            "Ekadashi" to R.string.glossary_ekadashi,
-            "Purnima" to R.string.glossary_purnima,
-            "Amavasya" to R.string.glossary_amavasya,
-            "Sankashti Chaturthi" to R.string.glossary_sankashti_chaturthi,
-            "Vinayaka Chaturthi" to R.string.glossary_vinayaka_chaturthi,
-            "Pradosh" to R.string.glossary_pradosh,
-            "Masik Shivaratri" to R.string.glossary_masik_shivaratri,
-            // Named festivals.
-            "Ugadi / Gudi Padwa" to R.string.glossary_ugadi_gudi_padwa,
-            "Rama Navami" to R.string.glossary_rama_navami,
-            "Akshaya Tritiya" to R.string.glossary_akshaya_tritiya,
-            "Buddha Purnima" to R.string.glossary_buddha_purnima,
-            "Guru Purnima" to R.string.glossary_guru_purnima,
-            "Raksha Bandhan" to R.string.glossary_raksha_bandhan,
-            "Krishna Janmashtami" to R.string.glossary_krishna_janmashtami,
-            "Ganesh Chaturthi" to R.string.glossary_ganesh_chaturthi,
-            "Navaratri begins" to R.string.glossary_navaratri_begins,
-            "Vijayadashami" to R.string.glossary_vijayadashami,
-            "Diwali" to R.string.glossary_diwali,
-            "Maha Shivaratri" to R.string.glossary_maha_shivaratri,
-            "Holi" to R.string.glossary_holi,
-        )
+    /**
+     * The significance blurb for the festival, observance or Sankranti [kind].
+     *
+     * Detekt counts twenty-two branches and calls it complex. It is the opposite: a flat, exhaustive
+     * `when` over an enum, with no logic in it at all. The exhaustiveness is the point -- adding a
+     * kind without writing its copy stops compiling, which is a stronger guarantee than the map
+     * lookup this replaced, where a missing entry degraded to a fallback at runtime and told the
+     * reader the app knew nothing about the thing it was showing them.
+     */
+    @Suppress("CyclomaticComplexMethod")
+    @StringRes
+    fun significanceOf(kind: FestivalKind): Int =
+        when (kind) {
+            FestivalKind.UGADI -> R.string.glossary_ugadi_gudi_padwa
+            FestivalKind.RAMA_NAVAMI -> R.string.glossary_rama_navami
+            FestivalKind.AKSHAYA_TRITIYA -> R.string.glossary_akshaya_tritiya
+            FestivalKind.BUDDHA_PURNIMA -> R.string.glossary_buddha_purnima
+            FestivalKind.GURU_PURNIMA -> R.string.glossary_guru_purnima
+            FestivalKind.RAKSHA_BANDHAN -> R.string.glossary_raksha_bandhan
+            FestivalKind.KRISHNA_JANMASHTAMI -> R.string.glossary_krishna_janmashtami
+            FestivalKind.GANESH_CHATURTHI -> R.string.glossary_ganesh_chaturthi
+            FestivalKind.NAVARATRI -> R.string.glossary_navaratri_begins
+            FestivalKind.VIJAYADASHAMI -> R.string.glossary_vijayadashami
+            FestivalKind.DIWALI -> R.string.glossary_diwali
+            FestivalKind.MAHA_SHIVARATRI -> R.string.glossary_maha_shivaratri
+            FestivalKind.HOLI -> R.string.glossary_holi
+            FestivalKind.VINAYAKA_CHATURTHI -> R.string.glossary_vinayaka_chaturthi
+            FestivalKind.EKADASHI -> R.string.glossary_ekadashi
+            FestivalKind.PRADOSH -> R.string.glossary_pradosh
+            FestivalKind.PURNIMA -> R.string.glossary_purnima
+            FestivalKind.SANKASHTI_CHATURTHI -> R.string.glossary_sankashti_chaturthi
+            FestivalKind.MASIK_SHIVARATRI -> R.string.glossary_masik_shivaratri
+            FestivalKind.AMAVASYA -> R.string.glossary_amavasya
+            FestivalKind.SANKRANTI -> R.string.glossary_sankranti_generic
+            FestivalKind.MAKARA_SANKRANTI -> R.string.glossary_sankranti_makara
+        }
 }

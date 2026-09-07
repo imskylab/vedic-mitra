@@ -7,6 +7,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The glossary no longer looks itself up by name.** Every festival, observance and Sankranti now
+  has a `FestivalKind` — a frozen identity that display copy hangs off, rather than the other way
+  round — and `PanchangaGlossary` is keyed on that.
+
+  This was the **fourth and last** instance of the fault
+  [`docs/knowledge-standards.md`](docs/knowledge-standards.md) calls *"a claim is not its own key"*,
+  and the one that mattered most: the lookup did not fail loudly when a name changed, it fell through
+  to the caller's fallback. In a translated build the app would have answered **"More details coming
+  soon."** for every festival — asserting, in its own voice, that it knows nothing about Diwali.
+
+  `withoutOrdinalSuffix` went with it. That regex stripped "Dur Muhurta 2" back to "Dur Muhurta" so
+  the lookup would hit; there is nothing to strip once the caller asks by identity.
+
+  A second name-keyed lookup turned up on the way. The tithis a recurring observance falls on lived
+  in two `when` blocks — one keyed by tithi, one keyed by *name* — kept in step by hand. They are one
+  property on the kind now, and a test asserts the two directions agree, which nothing did before.
+
+
 ## [0.10.0] - 2026-09-07
 
 ### Added

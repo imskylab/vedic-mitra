@@ -69,6 +69,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.DayRule
 import io.github.vedicmitra.core.astronomy.Festival
+import io.github.vedicmitra.core.astronomy.FestivalKind
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
@@ -686,10 +687,10 @@ private fun CalendarContentPreview() {
     val month = YearMonth.of(2026, 8)
 
     fun previewFestival(
-        name: String,
+        kind: FestivalKind,
         type: FestivalType,
         rule: DayRule,
-    ) = Festival(name, Instant.fromEpochMilliseconds(1_785_888_000_000L), type, rule)
+    ) = Festival(kind, kind.label, Instant.fromEpochMilliseconds(1_785_888_000_000L), type, rule)
 
     val days =
         (1..month.lengthOfMonth()).map { day ->
@@ -700,8 +701,20 @@ private fun CalendarContentPreview() {
                 festival =
                     when (day) {
                         // Shivaratri's rule, so the preview shows the longer night-timed line too.
-                        5 -> previewFestival("Ganesh Chaturthi", FestivalType.FESTIVAL, DayRule.SUNRISE_TITHI)
-                        15 -> previewFestival("Maha Shivaratri", FestivalType.FESTIVAL, DayRule.NIGHT_NISHITA)
+                        5 ->
+                            previewFestival(
+                                FestivalKind.GANESH_CHATURTHI,
+                                FestivalType.FESTIVAL,
+                                DayRule.SUNRISE_TITHI,
+                            )
+
+                        15 ->
+                            previewFestival(
+                                FestivalKind.MAHA_SHIVARATRI,
+                                FestivalType.FESTIVAL,
+                                DayRule.NIGHT_NISHITA,
+                            )
+
                         else -> null
                     },
             )
