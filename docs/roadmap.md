@@ -93,7 +93,7 @@ some.
 | Tile | Sits under | Kind |
 | --- | --- | --- |
 | Panchanga | Jyotisha → Siddhanta | an **output**, not a discipline |
-| Kundali | Jyotisha → **Hora** | one skandha |
+| Jyotish | Jyotisha → **Hora** | one skandha |
 | Muhurta | Jyotisha → **Samhita** | one skandha |
 | Festivals & Vrata | **Dharmashastra** (the *nibandha* digests) | Upanga |
 | Dharma & Samskara | **Dharmashastra** + **Kalpa** (grihya) | Upanga + Vedanga |
@@ -105,7 +105,7 @@ some.
 
 Two things this makes visible, both worth stating plainly.
 
-**Four of the ten are one Vedanga.** Panchanga, Kundali and Muhurta are Jyotisha or its output, and
+**Four of the ten are one Vedanga.** Panchanga, Jyotish and Muhurta are all Jyotisha or its output, and
 Festivals takes its dates from it. This is a Jyotisha app with adjacent disciplines around it. That
 is a coherent thing to be, and it is what got built — but the grid gives ten equal-looking tiles, so
 the weighting is worth knowing.

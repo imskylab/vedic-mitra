@@ -152,13 +152,19 @@ enum class HubDomain(
         blurb = "The five limbs of the day, and the calendar they sit in.",
     ),
 
-    // Labelled Kundali, not Jyotisha. What it holds -- charts, dashas, matching -- is *hora*, one
-    // skandha of Jyotisha; Panchanga and Muhurta beside it are the other two. Calling this one by
-    // the parent's name made it the sibling of its own children. Kundali is also what a reader
-    // choosing it would say, which ADR 0019 rule 4 makes the right register for a tile.
+    // Labelled Jyotish, the popular spelling rather than the Sanskrit *Jyotisha* -- ADR 0019 rule 4,
+    // the form a person uses for something they are choosing. It is also not Kundali: that is the
+    // name of the screen *inside* this domain, and a tile sharing its name with one of its own
+    // children reads as a mistake.
+    //
+    // The cost, stated rather than hidden: what this domain holds is *hora*, one skandha, and
+    // Panchanga and Muhurta beside it are the other two -- so the tile carries the parent's name
+    // while holding one branch of it. The blurb opens with "Hora" to say so. `docs/roadmap.md` has
+    // the full taxonomy, and spells the discipline *Jyotisha* because there it is naming the
+    // Vedanga rather than a thing a reader taps.
     JYOTISHA(
         id = "C2",
-        label = "Kundali",
+        label = "Jyotish",
         status = DomainStatus.BUILT,
         icon = TileIcon.Glyph(VedicIcons.jyotisha),
         category = HubCategory.ASTROLOGY,
