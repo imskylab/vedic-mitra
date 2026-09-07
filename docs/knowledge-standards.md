@@ -146,12 +146,14 @@ It has happened four times:
 | Reminder keys | `"muhurta:$name"` from the display name. Translating a label orphans a reminder the user set — it stops being renewed and cannot be reconciled | fixed, [#211](https://github.com/imskylab/vedic-mitra/issues/211) |
 | Dur Muhurta, twice over | Saturday's two windows are *displayed* numbered, so the name stopped matching. It broke reminder keys **and**, separately, the glossary lookup | fixed once, worked around once |
 | `ProfileRelation` · `Gender` | English `displayName` on a `:core:datastore` enum — a module that persists values and knows nothing of a locale | fixed, #214 |
-| `PanchangaGlossary` | Keyed on the exact string each item is shown with | open, [#225](https://github.com/imskylab/vedic-mitra/issues/225) |
+| `PanchangaGlossary` | Keyed on the exact string each item is shown with | fixed, [#225](https://github.com/imskylab/vedic-mitra/issues/225) |
 
 **The tell:** if you are normalising display text to make a lookup succeed — stripping a numeric
 suffix, lowercasing, trimming an honorific — the key is display copy and the normalisation is a
-patch over the real fault. `PanchangaGlossary.withoutOrdinalSuffix` is exactly this, and it is
-labelled as such rather than left to look like a feature.
+patch over the real fault. `PanchangaGlossary.withoutOrdinalSuffix` was exactly this: a regex that
+stripped "Dur Muhurta 2" back to "Dur Muhurta" so the lookup would hit. It was labelled as a patch
+rather than left to look like a feature, and deleting it was how #225 finished — there is nothing to
+strip once the caller asks by identity.
 
 **What to do instead.** Give the thing a stable identity that display copy *hangs off*, never the
 reverse: an enum entry, or an id that no editorial decision can move. `MuhurtaKind` is the worked

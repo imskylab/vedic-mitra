@@ -16,6 +16,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.DayRule
 import io.github.vedicmitra.core.astronomy.Festival
+import io.github.vedicmitra.core.astronomy.FestivalKind
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Karana
@@ -78,6 +79,7 @@ class HomeViewModelTest {
         runTest {
             val festival =
                 Festival(
+                    FestivalKind.DIWALI,
                     "Diwali",
                     Instant.fromEpochMilliseconds(1_762_560_000_000L),
                     FestivalType.FESTIVAL,
@@ -108,6 +110,7 @@ class HomeViewModelTest {
         runTest {
             val observance =
                 Festival(
+                    FestivalKind.EKADASHI,
                     "Ekadashi",
                     Instant.fromEpochMilliseconds(1_760_000_000_000L),
                     FestivalType.OBSERVANCE,
@@ -115,6 +118,7 @@ class HomeViewModelTest {
                 )
             val festival =
                 Festival(
+                    FestivalKind.DIWALI,
                     "Diwali",
                     Instant.fromEpochMilliseconds(1_762_560_000_000L),
                     FestivalType.FESTIVAL,

@@ -66,7 +66,9 @@ enum class DayRule {
 /**
  * A festival or observance falling on a particular day, as computed from the panchanga.
  *
- * @property name the display name (e.g. "Diwali", "Ekadashi", "Makara Sankranti").
+ * @property kind which festival this is, and the only thing anything durable may refer to it by.
+ * @property name the display name (e.g. "Diwali", "Ekadashi", "Makara Sankranti"). Usually
+ *   [FestivalKind.label]; a Sankranti is named for its rashi, which the kind does not carry.
  * @property atSunrise the instant of sunrise on the festival day — the UI formats this to a local
  *   date in the location's time zone.
  * @property type what kind of entry this is.
@@ -74,6 +76,7 @@ enum class DayRule {
  *   [atSunrise] without it asserts more certainty than the app has.
  */
 data class Festival(
+    val kind: FestivalKind,
     val name: String,
     val atSunrise: Instant,
     val type: FestivalType,

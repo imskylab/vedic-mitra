@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -67,6 +68,7 @@ import io.github.vedicmitra.core.astronomy.AstronomySnapshot
 import io.github.vedicmitra.core.astronomy.Ayana
 import io.github.vedicmitra.core.astronomy.DayRule
 import io.github.vedicmitra.core.astronomy.Festival
+import io.github.vedicmitra.core.astronomy.FestivalKind
 import io.github.vedicmitra.core.astronomy.FestivalType
 import io.github.vedicmitra.core.astronomy.GoldenHour
 import io.github.vedicmitra.core.astronomy.Graha
@@ -89,7 +91,6 @@ import io.github.vedicmitra.core.astronomy.Tithi
 import io.github.vedicmitra.core.astronomy.Vara
 import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.astronomy.nameIn
-import io.github.vedicmitra.core.astronomy.observanceTithis
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
@@ -823,9 +824,10 @@ private fun RowDetailSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            val significance = PanchangaGlossary.significanceOf(row.label)
+            // Null is ordinary: most rows are values rather than named items, and only the named
+            // ones carry a blurb. It no longer depends on the label matching anything.
             Text(
-                text = if (significance != null) stringResource(significance) else "More details coming soon.",
+                text = row.significance?.let { stringResource(it) } ?: "More details coming soon.",
                 style = MaterialTheme.typography.bodyLarge,
             )
             row.reminderTarget?.let { target ->
@@ -852,6 +854,7 @@ private data class SectionRow(
     val trailing: String,
     val reminderTarget: ReminderTarget? = null,
     val dayRule: DayRule? = null,
+    @param:StringRes val significance: Int? = null,
 )
 
 /** A graha's rashi as a row: "Guru · Karka" with its next pravesh date, or an em dash if none. */
@@ -866,15 +869,26 @@ private fun AstronomySnapshot.periodRows(quality: MuhurtaQuality): List<SectionR
     muhurtas
         .filter { it.quality == quality }
         .sortedBy { it.start }
-        .map { SectionRow(it.name, formatRange(it.start, it.end), ReminderTarget.Muhurta(it.kind, it.name)) }
+        .map {
+            SectionRow(
+                label = it.name,
+                trailing = formatRange(it.start, it.end),
+                reminderTarget = ReminderTarget.Muhurta(it.kind, it.name),
+                significance = PanchangaGlossary.significanceOf(it.kind),
+            )
+        }
 
 /** A festival/observance as a row; observances also carry a [ReminderTarget] so they can be reminded for. */
 private fun Festival.toEventRow(): SectionRow =
     SectionRow(
         label = name,
         trailing = formatDate(atSunrise),
-        reminderTarget = observanceTithis(name)?.let { ReminderTarget.Observance(name, it) },
+        // Both of these used to be looked up by name. The tithis a recurring observance fires on now
+        // hang off the kind, and so does its blurb -- resolved here, where the identity is in hand,
+        // rather than in the sheet, which only ever had the label to go on.
+        reminderTarget = kind.monthlyTithis?.let { ReminderTarget.Observance(name, it) },
         dayRule = dayRule,
+        significance = PanchangaGlossary.significanceOf(kind),
     )
 
 private const val AFTERNOON_FROM_HOUR = 12
@@ -982,12 +996,14 @@ private fun sampleHomeState(): HomeUiState {
         festivals =
             listOf(
                 Festival(
+                    kind = FestivalKind.GANESH_CHATURTHI,
                     name = "Ganesh Chaturthi",
                     atSunrise = Instant.fromEpochMilliseconds(1_757_808_000_000L),
                     type = FestivalType.FESTIVAL,
                     dayRule = DayRule.SUNRISE_TITHI,
                 ),
                 Festival(
+                    kind = FestivalKind.MAKARA_SANKRANTI,
                     name = "Makara Sankranti",
                     atSunrise = Instant.fromEpochMilliseconds(1_768_003_200_000L),
                     type = FestivalType.SANKRANTI,
@@ -997,12 +1013,14 @@ private fun sampleHomeState(): HomeUiState {
         events =
             listOf(
                 Festival(
+                    kind = FestivalKind.PURNIMA,
                     name = "Purnima",
                     atSunrise = Instant.fromEpochMilliseconds(1_757_030_400_000L),
                     type = FestivalType.OBSERVANCE,
                     dayRule = DayRule.SUNRISE_TITHI,
                 ),
                 Festival(
+                    kind = FestivalKind.AMAVASYA,
                     name = "Amavasya",
                     atSunrise = Instant.fromEpochMilliseconds(1_758_240_000_000L),
                     type = FestivalType.OBSERVANCE,
