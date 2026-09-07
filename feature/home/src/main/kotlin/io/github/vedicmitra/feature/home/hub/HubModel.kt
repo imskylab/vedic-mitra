@@ -11,9 +11,6 @@
 package io.github.vedicmitra.feature.home.hub
 
 import androidx.annotation.DrawableRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.ui.graphics.vector.ImageVector
 import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 
 /**
@@ -71,11 +68,6 @@ sealed interface TileIcon {
      *  placeholder for a domain that has no artwork yet. */
     data class Letter(
         val text: String,
-    ) : TileIcon
-
-    /** A Material symbol, tinted like one. Utilitarian things keep the plainer style, per VedicIcons. */
-    data class Symbol(
-        val vector: ImageVector,
     ) : TileIcon
 }
 
@@ -168,7 +160,7 @@ enum class HubDomain(
         id = "C2",
         label = "Kundali",
         status = DomainStatus.BUILT,
-        icon = TileIcon.Glyph(VedicIcons.kundali),
+        icon = TileIcon.Glyph(VedicIcons.jyotisha),
         category = HubCategory.ASTROLOGY,
         blurb = "Hora — birth charts, dashas, and what a day reads like against them.",
     ),
@@ -255,10 +247,9 @@ enum class HubDomain(
  * than merely intended.
  */
 object HubCatalog {
-    // A bell, not a cultural glyph: VedicIcons reserves the ornate style for signature features and
-    // sends utilitarian ones to Material Symbols. Declared first -- an object's properties
-    // initialise in source order, and the lists below read it.
-    private val reminderIcon = TileIcon.Symbol(Icons.Filled.Notifications)
+    // A temple-bell glyph. Declared first -- an object's properties initialise in source order, and
+    // the lists below read it.
+    private val reminderIcon = TileIcon.Glyph(VedicIcons.reminders)
 
     /**
      * The handful of destinations opened daily, kept one tap away.
