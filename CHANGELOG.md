@@ -42,6 +42,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   in two `when` blocks — one keyed by tithi, one keyed by *name* — kept in step by hand. They are one
   property on the kind now, and a test asserts the two directions agree, which nothing did before.
 
+### Fixed
+
+- **The hub's glyphs are visible in the dark theme.** They were inked in a fixed maroon chosen
+  against the light scheme's cream chips, where it reads at about 8:1. The dark scheme's chips are
+  mid-tone browns of nearly the same luminance, so the same ink landed between **1.09:1 and 1.51:1** —
+  1.0:1 being two identical colours. Nearly every tile in Explore was, in effect, a blank rectangle
+  for anyone using the app at night.
+
+  They are re-coloured now when the chip they sit on is dark. That is not a new idea in this app: the
+  Support tab's glyph has always been drawn as a tintable stencil, for exactly this reason.
+
+  The decision is made from the **chip's own luminance** rather than from a light/dark flag, because
+  the theme can also be handed a palette derived from the wallpaper, and then neither scheme's values
+  are what is on screen.
+
+  Two glyphs are deliberately left alone — the Panchanga scribe and the Rashifal wheel are drawings
+  rather than symbols, and a tint would flatten shading into a silhouette. The Rashifal wheel is
+  therefore still weak in the dark theme; that needs artwork, not a colour.
+
 
 ## [0.10.0] - 2026-09-07
 
