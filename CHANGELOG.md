@@ -20,6 +20,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with the reader's font scale. A screen reader hears the whole date once — "8 September" — rather
   than the two drawn lines as loose fragments.
 
+  The **Panchanga domain tile** takes new artwork at the same time: the scribe and his scroll drawn
+  out in full, rather than the silhouette of the same scene inside a medallion. The two tiles now
+  differ twice over.
+
 - **The glossary no longer looks itself up by name.** Every festival, observance and Sankranti now
   has a `FestivalKind` — a frozen identity that display copy hangs off, rather than the other way
   round — and `PanchangaGlossary` is keyed on that.
