@@ -9,6 +9,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The landing has one grid of tiles instead of two.** The **Today** row held Today's Panchanga,
+  Calendar and Reminders, and two of the three had stopped earning their place: the card at the top
+  of Home already opens today's panchanga — showing the weekday, the moon phase, the running tithi
+  and its countdown — and the calendar sits under Panchanga, where someone looking for a calendar
+  looks. A shortcut to something already on screen is not a shortcut.
+
+  **Reminders moved into the Explore grid**, beside Muhurta, which is where a reminder is set. It is
+  the one tile there that is not a domain; that is a deliberate exception and a test keeps it from
+  becoming two.
+
+  Nothing became harder to reach. Today's Panchanga is still one tap, from the card.
+
+- **Muhurta opens in one tap.** It used to lead to a list of two whose first entry was also called
+  "Muhurta" — the domain's own name, one row below itself. A domain that holds a single screen now
+  *is* that screen. Reminders was the other entry, and it is on the landing.
+
+- **The Arts is no longer shown.** It needs audio and images the app cannot carry, so nobody has
+  decided what the tile would open onto, and a tile is an offer. It stays on the roadmap with its
+  artwork and its note, ready to return when it has a shape.
+
+- The card at the top of Home now announces itself as a **button** to a screen reader. It was a plain
+  tappable surface, which was survivable while a labelled tile offered the same destination.
+
 - **Today's Panchanga shows today's date.** The tile drew the same scroll glyph as the Panchanga
   domain it sits under, so on *Explore → Panchanga* a parent and its first child were
   indistinguishable. It now draws the day number over the short month, which also tells a reader

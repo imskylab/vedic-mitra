@@ -158,9 +158,20 @@ data class HubTile(
  *
  * All four remain on the roadmap. Not being a destination is not the same as not being wanted.
  *
+ * **The Arts** (K7) is absent differently, and is the one entry that is in this enum without being
+ * on the hub — see [tiled]. The others were never destinations; this one is, and is held back for
+ * the reason Chandas is: it is blocked on audio and images the app cannot carry, so nobody has
+ * decided what it looks like when it arrives. It keeps its label, artwork and note so that tiling it
+ * again is one word, and so the reason survives in the place someone will look.
+ *
  * @property id the roadmap's own identifier, so the two can be checked against each other.
  * @property note what a reader is told on tapping, when the domain has no screen to open. Null only
  *   for [DomainStatus.BUILT].
+ * @property opens the screen this domain *is*, when it holds exactly one. A domain normally drills
+ *   into a list of what it contains, but a list of one whose single entry repeats its parent's name
+ *   is a tap that teaches nothing — so such a domain opens its screen directly instead.
+ * @property tiled whether the hub draws this domain at all. False means it is on the roadmap and in
+ *   this enum, but deliberately not offered yet; see the KDoc above for which and why.
  */
 enum class HubDomain(
     val id: String,
@@ -170,6 +181,8 @@ enum class HubDomain(
     val category: HubCategory,
     val blurb: String,
     val note: String? = null,
+    val opens: HubTarget? = null,
+    val tiled: Boolean = true,
 ) {
     PANCHANGA(
         id = "C1",
@@ -198,6 +211,12 @@ enum class HubDomain(
         category = HubCategory.ASTROLOGY,
         blurb = "Hora — birth charts, dashas, and what a day reads like against them.",
     ),
+
+    // Opens its screen rather than drilling. It used to hold two tiles, one of them called
+    // "Muhurta" -- the domain's own name, one row below itself. That was not drift: ADR 0019 found
+    // *Muhurat / Muhurta* colliding and settled on "Muhurta" for both, which made parent and child
+    // identical. Reminders moved up to the landing, leaving a list of one, and a list of one that
+    // repeats its parent is a tap that teaches nothing.
     MUHURTA(
         id = "C3",
         label = "Muhurta",
@@ -205,6 +224,7 @@ enum class HubDomain(
         icon = TileIcon.Glyph(VedicIcons.muhurat),
         category = HubCategory.DAILY,
         blurb = "Choosing a time, and being reminded when it comes.",
+        opens = HubTarget.MUHURAT,
     ),
     FESTIVALS(
         id = "K1",
@@ -258,6 +278,11 @@ enum class HubDomain(
         blurb = "The eight limbs, explained rather than instructed.",
         note = "Yoga — planned, and open for anyone who wants to build it.",
     ),
+
+    // Kept here and on the roadmap, but off the hub. K7 is blocked on media the app cannot carry --
+    // raga needs audio, iconography needs images -- and nobody has decided what it would look like
+    // if it arrived. A tile advertises a section; this one would advertise a shape that does not
+    // exist yet. The note stays accurate for the day it is tiled again.
     ARTS(
         id = "K7",
         label = "The Arts",
@@ -266,11 +291,27 @@ enum class HubDomain(
         category = HubCategory.DEVOTION,
         blurb = "Architecture, sculpture, music and drama.",
         note = "The arts — still being explored; they need audio and images the app cannot carry yet.",
+        tiled = false,
     ),
     ;
 
-    /** Whether this domain has a screen of its own to open. */
+    /**
+     * Whether this domain has anything behind it yet.
+     *
+     * Not the same as "drills": a built domain either holds a list of its own or, when [opens] is
+     * set, *is* a single screen. Both are openable; only the first drills.
+     */
     val isOpenable: Boolean get() = status == DomainStatus.BUILT
+
+    /** What tapping this domain's tile does. */
+    internal fun tileAction(): TileAction {
+        val target = opens
+        return when {
+            target != null -> TileAction.Open(target)
+            isOpenable -> TileAction.Drill(this)
+            else -> TileAction.NotYet(note.orEmpty())
+        }
+    }
 }
 
 /**
@@ -282,35 +323,41 @@ enum class HubDomain(
  */
 object HubCatalog {
     // A temple-bell glyph. Declared first -- an object's properties initialise in source order, and
-    // the lists below read it.
-    private val reminderIcon = TileIcon.Glyph(VedicIcons.reminders)
+    // the list below reads it.
+    private val remindersTile =
+        HubTile("Reminders", TileIcon.Glyph(VedicIcons.reminders), HubCategory.DAILY, open(HubTarget.REMINDERS))
 
     /**
-     * The handful of destinations opened daily, kept one tap away.
+     * The one grid the landing draws: the domain map, plus the single destination that is not a
+     * domain.
      *
-     * These also appear under their domain below. The duplication is the point: a pure hierarchy
-     * would put the calendar and the reminders list two taps deep, every time, which is a poor trade
-     * for the tidiness it buys.
+     * There used to be a **Today** row above this one, holding Today's Panchanga, Calendar and
+     * Reminders. Two of the three earned nothing: the hero card at the top of Home already opens
+     * Today's Panchanga — showing far more than a tile could — and Calendar sits under Panchanga
+     * where a reader looking for a calendar would look. A shortcut to something already on screen is
+     * not a shortcut.
+     *
+     * **Reminders is the exception, and it is not a domain.** It is a place a reader goes often and
+     * belongs to no shastra, so it sits here beside Muhurta, where a reminder is set. The cost is
+     * stated rather than hidden: this grid is otherwise the roadmap made visible, and one tile in it
+     * is not on the roadmap. One tap was judged worth that.
      */
-    val today: List<HubTile> =
-        listOf(
-            HubTile("Today's Panchanga", TileIcon.Today, HubCategory.DAILY, open(HubTarget.PANCHANG)),
-            tile("Calendar", VedicIcons.calendar, HubCategory.DAILY, HubTarget.CALENDAR),
-            HubTile("Reminders", reminderIcon, HubCategory.DAILY, open(HubTarget.REMINDERS)),
-        )
-
-    /** One tile per domain — the shastra map, as the hub shows it. */
-    val domains: List<HubTile> =
-        HubDomain.entries.map { domain ->
-            HubTile(
-                label = domain.label,
-                icon = domain.icon,
-                category = domain.category,
-                action = if (domain.isOpenable) TileAction.Drill(domain) else TileAction.NotYet(domain.note.orEmpty()),
-            )
+    val explore: List<HubTile> =
+        HubDomain.entries.filter { it.tiled }.flatMap { domain ->
+            val tile =
+                HubTile(
+                    label = domain.label,
+                    icon = domain.icon,
+                    category = domain.category,
+                    action = domain.tileAction(),
+                )
+            if (domain == HubDomain.MUHURTA) listOf(tile, remindersTile) else listOf(tile)
         }
 
-    /** What sits inside [domain]. Empty for anything not yet built, which is why those tiles do not drill. */
+    /**
+     * What sits inside [domain]. Empty unless the domain actually drills — which means anything not
+     * built yet, and also Muhurta, which is one screen rather than a list and so opens directly.
+     */
     fun tilesIn(domain: HubDomain): List<HubTile> =
         when (domain) {
             // Today's Panchanga is deliberately not the panchang glyph: that is this domain's own
@@ -327,12 +374,6 @@ object HubCatalog {
                     tile("Kundali", VedicIcons.kundali, domain.category, HubTarget.KUNDALI),
                     tile("Rashifal", VedicIcons.rashifal, domain.category, HubTarget.RASHIFAL, tintable = false),
                     tile("Match", VedicIcons.matchmaking, domain.category, HubTarget.MATCH),
-                )
-
-            HubDomain.MUHURTA ->
-                listOf(
-                    tile("Muhurta", VedicIcons.muhurat, domain.category, HubTarget.MUHURAT),
-                    HubTile("Reminders", reminderIcon, domain.category, open(HubTarget.REMINDERS)),
                 )
 
             HubDomain.FESTIVALS ->

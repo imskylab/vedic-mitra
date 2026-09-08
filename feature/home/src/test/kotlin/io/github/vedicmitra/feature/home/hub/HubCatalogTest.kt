@@ -41,7 +41,7 @@ class HubCatalogTest {
         // The hub is the only way into most screens, so a target with no tile is a screen no reader
         // can open.
         val reached =
-            (HubCatalog.today + HubDomain.entries.flatMap { HubCatalog.tilesIn(it) })
+            (HubCatalog.explore + HubDomain.entries.flatMap { HubCatalog.tilesIn(it) })
                 .mapNotNull { (it.action as? TileAction.Open)?.target }
                 .toSet()
 
@@ -49,23 +49,39 @@ class HubCatalogTest {
     }
 
     @Test
-    fun `a built domain drills into something, and an unbuilt one says where it stands`() {
-        HubCatalog.domains.forEach { tile ->
-            val domain = HubDomain.entries.first { it.label == tile.label }
-            if (domain.isOpenable) {
-                assertWithMessage("${domain.id} ${domain.label} should drill")
-                    .that(tile.action)
-                    .isInstanceOf(TileAction.Drill::class.java)
-                assertWithMessage("${domain.id} drills but holds nothing")
-                    .that(HubCatalog.tilesIn(domain))
-                    .isNotEmpty()
-            } else {
-                assertWithMessage("${domain.id} ${domain.label} should report its status")
-                    .that(tile.action)
-                    .isInstanceOf(TileAction.NotYet::class.java)
-                assertWithMessage("${domain.id} has no screen, so it must have nothing to drill into")
-                    .that(HubCatalog.tilesIn(domain))
-                    .isEmpty()
+    fun `a domain opens, drills, or says where it stands -- and nothing in between`() {
+        // Three outcomes now, not two. A built domain either holds a list or *is* one screen; the
+        // second case exists so a list of one that repeats its parent's name is not a wasted tap.
+        HubDomain.entries.filter { it.tiled }.forEach { domain ->
+            val tile = HubCatalog.explore.first { it.label == domain.label }
+            val opens = domain.opens
+            when {
+                opens != null -> {
+                    assertWithMessage("${domain.id} ${domain.label} names a screen, so it should open it")
+                        .that(tile.action)
+                        .isEqualTo(TileAction.Open(opens))
+                    assertWithMessage("${domain.id} opens a screen, so there is no list to drill into")
+                        .that(HubCatalog.tilesIn(domain))
+                        .isEmpty()
+                }
+
+                domain.isOpenable -> {
+                    assertWithMessage("${domain.id} ${domain.label} should drill")
+                        .that(tile.action)
+                        .isInstanceOf(TileAction.Drill::class.java)
+                    assertWithMessage("${domain.id} drills but holds nothing")
+                        .that(HubCatalog.tilesIn(domain))
+                        .isNotEmpty()
+                }
+
+                else -> {
+                    assertWithMessage("${domain.id} ${domain.label} should report its status")
+                        .that(tile.action)
+                        .isInstanceOf(TileAction.NotYet::class.java)
+                    assertWithMessage("${domain.id} has no screen, so it must have nothing to drill into")
+                        .that(HubCatalog.tilesIn(domain))
+                        .isEmpty()
+                }
             }
         }
     }
@@ -98,14 +114,13 @@ class HubCatalogTest {
 
     @Test
     fun `Today's Panchanga shows the date, and its parent keeps the glyph`() {
-        // These three tiles all drew VedicIcons.panchang once, which left the Panchanga domain and
-        // the first tile inside it looking identical. Stated as an assertion so it cannot come back.
-        val shortcut = HubCatalog.today.first { it.label == "Today's Panchanga" }
+        // Both drew VedicIcons.panchang once, which left the Panchanga domain and the first tile
+        // inside it looking identical. Stated as an assertion so it cannot come back. A second copy
+        // of this tile sat on the landing until the Today row went; one is left.
         val underDomain = HubCatalog.tilesIn(HubDomain.PANCHANGA).first { it.label == "Today's Panchanga" }
 
-        assertThat(shortcut.icon).isEqualTo(TileIcon.Today)
         assertThat(underDomain.icon).isEqualTo(TileIcon.Today)
-        assertWithMessage("the domain tile is what the two are meant to differ from")
+        assertWithMessage("the domain tile is what it is meant to differ from")
             .that(HubDomain.PANCHANGA.icon)
             .isNotEqualTo(TileIcon.Today)
     }
@@ -120,7 +135,7 @@ class HubCatalogTest {
         // Keyed on the label rather than the drawable id: a resource id is not reliably itself in a
         // plain JVM test, and the label is what a reader would name the tile by anyway.
         val exempt =
-            (HubCatalog.today + HubCatalog.domains + HubDomain.entries.flatMap { HubCatalog.tilesIn(it) })
+            (HubCatalog.explore + HubDomain.entries.flatMap { HubCatalog.tilesIn(it) })
                 .filter { (it.icon as? TileIcon.Glyph)?.tintable == false }
                 .map { it.label }
                 .toSet()
@@ -138,17 +153,33 @@ class HubCatalogTest {
     }
 
     @Test
-    fun `the daily tiles are a shortcut, never the only way to something`() {
-        // They duplicate destinations that also sit under a domain. That is the intended trade -- but
-        // it must stay a duplicate, or removing the shortcut would strand the screen.
-        val underDomains =
-            HubDomain.entries
-                .flatMap { HubCatalog.tilesIn(it) }
-                .mapNotNull { (it.action as? TileAction.Open)?.target }
-                .toSet()
-        val daily = HubCatalog.today.mapNotNull { (it.action as? TileAction.Open)?.target }
+    fun `the hub shows every domain except the ones deliberately held back`() {
+        // Hiding a domain is the change most likely to happen quietly and least likely to be caught:
+        // every other test here reads either the enum, which still holds it, or the grid, which no
+        // longer does. So the held-back set is pinned by name -- hiding another domain has to be an
+        // edit here, with a reason beside it in HubDomain.
+        val heldBack = HubDomain.entries.filterNot { it.tiled }
+        val onTheHub = HubCatalog.explore.map { it.label }
 
-        assertThat(daily).isNotEmpty()
-        assertThat(underDomains).containsAtLeastElementsIn(daily)
+        assertThat(heldBack.map { it.label }).containsExactly("The Arts")
+        assertWithMessage("a held-back domain must not be drawn").that(onTheHub).doesNotContain("The Arts")
+        HubDomain.entries.filter { it.tiled }.forEach { domain ->
+            assertWithMessage("${domain.id} ${domain.label} is tiled but missing from the grid")
+                .that(onTheHub)
+                .contains(domain.label)
+        }
+    }
+
+    @Test
+    fun `Reminders is on the landing, and is the only tile there that is not a domain`() {
+        // It belongs to no shastra, so it cannot come from HubDomain -- which is why it is worth
+        // asserting: nothing else here would notice if it fell out of the grid entirely.
+        val domainLabels = HubDomain.entries.map { it.label }.toSet()
+        val strays = HubCatalog.explore.map { it.label }.filterNot { it in domainLabels }
+
+        assertThat(strays).containsExactly("Reminders")
+        assertWithMessage("Reminders should open its screen from the landing, not drill")
+            .that(HubCatalog.explore.first { it.label == "Reminders" }.action)
+            .isEqualTo(TileAction.Open(HubTarget.REMINDERS))
     }
 }
