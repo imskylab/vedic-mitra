@@ -61,6 +61,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   rather than symbols, and a tint would flatten shading into a silhouette. The Rashifal wheel is
   therefore still weak in the dark theme; that needs artwork, not a colour.
 
+- **The Om tile stays inside its chip at a large font scale.** It was drawn as ordinary text, so it
+  grew with the reader's font setting while the chip holding it did not: at twice the default scale
+  a 28sp letter wanted a 72dp line box inside a 52dp chip, and was clipped.
+
+  Every icon on a tile is now pinned to a fixed size, which is what the artwork and the date already
+  did — the Om was the one that disagreed. What grows instead is the **label under the chip**, which
+  is where the meaning is; the glyph is a landmark, and Android does not scale icons with text
+  either.
+
+  The hub grid also gained a preview at twice the font scale, in both themes. Nothing was looking,
+  which is why this survived as long as it did.
+
 
 ## [0.10.0] - 2026-09-07
 
