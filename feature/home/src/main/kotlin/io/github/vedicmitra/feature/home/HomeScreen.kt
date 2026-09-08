@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -319,13 +320,13 @@ private fun HubView(
                 onRowClick = { selectedRow = it },
             )
         }
-        // Two grids: what gets opened daily, then the shastra map. The daily few are duplicated
-        // from their domains on purpose -- a pure hierarchy would put the calendar and the reminder
-        // list two taps away, every time, which is a poor trade for the tidiness.
-        SectionLabel("TODAY")
-        TileGrid(HubCatalog.today, onTile)
+        // One grid. There used to be a "Today" row above this one, and it repeated the screen it sat
+        // on: the hero card already opens Today's Panchanga and says more than a tile can, and
+        // Calendar lives under Panchanga where a reader would look for it. Reminders was the only
+        // tile earning its place, so it moved into the grid below rather than keeping a row of its
+        // own.
         SectionLabel("EXPLORE")
-        TileGrid(HubCatalog.domains, onTile)
+        TileGrid(HubCatalog.explore, onTile)
         if (uiState.usingDefaultLocation) {
             Text(
                 text = "Showing New Delhi — grant location access for your area.",
@@ -484,8 +485,11 @@ private fun HeroCard(
     reckoning: MaasaReckoning,
     onClick: () -> Unit,
 ) {
+    // role = Role.Button so this announces as a button rather than as a heap of text. It was a bare
+    // clickable while a labelled tile offered the same destination; now that the tile is gone this
+    // card is the only one-tap route to Today's Panchanga, and the omission stopped being cosmetic.
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {

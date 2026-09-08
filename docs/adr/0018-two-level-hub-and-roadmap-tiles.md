@@ -165,3 +165,19 @@ The reasoning is in [ADR 0016](0016-shastra-domains-and-knowledge-modes.md), whi
 the taxonomy was worked through properly: most of these domains are not shastras. Four of the ten are
 Jyotisha or its output, one is a darshana, three are Upavedas — calling the grid *Shastras* asserted
 a classification the app had not earned. The level-two route's subtitle changed with it.
+
+## Superseded — 2026-09-08
+
+**Points 2 and 3 are superseded by [ADR 0022](0022-one-hub-grid.md).** The landing draws one grid,
+not two: the Today row held three tiles, and by then the hero card already opened Today's Panchanga
+with far more on it, while Calendar sat under Panchanga. Reminders moved into the remaining grid.
+
+Point 3's "every domain gets a tile, built or not" now has one exception. The Arts stays on the
+roadmap and in the enum but draws no tile, because it is blocked on media the app cannot carry and
+nobody has decided what it would open onto.
+
+0022 also relaxes an assumption this ADR left implicit — that a built domain always *drills*. Muhurta
+opens its screen directly, having been left holding a list of one that repeated its own name.
+
+The rest of this ADR stands: the tile tree as data, the per-domain note, and the navigation
+decisions in point 7.

@@ -320,12 +320,14 @@ internal fun HubCategory.container(): Color =
 private fun TileGridPreview() {
     VedicMitraTheme {
         TileGrid(
+            // One of each kind the grid can draw: the live date, a letter, brand artwork, and an
+            // unbuilt domain for the "Soon" caption.
             tiles =
                 listOf(
-                    HubCatalog.today.first(),
+                    HubCatalog.tilesIn(HubDomain.PANCHANGA).first { it.icon is TileIcon.Today },
                     HubCatalog.tilesIn(HubDomain.MANTRA).first { it.icon is TileIcon.Letter },
-                    HubCatalog.domains.first { it.label == HubDomain.FESTIVALS.label },
-                    HubCatalog.domains.first { it.label == HubDomain.YOGA.label },
+                    HubCatalog.explore.first { it.label == HubDomain.FESTIVALS.label },
+                    HubCatalog.explore.first { it.label == HubDomain.YOGA.label },
                 ),
             onTile = {},
         )

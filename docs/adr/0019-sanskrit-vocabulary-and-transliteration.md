@@ -96,3 +96,18 @@ cost of having left it undecided, and it is smallest today.
 
 This ADR records **how** terms are written. It says nothing about which terms the app should use, or
 about the app's voice, which `docs/knowledge-standards.md` governs.
+
+## Note — 2026-09-08
+
+**The second collision in the table above no longer has a place to occur.** "Muhurat tile under the
+Muhurta domain" described a level-two list that [ADR 0022](0022-one-hub-grid.md) removed: Muhurta
+holds one screen, so its tile opens it rather than drilling into a list whose only entry repeated the
+domain's name.
+
+Worth recording *why* that list read badly. It was this ADR's own doing, and correctly so — deciding
+on **Muhurta** everywhere in display text resolved the spelling collision by making parent and child
+identical, which turned a naming problem into a structural one. The decision above stands; the
+structure around it changed to suit.
+
+The first row, Panchang / Panchanga, still holds: "Today's Panchanga" sits under the "Panchanga"
+domain, one glance apart, and is now told apart by drawing the date rather than the domain's glyph.

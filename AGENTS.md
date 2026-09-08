@@ -209,6 +209,13 @@ A task is complete only when **all** hold:
   is coming — but a domain whose content lives *inside* another screen gets no tile at all, because
   one that only says "look elsewhere" costs a tap to learn nothing. The test records which are
   absent and why.
+
+  Two follow-ons from [ADR 0022](docs/adr/0022-one-hub-grid.md). A domain that holds **exactly one
+  screen** sets `opens` and is that screen, rather than drilling into a list of one — the test
+  asserts all three outcomes, so getting it wrong fails rather than shipping a wasted tap. And a
+  domain that is a destination but has **no decided shape** may set `tiled = false`: it stays on the
+  roadmap and in the enum, draws nothing, and is pinned by name in the test so hiding another is a
+  deliberate edit rather than a quiet one.
 - **Respect the port boundary.** Add capability behaviour behind its `:core` port and bind the
   implementation in that module's `di/` package; don't have features reach past a port to a concrete
   engine, scheduler, notifier, or location provider.

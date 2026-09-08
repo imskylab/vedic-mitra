@@ -48,18 +48,27 @@ the UI items under C1, Phase 11 is K5 and K6.
 **The domains are the navigation, and this reversed a decision.** The first version of this map said
 they were "the contribution map, not the navigation" — that nobody opens an app thinking "I need
 Gandharva Veda", so the hub should stay task-shaped. That reasoning still holds for the *questions* a
-reader arrives with, which is why the daily destinations sit one tap from the landing and the
-[question table](#what-the-user-sees) below is still how the app is meant to read.
+reader arrives with — the hero card on the landing opens today's panchanga, and the
+[question table](#what-the-user-sees) below is still how the app is meant to read. There was once a
+row of daily shortcuts under it too; it was removed when the card and the domains between them
+already covered every destination in it ([ADR 0022](adr/0022-one-hub-grid.md)).
 
 What it got wrong is that it left the map invisible. A roadmap only the repository can see does not
 tell a reader what this app is for, and does not tell a would-be contributor what is wanted. So the
-hub's grid is the domain list below — **every domain that is a place a reader goes has a tile, built
-or not**, and one that is not built says where it stands rather than pretending it is missing.
+hub's grid is the domain list below — **a domain that is a place a reader goes has a tile, built or
+not**, and one that is not built says where it stands rather than pretending it is missing.
 
 A few are deliberately untiled: the foundations have nothing to open, K8 is a layer rather than a
 section, and Kala and Kalpa shipped *into the calendar's day detail* rather than into destinations of
 their own — a tile whose whole message is "look at the Calendar" costs a tap to learn nothing.
-`HubCatalogTest` pins the rest together, so a domain added here without a tile fails the build.
+
+**K7, the arts, is untiled for a different reason**: it is a destination, and it is held back until
+it has a shape. It is blocked on audio and images the app cannot carry, so nobody has decided what
+the tile would open onto — and a tile is an offer. It keeps its entry, its artwork and its note, and
+tiling it again is one word ([ADR 0022](adr/0022-one-hub-grid.md)).
+
+`HubCatalogTest` pins the rest together, so a domain added here without a tile fails the build, and
+the held-back set is pinned by name so hiding another has to be a deliberate edit.
 
 ## The tradition's own taxonomy
 
