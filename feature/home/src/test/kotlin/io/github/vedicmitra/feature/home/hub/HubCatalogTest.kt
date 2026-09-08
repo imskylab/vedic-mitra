@@ -97,6 +97,38 @@ class HubCatalogTest {
     }
 
     @Test
+    fun `Today's Panchanga shows the date, and its parent keeps the glyph`() {
+        // These three tiles all drew VedicIcons.panchang once, which left the Panchanga domain and
+        // the first tile inside it looking identical. Stated as an assertion so it cannot come back.
+        val shortcut = HubCatalog.today.first { it.label == "Today's Panchanga" }
+        val underDomain = HubCatalog.tilesIn(HubDomain.PANCHANGA).first { it.label == "Today's Panchanga" }
+
+        assertThat(shortcut.icon).isEqualTo(TileIcon.Today)
+        assertThat(underDomain.icon).isEqualTo(TileIcon.Today)
+        assertWithMessage("the domain tile is what the two are meant to differ from")
+            .that(HubDomain.PANCHANGA.icon)
+            .isNotEqualTo(TileIcon.Today)
+    }
+
+    @Test
+    fun `only the illustrations are exempt from being re-tinted`() {
+        // The dark scheme re-tints the glyphs, because the maroon they are inked in sits at about
+        // 1.1:1 on a dark container -- very nearly the container itself. Two are drawings rather than
+        // symbols and are left alone, since tinting would flatten shading into a silhouette. That set
+        // is small and deliberate, so it is pinned: a new glyph defaults to being re-tinted, and
+        // opting one out should be a decision someone makes here rather than a default it inherits.
+        // Keyed on the label rather than the drawable id: a resource id is not reliably itself in a
+        // plain JVM test, and the label is what a reader would name the tile by anyway.
+        val exempt =
+            (HubCatalog.today + HubCatalog.domains + HubDomain.entries.flatMap { HubCatalog.tilesIn(it) })
+                .filter { (it.icon as? TileIcon.Glyph)?.tintable == false }
+                .map { it.label }
+                .toSet()
+
+        assertThat(exempt).containsExactly("Panchanga", "Rashifal")
+    }
+
+    @Test
     fun `every domain reads as something, and no two share a name`() {
         HubDomain.entries.forEach { domain ->
             assertWithMessage("${domain.id} label").that(domain.label).isNotEmpty()

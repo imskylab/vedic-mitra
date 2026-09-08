@@ -9,6 +9,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Today's Panchanga shows today's date.** The tile drew the same scroll glyph as the Panchanga
+  domain it sits under, so on *Explore → Panchanga* a parent and its first child were
+  indistinguishable. It now draws the day number over the short month, which also tells a reader
+  which day the shortcut will open — something the glyph never could. It is drawn in the theme's
+  maroon, the ink the glyphs beside it use, so it reads as one of them rather than as a label.
+
+  The date is read where it is drawn rather than stored on the tile, and re-read once a minute, so a
+  hub left open overnight does not keep yesterday's number. It is sized in device pixels rather than
+  scalable ones: the icon sits in a fixed chip, and the label beneath it is the part that should grow
+  with the reader's font scale. A screen reader hears the whole date once — "8 September" — rather
+  than the two drawn lines as loose fragments.
+
+  The **Panchanga domain tile** takes new artwork at the same time: the scribe and his scroll drawn
+  out in full, rather than the silhouette of the same scene inside a medallion. The two tiles now
+  differ twice over.
+
 - **The glossary no longer looks itself up by name.** Every festival, observance and Sankranti now
   has a `FestivalKind` — a frozen identity that display copy hangs off, rather than the other way
   round — and `PanchangaGlossary` is keyed on that.
@@ -25,6 +41,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   A second name-keyed lookup turned up on the way. The tithis a recurring observance falls on lived
   in two `when` blocks — one keyed by tithi, one keyed by *name* — kept in step by hand. They are one
   property on the kind now, and a test asserts the two directions agree, which nothing did before.
+
+### Fixed
+
+- **The hub's glyphs are visible in the dark theme.** They were inked in a fixed maroon chosen
+  against the light scheme's cream chips, where it reads at about 8:1. The dark scheme's chips are
+  mid-tone browns of nearly the same luminance, so the same ink landed between **1.09:1 and 1.51:1** —
+  1.0:1 being two identical colours. Nearly every tile in Explore was, in effect, a blank rectangle
+  for anyone using the app at night.
+
+  They are re-coloured now when the chip they sit on is dark. That is not a new idea in this app: the
+  Support tab's glyph has always been drawn as a tintable stencil, for exactly this reason.
+
+  The decision is made from the **chip's own luminance** rather than from a light/dark flag, because
+  the theme can also be handed a palette derived from the wallpaper, and then neither scheme's values
+  are what is on screen.
+
+  Two glyphs are deliberately left alone — the Panchanga scribe and the Rashifal wheel are drawings
+  rather than symbols, and a tint would flatten shading into a silhouette. The Rashifal wheel is
+  therefore still weak in the dark theme; that needs artwork, not a colour.
+
+- **The Om tile stays inside its chip at a large font scale.** It was drawn as ordinary text, so it
+  grew with the reader's font setting while the chip holding it did not: at twice the default scale
+  a 28sp letter wanted a 72dp line box inside a 52dp chip, and was clipped.
+
+  Every icon on a tile is now pinned to a fixed size, which is what the artwork and the date already
+  did — the Om was the one that disagreed. What grows instead is the **label under the chip**, which
+  is where the meaning is; the glyph is a landmark, and Android does not scale icons with text
+  either.
+
+  The hub grid also gained a preview at twice the font scale, in both themes. Nothing was looking,
+  which is why this survived as long as it did.
 
 
 ## [0.10.0] - 2026-09-07

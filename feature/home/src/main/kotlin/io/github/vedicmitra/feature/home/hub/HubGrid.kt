@@ -26,17 +26,30 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.core.ui.preview.ThemePreviews
+import kotlinx.coroutines.delay
+import java.time.LocalDate
 
 /** Tiles per row. Three keeps a label readable at a large font scale. */
 private const val GRID_COLUMNS = 3
@@ -46,6 +59,35 @@ private const val GRID_COLUMNS = 3
  * voice is factual throughout, and this is a fact about the app rather than a promise about a date.
  */
 private const val PLANNED_CAPTION = "Soon"
+
+/** The chip an icon is drawn inside. Fixed, which is what forces every icon below to be fixed too. */
+private val CHIP_SIZE = 52.dp
+
+/** Artwork. */
+private val GLYPH_SIZE = 38.dp
+
+/** A Devanagari letter. Matches what `headlineMedium` used to render it at, so nothing moves at the
+ *  default font scale — only the growing stops. */
+private val LETTER_SIZE = 28.dp
+
+/** The date's two lines. */
+private val DAY_SIZE = 22.dp
+private val MONTH_SIZE = 10.dp
+
+/**
+ * A size in device pixels, expressed as the `sp` that draws it — the same physical size whatever the
+ * reader's font scale.
+ *
+ * Text inside these chips has to be pinned, because [CHIP_SIZE] is fixed and text in real `sp` grows
+ * without it. At `fontScale = 2f` a 28sp letter wants a 72dp line box inside a 52dp chip, and the
+ * chip clips. What should grow is the **label** under the chip, which does: the glyph is a landmark,
+ * the label carries the meaning, and Android does not scale icons with font size either.
+ *
+ * `Density.toSp` divides by the font scale, so multiplying it back at layout returns the dp asked
+ * for. That is the whole trick, and it is why this must not be simplified to `.sp`.
+ */
+@Composable
+private fun Dp.asFixedSp(): TextUnit = with(LocalDensity.current) { toSp() }
 
 /** A grid of [tiles], [GRID_COLUMNS] per row. */
 @Composable
@@ -87,8 +129,9 @@ internal fun SectionLabel(text: String) {
  *
  * Words rather than a treatment, because every non-verbal cue this tile could carry fails for
  * someone. Colour fails in greyscale and for colour blindness; a fade reads as broken rather than
- * planned, and cannot tint the brand glyphs anyway since they hold their own maroon and are drawn
- * with `Color.Unspecified`; an outline reads as a rendering fault beside solid chips. A caption
+ * planned, and could not be applied evenly anyway — two of the glyphs are drawings carrying their
+ * own tones and are never tinted (see [needsRecolouring]), so a fade would land differently on them
+ * than on the rest; an outline reads as a rendering fault beside solid chips. A caption
  * survives all of it, and survives a large font scale by growing with everything else.
  *
  * The caption is hidden from accessibility services on purpose: the tile already carries
@@ -116,7 +159,7 @@ private fun Tile(
         Box(
             modifier =
                 Modifier
-                    .size(52.dp)
+                    .size(CHIP_SIZE)
                     .clip(shape)
                     .background(tile.category.container(), shape),
             contentAlignment = Alignment.Center,
@@ -140,24 +183,117 @@ private fun Tile(
     }
 }
 
-/** The tile's icon, in whichever of the two styles it carries. */
+/** The tile's icon, in whichever of the three styles it carries. */
 @Composable
 private fun TileGlyph(tile: HubTile) {
     val tint = tile.category.onContainer()
     when (val icon = tile.icon) {
-        // The brand glyphs are drawn in their own maroon, so they are never tinted.
         is TileIcon.Glyph ->
             Icon(
                 painter = painterResource(icon.res),
                 contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(38.dp),
+                tint = if (icon.needsRecolouring(tile.category.container())) tint else Color.Unspecified,
+                modifier = Modifier.size(GLYPH_SIZE),
             )
 
         is TileIcon.Letter ->
-            Text(text = icon.text, style = MaterialTheme.typography.headlineMedium, color = tint)
+            Text(
+                text = icon.text,
+                fontSize = LETTER_SIZE.asFixedSp(),
+                color = tint,
+                maxLines = 1,
+                softWrap = false,
+            )
+
+        // Not the category tint the letter takes. The date stands in for artwork, and the artwork
+        // beside it is drawn in the brand maroon -- so the date is drawn in the theme's maroon role
+        // rather than in the chip's own foreground, and reads as one of the glyphs.
+        is TileIcon.Today -> TileDateGlyph(MaterialTheme.colorScheme.tertiary)
     }
 }
+
+/**
+ * Today's date, drawn in place of a symbol.
+ *
+ * Re-read once a minute so a hub left open overnight does not keep yesterday's number. The same
+ * ticker the tithi countdown and the auspicious strip use; a minute is far finer than a date needs,
+ * but re-setting an equal [LocalDate] does not recompose, so the cost is a comparison a minute and
+ * it stays the one idiom in the module rather than a second one.
+ *
+ * The two lines are announced as a single date instead of as themselves — see [TileDate.spoken].
+ * The tile's own label follows, so a reader hears "8 September, Today's Panchanga".
+ *
+ * Sized with [asFixedSp], like every other icon in this file — see there for why.
+ *
+ * [ink] is the theme's maroon role rather than a fixed colour, which is the only way this survives
+ * the dark scheme: the maroon that reads on cream is invisible on temple-stone brown, and the role
+ * flips to the light tone there.
+ */
+@Composable
+private fun TileDateGlyph(ink: Color) {
+    val today by produceState(LocalDate.now()) {
+        while (true) {
+            value = LocalDate.now()
+            delay(MINUTE_MILLIS)
+        }
+    }
+    val date = tileDate(today)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clearAndSetSemantics { contentDescription = date.spoken },
+    ) {
+        // Line height left to the font on purpose. Tightening it to the font size would fit the two
+        // lines a little closer, and would clip the matras of a script that draws above the letter --
+        // which is exactly what the month abbreviation becomes once #190 lands.
+        Text(
+            text = date.day,
+            fontSize = DAY_SIZE.asFixedSp(),
+            fontWeight = FontWeight.SemiBold,
+            color = ink,
+            maxLines = 1,
+            softWrap = false,
+        )
+        Text(
+            text = date.month,
+            fontSize = MONTH_SIZE.asFixedSp(),
+            fontWeight = FontWeight.Medium,
+            color = ink,
+            maxLines = 1,
+            softWrap = false,
+        )
+    }
+}
+
+private const val MINUTE_MILLIS = 60_000L
+
+/**
+ * Whether this glyph has to be re-coloured to be seen on the chip it is about to be drawn on.
+ *
+ * The artwork is inked in a fixed maroon chosen against the light scheme's cream containers, where it
+ * reads at about 8:1. The dark scheme's containers are mid-tone browns of nearly the same luminance,
+ * and the same ink lands between 1.09:1 and 1.51:1 there — 1.0:1 being two identical colours. Nearly
+ * every tile in the hub was, in effect, a blank rectangle in the dark theme.
+ *
+ * Tinting is the house answer to this, not a new one: the Support tab's glyph is already drawn as an
+ * alpha stencil for the same reason, and `MainActivity` says so — *"an opaque near-black illustration
+ * would have half-disappeared"*. This applies it to the hub.
+ *
+ * Decided from the **container's own luminance** rather than from a dark-theme flag, because
+ * `VedicMitraTheme` can also be handed a dynamic palette off the wallpaper, and then neither scheme's
+ * values are what is on screen. Whatever the chip actually is, this asks the one question that
+ * matters: is it too dark to show maroon?
+ *
+ * Glyphs that carry their own tones are left alone — a tint would flatten a drawing to a silhouette,
+ * which is a worse loss than low contrast. Those are marked by [TileIcon.Glyph.tintable].
+ */
+private fun TileIcon.Glyph.needsRecolouring(chip: Color): Boolean = tintable && chip.luminance() < DARK_CHIP
+
+/**
+ * Below this the chip counts as dark. Halfway is deliberately blunt: the light containers sit around
+ * 0.76 and the dark ones around 0.07, so nothing real is near the line and a more precise threshold
+ * would only be false precision.
+ */
+private const val DARK_CHIP = 0.5f
 
 /** The container colour a tile's category tints it with. */
 @Composable
@@ -167,6 +303,34 @@ internal fun HubCategory.container(): Color =
         HubCategory.ASTROLOGY -> MaterialTheme.colorScheme.secondaryContainer
         HubCategory.DEVOTION -> MaterialTheme.colorScheme.tertiaryContainer
     }
+
+/**
+ * The grid at twice the font scale, which is where an icon that grows with the text shows itself.
+ *
+ * The Om tile did exactly that, and nothing caught it: at `fontScale = 2f` its 28sp letter wanted a
+ * 72dp line box inside a 52dp chip. Rendering both themes at once also keeps the tinting honest —
+ * the glyphs have to read on the dark chips as well as the cream ones.
+ *
+ * A preview rather than a test: what this checks is whether something is legible, and no assertion
+ * says that.
+ */
+@ThemePreviews
+@Preview(name = "Large text", fontScale = 2f, showBackground = true)
+@Composable
+private fun TileGridPreview() {
+    VedicMitraTheme {
+        TileGrid(
+            tiles =
+                listOf(
+                    HubCatalog.today.first(),
+                    HubCatalog.tilesIn(HubDomain.MANTRA).first { it.icon is TileIcon.Letter },
+                    HubCatalog.domains.first { it.label == HubDomain.FESTIVALS.label },
+                    HubCatalog.domains.first { it.label == HubDomain.YOGA.label },
+                ),
+            onTile = {},
+        )
+    }
+}
 
 /** The matching foreground colour, for symbols and letters. */
 @Composable
