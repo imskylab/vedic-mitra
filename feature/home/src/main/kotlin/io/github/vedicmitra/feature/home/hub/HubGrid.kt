@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
@@ -94,8 +95,9 @@ internal fun SectionLabel(text: String) {
  *
  * Words rather than a treatment, because every non-verbal cue this tile could carry fails for
  * someone. Colour fails in greyscale and for colour blindness; a fade reads as broken rather than
- * planned, and cannot tint the brand glyphs anyway since they hold their own maroon and are drawn
- * with `Color.Unspecified`; an outline reads as a rendering fault beside solid chips. A caption
+ * planned, and could not be applied evenly anyway — two of the glyphs are drawings carrying their
+ * own tones and are never tinted (see [needsRecolouring]), so a fade would land differently on them
+ * than on the rest; an outline reads as a rendering fault beside solid chips. A caption
  * survives all of it, and survives a large font scale by growing with everything else.
  *
  * The caption is hidden from accessibility services on purpose: the tile already carries
@@ -152,12 +154,11 @@ private fun Tile(
 private fun TileGlyph(tile: HubTile) {
     val tint = tile.category.onContainer()
     when (val icon = tile.icon) {
-        // The brand glyphs are drawn in their own maroon, so they are never tinted.
         is TileIcon.Glyph ->
             Icon(
                 painter = painterResource(icon.res),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = if (icon.needsRecolouring(tile.category.container())) tint else Color.Unspecified,
                 modifier = Modifier.size(38.dp),
             )
 
@@ -229,6 +230,36 @@ private fun TileDateGlyph(ink: Color) {
 }
 
 private const val MINUTE_MILLIS = 60_000L
+
+/**
+ * Whether this glyph has to be re-coloured to be seen on the chip it is about to be drawn on.
+ *
+ * The artwork is inked in a fixed maroon chosen against the light scheme's cream containers, where it
+ * reads at about 8:1. The dark scheme's containers are mid-tone browns of nearly the same luminance,
+ * and the same ink lands between 1.09:1 and 1.51:1 there — 1.0:1 being two identical colours. Nearly
+ * every tile in the hub was, in effect, a blank rectangle in the dark theme.
+ *
+ * Tinting is the house answer to this, not a new one: the Support tab's glyph is already drawn as an
+ * alpha stencil for the same reason, and `MainActivity` says so — *"an opaque near-black illustration
+ * would have half-disappeared"*. This applies it to the hub.
+ *
+ * Decided from the **container's own luminance** rather than from a dark-theme flag, because
+ * `VedicMitraTheme` can also be handed a dynamic palette off the wallpaper, and then neither scheme's
+ * values are what is on screen. Whatever the chip actually is, this asks the one question that
+ * matters: is it too dark to show maroon?
+ *
+ * Glyphs that carry their own tones are left alone — a tint would flatten a drawing to a silhouette,
+ * which is a worse loss than low contrast. Those are marked by [TileIcon.Glyph.tintable].
+ */
+private fun TileIcon.Glyph.needsRecolouring(container: Color): Boolean =
+    tintable && container.luminance() < DARK_CHIP
+
+/**
+ * Below this the chip counts as dark. Halfway is deliberately blunt: the light containers sit around
+ * 0.76 and the dark ones around 0.07, so nothing real is near the line and a more precise threshold
+ * would only be false precision.
+ */
+private const val DARK_CHIP = 0.5f
 
 /** The container colour a tile's category tints it with. */
 @Composable

@@ -60,9 +60,26 @@ enum class DomainStatus {
  * tint says only which [HubCategory] the domain belongs to.
  */
 sealed interface TileIcon {
-    /** An ornate cultural glyph from [VedicIcons]. */
+    /**
+     * An ornate cultural glyph from [VedicIcons].
+     *
+     * @property tintable whether re-colouring the whole glyph to one colour still leaves it saying
+     *   what it depicts. It matters because the dark scheme has to re-colour these to make them
+     *   visible at all: the ink was chosen against cream, and on the dark containers it sits at
+     *   1.09:1, very nearly the container itself.
+     *
+     *   True for almost all of them, because almost all are already a single flat maroon or black
+     *   shape — a tint gives back the same silhouette in a readable colour. True for **Japa** too,
+     *   which is not flat: its mala is twelve maroon beads and one gold guru bead. Tinting costs the
+     *   gold, but leaving it costs the twelve, and a lone gold dot where a ring of beads should be
+     *   is worse than a ring in one colour. The guru bead still reads, by being larger.
+     *
+     *   False for the two that are drawings rather than symbols — the Panchanga scribe and the
+     *   Rashifal wheel — where a tint would flatten shading and detail into a silhouette.
+     */
     data class Glyph(
         @param:DrawableRes val res: Int,
+        val tintable: Boolean = true,
     ) : TileIcon
 
     /** A Devanagari letter, drawn as text — the pattern the Om tile already uses, and the
@@ -158,7 +175,7 @@ enum class HubDomain(
         id = "C1",
         label = "Panchanga",
         status = DomainStatus.BUILT,
-        icon = TileIcon.Glyph(VedicIcons.panchang),
+        icon = TileIcon.Glyph(VedicIcons.panchang, tintable = false),
         category = HubCategory.DAILY,
         blurb = "The five limbs of the day, and the calendar they sit in.",
     ),
@@ -308,7 +325,7 @@ object HubCatalog {
             HubDomain.JYOTISHA ->
                 listOf(
                     tile("Kundali", VedicIcons.kundali, domain.category, HubTarget.KUNDALI),
-                    tile("Rashifal", VedicIcons.rashifal, domain.category, HubTarget.RASHIFAL),
+                    tile("Rashifal", VedicIcons.rashifal, domain.category, HubTarget.RASHIFAL, tintable = false),
                     tile("Match", VedicIcons.matchmaking, domain.category, HubTarget.MATCH),
                 )
 
@@ -339,7 +356,8 @@ object HubCatalog {
         @DrawableRes glyph: Int,
         category: HubCategory,
         target: HubTarget,
-    ): HubTile = HubTile(label, TileIcon.Glyph(glyph), category, open(target))
+        tintable: Boolean = true,
+    ): HubTile = HubTile(label, TileIcon.Glyph(glyph, tintable), category, open(target))
 
     private fun open(target: HubTarget): TileAction = TileAction.Open(target)
 }
