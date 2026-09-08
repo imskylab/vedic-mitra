@@ -164,7 +164,10 @@ private fun TileGlyph(tile: HubTile) {
         is TileIcon.Letter ->
             Text(text = icon.text, style = MaterialTheme.typography.headlineMedium, color = tint)
 
-        is TileIcon.Today -> TileDateGlyph(tint)
+        // Not the category tint the letter takes. The date stands in for artwork, and the artwork
+        // beside it is drawn in the brand maroon -- so the date is drawn in the theme's maroon role
+        // rather than in the chip's own foreground, and reads as one of the glyphs.
+        is TileIcon.Today -> TileDateGlyph(MaterialTheme.colorScheme.tertiary)
     }
 }
 
@@ -182,9 +185,13 @@ private fun TileGlyph(tile: HubTile) {
  * Sized in dp converted to sp rather than in sp: this is an icon inside a chip that is a fixed
  * 52.dp, so text that grew with the font scale would spill out of it. It still tracks display
  * density. The label underneath is the part that grows, as it should.
+ *
+ * [ink] is the theme's maroon role rather than a fixed colour, which is the only way this survives
+ * the dark scheme: the maroon that reads on cream is invisible on temple-stone brown, and the role
+ * flips to the light tone there.
  */
 @Composable
-private fun TileDateGlyph(tint: Color) {
+private fun TileDateGlyph(ink: Color) {
     val today by produceState(LocalDate.now()) {
         while (true) {
             value = LocalDate.now()
@@ -206,7 +213,7 @@ private fun TileDateGlyph(tint: Color) {
             text = date.day,
             fontSize = daySize,
             fontWeight = FontWeight.SemiBold,
-            color = tint,
+            color = ink,
             maxLines = 1,
             softWrap = false,
         )
@@ -214,7 +221,7 @@ private fun TileDateGlyph(tint: Color) {
             text = date.month,
             fontSize = monthSize,
             fontWeight = FontWeight.Medium,
-            color = tint,
+            color = ink,
             maxLines = 1,
             softWrap = false,
         )

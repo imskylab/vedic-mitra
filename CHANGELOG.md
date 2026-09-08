@@ -12,7 +12,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Today's Panchanga shows today's date.** The tile drew the same scroll glyph as the Panchanga
   domain it sits under, so on *Explore → Panchanga* a parent and its first child were
   indistinguishable. It now draws the day number over the short month, which also tells a reader
-  which day the shortcut will open — something the glyph never could.
+  which day the shortcut will open — something the glyph never could. It is drawn in the theme's
+  maroon, the ink the glyphs beside it use, so it reads as one of them rather than as a label.
 
   The date is read where it is drawn rather than stored on the tile, and re-read once a minute, so a
   hub left open overnight does not keep yesterday's number. It is sized in device pixels rather than
