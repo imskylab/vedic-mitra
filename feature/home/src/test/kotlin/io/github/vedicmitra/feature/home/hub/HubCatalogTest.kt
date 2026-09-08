@@ -97,6 +97,20 @@ class HubCatalogTest {
     }
 
     @Test
+    fun `Today's Panchanga shows the date, and its parent keeps the glyph`() {
+        // These three tiles all drew VedicIcons.panchang once, which left the Panchanga domain and
+        // the first tile inside it looking identical. Stated as an assertion so it cannot come back.
+        val shortcut = HubCatalog.today.first { it.label == "Today's Panchanga" }
+        val underDomain = HubCatalog.tilesIn(HubDomain.PANCHANGA).first { it.label == "Today's Panchanga" }
+
+        assertThat(shortcut.icon).isEqualTo(TileIcon.Today)
+        assertThat(underDomain.icon).isEqualTo(TileIcon.Today)
+        assertWithMessage("the domain tile is what the two are meant to differ from")
+            .that(HubDomain.PANCHANGA.icon)
+            .isNotEqualTo(TileIcon.Today)
+    }
+
+    @Test
     fun `every domain reads as something, and no two share a name`() {
         HubDomain.entries.forEach { domain ->
             assertWithMessage("${domain.id} label").that(domain.label).isNotEmpty()

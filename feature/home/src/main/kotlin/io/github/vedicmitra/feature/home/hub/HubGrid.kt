@@ -26,17 +26,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import java.time.LocalDate
 
 /** Tiles per row. Three keeps a label readable at a large font scale. */
 private const val GRID_COLUMNS = 3
@@ -140,7 +147,7 @@ private fun Tile(
     }
 }
 
-/** The tile's icon, in whichever of the two styles it carries. */
+/** The tile's icon, in whichever of the three styles it carries. */
 @Composable
 private fun TileGlyph(tile: HubTile) {
     val tint = tile.category.onContainer()
@@ -156,8 +163,65 @@ private fun TileGlyph(tile: HubTile) {
 
         is TileIcon.Letter ->
             Text(text = icon.text, style = MaterialTheme.typography.headlineMedium, color = tint)
+
+        is TileIcon.Today -> TileDateGlyph(tint)
     }
 }
+
+/**
+ * Today's date, drawn in place of a symbol.
+ *
+ * Re-read once a minute so a hub left open overnight does not keep yesterday's number. The same
+ * ticker the tithi countdown and the auspicious strip use; a minute is far finer than a date needs,
+ * but re-setting an equal [LocalDate] does not recompose, so the cost is a comparison a minute and
+ * it stays the one idiom in the module rather than a second one.
+ *
+ * The two lines are announced as a single date instead of as themselves — see [TileDate.spoken].
+ * The tile's own label follows, so a reader hears "8 September, Today's Panchanga".
+ *
+ * Sized in dp converted to sp rather than in sp: this is an icon inside a chip that is a fixed
+ * 52.dp, so text that grew with the font scale would spill out of it. It still tracks display
+ * density. The label underneath is the part that grows, as it should.
+ */
+@Composable
+private fun TileDateGlyph(tint: Color) {
+    val today by produceState(LocalDate.now()) {
+        while (true) {
+            value = LocalDate.now()
+            delay(MINUTE_MILLIS)
+        }
+    }
+    val date = tileDate(today)
+    val density = LocalDensity.current
+    val daySize = with(density) { 22.dp.toSp() }
+    val monthSize = with(density) { 10.dp.toSp() }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clearAndSetSemantics { contentDescription = date.spoken },
+    ) {
+        // Line height left to the font on purpose. Tightening it to the font size would fit the two
+        // lines a little closer, and would clip the matras of a script that draws above the letter --
+        // which is exactly what the month abbreviation becomes once #190 lands.
+        Text(
+            text = date.day,
+            fontSize = daySize,
+            fontWeight = FontWeight.SemiBold,
+            color = tint,
+            maxLines = 1,
+            softWrap = false,
+        )
+        Text(
+            text = date.month,
+            fontSize = monthSize,
+            fontWeight = FontWeight.Medium,
+            color = tint,
+            maxLines = 1,
+            softWrap = false,
+        )
+    }
+}
+
+private const val MINUTE_MILLIS = 60_000L
 
 /** The container colour a tile's category tints it with. */
 @Composable

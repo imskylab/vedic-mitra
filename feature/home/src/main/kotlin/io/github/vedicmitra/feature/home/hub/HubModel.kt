@@ -48,10 +48,11 @@ enum class DomainStatus {
 /**
  * What a tile draws.
  *
- * [Glyph] is one of the brand's ornate cultural drawables and [Letter] a Devanagari initial. The
- * split briefly carried meaning — ornate meant built, a letter meant not yet — because no artwork
- * existed for the unbuilt domains. It no longer does: they have their own glyphs now, and a
- * [Letter] means only that a domain is still waiting for art.
+ * [Glyph] is one of the brand's ornate cultural drawables, [Letter] a Devanagari initial, and
+ * [Today] the date. The first two briefly carried meaning between them — ornate meant built, a
+ * letter meant not yet — because no artwork existed for the unbuilt domains. They no longer do:
+ * those domains have their own glyphs now, and a [Letter] means only that one is still waiting
+ * for art.
  *
  * The icon carries no status at all, and neither does the chip's colour. A domain that is not built
  * yet says so in a **"Soon"** caption under its label (ADR 0020) — words being the only cue that
@@ -69,6 +70,16 @@ sealed interface TileIcon {
     data class Letter(
         val text: String,
     ) : TileIcon
+
+    /**
+     * Today's date, drawn as the icon.
+     *
+     * It carries no date of its own, on purpose. [HubCatalog] is an object whose lists are built
+     * once at class-init, so a stored date would freeze at process start; and [HubTile] is a data
+     * class used as the identity a tap is dispatched on, so a tile that stopped equalling itself at
+     * midnight would break that quietly. The date is read where it is drawn.
+     */
+    data object Today : TileIcon
 }
 
 /** Which container colour a tile takes. */
@@ -266,7 +277,7 @@ object HubCatalog {
      */
     val today: List<HubTile> =
         listOf(
-            tile("Today's Panchanga", VedicIcons.panchang, HubCategory.DAILY, HubTarget.PANCHANG),
+            HubTile("Today's Panchanga", TileIcon.Today, HubCategory.DAILY, open(HubTarget.PANCHANG)),
             tile("Calendar", VedicIcons.calendar, HubCategory.DAILY, HubTarget.CALENDAR),
             HubTile("Reminders", reminderIcon, HubCategory.DAILY, open(HubTarget.REMINDERS)),
         )
@@ -285,9 +296,12 @@ object HubCatalog {
     /** What sits inside [domain]. Empty for anything not yet built, which is why those tiles do not drill. */
     fun tilesIn(domain: HubDomain): List<HubTile> =
         when (domain) {
+            // Today's Panchanga is deliberately not the panchang glyph: that is this domain's own
+            // icon, and a child repeating its parent's symbol directly beneath it reads as a
+            // mistake. The date also says what the glyph could not -- which day this opens.
             HubDomain.PANCHANGA ->
                 listOf(
-                    tile("Today's Panchanga", VedicIcons.panchang, domain.category, HubTarget.PANCHANG),
+                    HubTile("Today's Panchanga", TileIcon.Today, domain.category, open(HubTarget.PANCHANG)),
                     tile("Calendar", VedicIcons.calendar, domain.category, HubTarget.CALENDAR),
                 )
 
