@@ -42,7 +42,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
+import io.github.vedicmitra.core.ui.preview.ThemePreviews
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 
@@ -54,6 +59,35 @@ private const val GRID_COLUMNS = 3
  * voice is factual throughout, and this is a fact about the app rather than a promise about a date.
  */
 private const val PLANNED_CAPTION = "Soon"
+
+/** The chip an icon is drawn inside. Fixed, which is what forces every icon below to be fixed too. */
+private val CHIP_SIZE = 52.dp
+
+/** Artwork. */
+private val GLYPH_SIZE = 38.dp
+
+/** A Devanagari letter. Matches what `headlineMedium` used to render it at, so nothing moves at the
+ *  default font scale — only the growing stops. */
+private val LETTER_SIZE = 28.dp
+
+/** The date's two lines. */
+private val DAY_SIZE = 22.dp
+private val MONTH_SIZE = 10.dp
+
+/**
+ * A size in device pixels, expressed as the `sp` that draws it — the same physical size whatever the
+ * reader's font scale.
+ *
+ * Text inside these chips has to be pinned, because [CHIP_SIZE] is fixed and text in real `sp` grows
+ * without it. At `fontScale = 2f` a 28sp letter wants a 72dp line box inside a 52dp chip, and the
+ * chip clips. What should grow is the **label** under the chip, which does: the glyph is a landmark,
+ * the label carries the meaning, and Android does not scale icons with font size either.
+ *
+ * `Density.toSp` divides by the font scale, so multiplying it back at layout returns the dp asked
+ * for. That is the whole trick, and it is why this must not be simplified to `.sp`.
+ */
+@Composable
+private fun Dp.asFixedSp(): TextUnit = with(LocalDensity.current) { toSp() }
 
 /** A grid of [tiles], [GRID_COLUMNS] per row. */
 @Composable
@@ -125,7 +159,7 @@ private fun Tile(
         Box(
             modifier =
                 Modifier
-                    .size(52.dp)
+                    .size(CHIP_SIZE)
                     .clip(shape)
                     .background(tile.category.container(), shape),
             contentAlignment = Alignment.Center,
@@ -159,11 +193,17 @@ private fun TileGlyph(tile: HubTile) {
                 painter = painterResource(icon.res),
                 contentDescription = null,
                 tint = if (icon.needsRecolouring(tile.category.container())) tint else Color.Unspecified,
-                modifier = Modifier.size(38.dp),
+                modifier = Modifier.size(GLYPH_SIZE),
             )
 
         is TileIcon.Letter ->
-            Text(text = icon.text, style = MaterialTheme.typography.headlineMedium, color = tint)
+            Text(
+                text = icon.text,
+                fontSize = LETTER_SIZE.asFixedSp(),
+                color = tint,
+                maxLines = 1,
+                softWrap = false,
+            )
 
         // Not the category tint the letter takes. The date stands in for artwork, and the artwork
         // beside it is drawn in the brand maroon -- so the date is drawn in the theme's maroon role
@@ -183,9 +223,7 @@ private fun TileGlyph(tile: HubTile) {
  * The two lines are announced as a single date instead of as themselves — see [TileDate.spoken].
  * The tile's own label follows, so a reader hears "8 September, Today's Panchanga".
  *
- * Sized in dp converted to sp rather than in sp: this is an icon inside a chip that is a fixed
- * 52.dp, so text that grew with the font scale would spill out of it. It still tracks display
- * density. The label underneath is the part that grows, as it should.
+ * Sized with [asFixedSp], like every other icon in this file — see there for why.
  *
  * [ink] is the theme's maroon role rather than a fixed colour, which is the only way this survives
  * the dark scheme: the maroon that reads on cream is invisible on temple-stone brown, and the role
@@ -200,9 +238,6 @@ private fun TileDateGlyph(ink: Color) {
         }
     }
     val date = tileDate(today)
-    val density = LocalDensity.current
-    val daySize = with(density) { 22.dp.toSp() }
-    val monthSize = with(density) { 10.dp.toSp() }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clearAndSetSemantics { contentDescription = date.spoken },
@@ -212,7 +247,7 @@ private fun TileDateGlyph(ink: Color) {
         // which is exactly what the month abbreviation becomes once #190 lands.
         Text(
             text = date.day,
-            fontSize = daySize,
+            fontSize = DAY_SIZE.asFixedSp(),
             fontWeight = FontWeight.SemiBold,
             color = ink,
             maxLines = 1,
@@ -220,7 +255,7 @@ private fun TileDateGlyph(ink: Color) {
         )
         Text(
             text = date.month,
-            fontSize = monthSize,
+            fontSize = MONTH_SIZE.asFixedSp(),
             fontWeight = FontWeight.Medium,
             color = ink,
             maxLines = 1,
@@ -268,6 +303,34 @@ internal fun HubCategory.container(): Color =
         HubCategory.ASTROLOGY -> MaterialTheme.colorScheme.secondaryContainer
         HubCategory.DEVOTION -> MaterialTheme.colorScheme.tertiaryContainer
     }
+
+/**
+ * The grid at twice the font scale, which is where an icon that grows with the text shows itself.
+ *
+ * The Om tile did exactly that, and nothing caught it: at `fontScale = 2f` its 28sp letter wanted a
+ * 72dp line box inside a 52dp chip. Rendering both themes at once also keeps the tinting honest —
+ * the glyphs have to read on the dark chips as well as the cream ones.
+ *
+ * A preview rather than a test: what this checks is whether something is legible, and no assertion
+ * says that.
+ */
+@ThemePreviews
+@Preview(name = "Large text", fontScale = 2f, showBackground = true)
+@Composable
+private fun TileGridPreview() {
+    VedicMitraTheme {
+        TileGrid(
+            tiles =
+                listOf(
+                    HubCatalog.today.first(),
+                    HubCatalog.tilesIn(HubDomain.MANTRA).first { it.icon is TileIcon.Letter },
+                    HubCatalog.domains.first { it.label == HubDomain.FESTIVALS.label },
+                    HubCatalog.domains.first { it.label == HubDomain.YOGA.label },
+                ),
+            onTile = {},
+        )
+    }
+}
 
 /** The matching foreground colour, for symbols and letters. */
 @Composable
