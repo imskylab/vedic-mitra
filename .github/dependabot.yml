@@ -52,6 +52,13 @@ updates:
       # Major bumps of the formatting engine change output; upgrade deliberately, not automatically.
       - dependency-name: "com.diffplug.spotless"
         update-types: ["version-update:semver-major"]
+      # zstd-jni: same compileSdk 37 wall as androidx above, reached from the other side. The @aar
+      # variant we depend on (core/location, for timezonemap's native decompression) declares an AAR
+      # metadata minimum of API 37 from 1.5.x on, so :app fails checkDebugAarMetadata against
+      # compileSdk 36 before anything compiles -- see the closed #237. Patch bumps within 1.4.x still
+      # flow through. Lift together with the androidx hold when API 37 ships stable.
+      - dependency-name: "com.github.luben:zstd-jni"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   # Keep GitHub Actions pinned versions current (grouped into one PR).
   - package-ecosystem: github-actions
