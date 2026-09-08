@@ -211,6 +211,7 @@ enum class HubDomain(
         category = HubCategory.ASTROLOGY,
         blurb = "Hora — birth charts, dashas, and what a day reads like against them.",
     ),
+
     // Opens its screen rather than drilling. It used to hold two tiles, one of them called
     // "Muhurta" -- the domain's own name, one row below itself. That was not drift: ADR 0019 found
     // *Muhurat / Muhurta* colliding and settled on "Muhurta" for both, which made parent and child
@@ -277,6 +278,7 @@ enum class HubDomain(
         blurb = "The eight limbs, explained rather than instructed.",
         note = "Yoga — planned, and open for anyone who wants to build it.",
     ),
+
     // Kept here and on the roadmap, but off the hub. K7 is blocked on media the app cannot carry --
     // raga needs audio, iconography needs images -- and nobody has decided what it would look like
     // if it arrived. A tile advertises a section; this one would advertise a shape that does not
