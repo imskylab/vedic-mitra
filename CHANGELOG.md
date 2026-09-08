@@ -9,6 +9,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Today's Panchanga shows today's date.** The tile drew the same scroll glyph as the Panchanga
+  domain it sits under, so on *Explore → Panchanga* a parent and its first child were
+  indistinguishable. It now draws the day number over the short month, which also tells a reader
+  which day the shortcut will open — something the glyph never could. It is drawn in the theme's
+  maroon, the ink the glyphs beside it use, so it reads as one of them rather than as a label.
+
+  The date is read where it is drawn rather than stored on the tile, and re-read once a minute, so a
+  hub left open overnight does not keep yesterday's number. It is sized in device pixels rather than
+  scalable ones: the icon sits in a fixed chip, and the label beneath it is the part that should grow
+  with the reader's font scale. A screen reader hears the whole date once — "8 September" — rather
+  than the two drawn lines as loose fragments.
+
+  The **Panchanga domain tile** takes new artwork at the same time: the scribe and his scroll drawn
+  out in full, rather than the silhouette of the same scene inside a medallion. The two tiles now
+  differ twice over.
+
 - **The glossary no longer looks itself up by name.** Every festival, observance and Sankranti now
   has a `FestivalKind` — a frozen identity that display copy hangs off, rather than the other way
   round — and `PanchangaGlossary` is keyed on that.
