@@ -251,8 +251,7 @@ private const val MINUTE_MILLIS = 60_000L
  * Glyphs that carry their own tones are left alone — a tint would flatten a drawing to a silhouette,
  * which is a worse loss than low contrast. Those are marked by [TileIcon.Glyph.tintable].
  */
-private fun TileIcon.Glyph.needsRecolouring(container: Color): Boolean =
-    tintable && container.luminance() < DARK_CHIP
+private fun TileIcon.Glyph.needsRecolouring(chip: Color): Boolean = tintable && chip.luminance() < DARK_CHIP
 
 /**
  * Below this the chip counts as dark. Halfway is deliberately blunt: the light containers sit around
