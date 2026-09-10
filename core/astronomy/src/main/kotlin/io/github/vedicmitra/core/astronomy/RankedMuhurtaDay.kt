@@ -52,7 +52,8 @@ internal fun rankMuhurtaDays(
                         yoga = it.yoga,
                         karana = it.karana,
                         personal =
-                            people.takeIf { p -> p.isNotEmpty() }
+                            people
+                                .takeIf { p -> p.isNotEmpty() }
                                 ?.let { p -> DayPersonalisation(p, it.moonRasi?.index) },
                     ),
             )

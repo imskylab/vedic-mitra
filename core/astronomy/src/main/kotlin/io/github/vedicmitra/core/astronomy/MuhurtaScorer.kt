@@ -220,7 +220,8 @@ private fun personalContributions(
     val moonRasi = personal?.dayMoonRasiIndex
     val tara = people.mapNotNull { tarabalaContribution(dayNakshatraNumber, it) }.minByOrNull { it.delta }
     val chandra =
-        moonRasi?.let { rasi -> people.mapNotNull { chandrabalaContribution(rasi, it) } }
+        moonRasi
+            ?.let { rasi -> people.mapNotNull { chandrabalaContribution(rasi, it) } }
             ?.minByOrNull { it.delta }
     return listOfNotNull(tara, chandra)
 }

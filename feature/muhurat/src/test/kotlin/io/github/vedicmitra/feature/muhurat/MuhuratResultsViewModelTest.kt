@@ -165,7 +165,6 @@ class MuhuratResultsViewModelTest {
             assertThat(state.selectedProfileId).isNull()
         }
 
-
     @Test
     fun `a couple activity asks for two people and ranks generally until it has both`() =
         runTest {

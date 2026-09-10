@@ -207,7 +207,11 @@ class MuhuratDayViewModel
          */
         private suspend fun peopleFor(ids: List<String>): List<Pair<MuhurtaPerson, String>> {
             if (ids.isEmpty()) return emptyList()
-            val byId = profileRepository.profiles.first().filter { it.isChartReady }.associateBy { it.id }
+            val byId =
+                profileRepository.profiles
+                    .first()
+                    .filter { it.isChartReady }
+                    .associateBy { it.id }
             return ids.mapNotNull { id ->
                 val profile = byId[id] ?: return@mapNotNull null
                 muhurtaPersonFor(profile)?.let { it to profile.name.ifBlank { "Unnamed" } }
