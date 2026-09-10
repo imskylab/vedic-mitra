@@ -54,13 +54,20 @@ internal suspend fun AstronomyEngine.muhurtaPersonFor(profile: BirthProfile): Mu
     )
 }
 
-/** The birth instant and birthplace for [profile], or null when any part of it is missing. */
+/**
+ * The birth instant and birthplace for [profile], or null when any part of it is missing.
+ *
+ * The four checks are two statements rather than one condition or four elvises, and that shape is
+ * load-bearing: all four in one `if` trips detekt's `ComplexCondition` at 4, and four `?: return null`
+ * lines trip `ReturnCount`. Two pairs sit under both. Do not "simplify" it.
+ */
 private fun birthMomentOf(profile: BirthProfile): Pair<Instant, GeoCoordinates>? {
     val date = profile.dateOfBirth
     val time = profile.timeOfBirth
     val zone = profile.birthZoneId
     val coordinates = profile.birthCoordinates
-    if (date == null || time == null || zone == null || coordinates == null) return null
+    if (date == null || time == null) return null
+    if (zone == null || coordinates == null) return null
     val millis =
         date
             .atTime(time)
