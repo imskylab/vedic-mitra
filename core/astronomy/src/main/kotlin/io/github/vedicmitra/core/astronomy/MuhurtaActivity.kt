@@ -30,15 +30,32 @@ enum class MuhurtaCategory(
 }
 
 /**
+ * How many people an activity is chosen *for*.
+ *
+ * Electional muhurta is chosen for someone, and a few rites are chosen for two people at once — a
+ * marriage has to suit the bride and the groom, not one of them. This says which, and no more: the
+ * roles those two people hold, and the gender each implies, are a question for the screen that asks,
+ * not for the engine. `Gender` lives in `:core:datastore`, which `:core:astronomy` does not depend on
+ * and should not.
+ */
+enum class MuhurtaParticipants {
+    ONE,
+    COUPLE,
+}
+
+/**
  * A specific activity the user wants an auspicious time for, grouped under a [MuhurtaCategory]. Each
  * activity maps to a set of electional rules (see `muhurtaRulesFor`) used to rank candidate days.
  *
  * @property category the group this activity belongs to.
  * @property displayName the human-readable activity name.
+ * @property participants how many people the activity is chosen for. [MuhurtaParticipants.ONE]
+ *   unless the rite is inherently a pair's.
  */
 enum class MuhurtaActivity(
     val category: MuhurtaCategory,
     val displayName: String,
+    val participants: MuhurtaParticipants = MuhurtaParticipants.ONE,
 ) {
     // Child samskaras — the rites of early life, in life order.
     JANANA_SHANTI(MuhurtaCategory.BAL_SANSKAR, "Janana Shanti"),
@@ -48,9 +65,10 @@ enum class MuhurtaActivity(
     MUNDAN(MuhurtaCategory.BAL_SANSKAR, "Mundan"),
     UPANAYANA(MuhurtaCategory.BAL_SANSKAR, "Upanayana"),
 
-    // Vivah — betrothal and marriage.
-    VAAGDAAN(MuhurtaCategory.VIVAH, "Vaagdaan"),
-    VIVAH(MuhurtaCategory.VIVAH, "Vivah"),
+    // Vivah -- betrothal and marriage. Both are a pair's: the day has to suit two birth stars, and
+    // picking one of the two would be choosing whose fortune counts.
+    VAAGDAAN(MuhurtaCategory.VIVAH, "Vaagdaan", MuhurtaParticipants.COUPLE),
+    VIVAH(MuhurtaCategory.VIVAH, "Vivah", MuhurtaParticipants.COUPLE),
 
     // Vastu — build and occupy.
     BHOOMI_POOJAN(MuhurtaCategory.VASTU, "Bhoomi Poojan"),

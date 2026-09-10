@@ -116,7 +116,7 @@ class MuhurtaScorerTest {
                 Karana(number = 2, name = "Bava"),
                 personal =
                     DayPersonalisation(
-                        person = PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0),
+                        people = listOf(personOf("a", birthNakshatra = 1, birthMoonRasi = 0)),
                         dayMoonRasiIndex = 5,
                     ),
             )
@@ -149,7 +149,7 @@ class MuhurtaScorerTest {
                 Karana(number = 2, name = "Bava"),
                 personal =
                     DayPersonalisation(
-                        person = PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0),
+                        people = listOf(personOf("a", birthNakshatra = 1, birthMoonRasi = 0)),
                         dayMoonRasiIndex = null,
                     ),
             )
@@ -173,4 +173,83 @@ class MuhurtaScorerTest {
         assertThat(worst.score).isAtLeast(0)
         assertThat(worst.score).isAtMost(100)
     }
+
+    @Test
+    fun `two people take each factor at its worst`() {
+        // Krittika (3) is the Vipat tara (weak) from Ashwini (1), and the Sampat tara (strong) from
+        // Revati (27). Ranked for both, the weak one has to govern: a day is favourable for a pair
+        // only when it is favourable for each.
+        val strongOnly = scoreFor(listOf(personOf("ravi", birthNakshatra = 27, birthMoonRasi = 0)))
+        val weakOnly = scoreFor(listOf(personOf("meera", birthNakshatra = 1, birthMoonRasi = 0)))
+        val both =
+            scoreFor(
+                listOf(
+                    personOf("ravi", birthNakshatra = 27, birthMoonRasi = 0),
+                    personOf("meera", birthNakshatra = 1, birthMoonRasi = 0),
+                ),
+            )
+
+        assertThat(strongOnly.score).isGreaterThan(weakOnly.score)
+        assertThat(both.score).isEqualTo(weakOnly.score)
+    }
+
+    @Test
+    fun `the governing reason names whose it is`() {
+        val both =
+            scoreFor(
+                listOf(
+                    personOf("ravi", birthNakshatra = 27, birthMoonRasi = 0),
+                    personOf("meera", birthNakshatra = 1, birthMoonRasi = 0),
+                ),
+            )
+
+        val tara = both.reasons.single { it.text.contains("tara") }
+        assertThat(tara.favourable).isFalse()
+        // Attributed by id, never by name -- the engine holds no display copy.
+        assertThat(tara.personId).isEqualTo("meera")
+    }
+
+    @Test
+    fun `one person scores exactly as it did before people were a list`() {
+        // A guard on the refactor rather than on the rule: a single person must be untouched by the
+        // combination logic, since every existing personalised ranking is a list of one.
+        val alone = scoreFor(listOf(personOf("solo", birthNakshatra = 1, birthMoonRasi = 0)))
+        val none = scoreFor(emptyList())
+
+        assertThat(alone.score).isNotEqualTo(none.score)
+        assertThat(alone.reasons.any { it.personId == "solo" }).isTrue()
+    }
+
+    @Test
+    fun `nobody selected is the general ranking`() {
+        val none = scoreFor(emptyList())
+
+        assertThat(none.reasons.none { it.personId != null }).isTrue()
+    }
+
+    private fun scoreFor(people: List<MuhurtaPerson>): DayMuhurtaScore =
+        scoreMuhurta(
+            MuhurtaActivity.NAMKARAN,
+            Tithi(number = 5, paksha = Paksha.SHUKLA, name = "Panchami"),
+            Nakshatra(number = 3, name = "Krittika"),
+            Vara.GURUVARA,
+            Yoga(number = 1, name = "Vishkambha"),
+            Karana(number = 2, name = "Bava"),
+            personal = people.takeIf { it.isNotEmpty() }?.let { DayPersonalisation(it, dayMoonRasiIndex = null) },
+        )
 }
+
+/** A [MuhurtaPerson] with the two numbers the scorer actually reads. */
+private fun personOf(
+    id: String,
+    birthNakshatra: Int,
+    birthMoonRasi: Int,
+): MuhurtaPerson =
+    MuhurtaPerson(
+        id = id,
+        context =
+            PersonalMuhurtaContext(
+                birthNakshatraNumber = birthNakshatra,
+                birthMoonRasiIndex = birthMoonRasi,
+            ),
+    )
