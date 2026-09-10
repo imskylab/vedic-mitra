@@ -37,9 +37,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.vedicmitra.core.astronomy.Bala
+import io.github.vedicmitra.core.astronomy.PersonalStanding
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
@@ -108,6 +111,9 @@ private fun MuhuratDayContent(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (uiState.standings.isNotEmpty()) {
+                    StandingsCard(uiState.standings)
+                }
                 Button(onClick = onSetReminder) { Text(text = "Set reminder for this day") }
                 WindowSection(
                     title = "Auspicious periods",
@@ -122,6 +128,63 @@ private fun MuhuratDayContent(
             }
     }
 }
+
+/**
+ * Where the day stands for each person it was chosen for.
+ *
+ * Sits above the windows and not among them, because it is a different kind of statement. The windows
+ * below are facts about the day — Rahu Kalam is the same for everyone alive — while this is the day
+ * read against a particular birth star. Putting a name on a window would suggest the times shift per
+ * person, which they do not.
+ */
+@Composable
+private fun StandingsCard(standings: List<NamedStanding>) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "For this day",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            standings.forEach { named ->
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = named.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = standingLine(named.standing),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = balaColour(named.standing.tara.strength),
+                        textAlign = TextAlign.End,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The reading itself: the tara by name, and the Chandrabala position when the day's Moon sign is
+ * known. Reported rather than judged — the tara's name carries its own meaning to a reader who knows
+ * the scheme, and the app does not restate it as an instruction.
+ */
+private fun standingLine(standing: PersonalStanding): String {
+    val chandra = standing.chandrabala ?: return "${standing.tara.name} tara"
+    return "${standing.tara.name} tara · Chandrabala ${chandra.position}"
+}
+
+@Composable
+private fun balaColour(strength: Bala): Color =
+    when (strength) {
+        Bala.STRONG -> MaterialTheme.colorScheme.primary
+        Bala.WEAK -> MaterialTheme.colorScheme.error
+        Bala.NEUTRAL -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
 
 @Composable
 private fun WindowSection(

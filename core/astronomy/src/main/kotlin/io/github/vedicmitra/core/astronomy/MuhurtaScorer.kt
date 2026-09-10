@@ -34,10 +34,15 @@ enum class MuhurtaRating(
  *
  * @property favourable whether this factor helped (`true`) or hurt (`false`) the day.
  * @property text a short human-readable explanation.
+ * @property personId which person this factor is about, for the factors that are about a person at
+ *   all; `null` for the ones that are about the day itself. An **id**, never a name — the engine does
+ *   not hold display copy (ADR 0021), and the screen joins the two into a sentence with a string
+ *   resource so a translator can reorder it.
  */
 data class MuhurtaReason(
     val favourable: Boolean,
     val text: String,
+    val personId: String? = null,
 )
 
 /**
@@ -67,20 +72,37 @@ data class PersonalMuhurtaContext(
 )
 
 /**
- * The day-plus-person inputs the scorer needs to add Tarabala and Chandrabala: the [person]'s birth
- * chart key and the day's Moon sign ([dayMoonRasiIndex], 0..11) — the latter needed for Chandrabala,
- * and `null` when the day's Moon sign isn't known (Chandrabala is then skipped).
+ * One person a muhurta is being chosen for: their birth chart key, and an [id] to attribute a reason
+ * back to them.
+ *
+ * A wrapper rather than an id on [PersonalMuhurtaContext] itself, because the rashifal uses that type
+ * for a single anonymous reading and has no use for an identity.
+ *
+ * @property id opaque and caller-chosen — the profile id, in practice. Never a name.
+ */
+data class MuhurtaPerson(
+    val id: String,
+    val context: PersonalMuhurtaContext,
+)
+
+/**
+ * The day-plus-people inputs the scorer needs to add Tarabala and Chandrabala: whoever the day is
+ * being chosen for, and the day's Moon sign ([dayMoonRasiIndex], 0..11) — the latter needed for
+ * Chandrabala, and `null` when the day's Moon sign isn't known (Chandrabala is then skipped).
+ *
+ * [people] is empty for a general, unpersonalised ranking.
  */
 data class DayPersonalisation(
-    val person: PersonalMuhurtaContext,
+    val people: List<MuhurtaPerson>,
     val dayMoonRasiIndex: Int?,
 )
 
 private const val BASE_SCORE = 50
 
 /**
- * Scores a day's panchanga for [activity] from the general rules, then — when [personal] is supplied —
- * layers that person's Tarabala and Chandrabala on top. The nakshatra is weighted most heavily, then
+ * Scores a day's panchanga for [activity] from the general rules, then — when [personal] names
+ * anyone — layers their Tarabala and Chandrabala on top, worst case first where there is more than
+ * one of them. The nakshatra is weighted most heavily, then
  * the weekday and tithi, with universal doshas (Rikta/Amavasya tithi, the Vyatipata/Vaidhriti yogas,
  * and the Vishti/Bhadra karana) penalised regardless of activity. The result is clamped to 0..100 and
  * mapped to a [MuhurtaRating], with the contributing [reasons].
@@ -175,48 +197,64 @@ private data class ScoreContribution(
     val reason: MuhurtaReason,
 )
 
-/** The Tarabala and Chandrabala adjustments for [personal], or empty when no personalisation is given. */
+/**
+ * The Tarabala and Chandrabala adjustments for everyone the day is being chosen for, or empty when it
+ * is being chosen for nobody in particular.
+ *
+ * **With more than one person, each factor is taken at its worst.** A day is favourable for a pair
+ * only when it is favourable for each of them; a strong tara for one does not buy off a weak tara for
+ * the other. That is a stated convention rather than a derived result — the tradition grades a tara
+ * for *a* person, and how to weigh two people against each other is a judgement. Choosing to weigh
+ * them would be asserting whose fortune matters more, which this app will not do without a source
+ * for the weighting. See ADR 0023.
+ *
+ * Only the governing contribution is emitted, so a row can say *whose* tara pulled the day down
+ * without listing everyone. The day screen shows all of them; ranking needs the binding one.
+ */
 private fun personalContributions(
     dayNakshatraNumber: Int,
     personal: DayPersonalisation?,
 ): List<ScoreContribution> {
-    if (personal == null) return emptyList()
-    val person = personal.person
-    return listOfNotNull(
-        tarabalaContribution(dayNakshatraNumber, person.birthNakshatraNumber),
-        personal.dayMoonRasiIndex?.let { chandrabalaContribution(it, person.birthMoonRasiIndex) },
-    )
+    val people = personal?.people.orEmpty()
+    if (people.isEmpty()) return emptyList()
+    val moonRasi = personal?.dayMoonRasiIndex
+    val tara = people.mapNotNull { tarabalaContribution(dayNakshatraNumber, it) }.minByOrNull { it.delta }
+    val chandra =
+        moonRasi?.let { rasi -> people.mapNotNull { chandrabalaContribution(rasi, it) } }
+            ?.minByOrNull { it.delta }
+    return listOfNotNull(tara, chandra)
 }
 
 /**
- * Tarabala: which of the nine taras the [dayNakshatra] is, counted from [birthNakshatra] (both 1..27).
- * The tara counting and grading live in [taraBetween]; this maps the grade to a muhurta score delta.
+ * Tarabala: which of the nine taras the [dayNakshatra] is, counted from [person]'s birth star. The
+ * tara counting and grading live in [taraBetween]; this maps the grade to a muhurta score delta.
  */
 private fun tarabalaContribution(
     dayNakshatra: Int,
-    birthNakshatra: Int,
+    person: MuhurtaPerson,
 ): ScoreContribution? {
-    val tara = taraBetween(dayNakshatra, birthNakshatra)
+    val tara = taraBetween(dayNakshatra, person.context.birthNakshatraNumber)
     return when (tara.strength) {
-        Bala.STRONG -> ScoreContribution(15, MuhurtaReason(true, "Favourable tara (${tara.name})"))
-        Bala.WEAK -> ScoreContribution(-20, MuhurtaReason(false, "Weak tara (${tara.name})"))
+        Bala.STRONG -> ScoreContribution(15, MuhurtaReason(true, "Favourable tara (${tara.name})", person.id))
+        Bala.WEAK -> ScoreContribution(-20, MuhurtaReason(false, "Weak tara (${tara.name})", person.id))
         Bala.NEUTRAL -> null
     }
 }
 
 /**
- * Chandrabala: the day's Moon sign [dayMoonRasi] counted from the birth Moon sign [birthMoonRasi]
- * (both 0..11). The position counting and grading live in [chandraPosition]/[chandraStrength]; this
- * maps the grade to a muhurta score delta.
+ * Chandrabala: the day's Moon sign [dayMoonRasi] counted from [person]'s birth Moon sign (both
+ * 0..11). The position counting and grading live in [chandraPosition]/[chandraStrength]; this maps
+ * the grade to a muhurta score delta.
  */
 private fun chandrabalaContribution(
     dayMoonRasi: Int,
-    birthMoonRasi: Int,
+    person: MuhurtaPerson,
 ): ScoreContribution? {
-    val position = chandraPosition(dayMoonRasi, birthMoonRasi)
+    val position = chandraPosition(dayMoonRasi, person.context.birthMoonRasiIndex)
+    val id = person.id
     return when (chandraStrength(position)) {
-        Bala.STRONG -> ScoreContribution(10, MuhurtaReason(true, "Strong Chandrabala (position $position)"))
-        Bala.WEAK -> ScoreContribution(-12, MuhurtaReason(false, "Weak Chandrabala (position $position)"))
+        Bala.STRONG -> ScoreContribution(10, MuhurtaReason(true, "Strong Chandrabala (position $position)", id))
+        Bala.WEAK -> ScoreContribution(-12, MuhurtaReason(false, "Weak Chandrabala (position $position)", id))
         Bala.NEUTRAL -> null
     }
 }

@@ -138,8 +138,9 @@ interface AstronomyEngine {
     /**
      * The candidate days for [activity] over the [days] civil days starting at [instant], for
      * [location], each scored from that day's sunrise panchanga and returned best-first (see
-     * `scoreMuhurta`). Used by the "find best dates" muhurta finder. When [person] is given the
-     * ranking is personalised to their chart (Tarabala + Chandrabala); otherwise it's the general
+     * `scoreMuhurta`). Used by the "find best dates" muhurta finder. When [people] is non-empty the
+     * ranking is personalised to their charts (Tarabala + Chandrabala), each factor taken at its
+     * worst across them so a day suits a pair only when it suits each; otherwise it's the general
      * panchanga ranking. The default returns an empty list so test doubles can ignore it.
      */
     suspend fun bestMuhurtasFor(
@@ -147,7 +148,7 @@ interface AstronomyEngine {
         instant: Instant,
         days: Int,
         location: GeoCoordinates,
-        person: PersonalMuhurtaContext? = null,
+        people: List<MuhurtaPerson> = emptyList(),
     ): AppResult<List<RankedMuhurtaDay>> = AppResult.Success(emptyList<RankedMuhurtaDay>())
 
     /**

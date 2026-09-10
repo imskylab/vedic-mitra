@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.DayMuhurtaScore
 import io.github.vedicmitra.core.astronomy.MuhurtaRating
+import io.github.vedicmitra.core.astronomy.MuhurtaReason
 import io.github.vedicmitra.core.astronomy.RankedMuhurtaDay
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import java.time.ZoneId
@@ -46,7 +47,7 @@ import kotlin.time.Instant
  */
 @Composable
 fun MuhuratResultsScreen(
-    onOpenDay: (String, Long) -> Unit,
+    onOpenDay: (String, Long, List<String>) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MuhuratResultsViewModel = hiltViewModel(),
 ) {
@@ -57,6 +58,8 @@ fun MuhuratResultsScreen(
         onOpenDay = onOpenDay,
         onSetWindow = viewModel::setWindow,
         onSelectProfile = viewModel::selectProfile,
+        onSelectGroom = viewModel::selectGroom,
+        onSelectBride = viewModel::selectBride,
         modifier = modifier,
     )
 }
@@ -64,9 +67,11 @@ fun MuhuratResultsScreen(
 @Composable
 private fun MuhuratResultsContent(
     uiState: MuhuratResultsUiState,
-    onOpenDay: (String, Long) -> Unit,
+    onOpenDay: (String, Long, List<String>) -> Unit,
     onSetWindow: (Int) -> Unit,
     onSelectProfile: (String?) -> Unit,
+    onSelectGroom: (String?) -> Unit,
+    onSelectBride: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (uiState) {
@@ -86,7 +91,10 @@ private fun MuhuratResultsContent(
                     text = "Best days for ${uiState.activity.displayName}",
                     style = MaterialTheme.typography.titleLarge,
                 )
-                if (uiState.profiles.isNotEmpty()) {
+                val couple = uiState.couple
+                if (couple != null) {
+                    CoupleSelector(couple, onSelectGroom, onSelectBride)
+                } else if (uiState.profiles.isNotEmpty()) {
                     ProfileSelector(
                         profiles = uiState.profiles,
                         selectedId = uiState.selectedProfileId,
@@ -108,7 +116,13 @@ private fun MuhuratResultsContent(
                     )
                 } else {
                     uiState.days.forEach { day ->
-                        DayCard(day) { onOpenDay(uiState.activity.name, day.atSunrise.toEpochMilliseconds()) }
+                        DayCard(day, uiState.personNames) {
+                            onOpenDay(
+                                uiState.activity.name,
+                                day.atSunrise.toEpochMilliseconds(),
+                                uiState.personIds,
+                            )
+                        }
                     }
                 }
                 Text(
@@ -120,14 +134,83 @@ private fun MuhuratResultsContent(
     }
 }
 
-/** The selected profile's name, or a general-guidance note when ranking without a birth chart. */
+/**
+ * Who the ranking was for, or how to make it personal.
+ *
+ * For a pair this also states the rule being applied, because it is a convention rather than
+ * something derived: the app takes each factor at its worst across the two, and never trades one
+ * person's strong tara against the other's weak one. A reader is entitled to know that before acting
+ * on a star rating. See ADR 0023.
+ */
 private fun personalisationNote(uiState: MuhuratResultsUiState.Ready): String {
-    val selected = uiState.profiles.firstOrNull { it.id == uiState.selectedProfileId }
-    return if (selected != null) {
-        "Personalised for ${selected.name} with their Tarabala and Chandrabala."
-    } else {
-        "General guidance from the day's panchanga; pick a profile to personalise it."
+    val names = uiState.personNames.values.toList()
+    return when {
+        names.size > 1 ->
+            "Personalised for ${names.joinToString(" and ")} with their Tarabala and Chandrabala. " +
+                "A day counts as favourable only when it is favourable for each of them."
+
+        names.size == 1 -> "Personalised for ${names.first()} with their Tarabala and Chandrabala."
+        uiState.couple != null -> "Pick both people to personalise these days to their birth stars."
+        else -> "General guidance from the day's panchanga; pick a profile to personalise it."
     }
+}
+
+/**
+ * The two sides of a couple's muhurta.
+ *
+ * Gender-filtered, mirroring the matchmaking screen. Where that one silently prints "No Groom
+ * profile." and leaves a reader wondering where their profile went, this says what is missing —
+ * a gender on the profile is what these lists filter by.
+ */
+@Composable
+private fun CoupleSelector(
+    couple: CoupleSelection,
+    onSelectGroom: (String?) -> Unit,
+    onSelectBride: (String?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            RoleSelector("Groom", couple.grooms, couple.groomId, onSelectGroom, Modifier.weight(1f))
+            RoleSelector("Bride", couple.brides, couple.brideId, onSelectBride, Modifier.weight(1f))
+        }
+        if (couple.withoutGender > 0) {
+            Text(
+                text =
+                    "${couple.withoutGender} profile(s) are not listed here — these two ask for a " +
+                        "gender, and theirs is not set.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** One side of a couple: a dropdown over the profiles eligible for that role. */
+@Composable
+private fun RoleSelector(
+    label: String,
+    options: List<MuhuratProfileOption>,
+    selectedId: String?,
+    onSelect: (String?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (options.isEmpty()) {
+        Text(
+            text = "No $label profile.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier,
+        )
+        return
+    }
+    VedicSelectField(
+        label = label,
+        options = listOf<String?>(null) + options.map { it.id },
+        selected = selectedId,
+        optionLabel = { id -> id?.let { pid -> options.firstOrNull { it.id == pid }?.name } ?: "Not chosen" },
+        onSelect = onSelect,
+        modifier = modifier,
+    )
 }
 
 /** A dropdown to pick whose birth chart the ranking is personalised for, or General for none. */
@@ -163,6 +246,7 @@ private fun WindowSelector(
 @Composable
 private fun DayCard(
     day: RankedMuhurtaDay,
+    personNames: Map<String, String>,
     onClick: () -> Unit,
 ) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
@@ -180,14 +264,14 @@ private fun DayCard(
             }
             day.score.reasons.filter { it.favourable }.take(REASON_LIMIT).forEach { reason ->
                 Text(
-                    text = "+ ${reason.text}",
+                    text = "+ ${attributed(reason, personNames)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
             day.score.reasons.filterNot { it.favourable }.take(REASON_LIMIT).forEach { reason ->
                 Text(
-                    text = "− ${reason.text}",
+                    text = "− ${attributed(reason, personNames)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -206,6 +290,22 @@ private fun RatingBadge(score: DayMuhurtaScore) {
     )
 }
 
+/**
+ * A reason, naming whose it is when it is about a person.
+ *
+ * Formatted from one pattern rather than concatenated, because the two halves swap order in plenty of
+ * languages. It is a `String.format` and not a string resource only because nothing in this module is
+ * extracted yet — #218 does that, and this becomes one `getString` call when it lands.
+ */
+private fun attributed(
+    reason: MuhurtaReason,
+    personNames: Map<String, String>,
+): String {
+    val name = reason.personId?.let { personNames[it] } ?: return reason.text
+    return REASON_FOR_PERSON.format(reason.text, name)
+}
+
+private const val REASON_FOR_PERSON = "%1\$s for %2\$s"
 private const val MAX_STARS = 5
 private const val REASON_LIMIT = 2
 

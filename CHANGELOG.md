@@ -7,6 +7,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A muhurta can be chosen for two people.** Vivah and Vaagdaan ask for a groom and a bride, and rank
+  the days ahead for both birth stars rather than one. Until then the app personalised a wedding to
+  whichever single profile was picked — and said nothing about which half of the couple it had
+  answered for.
+
+  **A day counts as favourable only when it is favourable for each of them.** A strong tara for one
+  does not offset a weak tara for the other, and the reason on the row names whose it is. That is a
+  stated convention rather than a computed result: the tradition grades a tara for *a* person, and
+  weighing two people against each other is a judgement — so the app makes the least it can of it and
+  says so where the ranking is shown ([ADR 0023](docs/adr/0023-muhurta-for-two-people.md)).
+
+  A profile that cannot be offered for a role because it has no gender set is now **counted and
+  explained** rather than quietly missing.
+
+- **The day detail remembers who the day was for.** Tapping a personalised day used to open a screen
+  that had forgotten — it reports each person's Tarabala and Chandrabala now.
+
+  The windows themselves are unchanged, and cannot be otherwise: Rahu Kalam, Abhijit and Dur Muhurta
+  are computed from sunrise, sunset and the weekday, so they are the same for everyone alive. A birth
+  star changes how the day reads, not when its windows fall.
+
 ### Changed
 
 - **The landing has one grid of tiles instead of two.** The **Today** row held Today's Panchanga,

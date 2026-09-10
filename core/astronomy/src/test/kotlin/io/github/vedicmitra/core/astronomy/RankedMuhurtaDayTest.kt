@@ -71,10 +71,10 @@ class RankedMuhurtaDayTest {
         val bharaniLater =
             plainDaySnapshot(SAMPLE_BASE_MILLIS + DAY_OFFSET_MILLIS, Nakshatra(number = 2, name = "Bharani"))
         val days = listOf(krittikaEarlier, bharaniLater)
-        val person = PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0)
+        val person = MuhurtaPerson("a", PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0))
 
         val general = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, days)
-        val personal = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, days, person)
+        val personal = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, days, listOf(person))
 
         // Generally tied, so the earlier day (Krittika) leads; personalised, Bharani's favourable tara wins.
         assertThat(general.first().atSunrise).isEqualTo(krittikaEarlier.instant)
@@ -96,9 +96,9 @@ class RankedMuhurtaDayTest {
                 Nakshatra(number = 2, name = "Bharani"),
                 moonRasi = Rasi(index = 5, name = "Kanya"),
             )
-        val person = PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0)
+        val person = MuhurtaPerson("a", PersonalMuhurtaContext(birthNakshatraNumber = 1, birthMoonRasiIndex = 0))
 
-        val personal = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, listOf(day), person)
+        val personal = rankMuhurtaDays(MuhurtaActivity.GRIHA_PRAVESH, listOf(day), listOf(person))
 
         assertThat(
             personal

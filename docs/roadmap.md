@@ -323,6 +323,9 @@ The deepest domain here and roughly complete on the computation side.
 ### C3. Muhurta Shastra — **Shipped** · Compute (oracle-validated), Cite
 
 - [x] General panchanga muhurta; personalized muhurta against a birth Moon
+- [x] A muhurta chosen for two people — Vivah and Vaagdaan rank for the couple, each factor taken at
+      its worst, and the day detail reports where the day stands for each of them
+      ([ADR 0023](adr/0023-muhurta-for-two-people.md)) · Compute (rule-transcribed), Cite
 - [x] Event-type presets, ranked days with the reasoning shown
 - [x] Reboot-survivable reminders with per-event offsets and ringing alarms
 - [ ] Parana (fast-breaking) timings

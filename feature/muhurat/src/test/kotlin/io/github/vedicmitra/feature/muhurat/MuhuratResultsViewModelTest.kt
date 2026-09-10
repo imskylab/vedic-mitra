@@ -26,6 +26,7 @@ import io.github.vedicmitra.core.astronomy.Rasi
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.BirthProfile
+import io.github.vedicmitra.core.datastore.Gender
 import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
@@ -77,11 +78,11 @@ class MuhuratResultsViewModelTest {
             coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
                 AppResult.Success(ranked)
 
-            val viewModel = viewModel(activityName = "VIVAH", profiles = noProfiles())
+            val viewModel = viewModel(activityName = "MUNDAN", profiles = noProfiles())
             viewModel.load()
 
             val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
-            assertThat(state.activity).isEqualTo(MuhurtaActivity.VIVAH)
+            assertThat(state.activity).isEqualTo(MuhurtaActivity.MUNDAN)
             assertThat(state.days).isEqualTo(ranked)
             assertThat(state.usingDefaultLocation).isTrue()
             assertThat(state.profiles).isEmpty()
@@ -109,13 +110,13 @@ class MuhuratResultsViewModelTest {
             coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
                 AppResult.Success(emptyList())
 
-            val viewModel = viewModel(activityName = "VIVAH", profiles = noProfiles())
+            val viewModel = viewModel(activityName = "MUNDAN", profiles = noProfiles())
             viewModel.load()
             viewModel.setWindow(90)
 
             val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
             assertThat(state.windowDays).isEqualTo(90)
-            coVerify { astronomyEngine.bestMuhurtasFor(MuhurtaActivity.VIVAH, any(), 90, any(), any()) }
+            coVerify { astronomyEngine.bestMuhurtasFor(MuhurtaActivity.MUNDAN, any(), 90, any(), any()) }
         }
 
     @Test
@@ -126,12 +127,13 @@ class MuhuratResultsViewModelTest {
             coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
                 AppResult.Success(emptyList())
 
-            val viewModel = viewModel(activityName = "VIVAH", profiles = oneChartReadyPrimary())
+            val viewModel = viewModel(activityName = "MUNDAN", profiles = oneChartReadyPrimary())
             viewModel.load()
 
             val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
             assertThat(state.profiles.map { it.id }).containsExactly("p1")
             assertThat(state.selectedProfileId).isEqualTo("p1")
+            assertThat(state.couple).isNull()
             // The chart's birth star (5) and Moon sign (3) become the ranking's personalisation key.
             coVerify {
                 astronomyEngine.bestMuhurtasFor(
@@ -139,7 +141,10 @@ class MuhuratResultsViewModelTest {
                     any(),
                     any(),
                     any(),
-                    match { it?.birthNakshatraNumber == 5 && it?.birthMoonRasiIndex == 3 },
+                    match { people ->
+                        people.singleOrNull()?.context?.birthNakshatraNumber == 5 &&
+                            people.singleOrNull()?.context?.birthMoonRasiIndex == 3
+                    },
                 )
             }
         }
@@ -152,12 +157,69 @@ class MuhuratResultsViewModelTest {
             coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
                 AppResult.Success(emptyList())
 
-            val viewModel = viewModel(activityName = "VIVAH", profiles = oneChartReadyPrimary())
+            val viewModel = viewModel(activityName = "MUNDAN", profiles = oneChartReadyPrimary())
             viewModel.load()
             viewModel.selectProfile(null)
 
             val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
             assertThat(state.selectedProfileId).isNull()
+        }
+
+
+    @Test
+    fun `a couple activity asks for two people and ranks generally until it has both`() =
+        runTest {
+            stubLocation(isDefault = false)
+            coEvery { astronomyEngine.natalChartAt(any(), any()) } returns AppResult.Success(sampleChart())
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
+                AppResult.Success(emptyList())
+
+            val viewModel = viewModel(activityName = "VIVAH", profiles = aCouple())
+            viewModel.load()
+
+            val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
+            val couple = checkNotNull(state.couple)
+            assertThat(couple.grooms.map { it.id }).containsExactly("groom")
+            assertThat(couple.brides.map { it.id }).containsExactly("bride")
+            // Nobody is guessed into a role, so nothing is personalised yet.
+            assertThat(state.personIds).isEmpty()
+            assertThat(state.selectedProfileId).isNull()
+        }
+
+    @Test
+    fun `a couple activity personalises for both once both are chosen`() =
+        runTest {
+            stubLocation(isDefault = false)
+            coEvery { astronomyEngine.natalChartAt(any(), any()) } returns AppResult.Success(sampleChart())
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
+                AppResult.Success(emptyList())
+
+            val viewModel = viewModel(activityName = "VIVAH", profiles = aCouple())
+            viewModel.load()
+            viewModel.selectGroom("groom")
+            viewModel.selectBride("bride")
+
+            val state = viewModel.uiState.value as MuhuratResultsUiState.Ready
+            assertThat(state.personIds).containsExactly("groom", "bride").inOrder()
+            // The names travel with the state so a reason can be attributed without the engine
+            // ever holding one.
+            assertThat(state.personNames).containsEntry("bride", "Meera")
+            coVerify { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), match { it.size == 2 }) }
+        }
+
+    @Test
+    fun `a profile with no gender is counted rather than silently dropped`() =
+        runTest {
+            stubLocation(isDefault = false)
+            coEvery { astronomyEngine.natalChartAt(any(), any()) } returns AppResult.Success(sampleChart())
+            coEvery { astronomyEngine.bestMuhurtasFor(any(), any(), any(), any(), any()) } returns
+                AppResult.Success(emptyList())
+
+            val viewModel = viewModel(activityName = "VIVAH", profiles = aCoupleAndAGenderlessProfile())
+            viewModel.load()
+
+            val couple = checkNotNull((viewModel.uiState.value as MuhuratResultsUiState.Ready).couple)
+            assertThat(couple.withoutGender).isEqualTo(1)
         }
 
     private fun stubLocation(isDefault: Boolean) {
@@ -203,6 +265,45 @@ private fun oneChartReadyPrimary(): ProfileRepository {
         every { primaryProfileId } returns flowOf("p1")
     }
 }
+
+private fun chartReady(
+    id: String,
+    name: String,
+    gender: Gender?,
+): BirthProfile =
+    BirthProfile(
+        id = id,
+        name = name,
+        gender = gender,
+        dateOfBirth = LocalDate.of(1995, 3, 14),
+        timeOfBirth = LocalTime.of(9, 30),
+        placeOfBirth = "Hyderabad, India",
+        birthCoordinates = GeoCoordinates(latitude = 17.385, longitude = 78.4867),
+        birthZoneId = "Asia/Kolkata",
+    )
+
+private fun repositoryOf(profiles: List<BirthProfile>): ProfileRepository =
+    mockk {
+        every { this@mockk.profiles } returns flowOf(profiles)
+        every { primaryProfileId } returns flowOf(profiles.firstOrNull()?.id)
+    }
+
+private fun aCouple(): ProfileRepository =
+    repositoryOf(
+        listOf(
+            chartReady("groom", "Ravi", Gender.MALE),
+            chartReady("bride", "Meera", Gender.FEMALE),
+        ),
+    )
+
+private fun aCoupleAndAGenderlessProfile(): ProfileRepository =
+    repositoryOf(
+        listOf(
+            chartReady("groom", "Ravi", Gender.MALE),
+            chartReady("bride", "Meera", Gender.FEMALE),
+            chartReady("nobody", "Anil", gender = null),
+        ),
+    )
 
 @Suppress("MagicNumber")
 private fun sampleChart(): NatalChart =

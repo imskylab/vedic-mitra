@@ -34,6 +34,7 @@ import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.result.AppResult
 import io.github.vedicmitra.core.datastore.PersistedReminder
+import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.datastore.ReminderRepository
 import io.github.vedicmitra.core.domain.ResolveLocationUseCase
 import io.github.vedicmitra.core.domain.ResolvedLocation
@@ -41,9 +42,11 @@ import io.github.vedicmitra.core.scheduler.ScheduledTask
 import io.github.vedicmitra.core.scheduler.TaskScheduler
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -59,6 +62,14 @@ class MuhuratDayViewModelTest {
     private val resolveLocation = mockk<ResolveLocationUseCase>()
     private val taskScheduler = mockk<TaskScheduler>(relaxed = true)
     private val reminderRepository = mockk<ReminderRepository>(relaxed = true)
+
+    // No people on the route in these cases, so the day reads generically -- the same state every
+    // reader saw before the results screen could carry a selection into it.
+    private val profileRepository =
+        mockk<ProfileRepository> {
+            every { profiles } returns flowOf(emptyList())
+            every { primaryProfileId } returns flowOf(null)
+        }
 
     @Before
     fun setUp() {
@@ -137,6 +148,7 @@ class MuhuratDayViewModelTest {
             resolveLocation = resolveLocation,
             taskScheduler = taskScheduler,
             reminderRepository = reminderRepository,
+            profileRepository = profileRepository,
             savedStateHandle =
                 SavedStateHandle(mapOf(MUHURAT_ACTIVITY_ARG to activityName, MUHURAT_DAY_ARG to dayMillis)),
         )

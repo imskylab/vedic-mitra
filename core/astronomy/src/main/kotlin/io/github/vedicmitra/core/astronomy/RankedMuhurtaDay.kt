@@ -29,14 +29,15 @@ data class RankedMuhurtaDay(
  * best-first — by descending [DayMuhurtaScore.score], ties broken by the earlier date. Pure: the
  * caller supplies the already-computed snapshots, so the ranking is independent of the ephemeris.
  *
- * When [person] is given the ranking is personalised — each day also gets that person's Tarabala and
+ * When [people] is non-empty the ranking is personalised — each day also gets their Tarabala and
  * Chandrabala (the latter from the day's [AstronomySnapshot.moonRasi]) — otherwise it's the general
- * panchanga ranking.
+ * panchanga ranking. With more than one person each factor is taken at its worst; see
+ * `personalContributions` for why.
  */
 internal fun rankMuhurtaDays(
     activity: MuhurtaActivity,
     days: List<AstronomySnapshot>,
-    person: PersonalMuhurtaContext? = null,
+    people: List<MuhurtaPerson> = emptyList(),
 ): List<RankedMuhurtaDay> =
     days
         .map {
@@ -50,7 +51,9 @@ internal fun rankMuhurtaDays(
                         vara = it.vara,
                         yoga = it.yoga,
                         karana = it.karana,
-                        personal = person?.let { p -> DayPersonalisation(p, it.moonRasi?.index) },
+                        personal =
+                            people.takeIf { p -> p.isNotEmpty() }
+                                ?.let { p -> DayPersonalisation(p, it.moonRasi?.index) },
                     ),
             )
         }.sortedWith(compareByDescending<RankedMuhurtaDay> { it.score.score }.thenBy { it.atSunrise })

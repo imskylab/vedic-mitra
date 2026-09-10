@@ -236,6 +236,15 @@ internal const val MUHURAT_DAY_ROUTE = "muhurat/day"
 internal const val MUHURAT_CATEGORY_ARG = "category"
 internal const val MUHURAT_ACTIVITY_ARG = "activity"
 internal const val MUHURAT_DAY_ARG = "day"
+
+/**
+ * The comma-joined profile ids the results screen was personalised for.
+ *
+ * A query argument rather than a path one so it can be absent: most muhurtas are not personalised,
+ * and an empty path segment would make the route ambiguous. `subtitleOf` already trims `?arg`, so
+ * this stays titled "Muhurta" like the rest of the flow.
+ */
+internal const val MUHURAT_PEOPLE_ARG = "people"
 internal const val ABOUT_ROUTE = "settings/about"
 
 /**
@@ -564,17 +573,24 @@ private fun NavGraphBuilder.muhuratDestinations(navController: NavHostController
         arguments = listOf(navArgument(MUHURAT_ACTIVITY_ARG) { type = NavType.StringType }),
     ) {
         MuhuratResultsScreen(
-            onOpenDay = { activityName, millis ->
-                navController.navigate("$MUHURAT_DAY_ROUTE/$activityName/$millis")
+            onOpenDay = { activityName, millis, personIds ->
+                val people = personIds.joinToString(",")
+                navController.navigate("$MUHURAT_DAY_ROUTE/$activityName/$millis?$MUHURAT_PEOPLE_ARG=$people")
             },
         )
     }
     composable(
-        route = "$MUHURAT_DAY_ROUTE/{$MUHURAT_ACTIVITY_ARG}/{$MUHURAT_DAY_ARG}",
+        route =
+            "$MUHURAT_DAY_ROUTE/{$MUHURAT_ACTIVITY_ARG}/{$MUHURAT_DAY_ARG}" +
+                "?$MUHURAT_PEOPLE_ARG={$MUHURAT_PEOPLE_ARG}",
         arguments =
             listOf(
                 navArgument(MUHURAT_ACTIVITY_ARG) { type = NavType.StringType },
                 navArgument(MUHURAT_DAY_ARG) { type = NavType.LongType },
+                navArgument(MUHURAT_PEOPLE_ARG) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
             ),
     ) { MuhuratDayScreen() }
 }
