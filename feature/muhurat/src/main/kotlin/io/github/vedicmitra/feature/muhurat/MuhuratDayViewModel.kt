@@ -16,15 +16,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vedicmitra.core.astronomy.AstronomyEngine
 import io.github.vedicmitra.core.astronomy.AstronomySnapshot
-import io.github.vedicmitra.core.astronomy.Graha
 import io.github.vedicmitra.core.astronomy.MuhurtaActivity
 import io.github.vedicmitra.core.astronomy.MuhurtaPerson
 import io.github.vedicmitra.core.astronomy.MuhurtaQuality
-import io.github.vedicmitra.core.astronomy.PersonalMuhurtaContext
 import io.github.vedicmitra.core.astronomy.PersonalStanding
 import io.github.vedicmitra.core.astronomy.personalStandingOn
 import io.github.vedicmitra.core.common.result.AppResult
-import io.github.vedicmitra.core.datastore.BirthProfile
 import io.github.vedicmitra.core.datastore.PersistedReminder
 import io.github.vedicmitra.core.datastore.ProfileRepository
 import io.github.vedicmitra.core.datastore.ReminderRepository
@@ -214,37 +211,8 @@ class MuhuratDayViewModel
                     .associateBy { it.id }
             return ids.mapNotNull { id ->
                 val profile = byId[id] ?: return@mapNotNull null
-                muhurtaPersonFor(profile)?.let { it to profile.name.ifBlank { "Unnamed" } }
+                astronomyEngine.muhurtaPersonFor(profile)?.let { it to profile.name.ifBlank { "Unnamed" } }
             }
-        }
-
-        /** Casts [profile]'s natal chart and reduces it to the Tarabala/Chandrabala key, or `null`. */
-        private suspend fun muhurtaPersonFor(profile: BirthProfile): MuhurtaPerson? {
-            val date = profile.dateOfBirth ?: return null
-            val time = profile.timeOfBirth ?: return null
-            val zone = profile.birthZoneId ?: return null
-            val coordinates = profile.birthCoordinates ?: return null
-            val millis =
-                date
-                    .atTime(time)
-                    .atZone(ZoneId.of(zone))
-                    .toInstant()
-                    .toEpochMilli()
-            val birth = Instant.fromEpochMilliseconds(millis)
-            val chart = (astronomyEngine.natalChartAt(birth, coordinates) as? AppResult.Success)?.data ?: return null
-            val moonRasiIndex =
-                chart.grahas
-                    .firstOrNull { it.graha == Graha.MOON }
-                    ?.rasi
-                    ?.index ?: return null
-            return MuhurtaPerson(
-                id = profile.id,
-                context =
-                    PersonalMuhurtaContext(
-                        birthNakshatraNumber = chart.moonNakshatra.number,
-                        birthMoonRasiIndex = moonRasiIndex,
-                    ),
-            )
         }
 
         /** The muhurtas and Choghadiya of the given [quality] on [snapshot]'s day, in time order. */
