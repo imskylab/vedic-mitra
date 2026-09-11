@@ -45,27 +45,42 @@ data class ActivityMuhurtaRules(
 )
 
 // The gentle/benefic weekdays preferred for most auspicious beginnings (Mon, Wed, Thu, Fri).
-// Tuesday, Saturday and Sunday are generally avoided and so are simply absent here.
+// Tuesday, Saturday and Sunday are the days of Mars, Saturn and the Sun -- the three malefics -- and
+// so are simply absent here. Brihat Samhita 100.2 puts it the same way round: a marriage is set
+// "when the week day is other than that of a malefic planet". The verse says it of marriage; using
+// it for every activity is the conventional extension rather than something the verse states.
 internal val BENEFIC_VARAS: Set<Vara> =
     setOf(Vara.SOMAVARA, Vara.BUDHAVARA, Vara.GURUVARA, Vara.SHUKRAVARA)
 
-// Generally auspicious tithis in either paksha (global numbering). Compare Brihat Samhita 99.2,
-// which sorts the fifteen into Nanda (1, 6, 11), Bhadra (2, 7, 12), Vijaya (3, 8, 13), Rikta
-// (4, 9, 14) and Poorna (5, 10, 15) and sets aside only the Rikta ones. This set is *narrower* than
-// that -- it also omits 1, 6, 8 and 12 -- so it is not a transcription of that verse and is not cited
-// as one. Widening it to match would move every ranking in the app, which is a decision of its own
-// rather than a side effect of this one. Recorded in ADR 0025.
+// The auspicious tithis, in global numbering (1..15 shukla, 16..30 krishna).
+//
+// This is now what the texts support and no more. Brihat Samhita 99.2 sorts the fifteen into Nanda
+// (1, 6, 11), Bhadra (2, 7, 12), Vijaya (3, 8, 13), Rikta (4, 9, 14) and Poorna (5, 10, 15); 100.2
+// then sets a marriage "when the lunar day is other than a Rikta one", which is the sentence that
+// actually singles any class out. So: every tithi except the Rikta ones, less Amavasya, which 99.2
+// gives to the Pitris rather than to auspicious beginnings.
+//
+// It used to be narrower, omitting 1, 6, 8 and 12 as well, on no source anyone had recorded.
+// Widening it has a consequence worth knowing: the tithi is no longer a *differentiator* between
+// good days, only a penalty on bad ones. That is what the verses say, and a rule set that finds a
+// text narrowing it for its own activity can still override `favorableTithis`. See ADR 0025.
 internal val AUSPICIOUS_TITHIS: Set<Int> =
-    setOf(2, 3, 5, 7, 10, 11, 13, 15, 17, 18, 20, 22, 25, 26, 28)
+    setOf(1, 2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18, 20, 21, 22, 23, 25, 26, 27, 28)
 
-// Rikta ("empty") tithis -- the 4th, 9th and 14th of each paksha -- avoided for auspicious starts.
-// Brihat Samhita 99.2 names the same three: "the 4th, 9th, and 14th lunar days are known as Rikta".
+// Rikta ("empty") tithis -- the 4th, 9th and 14th of each paksha. Brihat Samhita 99.2 names the
+// three, and 100.2 is where they are actually set aside: "when the lunar day is other than a Rikta
+// one". Both were needed, because 99.2 classifies without ranking.
 internal val RIKTA_TITHIS: Set<Int> = setOf(4, 9, 14, 19, 24, 29)
 
-// Amavasya (new moon), global tithi 30 -- avoided for most auspicious beginnings.
+// Amavasya (new moon), global tithi 30 -- avoided for most auspicious beginnings. Brihat Samhita
+// 99.2 opens by giving the new-moon day to the Pitris, which is a different kind of day rather than
+// an auspicious one to begin on.
 internal const val AMAVASYA_TITHI: Int = 30
 
-// Inauspicious yogas by 1-based number: Vyatipata (17) and Vaidhriti (27).
+// Inauspicious yogas by 1-based number: Vyatipata (17) and Vaidhriti (27). Brihat Samhita 100.2
+// names exactly this pair -- a marriage is set "when the Yoga is neither the Vyatipata nor that of
+// Vaidhriti" -- and, as with the weekdays, applying it to every activity is the conventional
+// extension rather than the verse.
 internal val INAUSPICIOUS_YOGAS: Set<Int> = setOf(17, 27)
 
 // A broad set of generally-auspicious nakshatras, used for activities without a specific rule yet.
@@ -132,9 +147,14 @@ private val RULES: Map<MuhurtaActivity, ActivityMuhurtaRules> =
                 favorableNakshatras = setOf(4, 5, 8, 12, 14, 15, 17, 21, 23, 24, 26, 27),
                 favorableVaras = BENEFIC_VARAS,
             ),
+        // The one nakshatra list in this file with a text behind it, and it was here all along:
+        // "Marriages shall take place when the Moon passes through the asterism of Rohini,
+        // U. Phalguni, U. Ashadha, U. Bhadrapada, Revati, Mrigasirsha, Mula, Anuradha, Magha, Hasta
+        // or Swati" -- Brihat Samhita 100.1. Those eleven are exactly the eleven below; the set was
+        // not changed to fit the verse, the verse was found to match the set. A test pins it.
         MuhurtaActivity.VIVAH to
             ActivityMuhurtaRules(
-                source = ContentSource.NotRecorded,
+                source = ContentSource.Text(work = "Brihat Samhita", locus = "100.1"),
                 favorableNakshatras = setOf(4, 5, 10, 12, 13, 15, 17, 19, 21, 26, 27),
                 favorableVaras = BENEFIC_VARAS,
             ),

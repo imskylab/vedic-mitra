@@ -1,7 +1,7 @@
 # 25. Muhurta rules cite what they can, and say so when they cannot
 
 - **Status:** Accepted
-- **Date:** 2026-09-11
+- **Date:** 2026-09-11 (amended 2026-09-11: chapter 100 read, tithi set widened)
 
 ## Context
 
@@ -25,8 +25,10 @@ engine holds.** This was looked for rather than assumed:
   give *ayana* and *paksha* and occasionally a single nakshatra — Ashvalayana 1.4.1 sets the tonsure,
   the initiation, the beard-cutting and marriage in the northern course of the sun and the bright
   fortnight, "under an auspicious Nakshatra", without saying which. They do not enumerate.
-- The **Brihat Samhita** does not carry such a table at all. Varahamihira says so himself at 1.10:
-  nativity, *yatra* and marriage are treated "in my work on Horoscopy", not here.
+- The **Brihat Samhita** does not carry such a table for activities in general. Varahamihira says at
+  1.10 that nativity, *yatra* and marriage are treated "in my work on Horoscopy". **For marriage he
+  gives one anyway, at 100.1** — see the amendment below, which was found only after this ADR was
+  first written.
 - The lists of that shape belong to the later muhurta literature — Muhurta Chintamani and its
   kin — whose English translations are modern and in copyright. A red line reads **"Public domain
   only… no bundled third-party translation."**
@@ -80,16 +82,48 @@ This immediately found a latent defect: **four test fixtures described `Karana(n
 They passed only because the scorer trusted the name it was handed. Corrected, and pinned by a test
 over all sixty positions.
 
-## A discrepancy found and deliberately not fixed
+## Amendment: the tithi set is widened, and chapter 100 sources more than expected
 
-`AUSPICIOUS_TITHIS` is **narrower than Brihat Samhita 99.2**. The verse sorts the fifteen into Nanda
-(1, 6, 11), Bhadra (2, 7, 12), Vijaya (3, 8, 13), Rikta (4, 9, 14) and Poorna (5, 10, 15), and sets
-aside only the Rikta ones. The app's set additionally omits 1, 6, 8 and 12, and its comment described
-itself as the Nanda/Bhadra/Jaya/Purna tithis, which is not what it contains.
+The first version of this ADR recorded `AUSPICIOUS_TITHIS` as narrower than Brihat Samhita 99.2 and
+left it alone, because widening it moves every ranking in the app and that deserved its own decision.
+**That decision was taken: widen it.** Going back to the text for the justification turned up three
+further things.
 
-So the set is **not** a transcription of that verse and is not cited as one. Widening it to match
-would move every muhurta ranking in the app, which deserves to be a decision someone makes rather
-than a side effect of a sourcing PR. Recorded here and in the code; not changed.
+**A correction to what this ADR first said.** It claimed 99.2 "sets aside only the Rikta ones". It
+does not. 99.2 *classifies* — Nanda (1, 6, 11), Bhadra (2, 7, 12), Vijaya (3, 8, 13), Rikta
+(4, 9, 14), Poorna (5, 10, 15) — and ranks nothing. The sentence that actually sets a class aside is
+in the next chapter: a marriage is fixed **"when the lunar day is other than a Rikta one"** (100.2).
+Both citations were needed, and the code now carries both.
+
+**So the set becomes every tithi except the Rikta ones, less Amavasya** — which 99.2 opens by giving
+to the Pitris, a different kind of day rather than an auspicious one to begin on. Twenty-three of the
+thirty, up from fifteen.
+
+The consequence is worth stating plainly: **the tithi is no longer a differentiator between good
+days, only a penalty on bad ones.** Eight tithis that scored nothing now score the same +10 as every
+other non-Rikta day, so ranking is carried by the nakshatra, vara, yoga, karana and the reader's own
+balas. That is what the verses support, and no more. A rule set that finds a text narrowing the
+field for its own activity can still override `favorableTithis`.
+
+**Vivah's nakshatras had a source all along.** Brihat Samhita 100.1: *"Marriages shall take place when
+the Moon passes through the asterism of Rohini, U. Phalguni, U. Ashadha, U. Bhadrapada, Revati,
+Mrigasirsha, Mula, Anuradha, Magha, Hasta or Swati."* Those eleven are **exactly** the eleven already
+in the rule set. The set was not adjusted to fit the verse; the verse was found to match the set, and
+a test now pins it by name rather than by number. The unsourced ratchet drops from four to three.
+
+**Three more rules the app already applied can now say where they come from**, all from 100.2, which
+lists the conditions for a marriage:
+
+| Rule in the engine | Verse |
+|---|---|
+| `RIKTA_TITHIS` avoided | "when the lunar day is other than a Rikta one" |
+| `INAUSPICIOUS_YOGAS` = Vyatipata, Vaidhriti | "when the Yoga is neither the Vyatipata nor that of Vaidhriti" |
+| `BENEFIC_VARAS` excludes Tue, Sat, Sun | "when the week day is other than that of a malefic planet" |
+| Vishti penalised | "when the Karana is other than Vishti" |
+
+**One honesty note on those.** 100.2 states them *of marriage*. The engine applies all four to every
+activity. That generalisation is the conventional reading rather than something the verse says, and
+the code comments say so at each one rather than letting a citation imply more than it carries.
 
 ## Consequences
 

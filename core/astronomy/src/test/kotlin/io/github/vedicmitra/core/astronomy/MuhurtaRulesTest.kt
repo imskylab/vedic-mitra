@@ -25,11 +25,8 @@ class MuhurtaRulesTest {
         }
     }
 
-    @Test
-    fun `the generally auspicious tithis exclude Rikta and Amavasya`() {
-        assertThat(AUSPICIOUS_TITHIS).containsNoneIn(RIKTA_TITHIS)
-        assertThat(AUSPICIOUS_TITHIS).doesNotContain(AMAVASYA_TITHI)
-    }
+    // The auspicious tithis moved to ActivityMuhurtaRulesTest, which asserts the whole set as a
+    // derivation from the verses rather than only that two things are missing from it.
 
     @Test
     fun `benefic weekdays exclude Tuesday Saturday and Sunday`() {

@@ -26,11 +26,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the half of the fix that needed no source. It also says where a rule came from when there is a text
   behind it.
 
-  **What is deliberately missing: the nakshatra lists.** No public-domain text was found that gives
-  them per activity — the grhyasutras give the fortnight and the half-year but never enumerate, and
-  Varahamihira says outright that he treats marriage elsewhere. So the four rule sets that still have
-  only a nakshatra list declare no source rather than acquiring a plausible one, and a ratchet stops
-  that number growing
+  **Vivah's asterisms turned out to have a source all along.** Brihat Samhita 100.1 sets a marriage
+  under Rohini, U. Phalguni, U. Ashadha, U. Bhadrapada, Revati, Mrigasirsha, Mula, Anuradha, Magha,
+  Hasta or Swati — **exactly** the eleven already in the rule set. The set was not adjusted to fit
+  the verse; the verse was found to match the set, and a test now pins it by name. Three further
+  rules the engine already applied — avoiding Rikta tithis, the Vyatipata and Vaidhriti yogas, and
+  the weekdays of the malefics — come from the next verse and can finally say so.
+
+  **Still deliberately missing: the other nakshatra lists.** No public-domain text was found that
+  gives them per activity, so the three rule sets that are only a nakshatra list declare no source
+  rather than acquiring a plausible one, and a ratchet stops that number growing
   ([ADR 0025](docs/adr/0025-muhurta-rules-cite-what-they-can.md)).
 
 - **The samskaras, as a cited reference.** The Dharma & Samskara tile stops saying "Soon" and opens:
@@ -109,6 +114,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   star changes how the day reads, not when its windows fall.
 
 ### Changed
+
+- **More days count as auspicious, because the narrower rule had no source.** The set of favourable
+  tithis was fifteen of the thirty, and nobody had recorded where the selection came from. Going back
+  to the text found that Brihat Samhita 99.2 only *classifies* the lunar days — Nanda, Bhadra, Vijaya,
+  Rikta, Poorna — and that the sentence actually setting a class aside is in the next chapter, where
+  a marriage is fixed "when the lunar day is other than a Rikta one".
+
+  So the set is now **every tithi except the Rikta ones, less Amavasya**, which 99.2 gives to the
+  Pitris. Twenty-three of thirty, up from fifteen.
+
+  **This changes every muhurta ranking in the app, and changes what the tithi does.** Eight tithis
+  that scored nothing now score the same as every other non-Rikta day, so the tithi is no longer a
+  differentiator between good days — only a penalty on bad ones. Ranking is carried by the nakshatra,
+  weekday, yoga, karana and the reader's own balas. That is what the verses support and no more; an
+  activity whose own text narrows the field can still override it.
 
 - **The landing has one grid of tiles instead of two.** The **Today** row held Today's Panchanga,
   Calendar and Reminders, and two of the three had stopped earning their place: the card at the top
