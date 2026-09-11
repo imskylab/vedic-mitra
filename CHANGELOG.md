@@ -9,6 +9,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Home shows the whole day's muhurtas, not just the one it leads with.** The Auspicious/Caution card
+  named a single window and stopped. On any Friday between 11:54 and 12:18 it read *"Caution now —
+  Rahu Kalam"* and never mentioned that **Abhijit Muhurta, the day's most favourable window, was
+  running at the same time**. That overlap is not a quirk of one date: Abhijit always falls on the
+  boundary between the fourth and fifth eighths of the day, and Friday's Rahu Kalam is the fourth.
+  It happens every week.
+
+  There is now a two-lane bar under the heading — favourable above, to-be-avoided below — with the
+  present moment marked, so a window that runs through another is two bands at the same place rather
+  than one of them being discarded. Where two windows in a lane overlap, that stretch is drawn a
+  shade further from the track. Tapping the bar names the window under your finger.
+
+  **Two lanes rather than one mixed bar**, so the two qualities are told apart by position as well as
+  colour — the rule the matchmaking rows already follow, for readers who cannot separate red from
+  green. Measured, the green and the red have almost identical luminance, so colour alone would have
+  carried none of it.
+
+  The card is a neutral surface now, with the verdict in the heading rather than the whole fill. A
+  red-and-green bar cannot be read on a red card; in the dark theme the caution bands disappeared into
+  it entirely.
+
 - **A muhurta can be chosen for two people.** Vivah and Vaagdaan ask for a groom and a bride, and rank
   the days ahead for both birth stars rather than one. Until then the app personalised a wedding to
   whichever single profile was picked — and said nothing about which half of the couple it had
