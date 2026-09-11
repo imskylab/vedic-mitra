@@ -25,9 +25,10 @@ import org.junit.Test
 class ActivityMuhurtaRulesTest {
     @Test
     fun `the number of unsourced rule sets only shrinks`() {
-        // A ratchet, on the stotra catalog's model: these four predate the rule about citing and no
+        // A ratchet, on the stotra catalog's model: these three predate the rule about citing and no
         // public-domain text has been found that gives lists of that shape. The bound is what is
-        // honestly true today. If this fails because the count went *down*, lower the number.
+        // honestly true today. If this fails because the count went *down*, lower the number --
+        // Vivah came off this list when Brihat Samhita 100.1 turned out to name its eleven exactly.
         val unsourced =
             MuhurtaActivity.entries
                 .filter { hasActivityRules(it) }
@@ -107,6 +108,32 @@ class ActivityMuhurtaRulesTest {
     }
 
     @Test
+    fun `marriage takes the eleven asterisms the verse names`() {
+        // "Marriages shall take place when the Moon passes through the asterism of Rohini,
+        // U. Phalguni, U. Ashadha, U. Bhadrapada, Revati, Mrigasirsha, Mula, Anuradha, Magha, Hasta
+        // or Swati" -- Brihat Samhita 100.1. Spelled out by name here rather than as bare numbers,
+        // because the numbers are the part that can be transposed without anyone noticing.
+        val named = listOf("Rohini", "Uttara Phalguni", "Uttara Ashadha", "Uttara Bhadrapada", "Revati")
+        val alsoNamed = listOf("Mrigashira", "Mula", "Anuradha", "Magha", "Hasta", "Swati")
+        val expected = (named + alsoNamed).map { NAKSHATRA_NAMES.indexOf(it) + 1 }
+
+        assertWithMessage("a name in the verse is not a name in NAKSHATRA_NAMES").that(expected).doesNotContain(0)
+        assertThat(muhurtaRulesFor(MuhurtaActivity.VIVAH).favorableNakshatras)
+            .containsExactlyElementsIn(expected)
+    }
+
+    @Test
+    fun `the auspicious tithis are everything but Rikta and Amavasya`() {
+        // Brihat Samhita 99.2 classifies the fifteen and 100.2 sets aside the Rikta ones; 99.2 gives
+        // the new moon to the Pitris. Nothing else in either verse narrows the field, so nothing else
+        // narrows this set. Asserted as a derivation rather than as a literal list, so a stray edit
+        // to the set has to disagree with the rule rather than merely with a copy of it.
+        val everyTithi = (1..30).toSet()
+
+        assertThat(AUSPICIOUS_TITHIS).containsExactlyElementsIn(everyTithi - RIKTA_TITHIS - AMAVASYA_TITHI)
+    }
+
+    @Test
     fun `every rule set that names a text names a place in it`() {
         MuhurtaActivity.entries
             .map { muhurtaRuleSourceFor(it) }
@@ -115,6 +142,6 @@ class ActivityMuhurtaRulesTest {
     }
 
     private companion object {
-        const val EXPECTED_UNSOURCED = 4
+        const val EXPECTED_UNSOURCED = 3
     }
 }
