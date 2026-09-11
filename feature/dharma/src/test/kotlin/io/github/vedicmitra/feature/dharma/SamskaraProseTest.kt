@@ -62,7 +62,8 @@ class SamskaraProseTest {
         Samskara.entries.forEach { kind ->
             val slug = kind.name.lowercase(Locale.ROOT)
             val oneLine = requireNotNull(strings["samskara_${slug}_one_line"])
-            assertWithMessage("$kind one-liner is too long to sit in a row").that(oneLine.length)
+            assertWithMessage("$kind one-liner is too long to sit in a row")
+                .that(oneLine.length)
                 .isAtMost(ONE_LINE_MAX_CHARS)
         }
     }

@@ -470,11 +470,11 @@ private fun AppNavHost(
         composable(JAPA_ROUTE) { JapaScreen() }
         composable(MEDITATION_ROUTE) { MeditationScreen() }
         composable(STOTRA_ROUTE) { StotraScreen() }
-    composable(SAMSKARA_ROUTE) {
-        SamskaraScreen(
-            onFindMuhurta = { activityName -> navController.navigate("$MUHURAT_RESULTS_ROUTE/$activityName") },
-        )
-    }
+        composable(SAMSKARA_ROUTE) {
+            SamskaraScreen(
+                onFindMuhurta = { activityName -> navController.navigate("$MUHURAT_RESULTS_ROUTE/$activityName") },
+            )
+        }
         domainDestinations(navController)
         muhuratDestinations(navController)
     }

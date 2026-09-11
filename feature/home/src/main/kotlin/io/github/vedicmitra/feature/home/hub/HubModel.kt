@@ -243,6 +243,7 @@ enum class HubDomain(
         category = HubCategory.DEVOTION,
         blurb = "Hymns to read, mantras to count, and a timer to sit with.",
     ),
+
     // Opens rather than drills: what it holds today is one screen, and a list of one that repeats
     // its parent's name is a wasted tap (ADR 0022). It becomes a drill when the dharma half -- the
     // observances of a stage of life -- arrives beside the samskaras.
