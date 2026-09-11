@@ -14,10 +14,46 @@
         written from. Where the sutras disagree, the entry says so rather than choosing quietly.
     </string>
     <string name="samskara_screen_partial">
-        Five rites of the sixteen, so far — the ones whose passages have been read. The rest follow
-        as their sources are found.
+        Thirteen rites of the sixteen. Karnavedha, Vidyarambha and Vedarambha are missing because
+        none of them is described in the grhyasutras this reference is drawn from.
     </string>
     <string name="samskara_muhurta_link">Find an auspicious day</string>
+
+    <string name="samskara_garbhadhana_one_line">The rites of the fourth night after the wedding.</string>
+    <string name="samskara_garbhadhana_body">
+        Paraskara sets them on the fourth night, towards morning, with the fire established inside
+        the house. What comes first is a series of expiation oblations, to Agni, Vayu, Surya, Chandra
+        and Gandharva, each asking that what the sutra holds to dwell in the bride — and to bring
+        harm to husband, children, cattle, house and fame — be taken out of her. On what follows, the
+        sutra gives two answers: after each monthly period, or as he likes.
+    </string>
+
+    <string name="samskara_pumsavana_one_line">The third month of pregnancy. The stated object is a son.</string>
+    <string name="samskara_pumsavana_body">
+        Ashvalayana names three rites in one line — Garbhalambhana, Pumsavana, Anavalobhana — and
+        then describes the third month, under Tishya: after fasting, the wife is given two beans and
+        a barley grain in curds from a cow whose calf is her own colour. Asked three times what she
+        drinks, she answers each time, the generation of a male child. Sankhayana also sets it in the
+        third month.
+    </string>
+
+    <string name="samskara_simantonnayana_one_line">The parting of the hair. Four sutras give four times.</string>
+    <string name="samskara_simantonnayana_body">
+        Ashvalayana puts it in the fourth month of pregnancy, in the bright fortnight, with the moon
+        in a nakshatra whose name is masculine. Sankhayana gives the seventh month and only at a
+        first pregnancy, Paraskara the sixth or eighth and also only at a first, Khadira the fourth
+        or sixth. This entry follows Ashvalayana. The hair is parted upwards three times, and two
+        lute-players are told to sing of king Soma, naming the river they live beside.
+    </string>
+
+    <string name="samskara_jatakarman_one_line">The rite at birth, before anyone else touches the child.</string>
+    <string name="samskara_jatakarman_body">
+        Ashvalayana has the father feed the newborn butter and honey ground with gold, before other
+        people touch him, and murmur the production of intelligence at both ears. Here the naming
+        belongs to this rite rather than to a later one: two syllables or four, an even number for a
+        boy and an uneven for a girl, and a second name for salutation that only the mother and
+        father know until his initiation. Paraskara instead gives the naming a day of its own.
+    </string>
 
     <string name="samskara_namakarana_one_line">The naming, on the tenth day after birth.</string>
     <string name="samskara_namakarana_body">
@@ -25,6 +61,14 @@
         name. The sutra is particular about its form — two syllables or four, beginning with a sonant,
         carrying a semivowel, and built with a krit suffix rather than a taddhita. For a girl it asks
         instead for an uneven number of syllables, ending in a long vowel, with a taddhita.
+    </string>
+
+    <string name="samskara_nishkramana_one_line">The first going out, in the fourth month.</string>
+    <string name="samskara_nishkramana_body">
+        Paraskara gives it in two sutras and no more: in the fourth month follows the going out, and
+        the child is made to look at the sun while the verse that begins “That eye” is pronounced. It
+        sits immediately after the naming, in the same kandika, and the sutra names neither an
+        oblation nor a fee for it.
     </string>
 
     <string name="samskara_annaprasana_one_line">The first feeding with solid food, in the sixth month.</string>
@@ -51,11 +95,38 @@
         twenty-fourth. Beyond that the sutra holds the right to learn the Savitri to have lapsed.
     </string>
 
+    <string name="samskara_keshanta_one_line">The first shaving of the beard, in the sixteenth year.</string>
+    <string name="samskara_keshanta_body">
+        Ashvalayana declares it by reference rather than describing it again: thereby the
+        Godanakarman is declared, meaning the tonsure rite repeated, with the word beard put wherever
+        the mantras say hair. In the sixteenth year. The barber is told to arrange the hair, the
+        beard, the body hair and the nails, ending in the north. After bathing, the youth keeps
+        silence for the rest of the day and breaks it before his teacher. An ox and a cow are the fee.
+    </string>
+
+    <string name="samskara_samavartana_one_line">The bath that ends studentship, and the return home.</string>
+    <string name="samskara_samavartana_body">
+        Ashvalayana opens with what has to be got for it: a jewel, two ear-rings, a pair of garments,
+        a parasol, shoes, a staff, a wreath, something to rub with, ointment, eye salve, a turban —
+        one set for the student and one for the teacher, and if only one can be had, it goes to the
+        teacher. The beard is shaved first. Then the texts are altered so that they refer to himself,
+        and what was said over the boy is said by the man.
+    </string>
+
     <string name="samskara_vivaha_one_line">The wedding. The seven steps are what complete it.</string>
     <string name="samskara_vivaha_body">
         Paraskara has the bride led seven steps northward, with the count spoken over them — one for
         sap, two for juice, three for the prospering of wealth, four for comfort, five for cattle, six
         for the seasons — and at the seventh she is named friend. Ashvalayana gives the same seven
         steps. The rite runs across several kandikas; the steps are what the texts return to.
+    </string>
+
+    <string name="samskara_antyeshti_one_line">The last rite. The sutra opens with an illness.</string>
+    <string name="samskara_antyeshti_body">
+        Ashvalayana begins not with a death but with an illness: one who has set up the srauta fires
+        and falls ill leaves the village, going east, north or north-east, because the fires are said
+        to be fond of the village and, longing for it, might bring him back to health. Only then does
+        the sutra turn. If he dies, ground is dug to the south-east or south-west, the length of a
+        man with his arms raised, a fathom broad and a span deep.
     </string>
 </resources>

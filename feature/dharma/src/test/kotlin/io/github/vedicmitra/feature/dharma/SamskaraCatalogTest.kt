@@ -31,11 +31,13 @@ class SamskaraCatalogTest {
     @Test
     fun `every source names a text and a place in it`() {
         // A citation that cannot say where in the work is not much of a citation. Each locus here was
-        // read in Oldenberg before it was written down.
+        // read in Oldenberg before it was written down. The shape is asserted too, because a locus is
+        // the one field a reader might actually go and check, and "I.19.1" or "1.19" would send them
+        // to the wrong place while looking perfectly plausible.
         SamskaraCatalog.all.forEach { entry ->
             val source = entry.source as ContentSource.Text
             assertWithMessage("${entry.kind} work").that(source.work).contains("Grhyasutra")
-            assertWithMessage("${entry.kind} locus").that(source.locus).isNotNull()
+            assertWithMessage("${entry.kind} locus").that(source.locus).matches("\\d+\\.\\d+\\.\\d+(-\\d+)?")
         }
     }
 
@@ -67,13 +69,20 @@ class SamskaraCatalogTest {
     }
 
     @Test
-    fun `Karnavedha is absent, deliberately`() {
-        // The app offers a muhurta for Karnavedha and cannot explain it, because ear-piercing does
-        // not appear in any of the four grhyasutras of SBE 29. That gap is recorded here rather than
-        // closed with a plausible-looking citation -- which is the failure ContentSource exists to
-        // prevent. Delete this test when a source is found and the entry is written.
-        assertWithMessage("a Karnavedha entry arrived -- if it is sourced, delete this test")
+    fun `the three rites with no located passage stay absent`() {
+        // The sixteen minus the thirteen that ship. None of these three is described in any of the
+        // seven grhyasutras Oldenberg translated: "vedha" does not occur in either volume of SBE, and
+        // his own synoptical survey of their contents -- which indexes all seven side by side -- runs
+        // Annaprasana, Chudakarman, Godana, Upanayana with no ear rite anywhere between them.
+        //
+        // Karnavedha is the one that costs something: the app offers to find a muhurta for it and
+        // still cannot say what it is. That gap is recorded here rather than closed with a
+        // plausible-looking citation, which is the failure ContentSource exists to prevent. Drop an
+        // id from this list when a passage is found for it and its entry is written.
+        val noPassageFound = listOf("karnavedha", "vidyarambha", "vedarambha")
+
+        assertWithMessage("an entry arrived for a rite with no located passage -- if it is sourced, drop its id here")
             .that(Samskara.entries.map { it.id })
-            .doesNotContain("karnavedha")
+            .containsNoneIn(noPassageFound)
     }
 }

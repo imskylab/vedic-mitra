@@ -404,10 +404,13 @@ of the sixteen samskaras has a traditional muhurta the app can already compute a
 can cite. It is the natural bridge between what is built and what is planned.
 
 - [ ] The sixteen samskaras: what each is, when it is traditionally held, what a source says
-      — **five of sixteen**, each cited to a grhyasutra passage that was read rather than recalled
-      ([ADR 0024](adr/0024-samskaras-cited-from-the-grhyasutras.md)). Karnavedha and Janana Shanti
-      are absent on purpose: Muhurta offers dates for both and neither appears in SBE 29, so neither
-      gets a citation until one is found
+      — **thirteen of sixteen**, Garbhadhana to Antyeshti, each cited to a grhyasutra passage that was
+      read rather than recalled ([ADR 0024](adr/0024-samskaras-cited-from-the-grhyasutras.md)).
+      Karnavedha, Vidyarambha and Vedarambha are absent on purpose — none of them is described in any
+      of the seven grhyasutras of SBE 29–30, so none gets a citation until a passage is found. Janana
+      Shanti is absent for a different reason: it is a shanti rite rather than a grhya samskara.
+      Muhurta still offers a date for Karnavedha that this reference cannot explain, and that gap is
+      held open by a test rather than closed by invention
 - [ ] Muhurta presets per samskara, using the existing electional engine
 - [ ] Observances and duties by stage of life, attributed
 - [ ] Explicitly **not**: prescriptive instruction, or any claim about who owes what to whom
