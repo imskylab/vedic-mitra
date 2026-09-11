@@ -33,6 +33,7 @@ enum class HubTarget {
     STOTRA,
     JAPA,
     MEDITATE,
+    SAMSKARA,
     FESTIVALS,
     EVENTS,
 }
@@ -242,14 +243,18 @@ enum class HubDomain(
         category = HubCategory.DEVOTION,
         blurb = "Hymns to read, mantras to count, and a timer to sit with.",
     ),
+
+    // Opens rather than drills: what it holds today is one screen, and a list of one that repeats
+    // its parent's name is a wasted tap (ADR 0022). It becomes a drill when the dharma half -- the
+    // observances of a stage of life -- arrives beside the samskaras.
     DHARMA(
         id = "K2",
         label = "Dharma & Samskara",
-        status = DomainStatus.NEXT,
+        status = DomainStatus.BUILT,
         icon = TileIcon.Glyph(VedicIcons.dharma),
         category = HubCategory.DEVOTION,
-        blurb = "The sixteen samskaras, and the observances of a stage of life.",
-        note = "Dharma and the samskaras — next up, and the closest to being built.",
+        blurb = "The life-cycle rites, as the grhyasutras describe them.",
+        opens = HubTarget.SAMSKARA,
     ),
     VASTU(
         id = "C5",

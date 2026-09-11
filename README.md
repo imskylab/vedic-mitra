@@ -204,7 +204,7 @@ its skandhas, and Yoga is a darshana on a different axis altogether.
 | --- | --- |
 | **Built** | Panchanga · Kundali (reporting gaps remain) · Muhurta · Festivals and observances |
 | **In progress** | Regional variation (month scheme settled; solar calendars next) · Content sources (required and enforced; 38 entries still to identify) |
-| **Next** | Dharma and the samskaras |
+| **Building** | Dharma and the samskaras — five rites cited so far |
 | **Open for contribution** | Localization · Vastu · Chandas · Ayurveda (bounded) · Yoga · Accessibility · Kalpa (sankalpa frame shipped) · Time reckoning (era years shipped) |
 | **Exploring** | The arts (media-constrained) · Portable engine and iOS · Prashna and Varshaphala |
 | **Declined** | Arthashastra · Dhanurveda · Sanskrit tutoring · remedy commerce — [reasons recorded](docs/roadmap.md#part-vi--declined-and-why) |
