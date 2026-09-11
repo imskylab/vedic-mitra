@@ -9,6 +9,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Muhurta rules that differ by activity, and a screen that says when they do not.** The picker
+  offers 31 activities; the engine had rules for 5. Everything else shared one generally-auspicious
+  set, so Mundan and Shop Opening returned the same ranked days. An interface that offers a
+  distinction the engine does not make is making a claim it cannot keep.
+
+  **Seven more activities now rank differently, from a named verse.** The Brihat Samhita's chapter on
+  lunar days names particular work for particular karanas, which is the uncommon case of a classical
+  text saying something activity-specific that this engine already computes: *Gara* for tilling and
+  sowing, *Taitila* and *Gara* for the building of a house, *Vanija* for dealings with merchants,
+  *Shakuni* for taking medicine, *Chatushpada* for deeds connected with cows. Read in Chidambaram
+  Iyer's public-domain 1884 translation. The Vishti penalty the engine already applied turns out to
+  come from the same chapter, so it can now say so.
+
+  **The other 19 activities are ranked by the general rules and the screen now says so**, which is
+  the half of the fix that needed no source. It also says where a rule came from when there is a text
+  behind it.
+
+  **What is deliberately missing: the nakshatra lists.** No public-domain text was found that gives
+  them per activity — the grhyasutras give the fortnight and the half-year but never enumerate, and
+  Varahamihira says outright that he treats marriage elsewhere. So the four rule sets that still have
+  only a nakshatra list declare no source rather than acquiring a plausible one, and a ratchet stops
+  that number growing
+  ([ADR 0025](docs/adr/0025-muhurta-rules-cite-what-they-can.md)).
+
 - **The samskaras, as a cited reference.** The Dharma & Samskara tile stops saying "Soon" and opens:
   thirteen life-cycle rites from Garbhadhana to Antyeshti, each with what a named grhyasutra passage
   says about it, and a way into the muhurta flow for the ones the app can already find a day for.
@@ -143,6 +167,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   property on the kind now, and a test asserts the two directions agree, which nothing did before.
 
 ### Fixed
+
+- **A karana was matched by the name printed for it.** The scorer asked whether the karana was called
+  "Vishti" — the fifth instance in this repo of keying a rule on display copy, which fails silently
+  rather than erroring. A karana's identity is its position in the lunar month, derived from the
+  Moon and unrenameable; it is now matched on that.
+
+  This found a real defect immediately. **Four test fixtures described a day with Vishti at position
+  7, which cannot happen** — position 7 is Vanija, and Vishti falls at 8, 15, 22 and so on. They
+  passed only because the scorer trusted the name it was handed. All sixty positions are now pinned
+  by a test.
 
 - **The hub's glyphs are visible in the dark theme.** They were inked in a fixed maroon chosen
   against the light scheme's cream chips, where it reads at about 8:1. The dark scheme's chips are

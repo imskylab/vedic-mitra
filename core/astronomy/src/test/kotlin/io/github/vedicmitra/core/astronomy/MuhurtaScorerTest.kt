@@ -42,7 +42,7 @@ class MuhurtaScorerTest {
                 nakshatra = Nakshatra(number = 2, name = "Bharani"),
                 vara = Vara.MANGALAVARA,
                 yoga = Yoga(number = 17, name = "Vyatipata"),
-                karana = Karana(number = 7, name = "Vishti"),
+                karana = Karana(number = 8, name = "Vishti"),
             )
 
         assertThat(score.rating).isEqualTo(MuhurtaRating.AVOID)
@@ -69,7 +69,7 @@ class MuhurtaScorerTest {
                 Nakshatra(number = 4, name = "Rohini"),
                 Vara.GURUVARA,
                 Yoga(number = 1, name = "Vishkambha"),
-                Karana(number = 7, name = "Vishti"),
+                Karana(number = 8, name = "Vishti"),
             )
 
         assertThat(withVishti.score).isLessThan(clean.score)
@@ -167,7 +167,7 @@ class MuhurtaScorerTest {
                 Nakshatra(number = 2, name = "Bharani"),
                 Vara.MANGALAVARA,
                 Yoga(number = 17, name = "Vyatipata"),
-                Karana(number = 7, name = "Vishti"),
+                Karana(number = 8, name = "Vishti"),
             )
 
         assertThat(worst.score).isAtLeast(0)

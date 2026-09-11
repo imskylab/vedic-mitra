@@ -104,10 +104,6 @@ private const val HALF_PHASE_DEG = 22.5
 private const val RITU_ARCSEC = 216_000L
 private const val VASANTA_START_DEG = 330.0
 
-// The seven movable (chara) karanas, which repeat eight times through the lunar month.
-private val KARANA_MOVABLE =
-    listOf("Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti")
-
 /** Derives the [Tithi] from the Moon's elongation from the Sun (degrees, 0..360). */
 internal fun tithiOf(elongationDeg: Double): Tithi {
     val number = AngularBuckets.tithiIndex(elongationDeg) + 1
@@ -193,21 +189,12 @@ internal fun karanaOf(elongationDeg: Double): Karana {
 }
 
 /**
- * The karana at position [number] (1..60) in the lunar month.
+ * The name of the karana at position [number] (1..60) in the lunar month.
  *
- * Not a plain table lookup: the first position is Kimstughna, the next fifty-six cycle through the
- * seven movable karanas, and the last three are fixed. See [tithiNameAt] on why this is separable.
+ * Derived from [karanaKindAt] rather than from a second table, so the identity and the name printed
+ * for it cannot drift apart. See [tithiNameAt] on why this is separable.
  */
-internal fun karanaNameAt(number: Int): String {
-    val index = number - 1
-    return when {
-        index == 0 -> "Kimstughna"
-        index <= 56 -> KARANA_MOVABLE[(index - 1) % 7]
-        index == 57 -> "Shakuni"
-        index == 58 -> "Chatushpada"
-        else -> "Naga"
-    }
-}
+internal fun karanaNameAt(number: Int): String = karanaKindAt(number).label
 
 /**
  * Determines the [Vara] (weekday), which runs from sunrise to sunrise. The civil day is taken in

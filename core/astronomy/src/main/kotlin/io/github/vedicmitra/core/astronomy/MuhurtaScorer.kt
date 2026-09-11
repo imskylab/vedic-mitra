@@ -104,8 +104,9 @@ private const val BASE_SCORE = 50
  * anyone — layers their Tarabala and Chandrabala on top, worst case first where there is more than
  * one of them. The nakshatra is weighted most heavily, then
  * the weekday and tithi, with universal doshas (Rikta/Amavasya tithi, the Vyatipata/Vaidhriti yogas,
- * and the Vishti/Bhadra karana) penalised regardless of activity. The result is clamped to 0..100 and
- * mapped to a [MuhurtaRating], with the contributing [reasons].
+ * and the Vishti/Bhadra karana) penalised regardless of activity. Where a rule set names karanas
+ * suited to the work, falling in one of them is credited. The result is clamped to 0..100 and mapped
+ * to a [MuhurtaRating], with the contributing [reasons].
  */
 internal fun scoreMuhurta(
     activity: MuhurtaActivity,
@@ -167,9 +168,13 @@ internal fun scoreMuhurta(
         reasons += MuhurtaReason(false, "Inauspicious yoga (${yoga.name})")
     }
 
-    if (karana.name == VISHTI_KARANA_NAME) {
+    val karanaKind = karanaKindAt(karana.number)
+    if (karanaKind == KaranaKind.VISHTI) {
         score -= 15
         reasons += MuhurtaReason(false, "Vishti (Bhadra) karana")
+    } else if (karanaKind in rules.favorableKaranas) {
+        score += 10
+        reasons += MuhurtaReason(true, "Karana suited to this work (${karanaKind.label})")
     }
 
     personalContributions(nakshatra.number, personal).forEach {

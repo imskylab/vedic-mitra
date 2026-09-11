@@ -326,7 +326,14 @@ The deepest domain here and roughly complete on the computation side.
 - [x] A muhurta chosen for two people — Vivah and Vaagdaan rank for the couple, each factor taken at
       its worst, and the day detail reports where the day stands for each of them
       ([ADR 0023](adr/0023-muhurta-for-two-people.md)) · Compute (rule-transcribed), Cite
-- [x] Event-type presets, ranked days with the reasoning shown
+- [x] Event-type presets, ranked days with the reasoning shown — **for 12 of the 31 activities**;
+      the rest are ranked by the general rules and the screen says which it is showing
+      ([#247](https://github.com/imskylab/vedic-mitra/issues/247),
+      [ADR 0025](adr/0025-muhurta-rules-cite-what-they-can.md))
+- [ ] Rules for the remaining 19 activities. Blocked on sources rather than on code: no public-domain
+      text has been found that gives per-activity nakshatra lists, so the four unsourced rule sets and
+      the general fallback stay as they are rather than acquiring plausible citations · Compute
+      (rule-transcribed), Cite
 - [x] Reboot-survivable reminders with per-event offsets and ringing alarms
 - [ ] Parana (fast-breaking) timings
 - [ ] Muhurta for the samskaras — see K2, where the two domains meet

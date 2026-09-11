@@ -33,9 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.vedicmitra.core.astronomy.DayMuhurtaScore
+import io.github.vedicmitra.core.astronomy.MuhurtaActivity
 import io.github.vedicmitra.core.astronomy.MuhurtaRating
 import io.github.vedicmitra.core.astronomy.MuhurtaReason
 import io.github.vedicmitra.core.astronomy.RankedMuhurtaDay
+import io.github.vedicmitra.core.astronomy.hasActivityRules
+import io.github.vedicmitra.core.astronomy.muhurtaRuleSourceFor
+import io.github.vedicmitra.core.common.model.ContentSource
 import io.github.vedicmitra.core.designsystem.component.VedicSelectField
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -130,6 +134,11 @@ private fun MuhuratResultsContent(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Text(
+                    text = rulesNote(uiState.activity),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
     }
 }
@@ -152,6 +161,32 @@ private fun personalisationNote(uiState: MuhuratResultsUiState.Ready): String {
         names.size == 1 -> "Personalised for ${names.first()} with their Tarabala and Chandrabala."
         uiState.couple != null -> "Pick both people to personalise these days to their birth stars."
         else -> "General guidance from the day's panchanga; pick a profile to personalise it."
+    }
+}
+
+/**
+ * Which rules produced this ranking, and what backs them.
+ *
+ * The picker offers 31 activities and the engine has rules of its own for a minority of them. Until
+ * this line existed, a reader choosing between two of the rest was being shown two identical lists
+ * as though the choice had changed something. **An interface that offers a distinction the engine
+ * does not make is making a claim it cannot keep** — so the screen says which it is doing. See
+ * [#247](https://github.com/imskylab/vedic-mitra/issues/247).
+ */
+private fun rulesNote(activity: MuhurtaActivity): String {
+    val name = activity.displayName
+    if (!hasActivityRules(activity)) {
+        return "Ranked by the general panchanga rules — there is nothing specific to $name in the " +
+            "engine yet, so most other activities would rank these days the same way."
+    }
+    return when (val source = muhurtaRuleSourceFor(activity)) {
+        is ContentSource.Text ->
+            "Rules specific to $name. The karana rule follows ${source.label}; the nakshatras have " +
+                "no text named for them yet."
+
+        ContentSource.NotRecorded ->
+            "Rules specific to $name, from the widely-taught classical preferences. No text is " +
+                "named for them yet."
     }
 }
 

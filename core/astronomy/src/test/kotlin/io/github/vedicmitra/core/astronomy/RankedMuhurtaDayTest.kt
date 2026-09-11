@@ -25,7 +25,7 @@ class RankedMuhurtaDayTest {
                 nakshatra = Nakshatra(number = 2, name = "Bharani"),
                 vara = Vara.MANGALAVARA,
                 yoga = Yoga(number = 17, name = "Vyatipata"),
-                karana = Karana(number = 7, name = "Vishti"),
+                karana = Karana(number = 8, name = "Vishti"),
             )
         val ideal =
             daySnapshot(
