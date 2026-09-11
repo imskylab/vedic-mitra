@@ -111,3 +111,18 @@ structure around it changed to suit.
 
 The first row, Panchang / Panchanga, still holds: "Today's Panchanga" sits under the "Panchanga"
 domain, one glance apart, and is now told apart by drawing the date rather than the domain's glyph.
+
+## Note — 2026-09-11
+
+**Rule 4 splits a word across two registers, and that is the rule working rather than breaking.**
+[ADR 0024](0024-samskaras-cited-from-the-grhyasutras.md) ships a samskara reference in which the
+muhurta picker still offers *Mundan* while the reference entry reads *Chudakarana*. Rule 4 assigns
+register by role — Sanskrit for what the tradition names, the popular form for what a person chooses
+— and a reference entry and an electional preset are different roles. The entry carries the popular
+form as an alias so the two stay visibly one rite.
+
+Worth recording because it was nearly decided the other way: **rule 6 does not apply to
+`MuhurtaActivity`.** Its freeze covers display names that double as persisted keys, and the example
+it gives is `MuhurtaKind` — whose reminder identity was `"muhurta:$name"` until #211 moved it to
+`"muhurta:${kind.id}"`. Nothing keys on an activity's display name, so renaming *Mundan* was always
+possible. It was not done because rule 4 says it should not be, not because rule 6 forbade it.

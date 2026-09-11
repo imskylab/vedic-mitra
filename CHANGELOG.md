@@ -9,6 +9,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The samskaras, as a cited reference.** The Dharma & Samskara tile stops saying "Soon" and opens:
+  five life-cycle rites, each with what a named grhyasutra passage says about it, and a way into the
+  muhurta flow for the ones the app can already find a day for.
+
+  Until now Muhurta offered to find an auspicious day for six child samskaras and the app could not
+  explain any of them. It sold a date for a rite it never described.
+
+  **Every citation was read before it was written.** Oldenberg's 1886 translation is public domain;
+  it was fetched, indexed so each line could be attributed to the right sutra, and the passages read
+  in place. That is why Annaprasana's entry can say three sutras open it with the same words — in the
+  sixth month — rather than merely that they probably do.
+
+  **Where the sutras disagree, the entry says so.** Chudakarana is the clearest: Ashvalayana gives the
+  third year "or according to the custom of the family", Sankhayana the third or the fifth for a
+  kshatriya, Paraskara one year or before the third has passed. All three are reported and the one
+  followed is named.
+
+  **Karnavedha is deliberately absent**, and a test keeps it that way. Ear-piercing appears in none of
+  the four sutras of that volume, so it has no entry rather than a plausible-looking citation — which
+  is the failure the source field exists to prevent. Five of sixteen, and the screen says so
+  ([ADR 0024](docs/adr/0024-samskaras-cited-from-the-grhyasutras.md)).
+
 - **Home shows the whole day's muhurtas, not just the one it leads with.** The Auspicious/Caution card
   named a single window and stopped. On any Friday between 11:54 and 12:18 it read *"Caution now —
   Rahu Kalam"* and never mentioned that **Abhijit Muhurta, the day's most favourable window, was

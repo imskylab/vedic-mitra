@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) 2026 Jayvardhan Potabatti
+  SPDX-License-Identifier: AGPL-3.0-or-later
+
+  The samskara reference copy. Held to the same shape as the panchanga primer: a one-liner short
+  enough to read without tapping, and a body that is a paragraph. No sentence addresses the reader,
+  and a test over this file enforces that.
+-->
+<resources>
+    <string name="samskara_screen_title">The samskaras</string>
+    <string name="samskara_screen_intro">
+        The life-cycle rites, as the grhyasutras describe them. Each entry names the passage it was
+        written from. Where the sutras disagree, the entry says so rather than choosing quietly.
+    </string>
+    <string name="samskara_screen_partial">
+        Five rites of the sixteen, so far — the ones whose passages have been read. The rest follow
+        as their sources are found.
+    </string>
+    <string name="samskara_muhurta_link">Find an auspicious day</string>
+
+    <string name="samskara_namakarana_one_line">The naming, on the tenth day after birth.</string>
+    <string name="samskara_namakarana_body">
+        Paraskara places it on the tenth day: the father, having fed the brahmanas, gives the child a
+        name. The sutra is particular about its form — two syllables or four, beginning with a sonant,
+        carrying a semivowel, and built with a krit suffix rather than a taddhita. For a girl it asks
+        instead for an uneven number of syllables, ending in a long vowel, with a taddhita.
+    </string>
+
+    <string name="samskara_annaprasana_one_line">The first feeding with solid food, in the sixth month.</string>
+    <string name="samskara_annaprasana_body">
+        Three of the sutras open this rite with the same words — in the sixth month. Ashvalayana and
+        Sankhayana then list what may be fed and what each is held to bring: goat for nourishment,
+        partridge for holy lustre, and so on down a short list. Paraskara gives the offerings that
+        accompany it and leaves the food itself unnamed.
+    </string>
+
+    <string name="samskara_chudakarana_one_line">The first tonsure. The sutras give three different years.</string>
+    <string name="samskara_chudakarana_body">
+        Ashvalayana sets it in the third year, then allows the custom of the family instead.
+        Sankhayana offers the third year, or the fifth for a kshatriya. Paraskara puts it at one year,
+        or before the third has passed. This entry follows Ashvalayana. The disagreement is old, and
+        the texts make no attempt to settle it.
+    </string>
+
+    <string name="samskara_upanayana_one_line">Initiation as a student, in the eighth year.</string>
+    <string name="samskara_upanayana_body">
+        Ashvalayana sets it in the eighth year, then offers a second reckoning in the same breath —
+        the eighth year counted from conception. It gives the eleventh year for a kshatriya and the
+        twelfth for a vaishya, and an outer limit for each: the sixteenth, the twenty-second, the
+        twenty-fourth. Beyond that the sutra holds the right to learn the Savitri to have lapsed.
+    </string>
+
+    <string name="samskara_vivaha_one_line">The wedding. The seven steps are what complete it.</string>
+    <string name="samskara_vivaha_body">
+        Paraskara has the bride led seven steps northward, with the count spoken over them — one for
+        sap, two for juice, three for the prospering of wealth, four for comfort, five for cattle, six
+        for the seasons — and at the seventh she is named friend. Ashvalayana gives the same seven
+        steps. The rite runs across several kandikas; the steps are what the texts return to.
+    </string>
+</resources>

@@ -75,6 +75,7 @@ import io.github.vedicmitra.core.designsystem.icon.VedicIcons
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.feature.alarm.AlarmScreen
 import io.github.vedicmitra.feature.calendar.CalendarScreen
+import io.github.vedicmitra.feature.dharma.SamskaraScreen
 import io.github.vedicmitra.feature.home.EventsScreen
 import io.github.vedicmitra.feature.home.FestivalsScreen
 import io.github.vedicmitra.feature.home.HomeScreen
@@ -173,6 +174,7 @@ internal val DESTINATION_LABELS: Map<String, String> =
         JAPA_ROUTE to "Japa",
         MEDITATION_ROUTE to "Meditation",
         STOTRA_ROUTE to "Stotra",
+        SAMSKARA_ROUTE to "Samskaras",
         DOMAIN_ROUTE to "Explore",
         MUHURAT_ROUTE to "Muhurta",
         MUHURAT_ACTIVITIES_ROUTE to "Muhurta",
@@ -222,6 +224,7 @@ internal const val RASHIFAL_ROUTE = "rashifal"
 internal const val JAPA_ROUTE = "japa"
 internal const val MEDITATION_ROUTE = "meditation"
 internal const val STOTRA_ROUTE = "stotra"
+internal const val SAMSKARA_ROUTE = "samskara"
 internal const val DOMAIN_ROUTE = "domain"
 internal const val DOMAIN_ID_ARG = "domainId"
 internal const val LOCATION_ROUTE = "settings/location"
@@ -467,6 +470,11 @@ private fun AppNavHost(
         composable(JAPA_ROUTE) { JapaScreen() }
         composable(MEDITATION_ROUTE) { MeditationScreen() }
         composable(STOTRA_ROUTE) { StotraScreen() }
+    composable(SAMSKARA_ROUTE) {
+        SamskaraScreen(
+            onFindMuhurta = { activityName -> navController.navigate("$MUHURAT_RESULTS_ROUTE/$activityName") },
+        )
+    }
         domainDestinations(navController)
         muhuratDestinations(navController)
     }
@@ -521,6 +529,7 @@ internal fun routeOf(target: HubTarget): String =
         HubTarget.MATCH -> MATCHMAKING_ROUTE
         HubTarget.MUHURAT -> MUHURAT_ROUTE
         HubTarget.STOTRA -> STOTRA_ROUTE
+        HubTarget.SAMSKARA -> SAMSKARA_ROUTE
         HubTarget.JAPA -> JAPA_ROUTE
         HubTarget.MEDITATE -> MEDITATION_ROUTE
         HubTarget.FESTIVALS -> FESTIVALS_ROUTE

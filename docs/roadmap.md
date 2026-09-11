@@ -397,13 +397,17 @@ matters most.
 - [ ] Parana timings (see C3)
 - [ ] A vrata log — see Part IV
 
-### K2. Dharma Shastra and the samskaras — **Next** · Cite + Compute + Track
+### K2. Dharma Shastra and the samskaras — **Building** · Cite + Teach + Compute + Track
 
 **The best next knowledge domain, because it uses the engine rather than needing a new one.** Each
 of the sixteen samskaras has a traditional muhurta the app can already compute and a procedure it
 can cite. It is the natural bridge between what is built and what is planned.
 
 - [ ] The sixteen samskaras: what each is, when it is traditionally held, what a source says
+      — **five of sixteen**, each cited to a grhyasutra passage that was read rather than recalled
+      ([ADR 0024](adr/0024-samskaras-cited-from-the-grhyasutras.md)). Karnavedha and Janana Shanti
+      are absent on purpose: Muhurta offers dates for both and neither appears in SBE 29, so neither
+      gets a citation until one is found
 - [ ] Muhurta presets per samskara, using the existing electional engine
 - [ ] Observances and duties by stage of life, attributed
 - [ ] Explicitly **not**: prescriptive instruction, or any claim about who owes what to whom
