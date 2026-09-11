@@ -697,8 +697,9 @@ private fun AuspiciousCard(
                 Text(text = boundaryLabel, style = MaterialTheme.typography.bodyMedium, color = onContainer)
             }
             Text(
-                text = selected?.let { "${it.name}  ${formatRange(it.start, it.end)}" }
-                    ?: detailLine(window, alsoRunning),
+                text =
+                    selected?.let { "${it.name}  ${formatRange(it.start, it.end)}" }
+                        ?: detailLine(window, alsoRunning),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
