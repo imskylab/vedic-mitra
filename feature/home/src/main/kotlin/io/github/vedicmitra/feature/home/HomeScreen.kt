@@ -94,10 +94,14 @@ import io.github.vedicmitra.core.astronomy.Yoga
 import io.github.vedicmitra.core.astronomy.nameIn
 import io.github.vedicmitra.core.common.model.GeoCoordinates
 import io.github.vedicmitra.core.common.model.MaasaReckoning
+import io.github.vedicmitra.core.designsystem.component.TimelineLane
+import io.github.vedicmitra.core.designsystem.component.VedicTimelineBar
+import io.github.vedicmitra.core.designsystem.theme.LocalVedicAccents
 import io.github.vedicmitra.core.designsystem.theme.VedicMitraTheme
 import io.github.vedicmitra.core.ui.panchanga.PanchangaGlossary
 import io.github.vedicmitra.core.ui.panchanga.explanationRes
 import io.github.vedicmitra.core.ui.panchanga.festivalDatesNoteRes
+import io.github.vedicmitra.core.ui.preview.ThemePreviews
 import io.github.vedicmitra.feature.home.hub.HubCatalog
 import io.github.vedicmitra.feature.home.hub.HubDomain
 import io.github.vedicmitra.feature.home.hub.HubTarget
@@ -621,22 +625,42 @@ private const val MINUTES_PER_HOUR = 60L
  */
 @Composable
 private fun AuspiciousStrip(muhurtas: List<Muhurta>) {
-    val window by produceState(initialValue = activeOrNextMuhurta(muhurtas, systemNow()), muhurtas) {
+    val now by produceState(initialValue = systemNow(), muhurtas) {
         while (true) {
-            value = activeOrNextMuhurta(muhurtas, systemNow())
+            value = systemNow()
             delay(MINUTE_MILLIS)
         }
     }
-    window?.let { AuspiciousCard(it) }
+    // One tick drives both the verdict and the bar. A minute is ample for the marker too: across a
+    // fourteen-hour span in a few hundred dp, a minute is a third of a pixel.
+    val window = activeOrNextMuhurta(muhurtas, now)
+    window?.let { AuspiciousCard(it, muhurtaTimeline(muhurtas, now), alsoRunning(muhurtas, now), now) }
 }
 
+/**
+ * The verdict, and the day it came out of.
+ *
+ * The card is **neutral**, with the state carried by the heading's colour rather than by the whole
+ * fill. It used to be a full-width block of `errorContainer` for a caution, which read clearly enough
+ * on its own but leaves nowhere to put a red-and-green bar: on the dark scheme's `#93000A` the
+ * caution bands disappear into the card entirely.
+ *
+ * [timeline] shows what [window] cannot. `activeOrNextMuhurta` picks one window to lead with and
+ * discards the rest, so on any Friday between 11:54 and 12:18 the heading reads "Caution now — Rahu
+ * Kalam" while Abhijit Muhurta, the day's most favourable window, runs unmentioned. [alsoRunning]
+ * names those in words; the bar shows where they sit.
+ */
 @Composable
-private fun AuspiciousCard(window: AuspiciousWindow) {
+private fun AuspiciousCard(
+    window: AuspiciousWindow,
+    timeline: MuhurtaTimeline?,
+    alsoRunning: List<Muhurta>,
+    now: Instant,
+) {
     val auspicious = window.quality == MuhurtaQuality.AUSPICIOUS
-    val container =
-        if (auspicious) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
-    val onContainer =
-        if (auspicious) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onErrorContainer
+    val accents = LocalVedicAccents.current
+    val accent = if (auspicious) accents.auspicious else accents.caution
+    val onContainer = MaterialTheme.colorScheme.onSurface
     // Four states in two parallel pairs, so "now" and "next" read as the same fact at different
     // distances. An upcoming caution had no wording at all before -- it was simply never shown.
     val heading =
@@ -651,36 +675,164 @@ private fun AuspiciousCard(window: AuspiciousWindow) {
     // which is the question about one you are not.
     val boundaryLabel =
         if (window.isActive) {
-            "ends in ${formatRemaining(window.boundary - systemNow())}"
+            "ends in ${formatRemaining(window.boundary - now)}"
         } else {
             "starts at ${formatTime(window.boundary)}"
         }
-    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = container)) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = heading, style = MaterialTheme.typography.labelMedium, color = onContainer)
-                Text(text = window.name, style = MaterialTheme.typography.titleMedium, color = onContainer)
+    var selected by remember(timeline) { mutableStateOf<Muhurta?>(null) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = heading, style = MaterialTheme.typography.labelMedium, color = accent)
+                    Text(text = window.name, style = MaterialTheme.typography.titleMedium, color = onContainer)
+                }
+                Text(text = boundaryLabel, style = MaterialTheme.typography.bodyMedium, color = onContainer)
             }
-            Text(text = boundaryLabel, style = MaterialTheme.typography.bodyMedium, color = onContainer)
+            Text(
+                text = selected?.let { "${it.name}  ${formatRange(it.start, it.end)}" }
+                    ?: detailLine(window, alsoRunning),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            timeline?.let { MuhurtaBar(it) { muhurta -> selected = muhurta } }
         }
     }
 }
 
-// All four states. The old preview only ever exercised "Auspicious now", which is why the upcoming
-// wording went unexamined for as long as it did.
-@Preview
+/**
+ * The line under the heading: the running window's own hours, and anything else running alongside it.
+ *
+ * Named separately from the heading because it answers a different question. The heading says what
+ * the app thinks of this moment; this says what the moment is actually made of.
+ */
+private fun detailLine(
+    window: AuspiciousWindow,
+    alsoRunning: List<Muhurta>,
+): String {
+    val range = formatRange(window.start, window.end)
+    return when {
+        alsoRunning.isNotEmpty() ->
+            range + " · " + alsoRunning.joinToString(", ") { "${it.name} also running, to ${formatTime(it.end)}" }
+
+        window.isActive -> "$range · nothing else running"
+        else -> range
+    }
+}
+
+/** The two lanes, and the tap that names a band. */
 @Composable
-private fun AuspiciousCardPreview() {
-    val boundary = Instant.fromEpochMilliseconds(1_705_302_960_000L)
-    VedicMitraTheme {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(8.dp)) {
-            AuspiciousCard(AuspiciousWindow("Abhijit Muhurta", MuhurtaQuality.AUSPICIOUS, boundary, isActive = true))
-            AuspiciousCard(AuspiciousWindow("Rahu Kalam", MuhurtaQuality.INAUSPICIOUS, boundary, isActive = true))
-            AuspiciousCard(AuspiciousWindow("Brahma Muhurta", MuhurtaQuality.AUSPICIOUS, boundary, isActive = false))
-            AuspiciousCard(AuspiciousWindow("Gulika Kalam", MuhurtaQuality.INAUSPICIOUS, boundary, isActive = false))
+private fun MuhurtaBar(
+    timeline: MuhurtaTimeline,
+    onSelect: (Muhurta?) -> Unit,
+) {
+    val accents = LocalVedicAccents.current
+    val lanes =
+        listOf(
+            TimelineLane("Good", timeline.auspicious, accents.auspicious),
+            TimelineLane("Avoid", timeline.caution, accents.caution),
+        )
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        VedicTimelineBar(
+            lanes = lanes,
+            nowFraction = timeline.nowFraction,
+            spokenDescription = timeline.spoken(),
+        ) { laneIndex, fraction ->
+            onSelect(timeline.windowAt(laneIndex, fraction))
+        }
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.width(BAR_LABEL_WIDTH))
+            Text(
+                text = formatTime(timeline.spanStart),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = formatTime(timeline.spanEnd),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+            )
         }
     }
 }
+
+/** Matches [VedicTimelineBar]'s own label column, so the end times line up with the lanes. */
+private val BAR_LABEL_WIDTH = 40.dp
+
+/**
+ * A real Friday, at the minute that motivated the bar.
+ *
+ * At 12:05 Rahu Kalam and Abhijit Muhurta are both running -- Abhijit is always the eighth fifteenth,
+ * which straddles the boundary between the fourth and fifth eighths, and Friday's Rahu Kalam is the
+ * fourth eighth. They overlap by 24 minutes every Friday. The heading can only name one of them; the
+ * line and the bar under it are what say the rest.
+ *
+ * The second card is the same day with nothing running, which is roughly half of it.
+ */
+@ThemePreviews
+@Preview(name = "Large text", fontScale = 2f, showBackground = true)
+@Composable
+private fun AuspiciousCardPreview() {
+    VedicMitraTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(8.dp)) {
+            PreviewCard(at = 12 * 60 + 5)
+            PreviewCard(at = 13 * 60 + 30)
+        }
+    }
+}
+
+@Composable
+private fun PreviewCard(at: Int) {
+    val now = previewFriday(at)
+    val muhurtas = PREVIEW_FRIDAY
+    val window = activeOrNextMuhurta(muhurtas, now) ?: return
+    AuspiciousCard(window, muhurtaTimeline(muhurtas, now), alsoRunning(muhurtas, now), now)
+}
+
+/** Minutes past midnight on an arbitrary Friday, as an instant. */
+private fun previewFriday(minutes: Int): Instant =
+    Instant.fromEpochMilliseconds(PREVIEW_FRIDAY_MIDNIGHT + minutes * MINUTE_MILLIS)
+
+private const val PREVIEW_FRIDAY_MIDNIGHT = 1_789_171_200_000L
+
+/**
+ * The Friday above: sunrise 06:12, sunset 18:24, with the windows the calculator produces for it.
+ * Written out rather than computed so the preview does not need an ephemeris.
+ */
+private val PREVIEW_FRIDAY: List<Muhurta> =
+    listOf(
+        previewMuhurta(MuhurtaKind.BRAHMA, "Brahma Muhurta", 4 * 60 + 36, 5 * 60 + 24, MuhurtaQuality.AUSPICIOUS),
+        previewMuhurta(MuhurtaKind.GULIKA_KALAM, "Gulika Kalam", 7 * 60 + 44, 9 * 60 + 15, MuhurtaQuality.INAUSPICIOUS),
+        previewMuhurta(MuhurtaKind.DUR_MUHURTA, "Dur Muhurta", 8 * 60 + 38, 9 * 60 + 27, MuhurtaQuality.INAUSPICIOUS),
+        previewMuhurta(MuhurtaKind.RAHU_KALAM, "Rahu Kalam", 10 * 60 + 46, 12 * 60 + 18, MuhurtaQuality.INAUSPICIOUS),
+        previewMuhurta(MuhurtaKind.ABHIJIT, "Abhijit Muhurta", 11 * 60 + 54, 12 * 60 + 42, MuhurtaQuality.AUSPICIOUS),
+        previewMuhurta(MuhurtaKind.VARJYAM, "Varjyam", 14 * 60 + 50, 16 * 60 + 26, MuhurtaQuality.INAUSPICIOUS),
+        previewMuhurta(MuhurtaKind.YAMAGANDA, "Yamaganda", 15 * 60 + 21, 16 * 60 + 52, MuhurtaQuality.INAUSPICIOUS),
+    )
+
+private fun previewMuhurta(
+    kind: MuhurtaKind,
+    name: String,
+    fromMinutes: Int,
+    toMinutes: Int,
+    quality: MuhurtaQuality,
+): Muhurta =
+    Muhurta(
+        kind = kind,
+        name = name,
+        start = previewFriday(fromMinutes),
+        end = previewFriday(toMinutes),
+        quality = quality,
+    )
 
 @Composable
 private fun SunMoonStrip(snapshot: AstronomySnapshot) {

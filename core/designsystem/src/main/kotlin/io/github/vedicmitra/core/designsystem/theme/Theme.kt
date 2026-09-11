@@ -18,6 +18,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme =
@@ -86,7 +87,8 @@ private val LightColorScheme =
  * @param darkTheme whether to use the dark colour scheme; defaults to the system setting.
  * @param dynamicColor whether to derive colours from the device wallpaper on Android 12+. Defaults
  *   to `false` so the brand palette is the out-of-the-box experience; the user can opt in via
- *   settings.
+ *   settings. It does not reach [LocalVedicAccents]: a verdict colour must not be a matter of
+ *   wallpaper.
  * @param content the themed UI.
  */
 @Composable
@@ -106,10 +108,13 @@ fun VedicMitraTheme(
             else -> LightColorScheme
         }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = VedicTypography,
-        shapes = VedicShapes,
-        content = content,
-    )
+    // The accents follow the light/dark choice, never the dynamic palette -- see [VedicAccents].
+    CompositionLocalProvider(LocalVedicAccents provides accentsFor(darkTheme)) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = VedicTypography,
+            shapes = VedicShapes,
+            content = content,
+        )
+    }
 }
